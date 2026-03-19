@@ -1,0 +1,27 @@
+name: Auto-Close Invalid PRs to Main
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, reopened, synchronize]
+
+jobs:
+  close-invalid-pr:
+    runs-on: ubuntu-latest
+    if: github.head_ref != 'develop'
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Close PR and leave a comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body "🚨 **PR recusado automaticamente!** 🚨\n\nPull requests para a branch \`main\` só podem ser abertos a partir da branch \`develop\`. Refaça o fluxo utilizando a branch correta."
+          gh pr close "$PR_NUMBER"

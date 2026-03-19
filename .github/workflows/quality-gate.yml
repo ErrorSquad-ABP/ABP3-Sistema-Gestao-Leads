@@ -1,0 +1,36 @@
+name: Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Biome CI
+        run: npm run check:ci
+
+      - name: Run blocking quality gate
+        run: npm run quality:gate:blocking
+
+      - name: Build workspaces
+        run: npm run build

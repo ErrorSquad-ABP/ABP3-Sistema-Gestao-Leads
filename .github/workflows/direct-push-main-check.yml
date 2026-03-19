@@ -1,0 +1,27 @@
+name: Direct Push to Main Check
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-direct-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Check if commit is associated with a pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          PR_COUNT=$(gh api "repos/$REPOSITORY/commits/$SHA/pulls" --jq 'length')
+          if [ "$PR_COUNT" -eq 0 ]; then
+            echo "Push direto para main detectado."
+            echo "O fluxo correto é branch de trabalho -> develop -> main."
+            exit 1
+          fi

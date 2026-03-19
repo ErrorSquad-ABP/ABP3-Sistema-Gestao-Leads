@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: abp3-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lead_management
+      POSTGRES_USER: abp
+      POSTGRES_PASSWORD: abp
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/db/init:/docker-entrypoint-initdb.d:ro
+
+  back:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+    container_name: abp3-back
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
+      JWT_SECRET: change-me
+    ports:
+      - '3000:3000'
+
+  front:
+    build:
+      context: .
+      dockerfile: front/Dockerfile
+    container_name: abp3-front
+    depends_on:
+      - back
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - '5173:5173'
+
+volumes:
+  postgres-data:

@@ -1,0 +1,8 @@
+{
+	"recommendations": [
+		"biomejs.biome",
+		"dbaeumer.vscode-eslint",
+		"snyk-security.snyk-vulnerability-scanner",
+		"ms-azuretools.vscode-docker"
+	]
+}

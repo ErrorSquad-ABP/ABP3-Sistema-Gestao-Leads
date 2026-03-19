@@ -1,0 +1,14 @@
+{
+	"editor.formatOnSave": true,
+	"eslint.useFlatConfig": true,
+	"eslint.validate": ["typescript", "typescriptreact"],
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	}
+}
