@@ -3,6 +3,8 @@ services:
     image: postgres:16-alpine
     container_name: abp3-postgres
     restart: unless-stopped
+    mem_limit: 384m
+    cpus: 1.0
     environment:
       POSTGRES_DB: lead_management
       POSTGRES_USER: abp
@@ -20,10 +22,13 @@ services:
     container_name: abp3-back
     depends_on:
       - postgres
+    mem_limit: 512m
+    cpus: 1.0
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
       JWT_SECRET: change-me
+      NODE_OPTIONS: --max-old-space-size=384
     ports:
       - '3000:3000'
 
@@ -34,8 +39,11 @@ services:
     container_name: abp3-front
     depends_on:
       - back
+    mem_limit: 512m
+    cpus: 1.0
     environment:
       VITE_API_URL: http://localhost:3000
+      NODE_OPTIONS: --max-old-space-size=384
     ports:
       - '5173:5173'
 

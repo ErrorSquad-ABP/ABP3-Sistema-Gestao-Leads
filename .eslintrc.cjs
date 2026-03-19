@@ -3,10 +3,14 @@ module.exports = {
 	ignorePatterns: ['**/dist/**', '**/node_modules/**', '**/coverage/**'],
 	overrides: [
 		{
-			files: ['front/src/**/*.{ts,tsx}', 'back/src/**/*.ts'],
+			files: ['front/src/**/*.{ts,tsx}'],
+			env: {
+				browser: true,
+				es2021: true,
+			},
 			parser: '@typescript-eslint/parser',
 			parserOptions: {
-				project: ['./front/tsconfig.json', './back/tsconfig.json'],
+				project: ['./front/tsconfig.json'],
 				tsconfigRootDir: __dirname,
 				ecmaVersion: 'latest',
 				sourceType: 'module',
@@ -14,14 +18,24 @@ module.exports = {
 					jsx: true,
 				},
 			},
-			plugins: ['@typescript-eslint', 'security'],
+			plugins: ['@typescript-eslint', 'react', 'security', 'no-unsanitized'],
 			extends: [
 				'eslint:recommended',
-				'plugin:@typescript-eslint/recommended',
+				'plugin:react/recommended',
 				'plugin:security/recommended',
+				'plugin:no-unsanitized/DOM',
 			],
+			settings: {
+				react: {
+					version: 'detect',
+				},
+			},
 			rules: {
 				'no-undef': 'off',
+				'no-unused-vars': 'off',
+				'react/react-in-jsx-scope': 'off',
+				'react/prop-types': 'off',
+				// Mantemos a responsabilidade de estilo/formatação com o Biome.
 				'@typescript-eslint/no-unused-vars': [
 					'warn',
 					{
@@ -32,20 +46,30 @@ module.exports = {
 			},
 		},
 		{
-			files: ['front/src/**/*.{ts,tsx}'],
-			plugins: ['react', 'no-unsanitized'],
-			extends: [
-				'plugin:react/recommended',
-				'plugin:no-unsanitized/recommended-legacy',
-			],
-			settings: {
-				react: {
-					version: 'detect',
-				},
+			files: ['back/src/**/*.ts'],
+			env: {
+				node: true,
+				es2021: true,
 			},
+			parser: '@typescript-eslint/parser',
+			parserOptions: {
+				project: ['./back/tsconfig.json'],
+				tsconfigRootDir: __dirname,
+				ecmaVersion: 'latest',
+				sourceType: 'module',
+			},
+			plugins: ['@typescript-eslint', 'security'],
+			extends: ['eslint:recommended', 'plugin:security/recommended'],
 			rules: {
-				'react/react-in-jsx-scope': 'off',
-				'react/prop-types': 'off',
+				'no-undef': 'off',
+				'no-unused-vars': 'off',
+				'@typescript-eslint/no-unused-vars': [
+					'warn',
+					{
+						argsIgnorePattern: '^_',
+						varsIgnorePattern: '^_',
+					},
+				],
 			},
 		},
 	],

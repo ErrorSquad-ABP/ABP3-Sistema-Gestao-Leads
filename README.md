@@ -95,6 +95,7 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 - Gate de tipos com `tsc --noEmit`.
 - Recomendação de extensão `Snyk` no VS Code para análise de vulnerabilidades em tempo de desenvolvimento.
 - Workflows de CI para qualidade e para enforcement do fluxo `develop -> main`.
+- `docker-compose.yml` com limites conservadores de CPU e memória para reduzir impacto em máquinas de desenvolvimento.
 
 ## Fluxo de branches
 
@@ -119,7 +120,7 @@ Pull requests para `main` devem sair exclusivamente de `develop`. O repositório
 1. Instale `Docker` e `Docker Compose`.
 2. Clone o repositório.
 3. Execute `docker compose up --build`.
-4. Acesse o frontend em `http://localhost:5173` e a API em `http://localhost:3000/health`.
+4. Acesse o frontend em `http://localhost:5173`, a API em `http://localhost:3000/health` e o PostgreSQL no host em `localhost:5433`.
 
 ## Próximos passos sugeridos
 

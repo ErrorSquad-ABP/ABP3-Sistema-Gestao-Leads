@@ -1,26 +1,85 @@
 const js = require('@eslint/js');
-const tsParser = require('@typescript-eslint/parser');
 const tsPlugin = require('@typescript-eslint/eslint-plugin');
-const reactPlugin = require('eslint-plugin-react');
+const tsParser = require('@typescript-eslint/parser');
 const securityPlugin = require('eslint-plugin-security');
-const noUnsanitized = require('eslint-plugin-no-unsanitized');
+const reactPlugin = require('eslint-plugin-react');
+const noUnsanitizedPlugin = require('eslint-plugin-no-unsanitized');
+
+const unusedVarsRule = [
+	'warn',
+	{
+		argsIgnorePattern: '^_',
+		varsIgnorePattern: '^_',
+	},
+];
 
 module.exports = [
 	{
 		ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**'],
 	},
 	{
-		files: ['front/src/**/*.{ts,tsx}', 'back/src/**/*.ts'],
+		files: ['front/src/**/*.{ts,tsx}'],
 		languageOptions: {
 			parser: tsParser,
+			ecmaVersion: 'latest',
+			sourceType: 'module',
 			parserOptions: {
-				project: ['./front/tsconfig.json', './back/tsconfig.json'],
+				project: ['./front/tsconfig.json'],
 				tsconfigRootDir: __dirname,
-				ecmaVersion: 'latest',
-				sourceType: 'module',
 				ecmaFeatures: {
 					jsx: true,
 				},
+			},
+			globals: {
+				window: 'readonly',
+				document: 'readonly',
+				localStorage: 'readonly',
+				sessionStorage: 'readonly',
+				fetch: 'readonly',
+				setTimeout: 'readonly',
+				clearTimeout: 'readonly',
+				alert: 'readonly',
+				console: 'readonly',
+			},
+		},
+		plugins: {
+			'@typescript-eslint': tsPlugin,
+			react: reactPlugin,
+			security: securityPlugin,
+			'no-unsanitized': noUnsanitizedPlugin,
+		},
+		settings: {
+			react: {
+				version: 'detect',
+			},
+		},
+		rules: {
+			...js.configs.recommended.rules,
+			...reactPlugin.configs.recommended.rules,
+			...(securityPlugin.configs.recommended?.rules ?? {}),
+			...(noUnsanitizedPlugin.configs['recommended-legacy']?.rules ?? {}),
+			'no-undef': 'off',
+			'no-unused-vars': 'off',
+			'react/react-in-jsx-scope': 'off',
+			'react/prop-types': 'off',
+			'@typescript-eslint/no-unused-vars': unusedVarsRule,
+		},
+	},
+	{
+		files: ['back/src/**/*.ts'],
+		languageOptions: {
+			parser: tsParser,
+			ecmaVersion: 'latest',
+			sourceType: 'module',
+			parserOptions: {
+				project: ['./back/tsconfig.json'],
+				tsconfigRootDir: __dirname,
+			},
+			globals: {
+				process: 'readonly',
+				console: 'readonly',
+				setTimeout: 'readonly',
+				clearTimeout: 'readonly',
 			},
 		},
 		plugins: {
@@ -31,31 +90,8 @@ module.exports = [
 			...js.configs.recommended.rules,
 			...(securityPlugin.configs.recommended?.rules ?? {}),
 			'no-undef': 'off',
-			'@typescript-eslint/no-unused-vars': [
-				'warn',
-				{
-					argsIgnorePattern: '^_',
-					varsIgnorePattern: '^_',
-				},
-			],
-		},
-	},
-	{
-		files: ['front/src/**/*.{ts,tsx}'],
-		plugins: {
-			react: reactPlugin,
-			'no-unsanitized': noUnsanitized,
-		},
-		settings: {
-			react: {
-				version: 'detect',
-			},
-		},
-		rules: {
-			...(reactPlugin.configs.recommended?.rules ?? {}),
-			...(noUnsanitized.configs['recommended-legacy']?.rules ?? {}),
-			'react/react-in-jsx-scope': 'off',
-			'react/prop-types': 'off',
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': unusedVarsRule,
 		},
 	},
 ];
