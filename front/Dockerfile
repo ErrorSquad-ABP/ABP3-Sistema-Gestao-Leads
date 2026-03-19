@@ -1,7 +1,6 @@
 FROM node:22-alpine
 
 WORKDIR /app
-ENV NODE_OPTIONS=--max-old-space-size=384
 ENV NPM_CONFIG_AUDIT=false
 ENV NPM_CONFIG_FUND=false
 

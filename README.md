@@ -95,7 +95,6 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 - Gate de tipos com `tsc --noEmit`.
 - Recomendação de extensão `Snyk` no VS Code para análise de vulnerabilidades em tempo de desenvolvimento.
 - Workflows de CI para qualidade e para enforcement do fluxo `develop -> main`.
-- `docker-compose.yml` com limites conservadores de CPU e memória para reduzir impacto em máquinas de desenvolvimento.
 
 ## Fluxo de branches
 
