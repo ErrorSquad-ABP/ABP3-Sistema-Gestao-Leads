@@ -12,6 +12,8 @@ Essa combinação atende diretamente às restrições do ABP:
 - simplifica testes, versionamento e conteinerização;
 - deixa margem para extração futura de serviços, caso o crescimento do sistema justifique.
 
+Ela também foi escolhida para sustentar evolução real do produto, não apenas para cumprir o semestre. A intenção é crescer com disciplina modular, preservar clareza arquitetural e adiar aumento de complexidade operacional até que exista justificativa concreta.
+
 ## Visão de alto nível
 
 ### Frontend
@@ -26,6 +28,7 @@ Essa combinação atende diretamente às restrições do ABP:
 - `services`: orquestração de casos de uso e regras de negócio.
 - `repositories`: acesso a dados.
 - `domain`: entidades, enums, value objects e políticas centrais.
+- `shared`: componentes transversais realmente reutilizáveis, sem virar depósito genérico.
 
 ## Módulos previstos
 
@@ -55,6 +58,30 @@ Essa combinação atende diretamente às restrições do ABP:
 - Módulos devem conversar por contratos internos bem definidos.
 - Regras de negócio não devem ficar em controllers nem em componentes React.
 - Dependências compartilhadas devem ir para `shared` somente quando realmente forem transversais.
+- `audit-logs` deve ser tratado como preocupação transversal, preferencialmente por eventos internos, middlewares ou serviços de auditoria centralizados.
+- O `package.json` da raiz deve conter apenas tooling e scripts de orquestração do monorepo.
+
+## Estratégia de crescimento e escala
+
+O caminho arquitetural previsto é:
+
+1. Evoluir primeiro como `monólito modular`, com fronteiras de domínio claras.
+2. Escalar leitura analítica com SQL bem escrita, índices, views e materialized views quando necessário.
+3. Introduzir processamento assíncrono para tarefas pesadas, integrações ou consolidações por meio de jobs e filas.
+4. Adicionar cache e read models específicos apenas onde o custo de consulta justificar.
+5. Extrair serviços independentes somente se houver evidência operacional, de throughput ou de autonomia de times.
+
+Essa abordagem evita complexidade prematura e mantém o sistema pronto para crescer de forma controlada.
+
+## Estratégia para dashboards e analytics
+
+Como o domínio exige indicadores operacionais e analíticos, o backend foi pensado para não depender apenas de lógica em memória:
+
+- consultas devem privilegiar agregações no PostgreSQL;
+- filtros temporais devem ser validados no backend e refletidos na modelagem de consulta;
+- índices devem ser adicionados de acordo com os acessos reais de leads, negociações, atendentes, equipes e datas;
+- relatórios mais pesados podem evoluir para materializações, tabelas auxiliares ou processos assíncronos de consolidação;
+- a API deve expor contratos claros para dashboards, sem espalhar regra analítica por múltiplos módulos sem coordenação.
 
 ## Próximos artefatos
 

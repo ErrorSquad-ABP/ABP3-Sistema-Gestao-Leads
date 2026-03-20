@@ -26,13 +26,29 @@ Esse fluxo cobre:
 
 No GitHub Actions, o workflow `Quality Gate` executa os equivalentes em modo de validação:
 
-1. `npm run format:check`
-2. `npm run lint:check`
-3. `npm run typecheck`
-4. `npm run lint:eslint`
-5. `npm run build`
+1. `npm run guard:root-package`
+2. `npm run format:check`
+3. `npm run lint:check`
+4. `npm run typecheck`
+5. `npm run lint:eslint`
+6. `npm run build`
 
 Se qualquer etapa falhar, o status `validate` falha e o merge na `main` fica bloqueado.
+
+## Política de dependências no monorepo
+
+O `package.json` da raiz não deve receber dependências de aplicação. Ele existe para:
+
+- tooling compartilhado;
+- scripts de orquestração do monorepo;
+- padronização de qualidade e build.
+
+Instalação correta por workspace:
+
+- frontend: `npm i <pacote> -w front`
+- backend: `npm i <pacote> -w back`
+
+Se alguém adicionar dependências de runtime na raiz, o CI falha no passo `guard:root-package`.
 
 ## Snyk
 

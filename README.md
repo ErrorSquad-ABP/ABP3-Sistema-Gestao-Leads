@@ -28,6 +28,7 @@ Este repositório nasce como um `monorepo` orientado a `monólito modular`, mant
 - Módulos de negócio planejados: `auth`, `users`, `teams`, `stores`, `customers`, `leads`, `negotiations`, `dashboards` e `audit-logs`.
 - Regras de autorização centralizadas exclusivamente no backend, conforme o enunciado.
 - Estrutura preparada para PostgreSQL, Docker Compose, quality gate com Biome, ESLint e TypeScript.
+- Base desenhada para crescer além do ABP, preservando evolução incremental sem forçar microserviços cedo demais.
 
 ## Stack base
 
@@ -55,6 +56,21 @@ Este repositório nasce como um `monorepo` orientado a `monólito modular`, mant
 ├── docker-compose.yml      # Orquestracao local padrao
 └── tsconfig.base.json      # Configuracao TS compartilhada
 ```
+
+## Escalabilidade e evolução
+
+A arquitetura base não foi desenhada apenas para cumprir o enunciado do semestre. Ela foi montada para permitir crescimento progressivo do produto sem recomeçar a base técnica quando o sistema ficar maior.
+
+Os princípios para essa evolução são:
+
+- começar com `monólito modular` para ganhar velocidade, coesão de domínio e simplicidade operacional;
+- isolar módulos de negócio desde o início para reduzir acoplamento e facilitar manutenção;
+- concentrar regras críticas no backend para preservar segurança, auditoria e rastreabilidade;
+- preparar o backend para consultas analíticas mais exigentes com boa modelagem SQL, índices, agregações e materializações quando necessário;
+- permitir a introdução futura de filas, jobs assíncronos, cache e read models sem ruptura da base principal;
+- deixar extração para serviços separados apenas como decisão futura, orientada por necessidade real de escala, não por modismo arquitetural.
+
+Em outras palavras: a base atual é enxuta para o semestre, mas não é descartável nem um beco sem saída.
 
 ## Time do projeto
 
@@ -96,6 +112,17 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 - Gate de tipos com `tsc --noEmit`.
 - Recomendação de extensão `Snyk` no VS Code para análise de vulnerabilidades em tempo de desenvolvimento.
 - Workflows de CI para qualidade e para enforcement do fluxo `develop -> main`.
+
+### Política de workspaces
+
+O `package.json` da raiz existe para `tooling`, scripts de orquestração e padronização do monorepo. Dependências de aplicação não devem ser instaladas nele.
+
+Padrão esperado:
+
+- frontend: `npm i <pacote> -w front`
+- backend: `npm i <pacote> -w back`
+
+O CI valida essa regra automaticamente com `npm run guard:root-package`, impedindo que dependências de runtime sejam adicionadas por engano na raiz.
 
 ### Fluxo obrigatório de validação local
 

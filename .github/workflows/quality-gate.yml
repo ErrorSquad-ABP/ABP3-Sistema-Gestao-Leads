@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Guard root package usage
+        run: npm run guard:root-package
+
       - name: Run Biome format check
         run: npm run format:check
 
