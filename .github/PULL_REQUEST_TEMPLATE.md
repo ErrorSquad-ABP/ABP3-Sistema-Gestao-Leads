@@ -115,3 +115,13 @@
 **Commits:** [X] commits  
 **Reviewer:** @[username]  
 **Labels:** `[label1]`, `[label2]`, `[label3]`
+
+---
+
+## Checklist de Validação
+- [ ] Rodei `npm run format`
+- [ ] Rodei `npm run lint`
+- [ ] Rodei `npm run typecheck`
+- [ ] Rodei `npm run lint:eslint`
+- [ ] Rodei `npm run build`
+- [ ] Validei a extensão Snyk no VS Code quando aplicável

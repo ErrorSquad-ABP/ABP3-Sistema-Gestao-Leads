@@ -26,11 +26,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Biome CI
-        run: npm run check:ci
+      - name: Run Biome format check
+        run: npm run format:check
 
-      - name: Run blocking quality gate
-        run: npm run quality:gate:blocking
+      - name: Run Biome lint check
+        run: npm run lint:check
+
+      - name: Run TypeScript typecheck
+        run: npm run typecheck
+
+      - name: Run ESLint
+        run: npm run lint:eslint
 
       - name: Build workspaces
         run: npm run build
