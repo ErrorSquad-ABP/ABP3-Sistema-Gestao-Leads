@@ -9,6 +9,7 @@ Este diretório concentra os artefatos de apoio técnico, analítico e de gestã
 - `data/`: modelo de dados, DER, dicionário e scripts SQL de apoio.
 - `agile/`: backlog, cerimônias, Definition of Done, retrospectivas e planejamento de sprints.
 - `quality/`: fluxo de validação, critérios de CI e convenções de revisão técnica.
+- `templates/`: modelos de documentação para manter consistência entre novos arquivos Markdown.
 
 ## Entregáveis previstos
 
@@ -30,3 +31,16 @@ Este diretório concentra os artefatos de apoio técnico, analítico e de gestã
 - Evitar material solto fora do repositório.
 - Manter uma trilha clara entre requisito, regra de negócio e implementação.
 - Atualizar a documentação como parte da Definition of Done.
+- Reutilizar os templates de `templates/` sempre que uma nova documentação estrutural for criada.
+
+## Padrão editorial adotado
+
+Os documentos principais do projeto seguem a mesma linha editorial:
+
+- abertura curta explicando objetivo e contexto do arquivo;
+- seções com nomes diretos e previsíveis;
+- listas objetivas para diretrizes, regras e decisões;
+- tabelas quando ajudam a condensar papéis, stacks ou entregáveis;
+- fechamento com próximos passos, evolução esperada ou artefatos futuros quando aplicável.
+
+Esse padrão agora está formalizado em `templates/`, para evitar que a documentação futura perca consistência.

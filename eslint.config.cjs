@@ -15,7 +15,12 @@ const unusedVarsRule = [
 
 module.exports = [
 	{
-		ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**'],
+		ignores: [
+			'**/dist/**',
+			'**/node_modules/**',
+			'**/coverage/**',
+			'**/.next/**',
+		],
 	},
 	{
 		files: ['front/src/**/*.{ts,tsx}'],
@@ -66,7 +71,7 @@ module.exports = [
 		},
 	},
 	{
-		files: ['back/src/**/*.ts'],
+		files: ['back/src/**/*.{ts,tsx}'],
 		languageOptions: {
 			parser: tsParser,
 			ecmaVersion: 'latest',
@@ -74,6 +79,9 @@ module.exports = [
 			parserOptions: {
 				project: ['./back/tsconfig.json'],
 				tsconfigRootDir: __dirname,
+				ecmaFeatures: {
+					jsx: true,
+				},
 			},
 			globals: {
 				process: 'readonly',
@@ -84,13 +92,22 @@ module.exports = [
 		},
 		plugins: {
 			'@typescript-eslint': tsPlugin,
+			react: reactPlugin,
 			security: securityPlugin,
+		},
+		settings: {
+			react: {
+				version: 'detect',
+			},
 		},
 		rules: {
 			...js.configs.recommended.rules,
+			...reactPlugin.configs.recommended.rules,
 			...(securityPlugin.configs.recommended?.rules ?? {}),
 			'no-undef': 'off',
 			'no-unused-vars': 'off',
+			'react/react-in-jsx-scope': 'off',
+			'react/prop-types': 'off',
 			'@typescript-eslint/no-unused-vars': unusedVarsRule,
 		},
 	},

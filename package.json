@@ -2,7 +2,7 @@
 	"name": "abp3-sistema-gestao-leads",
 	"version": "0.1.0",
 	"private": true,
-	"description": "Monorepo do Sistema de Gestao de Leads com Dashboard Analitico da ErrorSquad-ABP",
+	"description": "Single repository do Sistema de Gestao de Leads com Dashboard Analitico da ErrorSquad-ABP",
 	"workspaces": [
 		"front",
 		"back"
@@ -13,6 +13,7 @@
 	},
 	"scripts": {
 		"dev": "docker compose up --build",
+		"guard:root-package": "node scripts/check-root-package.mjs",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
 		"lint": "biome lint --write .",
@@ -22,8 +23,8 @@
 		"lint:eslint": "eslint front/src back/src --ext .ts,.tsx --max-warnings 0",
 		"lint:eslint:blocking": "npm run lint:eslint",
 		"typecheck": "npm run typecheck --workspaces --if-present",
-		"quality:gate:blocking": "npm run format:check && npm run lint:check && npm run typecheck && npm run lint:eslint && npm run build",
-		"quality:gate:advisory": "npm run format:check && npm run lint:check && npm run lint:eslint",
+		"quality:gate:blocking": "npm run guard:root-package && npm run format:check && npm run lint:check && npm run typecheck && npm run lint:eslint && npm run build",
+		"quality:gate:advisory": "npm run guard:root-package && npm run format:check && npm run lint:check && npm run lint:eslint",
 		"build": "npm run build --workspaces --if-present"
 	},
 	"devDependencies": {

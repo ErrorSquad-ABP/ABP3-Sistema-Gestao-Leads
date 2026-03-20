@@ -1,9 +1,11 @@
 node_modules
 dist
+.next
 coverage
 .turbo
 .DS_Store
 *.log
+*.tsbuildinfo
 .env
 .env.*
 !.env.example

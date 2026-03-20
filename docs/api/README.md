@@ -2,7 +2,7 @@
 
 ## Direção inicial
 
-A API será orientada a recursos, com versionamento por prefixo e contratos explícitos entre frontend e backend.
+A API será uma aplicação `Next.js` separada, orientada a recursos, com versionamento por prefixo e contratos explícitos entre `front` e `back`.
 
 Prefixo inicial sugerido:
 
@@ -28,6 +28,7 @@ Prefixo inicial sugerido:
 - RBAC aplicado no backend conforme papel do usuário.
 - Filtros temporais validados no servidor.
 - Logs de acesso e operações com data, hora e usuário responsável.
+- Comunicação com o frontend exclusivamente por `HTTP/JSON`.
 
 ## Convenções propostas
 
@@ -35,6 +36,7 @@ Prefixo inicial sugerido:
 - Erros de domínio desacoplados da tecnologia de transporte.
 - Paginação e filtros sempre explícitos em query params.
 - Recursos analíticos separados dos recursos transacionais quando necessário.
+- Route handlers do Next.js funcionando apenas como adaptação HTTP, sem concentrar regra de negócio.
 
 ## Próximos passos
 

@@ -21,11 +21,12 @@ services:
     depends_on:
       - postgres
     environment:
-      PORT: 3000
+      PORT: 3001
+      APP_URL: http://localhost:3001
       DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
       JWT_SECRET: change-me
     ports:
-      - '3000:3000'
+      - '3001:3001'
 
   front:
     build:
@@ -35,9 +36,11 @@ services:
     depends_on:
       - back
     environment:
-      VITE_API_URL: http://localhost:3000
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      API_INTERNAL_URL: http://back:3001
     ports:
-      - '5173:5173'
+      - '3000:3000'
 
 volumes:
   postgres-data:

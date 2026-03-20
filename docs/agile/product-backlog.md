@@ -15,7 +15,7 @@
 
 | Prioridade | Item |
 | --- | --- |
-| Alta | Estrutura base do monorepo |
+| Alta | Estrutura base do single repository |
 | Alta | Autenticação com JWT |
 | Alta | RBAC no backend |
 | Alta | CRUD de leads |
