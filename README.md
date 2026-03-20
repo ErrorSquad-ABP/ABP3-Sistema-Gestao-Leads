@@ -97,6 +97,26 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 - Recomendação de extensão `Snyk` no VS Code para análise de vulnerabilidades em tempo de desenvolvimento.
 - Workflows de CI para qualidade e para enforcement do fluxo `develop -> main`.
 
+### Fluxo obrigatório de validação local
+
+Antes de abrir PR, o fluxo esperado da equipe é:
+
+1. `npm run format`
+2. `npm run lint`
+3. `npm run typecheck`
+4. `npm run lint:eslint`
+5. `npm run build`
+
+No CI, os equivalentes em modo de verificação são executados automaticamente para bloquear merges com código fora do padrão:
+
+1. `npm run format:check`
+2. `npm run lint:check`
+3. `npm run typecheck`
+4. `npm run lint:eslint`
+5. `npm run build`
+
+Observação: o `Snyk` permanece como ferramenta de apoio no editor via extensão do VS Code, não como etapa do GitHub Actions neste momento.
+
 ## Fluxo de branches
 
 - `main`: branch estável, protegida para releases.
@@ -105,6 +125,7 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 
 Pull requests para `main` devem sair exclusivamente de `develop`.
 O repositório inclui template de PR, workflow para recusar PRs inválidos automaticamente e proteção de branch para concentrar aprovação e merge da `main` na liderança técnica definida do projeto.
+Na operação cotidiana, a equipe deve tratar a `main` como branch exclusiva de integração final por PR. Exceções operacionais de bypass existem apenas para `@JV-L0pes` e `@Leo-Slv`, com finalidade de liderança e contingência, não como fluxo padrão de desenvolvimento.
 
 ## Documentação complementar
 
@@ -113,6 +134,7 @@ O repositório inclui template de PR, workflow para recusar PRs inválidos autom
 - [`docs/api/README.md`](./docs/api/README.md)
 - [`docs/data/README.md`](./docs/data/README.md)
 - [`docs/agile/README.md`](./docs/agile/README.md)
+- [`docs/quality/README.md`](./docs/quality/README.md)
 - [`front/README.md`](./front/README.md)
 - [`back/README.md`](./back/README.md)
 
