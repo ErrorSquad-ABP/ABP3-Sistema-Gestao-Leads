@@ -126,7 +126,6 @@ Padrão esperado:
 - backend: `npm i <pacote> -w back`
 
 O CI valida essa regra automaticamente com `npm run guard:root-package`, impedindo que dependências de runtime sejam adicionadas por engano na raiz.
-
 ### Fluxo obrigatório de validação local
 
 Antes de abrir PR, o fluxo esperado da equipe é:

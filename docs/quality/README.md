@@ -49,7 +49,6 @@ Instalação correta por workspace:
 - backend: `npm i <pacote> -w back`
 
 Se alguém adicionar dependências de runtime na raiz, o CI falha no passo `guard:root-package`.
-
 ## Snyk
 
 O `Snyk` faz parte do padrão operacional do projeto via extensão do VS Code. Neste momento ele atua como apoio ao desenvolvimento local e revisão manual, não como etapa automatizada do GitHub Actions.
