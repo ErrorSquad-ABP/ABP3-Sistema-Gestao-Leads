@@ -2,7 +2,7 @@
 	"name": "abp3-sistema-gestao-leads",
 	"version": "0.1.0",
 	"private": true,
-	"description": "Monorepo do Sistema de Gestao de Leads com Dashboard Analitico da ErrorSquad-ABP",
+	"description": "Single repository do Sistema de Gestao de Leads com Dashboard Analitico da ErrorSquad-ABP",
 	"workspaces": [
 		"front",
 		"back"

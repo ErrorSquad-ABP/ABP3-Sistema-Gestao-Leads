@@ -60,9 +60,9 @@ function App() {
 				</div>
 				<h1>Sistema de Gestão de Leads com Dashboard Analítico</h1>
 				<p className="hero__summary">
-					Base inicial do monorepo para o projeto da 1000 Valle Multimarcas,
-					preparada para evoluir com frontend em React, backend em Node.js e
-					banco PostgreSQL.
+					Base inicial em single repository para o projeto da 1000 Valle
+					Multimarcas, preparada para evoluir com frontend em React, backend em
+					Node.js e banco PostgreSQL.
 				</p>
 				<div className="hero__chips">
 					<span>React + TypeScript</span>

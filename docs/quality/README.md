@@ -35,12 +35,12 @@ No GitHub Actions, o workflow `Quality Gate` executa os equivalentes em modo de 
 
 Se qualquer etapa falhar, o status `validate` falha e o merge na `main` fica bloqueado.
 
-## Política de dependências no monorepo
+## Política de dependências no single repository
 
 O `package.json` da raiz não deve receber dependências de aplicação. Ele existe para:
 
 - tooling compartilhado;
-- scripts de orquestração do monorepo;
+- scripts de orquestração do repositório único;
 - padronização de qualidade e build.
 
 Instalação correta por workspace:

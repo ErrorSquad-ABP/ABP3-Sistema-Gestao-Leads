@@ -59,7 +59,7 @@ Ela também foi escolhida para sustentar evolução real do produto, não apenas
 - Regras de negócio não devem ficar em controllers nem em componentes React.
 - Dependências compartilhadas devem ir para `shared` somente quando realmente forem transversais.
 - `audit-logs` deve ser tratado como preocupação transversal, preferencialmente por eventos internos, middlewares ou serviços de auditoria centralizados.
-- O `package.json` da raiz deve conter apenas tooling e scripts de orquestração do monorepo.
+- O `package.json` da raiz deve conter apenas tooling e scripts de orquestração do repositório único.
 
 ## Estratégia de crescimento e escala
 

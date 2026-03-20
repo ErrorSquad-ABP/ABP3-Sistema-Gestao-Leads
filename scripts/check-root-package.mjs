@@ -16,7 +16,7 @@ const violations = runtimeDependencyGroups
 
 if (violations.length > 0) {
 	console.error(
-		'O package.json da raiz deve conter apenas tooling e orquestracao do monorepo.',
+		'O package.json da raiz deve conter apenas tooling e orquestracao do repositorio unico.',
 	);
 	console.error('Dependencias de runtime devem ficar em front/ ou back/.');
 	console.error('Violacoes encontradas:');

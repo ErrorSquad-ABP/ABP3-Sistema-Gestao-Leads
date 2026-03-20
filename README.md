@@ -19,7 +19,7 @@ Repositório oficial da equipe `ErrorSquad-ABP` para o ABP 2026-1 do 3º DSM da 
 
 O desafio consiste em desenvolver, do zero, um sistema web para gestão de leads comerciais de uma revendedora de veículos com múltiplas unidades. O produto deverá centralizar o cadastro de leads, sua associação a clientes, lojas e atendentes, a evolução da negociação e a geração de indicadores operacionais e analíticos para diferentes níveis de gestão.
 
-Este repositório nasce como um `monorepo` orientado a `monólito modular`, mantendo frontend e backend separados por responsabilidade, mas versionados no mesmo lugar para simplificar governança, padronização técnica e entregas incrementais ao longo das sprints.
+Este repositório nasce como um `single repository` orientado a `monólito modular`, mantendo frontend e backend separados por responsabilidade, mas versionados no mesmo lugar para simplificar governança, padronização técnica e entregas incrementais ao longo das sprints.
 
 ## Direcionadores arquiteturais
 
@@ -115,7 +115,7 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 
 ### Política de workspaces
 
-O `package.json` da raiz existe para `tooling`, scripts de orquestração e padronização do monorepo. Dependências de aplicação não devem ser instaladas nele.
+O `package.json` da raiz existe para `tooling`, scripts de orquestração e padronização do repositório único. Dependências de aplicação não devem ser instaladas nele.
 
 Padrão esperado:
 
