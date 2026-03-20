@@ -48,3 +48,5 @@ Extensão recomendada:
 - A `main` exige aprovação com `CODEOWNERS`.
 - A aprovação válida para a `main` deve vir de `@JV-L0pes` ou `@Leo-Slv`.
 - O merge na `main` depende do status `validate` aprovado.
+- Para o time de desenvolvimento, a `main` deve ser tratada como branch sem push direto e sem merge fora do fluxo `develop -> main`.
+- `@JV-L0pes` e `@Leo-Slv` possuem autonomia de bypass por governança da liderança técnica e contingência operacional, mas isso não substitui o fluxo padrão adotado pela equipe.
