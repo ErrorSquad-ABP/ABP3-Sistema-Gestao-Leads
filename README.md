@@ -19,12 +19,14 @@ Repositório oficial da equipe `ErrorSquad-ABP` para o ABP 2026-1 do 3º DSM da 
 
 O desafio consiste em desenvolver, do zero, um sistema web para gestão de leads comerciais de uma revendedora de veículos com múltiplas unidades. O produto deverá centralizar o cadastro de leads, sua associação a clientes, lojas e atendentes, a evolução da negociação e a geração de indicadores operacionais e analíticos para diferentes níveis de gestão.
 
-Este repositório nasce como um `single repository` orientado a `monólito modular`, mantendo frontend e backend separados por responsabilidade, mas versionados no mesmo lugar para simplificar governança, padronização técnica e entregas incrementais ao longo das sprints.
+Este repositório nasce como um `single repository` com duas aplicações `Next.js` separadas por responsabilidade: `front` para a experiência web e `back` para a API. As duas aplicações se comunicam via `HTTP/JSON`, enquanto o backend preserva organização interna de `monólito modular` para sustentar crescimento com clareza de domínio e baixo acoplamento.
 
 ## Direcionadores arquiteturais
 
-- Padrão arquitetural principal: `Monólito Modular` com `Arquitetura em Camadas`.
-- Separação macro: `front` para apresentação e `back` para API REST.
+- Estratégia de solução: `single repository` com `front` e `back` separados.
+- Padrão arquitetural interno do backend: `Monólito Modular` com `Arquitetura em Camadas`.
+- Separação macro: `front` como aplicação web em Next.js e `back` como API em Next.js.
+- Comunicação entre aplicações exclusivamente por `HTTP/JSON`.
 - Módulos de negócio planejados: `auth`, `users`, `teams`, `stores`, `customers`, `leads`, `negotiations`, `dashboards` e `audit-logs`.
 - Regras de autorização centralizadas exclusivamente no backend, conforme o enunciado.
 - Estrutura preparada para PostgreSQL, Docker Compose, quality gate com Biome, ESLint e TypeScript.
@@ -34,8 +36,8 @@ Este repositório nasce como um `single repository` orientado a `monólito modul
 
 | Camada | Stack |
 | --- | --- |
-| Frontend | React + TypeScript + Vite |
-| Backend | Node.js + TypeScript + Express |
+| Frontend | Next.js + React + TypeScript |
+| Backend | Next.js + TypeScript para API REST |
 | Banco de dados | PostgreSQL |
 | Qualidade | Biome, ESLint, TypeScript Checker |
 | Segurança | JWT, hashing seguro, lint de segurança, Snyk para VS Code |
@@ -47,9 +49,9 @@ Este repositório nasce como um `single repository` orientado a `monólito modul
 .
 ├── .github/                # Templates e workflows
 ├── .vscode/                # Recomendacoes e padroes de editor
-├── back/                   # API REST em Node.js + TypeScript
+├── back/                   # API em Next.js + TypeScript
 ├── docs/                   # Artefatos de arquitetura, dados, API e agilidade
-├── front/                  # Aplicacao React + TypeScript
+├── front/                  # Aplicacao web em Next.js + TypeScript
 ├── infra/                  # Scripts e bootstrap de infraestrutura
 ├── biome.json              # Formatacao e lint baseline
 ├── eslint.config.cjs       # ESLint v9+ flat config
@@ -63,7 +65,8 @@ A arquitetura base não foi desenhada apenas para cumprir o enunciado do semestr
 
 Os princípios para essa evolução são:
 
-- começar com `monólito modular` para ganhar velocidade, coesão de domínio e simplicidade operacional;
+- separar `front` e `back` desde a base para manter fronteira HTTP clara e permitir evolução independente de cada aplicação;
+- manter o backend como `monólito modular` para ganhar velocidade, coesão de domínio e simplicidade operacional;
 - isolar módulos de negócio desde o início para reduzir acoplamento e facilitar manutenção;
 - concentrar regras críticas no backend para preservar segurança, auditoria e rastreabilidade;
 - preparar o backend para consultas analíticas mais exigentes com boa modelagem SQL, índices, agregações e materializações quando necessário;
@@ -136,11 +139,12 @@ Antes de abrir PR, o fluxo esperado da equipe é:
 
 No CI, os equivalentes em modo de verificação são executados automaticamente para bloquear merges com código fora do padrão:
 
-1. `npm run format:check`
-2. `npm run lint:check`
-3. `npm run typecheck`
-4. `npm run lint:eslint`
-5. `npm run build`
+1. `npm run guard:root-package`
+2. `npm run format:check`
+3. `npm run lint:check`
+4. `npm run typecheck`
+5. `npm run lint:eslint`
+6. `npm run build`
 
 Observação: o `Snyk` permanece como ferramenta de apoio no editor via extensão do VS Code, não como etapa do GitHub Actions neste momento.
 
@@ -170,7 +174,7 @@ Na operação cotidiana, a equipe deve tratar a `main` como branch exclusiva de 
 1. Instale `Docker` e `Docker Compose`.
 2. Clone o repositório.
 3. Execute `docker compose up --build`.
-4. Acesse o frontend em `http://localhost:5173`, a API em `http://localhost:3000/health` e o PostgreSQL no host em `localhost:5433`.
+4. Acesse o frontend em `http://localhost:3000`, a API em `http://localhost:3001/api/health` e o PostgreSQL no host em `localhost:5433`.
 
 ## Próximos passos sugeridos
 

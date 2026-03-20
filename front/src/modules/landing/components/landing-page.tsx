@@ -4,12 +4,20 @@ type Highlight = {
 	description: string;
 };
 
+type ApiStatusSnapshot = {
+	endpoint: string;
+	mode: 'online' | 'offline';
+	service: string;
+	status: string;
+	timestamp: string | null;
+};
+
 const pillars: Highlight[] = [
 	{
 		id: 'architecture',
-		title: 'Monólito modular',
+		title: 'Apps separadas',
 		description:
-			'Backend em módulos de negócio com fronteiras claras e API REST centralizada.',
+			'Frontend e API em Next.js separados, conectados por HTTP/JSON dentro do mesmo repositório.',
 	},
 	{
 		id: 'analytics',
@@ -19,8 +27,9 @@ const pillars: Highlight[] = [
 	},
 	{
 		id: 'security',
-		title: 'Segurança no backend',
-		description: 'RBAC, JWT, hashing seguro e autorização tratada no servidor.',
+		title: 'Segurança no servidor',
+		description:
+			'RBAC, JWT, hashing seguro e autorização concentrada no backend.',
 	},
 ];
 
@@ -51,7 +60,22 @@ const plannedModules: Highlight[] = [
 	},
 ];
 
-function App() {
+type LandingPageProps = {
+	apiStatus: ApiStatusSnapshot;
+};
+
+function formatTimestamp(timestamp: string | null) {
+	if (!timestamp) {
+		return 'API ainda não respondeu nesta sessão.';
+	}
+
+	return new Intl.DateTimeFormat('pt-BR', {
+		dateStyle: 'short',
+		timeStyle: 'medium',
+	}).format(new Date(timestamp));
+}
+
+function LandingPage({ apiStatus }: LandingPageProps) {
 	return (
 		<main className="shell">
 			<section className="hero">
@@ -60,15 +84,43 @@ function App() {
 				</div>
 				<h1>Sistema de Gestão de Leads com Dashboard Analítico</h1>
 				<p className="hero__summary">
-					Base inicial em single repository para o projeto da 1000 Valle
-					Multimarcas, preparada para evoluir com frontend em React, backend em
-					Node.js e banco PostgreSQL.
+					Base inicial em single repository com <code>front</code> e{' '}
+					<code>back</code> separados em <code>Next.js</code>, preparada para
+					evoluir com fronteira HTTP clara, backend modular e PostgreSQL como
+					núcleo analítico e transacional.
 				</p>
 				<div className="hero__chips">
-					<span>React + TypeScript</span>
-					<span>Node.js + Express</span>
+					<span>Front: Next.js</span>
+					<span>API: Next.js</span>
+					<span>HTTP/JSON</span>
 					<span>PostgreSQL</span>
-					<span>Docker Compose</span>
+				</div>
+			</section>
+
+			<section className="status">
+				<div>
+					<p className="status__eyebrow">Integração entre aplicações</p>
+					<h2>Frontend consumindo a API separada por contrato HTTP</h2>
+				</div>
+				<div className={`status__pill status__pill--${apiStatus.mode}`}>
+					<strong>
+						{apiStatus.mode === 'online' ? 'API online' : 'API offline'}
+					</strong>
+					<span>{apiStatus.endpoint}</span>
+				</div>
+				<div className="status__grid">
+					<div>
+						<span className="status__label">Serviço</span>
+						<strong>{apiStatus.service}</strong>
+					</div>
+					<div>
+						<span className="status__label">Estado</span>
+						<strong>{apiStatus.status}</strong>
+					</div>
+					<div>
+						<span className="status__label">Última leitura</span>
+						<strong>{formatTimestamp(apiStatus.timestamp)}</strong>
+					</div>
 				</div>
 			</section>
 
@@ -76,8 +128,8 @@ function App() {
 				<div className="panel__header">
 					<h2>Pilares técnicos</h2>
 					<p>
-						Arquitetura, governança e segurança definidas desde o início do
-						semestre.
+						Arquitetura, governança, integração HTTP e segurança definidas desde
+						o início do semestre.
 					</p>
 				</div>
 				<div className="grid">
@@ -94,8 +146,8 @@ function App() {
 				<div className="panel__header">
 					<h2>Módulos previstos</h2>
 					<p>
-						O frontend será organizado por features para manter alta coesão e
-						baixo acoplamento.
+						O frontend será organizado por features enquanto o backend preserva
+						fronteiras de domínio e contratos próprios.
 					</p>
 				</div>
 				<div className="grid">
@@ -126,4 +178,5 @@ function App() {
 	);
 }
 
-export default App;
+export { LandingPage };
+export type { ApiStatusSnapshot };
