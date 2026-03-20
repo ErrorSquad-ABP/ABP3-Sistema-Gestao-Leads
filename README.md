@@ -92,6 +92,7 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 
 - Formatação, lint e checks de consistência com `Biome`.
 - Qualidade estática com `ESLint` para TypeScript, React e regras de segurança.
+- Configuração oficial de ESLint centralizada em `eslint.config.cjs` (flat config do ESLint v9).
 - Gate de tipos com `tsc --noEmit`.
 - Recomendação de extensão `Snyk` no VS Code para análise de vulnerabilidades em tempo de desenvolvimento.
 - Workflows de CI para qualidade e para enforcement do fluxo `develop -> main`.
@@ -102,7 +103,8 @@ Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README
 - `develop`: branch de integração contínua da equipe.
 - `feature/*`, `fix/*`, `refactor/*`, `chore/*`: branches de trabalho.
 
-Pull requests para `main` devem sair exclusivamente de `develop`. O repositório já inclui template de PR e workflow para recusar PRs inválidos automaticamente.
+Pull requests para `main` devem sair exclusivamente de `develop`.
+O repositório inclui template de PR, workflow para recusar PRs inválidos automaticamente e proteção de branch para concentrar aprovação e merge da `main` na liderança técnica definida do projeto.
 
 ## Documentação complementar
 
