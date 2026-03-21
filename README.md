@@ -157,6 +157,7 @@ Observação: o `Snyk` permanece como ferramenta de apoio no editor via extensã
 Pull requests para `main` devem sair exclusivamente de `develop`.
 Todas as alterações em `main` e `develop` devem entrar por pull request. Push direto e force-push nessas branches não fazem parte do fluxo do projeto.
 O repositório inclui template de PR, workflow para recusar PRs inválidos automaticamente e regras do GitHub para proteger `main` e `develop`.
+Na `main`, `@JV-L0pes` e `@Leo-Slv` possuem bypass apenas sobre as exigências de pull request, para contingência e governança da liderança. Esse bypass não libera push direto nem force-push.
 
 ## Convenções obrigatórias
 

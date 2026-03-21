@@ -66,6 +66,8 @@ Extensão recomendada:
 - A aprovação válida para a `main` deve vir de `@JV-L0pes` ou `@Leo-Slv`.
 - O merge na `main` depende do status `validate` aprovado.
 - O merge na `develop` também depende do status `validate` aprovado.
+- `@JV-L0pes` e `@Leo-Slv` possuem bypass apenas sobre as exigências de pull request da `main`.
+- Esse bypass existe para contingência e governança da liderança, sem liberar push direto nem force-push.
 
 ## Convenções obrigatórias de branch e commit
 
