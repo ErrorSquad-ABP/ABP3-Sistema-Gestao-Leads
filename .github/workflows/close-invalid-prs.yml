@@ -23,5 +23,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr comment "$PR_NUMBER" --body "🚨 **PR recusado automaticamente!** 🚨\n\nPull requests para a branch \`main\` só podem ser abertos a partir da branch \`develop\`. Refaça o fluxo utilizando a branch correta."
+          gh pr comment "$PR_NUMBER" --body-file - <<'EOF'
+          🚨 **PR recusado automaticamente!** 🚨
+
+          Pull requests para a branch `main` só podem ser abertos a partir da branch `develop`.
+          Refaça o fluxo utilizando a branch correta.
+          EOF
           gh pr close "$PR_NUMBER"
