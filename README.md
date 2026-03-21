@@ -55,6 +55,7 @@ Este repositório nasce como um `single repository` com duas aplicações separa
 ├── front/                  # Aplicacao web em Next.js + TypeScript
 ├── infra/                  # Scripts e bootstrap de infraestrutura
 ├── biome.json              # Formatacao e lint baseline
+├── docker-compose.dev.yml  # Override de desenvolvimento com hot reload
 ├── eslint.config.cjs       # ESLint v9+ flat config
 ├── docker-compose.yml      # Orquestracao local padrao
 └── tsconfig.base.json      # Configuracao TS compartilhada
@@ -173,10 +174,28 @@ Na operação cotidiana, a equipe deve tratar a `main` como branch exclusiva de 
 
 ## Como subir o esqueleto inicial
 
+### Desenvolvimento com hot reload
+
 1. Instale `Docker` e `Docker Compose`.
 2. Clone o repositório.
-3. Execute `docker compose up --build`.
+3. Execute `npm run dev`.
 4. Acesse o frontend em `http://localhost:3000`, a API em `http://localhost:3001/api/health` e o PostgreSQL no host em `localhost:5433`.
+
+### Execução base mais estável
+
+1. Execute `npm run compose:up`.
+2. O frontend sobe em modo de execução, o backend em build compilado e o banco aplica bootstrap + migrations pendentes.
+
+## Estratégia de banco
+
+O projeto agora separa explicitamente:
+
+- `init` para bootstrap do container PostgreSQL;
+- `migrations` para evolução estrutural em SQL;
+- `seeds` para dados de referência;
+- `db-migrate` para aplicar os scripts pendentes e registrar tudo em `lead_management.schema_migrations`.
+
+Isso ajuda a manter o banco consistente entre as máquinas da equipe e deixa claro onde vivem `DDL` e `DML` versionados.
 
 ## Próximos passos sugeridos
 

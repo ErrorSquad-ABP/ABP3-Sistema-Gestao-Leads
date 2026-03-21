@@ -9,18 +9,48 @@ services:
       POSTGRES_PASSWORD: abp
     ports:
       - '5433:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./infra/db/init:/docker-entrypoint-initdb.d:ro
+
+  db-migrate:
+    image: postgres:16-alpine
+    container_name: abp3-db-migrate
+    restart: 'no'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_DB: lead_management
+      POSTGRES_USER: abp
+      POSTGRES_PASSWORD: abp
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    volumes:
+      - ./infra/db/migrations:/migrations:ro
+      - ./infra/db/seeds:/seeds:ro
+      - ./infra/db/scripts/apply-migrations.sh:/scripts/apply-migrations.sh:ro
+    entrypoint: ['/bin/sh', '/scripts/apply-migrations.sh']
 
   back:
     build:
       context: .
       dockerfile: back/Dockerfile
+      target: runner
     container_name: abp3-back
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
     environment:
+      NODE_ENV: production
       PORT: 3001
       APP_URL: http://localhost:3001
       DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
@@ -32,11 +62,15 @@ services:
     build:
       context: .
       dockerfile: front/Dockerfile
+      target: runner
     container_name: abp3-front
     depends_on:
-      - back
+      back:
+        condition: service_started
     environment:
+      NODE_ENV: production
       PORT: 3000
+      HOSTNAME: 0.0.0.0
       NEXT_PUBLIC_API_URL: http://localhost:3001
       API_INTERNAL_URL: http://back:3001
     ports:
