@@ -152,11 +152,32 @@ Observação: o `Snyk` permanece como ferramenta de apoio no editor via extensã
 
 - `main`: branch estável, protegida para releases.
 - `develop`: branch de integração contínua da equipe.
-- `feature/*`, `fix/*`, `refactor/*`, `chore/*`: branches de trabalho.
+- `feat/*`, `fix/*`, `docs/*`, `refactor/*`, `chore/*`, `ci/*`, `build/*`, `style/*`, `perf/*`, `test/*`, `revert/*`: branches de trabalho.
 
 Pull requests para `main` devem sair exclusivamente de `develop`.
-O repositório inclui template de PR, workflow para recusar PRs inválidos automaticamente e proteção de branch para concentrar aprovação e merge da `main` na liderança técnica definida do projeto.
-Na operação cotidiana, a equipe deve tratar a `main` como branch exclusiva de integração final por PR. Exceções operacionais de bypass existem apenas para `@JV-L0pes` e `@Leo-Slv`, com finalidade de liderança e contingência, não como fluxo padrão de desenvolvimento.
+Todas as alterações em `main` e `develop` devem entrar por pull request. Push direto e force-push nessas branches não fazem parte do fluxo do projeto.
+O repositório inclui template de PR, workflow para recusar PRs inválidos automaticamente e regras do GitHub para proteger `main` e `develop`.
+
+## Convenções obrigatórias
+
+- O título do PR é livre e serve para comunicação.
+- As mensagens de commit devem seguir `Conventional Commits`.
+- Os nomes das branches de trabalho devem seguir o mesmo vocabulário-base dos tipos de commit.
+
+Exemplos válidos de branches:
+
+- `feat/auth-jwt`
+- `fix/leads-active-negotiation`
+- `docs/wiki-quality-flow`
+- `chore/github-rulesets`
+
+Exemplos válidos de commits:
+
+- `feat(auth): add jwt login flow`
+- `fix(leads): prevent duplicated active negotiation`
+- `docs(readme): clarify branch workflow`
+
+Commits e branches fora desse padrão são recusados pelas regras do GitHub.
 
 ## Documentação complementar
 

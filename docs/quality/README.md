@@ -59,9 +59,60 @@ Extensão recomendada:
 
 ## Política de revisão
 
+- `develop` e `main` são branches protegidas e aceitam mudanças apenas por pull request.
+- Push direto e force-push em `develop` e `main` são bloqueados.
 - PR para `main` deve sair exclusivamente de `develop`.
 - A `main` exige aprovação com `CODEOWNERS`.
 - A aprovação válida para a `main` deve vir de `@JV-L0pes` ou `@Leo-Slv`.
 - O merge na `main` depende do status `validate` aprovado.
-- Para o time de desenvolvimento, a `main` deve ser tratada como branch sem push direto e sem merge fora do fluxo `develop -> main`.
-- `@JV-L0pes` e `@Leo-Slv` possuem autonomia de bypass por governança da liderança técnica e contingência operacional, mas isso não substitui o fluxo padrão adotado pela equipe.
+- O merge na `develop` também depende do status `validate` aprovado.
+
+## Convenções obrigatórias de branch e commit
+
+As regras do GitHub também validam convenções de nomenclatura para manter o histórico limpo e previsível.
+
+Padrão aceito para branches de trabalho:
+
+- `feat/<slug>`
+- `fix/<slug>`
+- `docs/<slug>`
+- `refactor/<slug>`
+- `chore/<slug>`
+- `ci/<slug>`
+- `build/<slug>`
+- `style/<slug>`
+- `perf/<slug>`
+- `test/<slug>`
+- `revert/<slug>`
+
+Branches permanentes permitidas:
+
+- `main`
+- `develop`
+
+Padrão aceito para commits:
+
+- `type(scope): mensagem`
+- `type: mensagem`
+
+Tipos aceitos:
+
+- `build`
+- `chore`
+- `ci`
+- `docs`
+- `feat`
+- `fix`
+- `perf`
+- `refactor`
+- `revert`
+- `style`
+- `test`
+
+Exemplos:
+
+- `feat(auth): add jwt login flow`
+- `fix(leads): prevent duplicated active negotiation`
+- `docs(quality): document branch conventions`
+
+O título do pull request continua livre. A validação obrigatória recai sobre o nome da branch e sobre as mensagens de commit.
