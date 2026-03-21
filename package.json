@@ -12,7 +12,11 @@
 		"npm": ">=10.0.0"
 	},
 	"scripts": {
-		"dev": "docker compose up --build",
+		"dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
+		"dev:down": "docker compose -f docker-compose.yml -f docker-compose.dev.yml down",
+		"compose:up": "docker compose up --build",
+		"compose:down": "docker compose down",
+		"db:migrate": "docker compose run --rm db-migrate",
 		"guard:root-package": "node scripts/check-root-package.mjs",
 		"format": "biome format --write .",
 		"format:check": "biome format .",

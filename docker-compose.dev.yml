@@ -1,0 +1,16 @@
+services:
+  back:
+    build:
+      target: dev
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./back:/app/back
+
+  front:
+    build:
+      target: dev
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./front:/app/front
