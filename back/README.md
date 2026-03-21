@@ -54,7 +54,6 @@ back/
 │   ├── modules/            # Módulos de negócio do sistema
 │   └── shared/             # Config, auth, filtros, pipes e utilitários transversais
 ├── .env.example
-├── nest-cli.json
 ├── package.json
 ├── tsconfig.build.json
 └── tsconfig.json
