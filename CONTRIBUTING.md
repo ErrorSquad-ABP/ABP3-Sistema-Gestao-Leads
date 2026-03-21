@@ -12,10 +12,13 @@
 ## Fluxo recomendado
 
 1. Criar branch a partir de `develop`.
-2. Implementar a mudança em commits pequenos e descritivos.
-3. Executar quality gate local.
-4. Abrir PR para `develop`.
-5. Promover `develop` para `main` quando houver baseline estável.
+2. Subir o ambiente com `npm run dev` quando precisar de hot reload ou `npm run compose:up` para validar a execução base.
+3. Implementar a mudança em commits pequenos e descritivos.
+4. Se houver mudança de banco, criar novo arquivo SQL em `infra/db/migrations/` ou `infra/db/seeds/`.
+5. Aplicar migrations pendentes com `npm run db:migrate` quando necessário.
+6. Executar quality gate local.
+7. Abrir PR para `develop`.
+8. Promover `develop` para `main` quando houver baseline estável.
 
 ## Convenção de commits
 
@@ -34,6 +37,13 @@ npm run check:ci
 npm run quality:gate:blocking
 npm run build
 ```
+
+## Banco e SQL versionado
+
+- `infra/db/init`: bootstrap do PostgreSQL no primeiro start do volume.
+- `infra/db/migrations`: evolução estrutural versionada.
+- `infra/db/seeds`: dados de referência controlados.
+- novas alterações de banco devem entrar em novos arquivos SQL, sem reescrever migrations já compartilhadas.
 
 ## Observação importante
 

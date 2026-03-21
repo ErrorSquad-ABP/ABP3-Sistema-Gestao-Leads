@@ -1,7 +1,14 @@
 .git
 node_modules
 **/node_modules
+.next
+**/.next
 dist
 **/dist
+*.tsbuildinfo
+**/*.tsbuildinfo
 coverage
+**/coverage
+.turbo
 postgres-data
+*.log
