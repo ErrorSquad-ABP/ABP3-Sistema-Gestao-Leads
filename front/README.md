@@ -12,6 +12,10 @@ O frontend será a aplicação web do sistema, responsável por oferecer uma nav
 - Biome para format e lint rápido
 - ESLint para qualidade estática complementar e segurança
 
+Guia complementar de uso do Next.js nesta base:
+
+- [`../docs/architecture/next-frontend.md`](../docs/architecture/next-frontend.md)
+
 ## Princípios de implementação
 
 - Interface guiada por papéis e permissões vindas do backend.

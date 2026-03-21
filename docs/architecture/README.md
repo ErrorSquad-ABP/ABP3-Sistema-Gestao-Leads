@@ -29,6 +29,10 @@ Essa combinação atende diretamente às restrições do ABP e ao objetivo de es
 - Organização por módulos de negócio e compartilhamento por `shared`.
 - Consumo exclusivo da API separada, sem acesso direto ao banco.
 
+Guia complementar:
+
+- [`next-frontend.md`](./next-frontend.md)
+
 ### Back
 
 - `controllers`: adaptação HTTP via decorators e controllers do Nest.

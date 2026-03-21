@@ -162,6 +162,7 @@ Na operação cotidiana, a equipe deve tratar a `main` como branch exclusiva de 
 
 - [`docs/README.md`](./docs/README.md)
 - [`docs/architecture/README.md`](./docs/architecture/README.md)
+- [`docs/architecture/next-frontend.md`](./docs/architecture/next-frontend.md)
 - [`docs/architecture/nest-backend.md`](./docs/architecture/nest-backend.md)
 - [`docs/api/README.md`](./docs/api/README.md)
 - [`docs/data/README.md`](./docs/data/README.md)
