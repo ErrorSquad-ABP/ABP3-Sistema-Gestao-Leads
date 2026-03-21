@@ -71,7 +71,7 @@ module.exports = [
 		},
 	},
 	{
-		files: ['back/src/**/*.{ts,tsx}'],
+		files: ['back/src/**/*.ts'],
 		languageOptions: {
 			parser: tsParser,
 			ecmaVersion: 'latest',
@@ -79,9 +79,6 @@ module.exports = [
 			parserOptions: {
 				project: ['./back/tsconfig.json'],
 				tsconfigRootDir: __dirname,
-				ecmaFeatures: {
-					jsx: true,
-				},
 			},
 			globals: {
 				process: 'readonly',
@@ -92,22 +89,13 @@ module.exports = [
 		},
 		plugins: {
 			'@typescript-eslint': tsPlugin,
-			react: reactPlugin,
 			security: securityPlugin,
-		},
-		settings: {
-			react: {
-				version: 'detect',
-			},
 		},
 		rules: {
 			...js.configs.recommended.rules,
-			...reactPlugin.configs.recommended.rules,
 			...(securityPlugin.configs.recommended?.rules ?? {}),
 			'no-undef': 'off',
 			'no-unused-vars': 'off',
-			'react/react-in-jsx-scope': 'off',
-			'react/prop-types': 'off',
 			'@typescript-eslint/no-unused-vars': unusedVarsRule,
 		},
 	},

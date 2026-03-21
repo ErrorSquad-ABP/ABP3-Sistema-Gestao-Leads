@@ -17,6 +17,7 @@ Este diretório concentra os artefatos de apoio técnico, analítico e de gestã
 | --- | --- |
 | Visão geral do produto | `../README.md` |
 | Descrição da arquitetura adotada | `architecture/README.md` |
+| Guia do backend em NestJS | `architecture/nest-backend.md` |
 | Padrões de projeto utilizados | `architecture/README.md` |
 | Descrição de endpoints e contratos | `api/README.md` |
 | Modelo relacional e DER | `data/README.md` |

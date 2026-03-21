@@ -2,7 +2,7 @@
 
 ## Direção inicial
 
-A API será uma aplicação `Next.js` separada, orientada a recursos, com versionamento por prefixo e contratos explícitos entre `front` e `back`.
+A API será uma aplicação `NestJS` separada, orientada a recursos, com versionamento por prefixo e contratos explícitos entre `front` e `back`.
 
 Prefixo inicial sugerido:
 
@@ -36,7 +36,9 @@ Prefixo inicial sugerido:
 - Erros de domínio desacoplados da tecnologia de transporte.
 - Paginação e filtros sempre explícitos em query params.
 - Recursos analíticos separados dos recursos transacionais quando necessário.
-- Route handlers do Next.js funcionando apenas como adaptação HTTP, sem concentrar regra de negócio.
+- Controllers do Nest funcionando apenas como adaptação HTTP, sem concentrar regra de negócio.
+- Decorators do Nest usados para roteamento, documentação e composição dos contratos da API.
+- Swagger disponível para documentação técnica inicial da API.
 
 ## Próximos passos
 

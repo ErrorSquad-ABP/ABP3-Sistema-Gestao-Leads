@@ -19,14 +19,15 @@ Repositório oficial da equipe `ErrorSquad-ABP` para o ABP 2026-1 do 3º DSM da 
 
 O desafio consiste em desenvolver, do zero, um sistema web para gestão de leads comerciais de uma revendedora de veículos com múltiplas unidades. O produto deverá centralizar o cadastro de leads, sua associação a clientes, lojas e atendentes, a evolução da negociação e a geração de indicadores operacionais e analíticos para diferentes níveis de gestão.
 
-Este repositório nasce como um `single repository` com duas aplicações `Next.js` separadas por responsabilidade: `front` para a experiência web e `back` para a API. As duas aplicações se comunicam via `HTTP/JSON`, enquanto o backend preserva organização interna de `monólito modular` para sustentar crescimento com clareza de domínio e baixo acoplamento.
+Este repositório nasce como um `single repository` com duas aplicações separadas por responsabilidade: `front` em `Next.js` para a experiência web e `back` em `NestJS` para a API. As duas aplicações se comunicam via `HTTP/JSON`, enquanto o backend preserva organização interna de `monólito modular` para sustentar crescimento com clareza de domínio e baixo acoplamento.
 
 ## Direcionadores arquiteturais
 
 - Estratégia de solução: `single repository` com `front` e `back` separados.
 - Padrão arquitetural interno do backend: `Monólito Modular` com `Arquitetura em Camadas`.
-- Separação macro: `front` como aplicação web em Next.js e `back` como API em Next.js.
+- Separação macro: `front` como aplicação web em Next.js e `back` como API em NestJS.
 - Comunicação entre aplicações exclusivamente por `HTTP/JSON`.
+- NestJS adotado no backend por reforçar modularidade, injeção de dependência, uso de decorators e fronteiras explícitas entre camadas.
 - Módulos de negócio planejados: `auth`, `users`, `teams`, `stores`, `customers`, `leads`, `negotiations`, `dashboards` e `audit-logs`.
 - Regras de autorização centralizadas exclusivamente no backend, conforme o enunciado.
 - Estrutura preparada para PostgreSQL, Docker Compose, quality gate com Biome, ESLint e TypeScript.
@@ -37,7 +38,7 @@ Este repositório nasce como um `single repository` com duas aplicações `Next.
 | Camada | Stack |
 | --- | --- |
 | Frontend | Next.js + React + TypeScript |
-| Backend | Next.js + TypeScript para API REST |
+| Backend | NestJS + TypeScript |
 | Banco de dados | PostgreSQL |
 | Qualidade | Biome, ESLint, TypeScript Checker |
 | Segurança | JWT, hashing seguro, lint de segurança, Snyk para VS Code |
@@ -49,7 +50,7 @@ Este repositório nasce como um `single repository` com duas aplicações `Next.
 .
 ├── .github/                # Templates e workflows
 ├── .vscode/                # Recomendacoes e padroes de editor
-├── back/                   # API em Next.js + TypeScript
+├── back/                   # API em NestJS + TypeScript
 ├── docs/                   # Artefatos de arquitetura, dados, API e agilidade
 ├── front/                  # Aplicacao web em Next.js + TypeScript
 ├── infra/                  # Scripts e bootstrap de infraestrutura
@@ -161,6 +162,7 @@ Na operação cotidiana, a equipe deve tratar a `main` como branch exclusiva de 
 
 - [`docs/README.md`](./docs/README.md)
 - [`docs/architecture/README.md`](./docs/architecture/README.md)
+- [`docs/architecture/nest-backend.md`](./docs/architecture/nest-backend.md)
 - [`docs/api/README.md`](./docs/api/README.md)
 - [`docs/data/README.md`](./docs/data/README.md)
 - [`docs/agile/README.md`](./docs/agile/README.md)

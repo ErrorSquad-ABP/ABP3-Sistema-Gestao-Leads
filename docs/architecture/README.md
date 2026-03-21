@@ -2,10 +2,10 @@
 
 ## Visão arquitetural da solução
 
-O projeto adota `single repository` com duas aplicações `Next.js` separadas:
+O projeto adota `single repository` com duas aplicações separadas:
 
-- `front`: aplicação web responsável pela experiência do usuário;
-- `back`: aplicação de API responsável por contratos HTTP, regras de negócio, segurança e integração com banco.
+- `front`: aplicação web em `Next.js` responsável pela experiência do usuário;
+- `back`: aplicação de API em `NestJS` responsável por contratos HTTP, regras de negócio, segurança e integração com banco.
 
 As duas aplicações se comunicam exclusivamente por `HTTP/JSON`. Essa escolha preserva fronteira clara entre apresentação e backend, favorece deploy independente no futuro e mantém a solução preparada para crescimento sem acoplamento artificial entre camadas.
 
@@ -31,11 +31,25 @@ Essa combinação atende diretamente às restrições do ABP e ao objetivo de es
 
 ### Back
 
-- `app/api`: route handlers e adaptação de transporte HTTP.
+- `controllers`: adaptação HTTP via decorators e controllers do Nest.
 - `application` ou `services`: orquestração de casos de uso e regras de negócio.
 - `domain`: entidades, enums, value objects e políticas centrais.
-- `repositories`: acesso a dados.
+- `infrastructure`: implementação concreta por módulo.
 - `shared`: componentes transversais realmente reutilizáveis, sem virar depósito genérico.
+
+## Adoção do NestJS no backend
+
+O backend foi migrado para `NestJS` porque a equipe quer reforçar modularidade, baixo acoplamento e organização por domínio. O framework se encaixa bem nessa proposta por combinar:
+
+- módulos explícitos;
+- decorators para transporte HTTP;
+- injeção de dependência nativa;
+- composição por providers;
+- clareza entre controller, serviço, módulo e infraestrutura.
+
+Guia complementar:
+
+- [`nest-backend.md`](./nest-backend.md)
 
 ## Módulos previstos
 
@@ -64,7 +78,8 @@ Essa combinação atende diretamente às restrições do ABP e ao objetivo de es
 - Toda autorização será resolvida no backend.
 - O frontend deve conversar com o backend apenas via contratos HTTP/JSON explícitos.
 - Módulos devem conversar por contratos internos bem definidos.
-- Regras de negócio não devem ficar em route handlers, páginas ou componentes React.
+- Regras de negócio não devem ficar em controllers, páginas ou componentes React.
+- O backend não deve ter uma pasta global `src/infrastructure`; cada módulo implementa sua própria infraestrutura.
 - Dependências compartilhadas devem ir para `shared` somente quando realmente forem transversais.
 - `audit-logs` deve ser tratado como preocupação transversal, preferencialmente por eventos internos, middlewares ou serviços de auditoria centralizados.
 - O `package.json` da raiz deve conter apenas tooling e scripts de orquestração do repositório único.

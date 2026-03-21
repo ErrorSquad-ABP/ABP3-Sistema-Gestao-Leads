@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-O frontend será a aplicação web do sistema, responsável por oferecer uma navegação responsiva, clara e orientada ao fluxo comercial de leads, negociações e dashboards, consumindo a API separada exclusivamente por `HTTP/JSON`.
+O frontend será a aplicação web do sistema, responsável por oferecer uma navegação responsiva, clara e orientada ao fluxo comercial de leads, negociações e dashboards, consumindo a API Nest separada exclusivamente por `HTTP/JSON`.
 
 ## Stack definida
 
