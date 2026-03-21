@@ -17,7 +17,7 @@ const pillars: Highlight[] = [
 		id: 'architecture',
 		title: 'Apps separadas',
 		description:
-			'Frontend e API em Next.js separados, conectados por HTTP/JSON dentro do mesmo repositório.',
+			'Frontend em Next.js e API em NestJS separados, conectados por HTTP/JSON dentro do mesmo repositório.',
 	},
 	{
 		id: 'analytics',
@@ -84,14 +84,14 @@ function LandingPage({ apiStatus }: LandingPageProps) {
 				</div>
 				<h1>Sistema de Gestão de Leads com Dashboard Analítico</h1>
 				<p className="hero__summary">
-					Base inicial em single repository com <code>front</code> e{' '}
-					<code>back</code> separados em <code>Next.js</code>, preparada para
-					evoluir com fronteira HTTP clara, backend modular e PostgreSQL como
-					núcleo analítico e transacional.
+					Base inicial em single repository com <code>front</code> em{' '}
+					<code>Next.js</code> e <code>back</code> em <code>NestJS</code>,
+					preparada para evoluir com fronteira HTTP clara, backend modular e
+					PostgreSQL como núcleo analítico e transacional.
 				</p>
 				<div className="hero__chips">
 					<span>Front: Next.js</span>
-					<span>API: Next.js</span>
+					<span>API: NestJS</span>
 					<span>HTTP/JSON</span>
 					<span>PostgreSQL</span>
 				</div>

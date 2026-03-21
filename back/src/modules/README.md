@@ -20,4 +20,9 @@ modules/
 - reduzir acoplamento entre features;
 - permitir crescimento incremental sem virar um backend anêmico e desorganizado.
 
-Os route handlers em `src/app/api` devem apenas delegar para esses módulos, preservando o backend como monólito modular mesmo usando Next.js como runtime de API.
+No backend em NestJS:
+
+- controllers vivem em `presentation`;
+- use cases e serviços vivem em `application`;
+- regras centrais vivem em `domain`;
+- infraestrutura concreta fica dentro do próprio módulo, não em uma pasta global.

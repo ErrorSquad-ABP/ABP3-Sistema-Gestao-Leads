@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-O frontend será a aplicação web do sistema, responsável por oferecer uma navegação responsiva, clara e orientada ao fluxo comercial de leads, negociações e dashboards, consumindo a API separada exclusivamente por `HTTP/JSON`.
+O frontend será a aplicação web do sistema, responsável por oferecer uma navegação responsiva, clara e orientada ao fluxo comercial de leads, negociações e dashboards, consumindo a API Nest separada exclusivamente por `HTTP/JSON`.
 
 ## Stack definida
 
@@ -11,6 +11,10 @@ O frontend será a aplicação web do sistema, responsável por oferecer uma nav
 - CSS modularizado por responsabilidade
 - Biome para format e lint rápido
 - ESLint para qualidade estática complementar e segurança
+
+Guia complementar de uso do Next.js nesta base:
+
+- [`../docs/architecture/next-frontend.md`](../docs/architecture/next-frontend.md)
 
 ## Princípios de implementação
 

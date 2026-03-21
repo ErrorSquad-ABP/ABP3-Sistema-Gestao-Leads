@@ -3,19 +3,24 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "next dev --hostname 0.0.0.0 --port 3001",
-		"build": "tsc --noEmit -p tsconfig.json && next build",
-		"start": "next start --hostname 0.0.0.0 --port 3001",
+		"dev": "tsx watch src/main.ts",
+		"build": "tsc -p tsconfig.build.json",
+		"start": "node dist/main.js",
+		"start:dev": "tsx watch src/main.ts",
+		"start:prod": "node dist/main.js",
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
-		"next": "16.2.0",
-		"react": "19.2.4",
-		"react-dom": "19.2.4"
+		"@nestjs/common": "11.1.17",
+		"@nestjs/core": "11.1.17",
+		"@nestjs/platform-express": "11.1.17",
+		"@nestjs/swagger": "11.2.6",
+		"reflect-metadata": "0.2.2",
+		"rxjs": "7.8.2",
+		"swagger-ui-express": "5.0.1"
 	},
 	"devDependencies": {
 		"@types/node": "25.5.0",
-		"@types/react": "19.2.14",
-		"@types/react-dom": "19.2.3"
+		"tsx": "4.21.0"
 	}
 }
