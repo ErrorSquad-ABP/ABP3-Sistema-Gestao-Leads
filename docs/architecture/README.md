@@ -1,59 +1,61 @@
 # Arquitetura
 
-## Visão arquitetural da solução
+## Objetivo
 
-O projeto adota `single repository` com duas aplicações separadas:
+Consolidar a visão arquitetural da solução, registrar as decisões estruturais já adotadas e apontar os guias complementares que detalham como o projeto deve ser implementado e evoluído.
 
-- `front`: aplicação web em `Next.js` responsável pela experiência do usuário;
-- `back`: aplicação de API em `NestJS` responsável por contratos HTTP, regras de negócio, segurança e integração com banco.
+## Contexto
 
-As duas aplicações se comunicam exclusivamente por `HTTP/JSON`. Essa escolha preserva fronteira clara entre apresentação e backend, favorece deploy independente no futuro e mantém a solução preparada para crescimento sem acoplamento artificial entre camadas.
+O projeto precisa atender ao escopo do ABP com uma base técnica organizada, mas também precisa permanecer sustentável caso o sistema cresça além do semestre. Por isso, a arquitetura foi pensada para equilibrar simplicidade operacional, separação de responsabilidades e espaço para evolução controlada.
+
+## Direção adotada
+
+- `single repository` com duas aplicações separadas: `front` e `back`;
+- `front` em `Next.js`, focado em experiência web e consumo da API;
+- `back` em `NestJS`, estruturado como `monólito modular`;
+- backend organizado por `DDD` e `Clean Architecture`, com camadas explícitas por módulo;
+- comunicação entre aplicações exclusivamente por `HTTP/JSON`.
+
+## Visão da solução
+
+| Parte | Responsabilidade |
+| --- | --- |
+| `front` | Experiência web, composição de telas, navegação e consumo da API |
+| `back` | Contratos HTTP, autenticação, autorização, regras de negócio e integração com banco |
+| `infra/db` | Bootstrap, migrations, seeds e estratégia SQL versionada |
+| `docs` | Rastreabilidade entre arquitetura, dados, API, qualidade e gestão |
+
+Essa separação preserva fronteira clara entre apresentação e backend, evita acoplamento artificial e mantém a solução pronta para crescimento com disciplina.
 
 ## Padrão arquitetural do backend
 
-No backend, o padrão adotado continua sendo `Monólito Modular` com `Arquitetura em Camadas`.
+No backend, a base adotada é:
 
-Essa combinação atende diretamente às restrições do ABP e ao objetivo de escalar com disciplina:
+- `Monólito Modular` como padrão estrutural;
+- `DDD` como abordagem de modelagem do domínio;
+- `Clean Architecture` como organização das camadas e dependências.
 
-- mantém baixa complexidade operacional no início do semestre;
-- favorece coesão por domínio e reduz acoplamento acidental;
-- simplifica testes, versionamento e conteinerização;
-- deixa margem para extração futura de serviços, caso o crescimento do sistema justifique;
-- preserva clareza entre transporte HTTP, aplicação, domínio e persistência.
+Essa combinação foi escolhida porque:
 
-## Visão de alto nível
+- favorece coesão por domínio;
+- reduz acoplamento acidental;
+- mantém controllers, persistência e regras de negócio em lugares distintos;
+- melhora testabilidade;
+- evita complexidade prematura de microserviços;
+- cria uma base mais fácil de defender tecnicamente na banca e mais segura para evoluir.
 
-### Front
+## Guias complementares
 
-- App Router do Next.js para páginas, layouts e composição da experiência web.
-- Organização por módulos de negócio e compartilhamento por `shared`.
-- Consumo exclusivo da API separada, sem acesso direto ao banco.
+Os detalhes da arquitetura foram divididos por assunto para evitar uma documentação única, extensa e genérica demais.
 
-Guia complementar:
-
-- [`next-frontend.md`](./next-frontend.md)
-
-### Back
-
-- `controllers`: adaptação HTTP via decorators e controllers do Nest.
-- `application` ou `services`: orquestração de casos de uso e regras de negócio.
-- `domain`: entidades, enums, value objects e políticas centrais.
-- `infrastructure`: implementação concreta por módulo.
-- `shared`: componentes transversais realmente reutilizáveis, sem virar depósito genérico.
-
-## Adoção do NestJS no backend
-
-O backend foi migrado para `NestJS` porque a equipe quer reforçar modularidade, baixo acoplamento e organização por domínio. O framework se encaixa bem nessa proposta por combinar:
-
-- módulos explícitos;
-- decorators para transporte HTTP;
-- injeção de dependência nativa;
-- composição por providers;
-- clareza entre controller, serviço, módulo e infraestrutura.
-
-Guia complementar:
-
-- [`nest-backend.md`](./nest-backend.md)
+| Guia | Foco |
+| --- | --- |
+| [`next-frontend.md`](./next-frontend.md) | Estrutura e uso do frontend em Next.js |
+| [`nest-backend.md`](./nest-backend.md) | Uso do NestJS no backend e integração com a arquitetura |
+| [`ddd-clean-architecture.md`](./ddd-clean-architecture.md) | Princípios de DDD, Clean Architecture e regra de dependência |
+| [`backend-module-structure.md`](./backend-module-structure.md) | Estrutura modular do backend e papel de cada camada |
+| [`domain-building-blocks.md`](./domain-building-blocks.md) | Entities, Value Objects, eventos, repositórios e outros building blocks |
+| [`backend-request-flow.md`](./backend-request-flow.md) | Fluxo de requisição, responsabilidades e passagem entre camadas |
 
 ## Módulos previstos
 
@@ -98,8 +100,6 @@ O caminho arquitetural previsto é:
 4. Introduzir processamento assíncrono para tarefas pesadas, integrações ou consolidações por meio de jobs e filas.
 5. Adicionar cache e read models específicos apenas onde o custo de consulta justificar.
 6. Extrair serviços independentes somente se houver evidência operacional, de throughput ou de autonomia de times.
-
-Essa abordagem evita complexidade prematura e mantém o sistema pronto para crescer de forma controlada.
 
 ## Estratégia para dashboards e analytics
 
