@@ -24,6 +24,13 @@ O backend deste projeto foi reposicionado para `NestJS` porque ele conversa melh
 
 Em resumo: o objetivo não é usar Nest por moda, mas por alinhamento com separação de responsabilidades, crescimento controlado e clareza arquitetural.
 
+Guias complementares:
+
+- [`ddd-clean-architecture.md`](./ddd-clean-architecture.md)
+- [`backend-module-structure.md`](./backend-module-structure.md)
+- [`domain-building-blocks.md`](./domain-building-blocks.md)
+- [`backend-request-flow.md`](./backend-request-flow.md)
+
 ## Como o NestJS será usado neste projeto
 
 No repositório, o backend seguirá esta linha:

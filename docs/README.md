@@ -19,6 +19,10 @@ Este diretório concentra os artefatos de apoio técnico, analítico e de gestã
 | Descrição da arquitetura adotada | `architecture/README.md` |
 | Guia do frontend em Next.js | `architecture/next-frontend.md` |
 | Guia do backend em NestJS | `architecture/nest-backend.md` |
+| DDD e Clean Architecture no backend | `architecture/ddd-clean-architecture.md` |
+| Estrutura modular do backend | `architecture/backend-module-structure.md` |
+| Building blocks de domínio | `architecture/domain-building-blocks.md` |
+| Fluxo de requisição no backend | `architecture/backend-request-flow.md` |
 | Padrões de projeto utilizados | `architecture/README.md` |
 | Descrição de endpoints e contratos | `api/README.md` |
 | Modelo relacional e DER | `data/README.md` |
