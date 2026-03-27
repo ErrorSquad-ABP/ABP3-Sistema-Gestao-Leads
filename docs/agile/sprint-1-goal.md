@@ -1,4 +1,4 @@
-# Sprint Goal - Sprint 1
+# Sprint 1 Goal
 
 ## Objetivo
 
