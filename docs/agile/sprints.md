@@ -4,9 +4,10 @@
 
 - Período: 24/03/2026 a 14/04/2026
 - Foco sugerido: fundação técnica, autenticação, RBAC e primeiras entidades de negócio.
-- Goal: [`sprint-goal.md`](./sprint-goal.md)
-- Backlog: [`sprint-backlog.md`](./sprint-backlog.md)
-- Planejamento detalhado: [`sprint-planning.md`](./sprint-planning.md)
+- Goal: [`sprint-1-goal.md`](./sprint-1-goal.md)
+- Backlog: [`sprint-1-backlog.md`](./sprint-1-backlog.md)
+- Planejamento detalhado: [`sprint-1-planning.md`](./sprint-1-planning.md)
+- Task Board: [`sprint-1-task-board.md`](./sprint-1-task-board.md)
 
 ## Sprint 2
 

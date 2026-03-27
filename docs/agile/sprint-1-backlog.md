@@ -1,4 +1,4 @@
-# Sprint Backlog - Sprint 1
+# Sprint 1 Backlog
 
 ## Objetivo
 
