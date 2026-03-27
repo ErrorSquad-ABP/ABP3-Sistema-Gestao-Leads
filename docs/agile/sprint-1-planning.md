@@ -1,4 +1,4 @@
-# Sprint Planning - Sprint 1
+# Sprint 1 Planning
 
 ## Objetivo
 
@@ -152,4 +152,3 @@ Esta sprint adota integralmente os critérios definidos em `[definition-of-done.
 1. Refinar as tasks de implementação por módulo e por responsável.
 2. Validar com o time se `US-08` fica como compromisso principal ou escopo condicional.
 3. Atualizar este planejamento ao final da sprint com o resultado real da execução.
-
