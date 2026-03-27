@@ -28,9 +28,10 @@ Este diretório concentra os artefatos de apoio técnico, analítico e de gestã
 | Modelo relacional e DER | `data/README.md` |
 | Definition of Done | `agile/definition-of-done.md` |
 | Product backlog inicial | `agile/product-backlog.md` |
-| Sprint Goal atual | `agile/sprint-goal.md` |
-| Sprint Backlog atual | `agile/sprint-backlog.md` |
-| Sprint Planning atual | `agile/sprint-planning.md` |
+| Sprint 1 Goal | `agile/sprint-1-goal.md` |
+| Sprint 1 Backlog | `agile/sprint-1-backlog.md` |
+| Sprint 1 Planning | `agile/sprint-1-planning.md` |
+| Sprint 1 Task Board | `agile/sprint-1-task-board.md` |
 | Sprints e cadência | `agile/sprints.md` |
 | Fluxo de qualidade e revisão | `quality/README.md` |
 
