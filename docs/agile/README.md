@@ -21,6 +21,9 @@
 
 - [`definition-of-done.md`](./definition-of-done.md)
 - [`product-backlog.md`](./product-backlog.md)
+- [`sprint-goal.md`](./sprint-goal.md)
+- [`sprint-backlog.md`](./sprint-backlog.md)
+- [`sprint-planning.md`](./sprint-planning.md)
 - [`sprints.md`](./sprints.md)
 
 ## Direção de trabalho
