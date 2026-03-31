@@ -13,12 +13,23 @@ const dealStageEnum = createDomainEnum({
 	code: 'enum.deal_stage.invalid_value',
 	label: 'Deal stage',
 	values: DEAL_STAGES,
-	normalize: (value) => value.trim().toUpperCase(),
+	allowNormalization: false,
 });
 
 const isDealStage = dealStageEnum.is;
+const isCanonicalDealStage = dealStageEnum.isCanonical;
 const parseDealStage = dealStageEnum.parse;
+const parseCanonicalDealStage = dealStageEnum.parseCanonical;
 const assertDealStage = dealStageEnum.assert;
+const assertCanonicalDealStage = dealStageEnum.assertCanonical;
 
-export { DEAL_STAGES, assertDealStage, isDealStage, parseDealStage };
+export {
+	DEAL_STAGES,
+	assertCanonicalDealStage,
+	assertDealStage,
+	isCanonicalDealStage,
+	isDealStage,
+	parseCanonicalDealStage,
+	parseDealStage,
+};
 export type { DealStage };

@@ -13,12 +13,23 @@ const userRoleEnum = createDomainEnum({
 	code: 'enum.user_role.invalid_value',
 	label: 'User role',
 	values: USER_ROLES,
-	normalize: (value) => value.trim().toUpperCase(),
+	allowNormalization: false,
 });
 
 const isUserRole = userRoleEnum.is;
+const isCanonicalUserRole = userRoleEnum.isCanonical;
 const parseUserRole = userRoleEnum.parse;
+const parseCanonicalUserRole = userRoleEnum.parseCanonical;
 const assertUserRole = userRoleEnum.assert;
+const assertCanonicalUserRole = userRoleEnum.assertCanonical;
 
-export { USER_ROLES, assertUserRole, isUserRole, parseUserRole };
+export {
+	USER_ROLES,
+	assertCanonicalUserRole,
+	assertUserRole,
+	isCanonicalUserRole,
+	isUserRole,
+	parseCanonicalUserRole,
+	parseUserRole,
+};
 export type { UserRole };

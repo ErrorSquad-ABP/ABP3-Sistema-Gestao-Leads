@@ -8,12 +8,23 @@ const dealStatusEnum = createDomainEnum({
 	code: 'enum.deal_status.invalid_value',
 	label: 'Deal status',
 	values: DEAL_STATUSES,
-	normalize: (value) => value.trim().toUpperCase(),
+	allowNormalization: false,
 });
 
 const isDealStatus = dealStatusEnum.is;
+const isCanonicalDealStatus = dealStatusEnum.isCanonical;
 const parseDealStatus = dealStatusEnum.parse;
+const parseCanonicalDealStatus = dealStatusEnum.parseCanonical;
 const assertDealStatus = dealStatusEnum.assert;
+const assertCanonicalDealStatus = dealStatusEnum.assertCanonical;
 
-export { DEAL_STATUSES, assertDealStatus, isDealStatus, parseDealStatus };
+export {
+	DEAL_STATUSES,
+	assertCanonicalDealStatus,
+	assertDealStatus,
+	isCanonicalDealStatus,
+	isDealStatus,
+	parseCanonicalDealStatus,
+	parseDealStatus,
+};
 export type { DealStatus };

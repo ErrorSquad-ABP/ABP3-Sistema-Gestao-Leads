@@ -14,12 +14,23 @@ const leadStatusEnum = createDomainEnum({
 	code: 'enum.lead_status.invalid_value',
 	label: 'Lead status',
 	values: LEAD_STATUSES,
-	normalize: (value) => value.trim().toUpperCase(),
+	allowNormalization: false,
 });
 
 const isLeadStatus = leadStatusEnum.is;
+const isCanonicalLeadStatus = leadStatusEnum.isCanonical;
 const parseLeadStatus = leadStatusEnum.parse;
+const parseCanonicalLeadStatus = leadStatusEnum.parseCanonical;
 const assertLeadStatus = leadStatusEnum.assert;
+const assertCanonicalLeadStatus = leadStatusEnum.assertCanonical;
 
-export { LEAD_STATUSES, assertLeadStatus, isLeadStatus, parseLeadStatus };
+export {
+	LEAD_STATUSES,
+	assertCanonicalLeadStatus,
+	assertLeadStatus,
+	isCanonicalLeadStatus,
+	isLeadStatus,
+	parseCanonicalLeadStatus,
+	parseLeadStatus,
+};
 export type { LeadStatus };
