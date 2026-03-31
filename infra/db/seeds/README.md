@@ -1,6 +1,6 @@
 # Seeds
 
-Esta pasta será usada para dados controlados de referência, mantendo `DML` explícito e reprodutível.
+Esta pasta representa um fluxo descontinuado de seeds baseado em scripts. A direção oficial do projeto é tratar seeds pelo fluxo da aplicação e do Prisma, mantendo reprodutibilidade sem depender de SQL manual.
 
 ## Objetivo
 
@@ -12,7 +12,7 @@ Esta pasta será usada para dados controlados de referência, mantendo `DML` exp
 
 - usar seeds apenas para dados estáveis e compartilháveis;
 - evitar dados descartáveis ou específicos de uma máquina;
-- manter scripts idempotentes quando aplicável.
+- manter reprodutibilidade e idempotência quando aplicável.
 
 ## Situação atual
 

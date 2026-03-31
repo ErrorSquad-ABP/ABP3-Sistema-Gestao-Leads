@@ -9,7 +9,7 @@ A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A f
 - `architecture/`: decisões arquiteturais, padrões adotados e diagramas.
 - `diagrams/`: catálogo de diagramas, referências visuais e links externos versionados na documentação.
 - `api/`: convenções, contratos e inventário de endpoints.
-- `data/`: modelo de dados, DER, dicionário e scripts SQL de apoio.
+- `data/`: modelo de dados, DER, dicionário e estratégia de persistência orientada a Prisma.
 - `agile/`: backlog, cerimônias, Definition of Done, retrospectivas e planejamento de sprints.
 - `quality/`: fluxo de validação, critérios de CI e convenções de revisão técnica.
 - `templates/`: modelos de documentação para manter consistência entre novos arquivos Markdown.

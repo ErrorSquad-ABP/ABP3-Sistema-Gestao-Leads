@@ -30,7 +30,7 @@ Este repositório nasce como um `single repository` com duas aplicações separa
 - NestJS adotado no backend por reforçar modularidade, injeção de dependência, uso de decorators e fronteiras explícitas entre camadas.
 - Módulos de negócio planejados: `auth`, `users`, `teams`, `stores`, `customers`, `leads`, `negotiations`, `dashboards` e `audit-logs`.
 - Regras de autorização centralizadas exclusivamente no backend, conforme o enunciado.
-- Estrutura preparada para PostgreSQL, Docker Compose, quality gate com Biome, ESLint e TypeScript.
+- Estrutura preparada para PostgreSQL, Prisma ORM, Docker Compose, quality gate com Biome, ESLint e TypeScript.
 - Base desenhada para crescer além do ABP, preservando evolução incremental sem forçar microserviços cedo demais.
 
 ## Stack base
@@ -39,7 +39,7 @@ Este repositório nasce como um `single repository` com duas aplicações separa
 | --- | --- |
 | Frontend | Next.js + React + TypeScript |
 | Backend | NestJS + TypeScript |
-| Banco de dados | PostgreSQL |
+| Banco de dados | PostgreSQL + Prisma ORM |
 | Qualidade | Biome, ESLint, TypeScript Checker |
 | Segurança | JWT, hashing seguro, lint de segurança, Snyk para VS Code |
 | Infraestrutura | Docker, Docker Compose, GitHub Actions |
@@ -71,7 +71,7 @@ Os princípios para essa evolução são:
 - manter o backend como `monólito modular` para ganhar velocidade, coesão de domínio e simplicidade operacional;
 - isolar módulos de negócio desde o início para reduzir acoplamento e facilitar manutenção;
 - concentrar regras críticas no backend para preservar segurança, auditoria e rastreabilidade;
-- preparar o backend para consultas analíticas mais exigentes com boa modelagem SQL, índices, agregações e materializações quando necessário;
+- preparar o backend para consultas analíticas mais exigentes com boa modelagem relacional, índices, agregações e materializações quando necessário;
 - permitir a introdução futura de filas, jobs assíncronos, cache e read models sem ruptura da base principal;
 - deixar extração para serviços separados apenas como decisão futura, orientada por necessidade real de escala, não por modismo arquitetural.
 
@@ -209,14 +209,19 @@ Commits e branches fora desse padrão são recusados pelas regras do GitHub.
 
 ## Estratégia de banco
 
-O projeto agora separa explicitamente:
+A estratégia oficial de banco do projeto é:
 
-- `init` para bootstrap do container PostgreSQL;
-- `migrations` para evolução estrutural em SQL;
-- `seeds` para dados de referência;
-- `db-migrate` para aplicar os scripts pendentes e registrar tudo em `lead_management.schema_migrations`.
+- usar `Prisma ORM` como camada obrigatória de acesso a dados no backend;
+- tratar o schema do Prisma como fonte primária da estrutura relacional;
+- gerar e aplicar migrations exclusivamente pelo fluxo do Prisma;
+- manter seeds vinculados ao fluxo da aplicação e do Prisma;
+- não adotar scripts SQL manuais como estratégia de evolução do banco.
 
-Isso ajuda a manter o banco consistente entre as máquinas da equipe e deixa claro onde vivem `DDL` e `DML` versionados.
+## Fluxo descontinuado
+
+- o conteúdo existente em `infra/db` baseado em scripts SQL e `db-migrate` está descontinuado;
+- esse material não é fonte oficial para novas migrations, seeds ou decisões de modelagem;
+- a documentação e a Wiki devem considerar apenas Prisma e seus artefatos como referência principal para evolução do banco.
 
 ## Próximos passos sugeridos
 

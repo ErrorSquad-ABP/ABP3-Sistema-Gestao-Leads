@@ -55,7 +55,7 @@ As histórias abaixo devem ser implementadas respeitando continuamente:
 
 - `RP01`: frontend em React com TypeScript, backend em Node.js com TypeScript e banco PostgreSQL;
 - `RP02`: execução completa exclusivamente via containers Docker;
-- `RP03`: uso explícito de `DDL` e `DML`, com relações do modelo implementadas;
+- `RP03`: modelo relacional implementado com migrations e seeds versionados no fluxo do backend;
 - `RP04`: desenvolvimento incremental ao longo das sprints;
 - `RP05`: evidência clara de padrão arquitetural, padrões GoF e separação de responsabilidades;
 - `RP06`: documentação arquitetural obrigatória no repositório.

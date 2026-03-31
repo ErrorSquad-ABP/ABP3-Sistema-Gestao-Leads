@@ -123,7 +123,7 @@ O domínio não deve conter:
 
 - decorators HTTP;
 - classes de controller;
-- SQL;
+- scripts de migration ou detalhes de persistência;
 - client de ORM;
 - dependência de framework web;
 - lógica de serialização de resposta.
