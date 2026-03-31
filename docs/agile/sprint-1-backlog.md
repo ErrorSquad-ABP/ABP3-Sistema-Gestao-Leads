@@ -39,11 +39,11 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 
 ## Backlog operacional por frente
 
-### Frente 1 - Banco e modelagem
+### Frente 1 - Banco, modelagem e diagramas
 
 | Item | Relacionamento | Entregável esperado |
 | --- | --- | --- |
-| Definir schema inicial de usuários, papéis, equipes, lojas, clientes e leads | `US-01` a `US-07` | Modelo relacional coerente com o fluxo principal |
+| Consolidar a modelagem relacional da Sprint 1 e produzir DER + diagramas de apoio | `US-01` a `US-07` | Base visual e relacional coerente com o fluxo principal |
 | Criar ou ajustar migrations da Sprint 1 | `US-01` a `US-07` | Banco versionado para o escopo comprometido |
 | Garantir chaves estrangeiras, constraints e integridade referencial | `US-04` a `US-07` | Persistência consistente e segura |
 | Preparar seeds mínimos de referência quando necessário | `US-01`, `US-03`, `US-04`, `US-05` | Ambiente local reproduzível para desenvolvimento e demonstração |
@@ -91,7 +91,7 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 
 ## Sequência sugerida de execução
 
-1. Banco e modelagem
+1. Banco, modelagem e diagramas
 2. Backend de acesso e segurança
 3. Backend administrativo e operacional
 4. Frontend inicial
