@@ -1,3 +1,5 @@
+import { DomainValidationError } from '../errors/domain-validation.error.js';
+
 class Email {
 	private static readonly LOCAL_PART_REGEX =
 		/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}$/;
@@ -13,11 +15,19 @@ class Email {
 		const normalized = value.trim().toLowerCase();
 
 		if (normalized.length > 254) {
-			throw new Error('Email must contain at most 254 characters');
+			throw new DomainValidationError(
+				'Email must contain at most 254 characters',
+				{
+					code: 'email.too_long',
+					context: { maxLength: 254 },
+				},
+			);
 		}
 
 		if (!Email.isValid(normalized)) {
-			throw new Error('Email must be a valid address');
+			throw new DomainValidationError('Email must be a valid address', {
+				code: 'email.invalid_format',
+			});
 		}
 
 		return new Email(normalized);
@@ -50,6 +60,10 @@ class Email {
 		const domainPart = value.slice(atIndex + 1);
 
 		if (!Email.LOCAL_PART_REGEX.test(localPart)) {
+			return false;
+		}
+
+		if (!Email.hasValidLocalPartStructure(localPart)) {
 			return false;
 		}
 
@@ -88,6 +102,14 @@ class Email {
 		const topLevelDomain = domainLabels[domainLabels.length - 1] ?? '';
 
 		return topLevelDomain.length >= 2;
+	}
+
+	private static hasValidLocalPartStructure(localPart: string): boolean {
+		if (localPart.startsWith('.') || localPart.endsWith('.')) {
+			return false;
+		}
+
+		return !localPart.includes('..');
 	}
 }
 

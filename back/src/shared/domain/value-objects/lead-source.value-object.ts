@@ -1,3 +1,5 @@
+import { DomainValidationError } from '../errors/domain-validation.error.js';
+
 const ALLOWED_LEAD_SOURCES = [
 	'store-visit',
 	'phone-call',
@@ -21,8 +23,12 @@ class LeadSource {
 		const normalized = value.trim().toLowerCase();
 
 		if (!LeadSource.isLeadSourceValue(normalized)) {
-			throw new Error(
+			throw new DomainValidationError(
 				`Lead source must be one of: ${ALLOWED_LEAD_SOURCES.join(', ')}`,
+				{
+					code: 'lead_source.invalid_value',
+					context: { allowedValues: ALLOWED_LEAD_SOURCES.join(', ') },
+				},
 			);
 		}
 

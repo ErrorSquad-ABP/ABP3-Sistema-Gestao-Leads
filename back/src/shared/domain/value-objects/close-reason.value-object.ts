@@ -1,3 +1,5 @@
+import { DomainValidationError } from '../errors/domain-validation.error.js';
+
 class CloseReason {
 	private static readonly MIN_LENGTH = 3;
 	private static readonly MAX_LENGTH = 255;
@@ -9,27 +11,41 @@ class CloseReason {
 	}
 
 	static create(value: string): CloseReason {
-		const normalized = value.trim().replace(/\s+/g, ' ');
+		const raw = value.normalize('NFC').trim();
+
+		if (CloseReason.hasControlCharacters(raw)) {
+			throw new DomainValidationError(
+				'Close reason cannot contain control characters',
+				{ code: 'close_reason.control_characters_not_allowed' },
+			);
+		}
+
+		const normalized = raw.replace(/\s+/g, ' ');
 
 		if (normalized.length < CloseReason.MIN_LENGTH) {
-			throw new Error(
+			throw new DomainValidationError(
 				`Close reason must contain at least ${CloseReason.MIN_LENGTH} characters`,
+				{
+					code: 'close_reason.too_short',
+					context: { minLength: CloseReason.MIN_LENGTH },
+				},
 			);
 		}
 
 		if (normalized.length > CloseReason.MAX_LENGTH) {
-			throw new Error(
+			throw new DomainValidationError(
 				`Close reason must contain at most ${CloseReason.MAX_LENGTH} characters`,
+				{
+					code: 'close_reason.too_long',
+					context: { maxLength: CloseReason.MAX_LENGTH },
+				},
 			);
 		}
 
-		if (CloseReason.hasControlCharacters(normalized)) {
-			throw new Error('Close reason cannot contain control characters');
-		}
-
 		if (!CloseReason.hasMeaningfulContent(normalized)) {
-			throw new Error(
+			throw new DomainValidationError(
 				'Close reason must contain at least one letter or number character',
+				{ code: 'close_reason.not_meaningful' },
 			);
 		}
 

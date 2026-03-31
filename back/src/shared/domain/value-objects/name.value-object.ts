@@ -1,3 +1,5 @@
+import { DomainValidationError } from '../errors/domain-validation.error.js';
+
 class Name {
 	private static readonly MIN_LENGTH = 2;
 	private static readonly MAX_LENGTH = 120;
@@ -10,23 +12,32 @@ class Name {
 	}
 
 	static create(value: string): Name {
-		const normalized = value.trim().replace(/\s+/g, ' ');
+		const normalized = value.normalize('NFC').trim().replace(/\s+/g, ' ');
 
 		if (normalized.length < Name.MIN_LENGTH) {
-			throw new Error(
+			throw new DomainValidationError(
 				`Name must contain at least ${Name.MIN_LENGTH} characters`,
+				{
+					code: 'name.too_short',
+					context: { minLength: Name.MIN_LENGTH },
+				},
 			);
 		}
 
 		if (normalized.length > Name.MAX_LENGTH) {
-			throw new Error(
+			throw new DomainValidationError(
 				`Name must contain at most ${Name.MAX_LENGTH} characters`,
+				{
+					code: 'name.too_long',
+					context: { maxLength: Name.MAX_LENGTH },
+				},
 			);
 		}
 
 		if (!Name.ALLOWED_CHARACTERS_REGEX.test(normalized)) {
-			throw new Error(
+			throw new DomainValidationError(
 				'Name contains invalid characters. Use letters, spaces, apostrophes or hyphens',
+				{ code: 'name.invalid_characters' },
 			);
 		}
 
