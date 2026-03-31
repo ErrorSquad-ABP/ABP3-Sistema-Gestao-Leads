@@ -15,5 +15,5 @@ class DomainValidationError extends Error {
 	}
 }
 
-export { DomainValidationError };
 export type { DomainValidationDetails };
+export { DomainValidationError };

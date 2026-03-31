@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
+import type { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { HealthSnapshot } from '../../domain/entities/health-snapshot.js';
 
 @Injectable()
 class GetHealthUseCase {
-	execute(): HealthSnapshot {
+	constructor(private readonly prismaService: PrismaService) {}
+
+	async execute(): Promise<HealthSnapshot> {
+		await this.prismaService.assertConnection();
+
 		return {
+			database: 'ok',
 			runtime: 'nest',
 			service: 'back',
 			status: 'ok',

@@ -15,7 +15,9 @@ class GetSystemSummaryUseCase {
 				v1: '/api/v1',
 			},
 			infrastructure: {
+				databaseClient: 'prisma',
 				databaseConfigured: env.hasDatabaseUrl,
+				databaseProvider: 'postgresql',
 				jwtConfigured: env.hasJwtSecret,
 			},
 			modules: [
@@ -33,7 +35,7 @@ class GetSystemSummaryUseCase {
 			nodeEnv: env.nodeEnv,
 			repositoryStrategy: 'single-repository',
 			solutionStyle: 'next-front-nest-back',
-			status: 'bootstrapped',
+			status: 'bootstrapped-with-prisma',
 			transport: 'http-json',
 		};
 	}

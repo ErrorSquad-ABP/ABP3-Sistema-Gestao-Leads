@@ -7,7 +7,9 @@ type SystemSummary = {
 		v1: '/api/v1';
 	};
 	infrastructure: {
+		databaseClient: 'prisma';
 		databaseConfigured: boolean;
+		databaseProvider: 'postgresql';
 		jwtConfigured: boolean;
 	};
 	modules: string[];
@@ -15,7 +17,7 @@ type SystemSummary = {
 	nodeEnv: string;
 	repositoryStrategy: 'single-repository';
 	solutionStyle: 'next-front-nest-back';
-	status: 'bootstrapped';
+	status: 'bootstrapped-with-prisma';
 	transport: 'http-json';
 };
 
