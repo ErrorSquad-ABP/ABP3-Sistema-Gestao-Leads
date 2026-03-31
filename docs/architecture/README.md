@@ -56,6 +56,14 @@ Os detalhes da arquitetura foram divididos por assunto para evitar uma documenta
 | [`backend-module-structure.md`](./backend-module-structure.md) | Estrutura modular do backend e papel de cada camada |
 | [`domain-building-blocks.md`](./domain-building-blocks.md) | Entities, Value Objects, eventos, repositórios e outros building blocks |
 | [`backend-request-flow.md`](./backend-request-flow.md) | Fluxo de requisição, responsabilidades e passagem entre camadas |
+| [`../diagrams/README.md`](../diagrams/README.md) | Catálogo de diagramas e links visuais do projeto |
+
+## Diagramas catalogados neste momento
+
+Os diagramas externos já classificados e referenciados para arquitetura são:
+
+- `DG-CLS-01`: `Implementation Lead Management System`, diagrama de classes externo em `../diagrams/README.md`;
+- `DG-CLS-02`: `Domain Lead Management System`, diagrama de classes externo em `../diagrams/README.md`.
 
 ## Módulos previstos
 

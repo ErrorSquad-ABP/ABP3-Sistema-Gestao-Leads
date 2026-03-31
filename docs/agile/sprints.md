@@ -7,7 +7,6 @@
 - Goal: [`sprint-1-goal.md`](./sprint-1-goal.md)
 - Backlog: [`sprint-1-backlog.md`](./sprint-1-backlog.md)
 - Planejamento detalhado: [`sprint-1-planning.md`](./sprint-1-planning.md)
-- Task Board: [`sprint-1-task-board.md`](./sprint-1-task-board.md)
 
 ## Sprint 2
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { env } from '../../../../shared/config/env.js';
+import { env } from '../../../../config/env.js';
 import type { SystemSummary } from '../../domain/entities/system-summary.entity.js';
 
 @Injectable()
