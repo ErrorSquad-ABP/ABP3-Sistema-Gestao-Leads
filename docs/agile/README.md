@@ -24,8 +24,6 @@
 - [`sprint-1-goal.md`](./sprint-1-goal.md)
 - [`sprint-1-backlog.md`](./sprint-1-backlog.md)
 - [`sprint-1-planning.md`](./sprint-1-planning.md)
-- [`sprint-1-task-board.md`](./sprint-1-task-board.md)
-- [`sprint-1-task-board.csv`](./sprint-1-task-board.csv)
 - [`sprints.md`](./sprints.md)
 
 ## Direção de trabalho
