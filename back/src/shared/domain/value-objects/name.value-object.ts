@@ -3,8 +3,8 @@ import { DomainValidationError } from '../errors/domain-validation.error.js';
 class Name {
 	private static readonly MIN_LENGTH = 2;
 	private static readonly MAX_LENGTH = 120;
-	private static readonly NAME_STRUCTURE_REGEX =
-		/^\p{L}[\p{L}\p{M}]*(?: \p{L}[\p{L}\p{M}]*)*$/u;
+	private static readonly LETTER_REGEX = /^\p{L}$/u;
+	private static readonly MARK_REGEX = /^\p{M}$/u;
 
 	private readonly _value: string;
 
@@ -35,7 +35,7 @@ class Name {
 			);
 		}
 
-		if (!Name.NAME_STRUCTURE_REGEX.test(normalized)) {
+		if (!Name.isValidStructure(normalized)) {
 			throw new DomainValidationError(
 				'Name contains invalid characters. Use letters only (spaces between words are allowed)',
 				{ code: 'name.invalid_characters' },
@@ -59,6 +59,23 @@ class Name {
 
 	toString(): string {
 		return this._value;
+	}
+
+	private static isValidStructure(value: string): boolean {
+		const words = value.split(' ');
+
+		return words.every((word) => {
+			const chars = [...word];
+			const firstChar = chars[0] ?? '';
+
+			if (!Name.LETTER_REGEX.test(firstChar)) {
+				return false;
+			}
+
+			return chars.every(
+				(char) => Name.LETTER_REGEX.test(char) || Name.MARK_REGEX.test(char),
+			);
+		});
 	}
 }
 
