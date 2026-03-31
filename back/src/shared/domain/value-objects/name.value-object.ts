@@ -3,7 +3,8 @@ import { DomainValidationError } from '../errors/domain-validation.error.js';
 class Name {
 	private static readonly MIN_LENGTH = 2;
 	private static readonly MAX_LENGTH = 120;
-	private static readonly ALLOWED_CHARACTERS_REGEX = /^[\p{L}\p{M}' -]+$/u;
+	private static readonly NAME_STRUCTURE_REGEX =
+		/^\p{L}[\p{L}\p{M}]*(?: \p{L}[\p{L}\p{M}]*)*$/u;
 
 	private readonly _value: string;
 
@@ -34,9 +35,9 @@ class Name {
 			);
 		}
 
-		if (!Name.ALLOWED_CHARACTERS_REGEX.test(normalized)) {
+		if (!Name.NAME_STRUCTURE_REGEX.test(normalized)) {
 			throw new DomainValidationError(
-				'Name contains invalid characters. Use letters, spaces, apostrophes or hyphens',
+				'Name contains invalid characters. Use letters only (spaces between words are allowed)',
 				{ code: 'name.invalid_characters' },
 			);
 		}
