@@ -1,13 +1,13 @@
 # Migrations
 
-Esta pasta contém a evolução estrutural do banco em SQL explícito.
+Esta pasta contém migrations de um fluxo descontinuado baseado em SQL manual. Ela não deve ser tratada como estratégia válida para a evolução oficial do banco.
 
 ## Regras
 
-- cada arquivo representa um passo versionado de `DDL`;
+- cada arquivo representa um passo versionado do fluxo descontinuado;
 - a ordem de execução é definida pelo prefixo numérico do nome do arquivo;
 - migrations já compartilhadas não devem ser reescritas;
-- qualquer alteração nova entra como novo arquivo.
+- novas alterações não devem entrar aqui; a evolução oficial deve ocorrer pelo fluxo de migrations do Prisma.
 
 ## Situação atual
 

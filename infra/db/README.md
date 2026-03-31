@@ -1,45 +1,41 @@
 # Infraestrutura de Banco
 
-Esta pasta centraliza a estratégia SQL do projeto. O objetivo é deixar explícito, desde a base, onde vivem o bootstrap do PostgreSQL, as migrations versionadas e os seeds controlados do sistema.
+Esta pasta contém um fluxo de banco descontinuado. Ela ainda registra bootstrap e automações baseadas em scripts SQL, mas está fora da trilha oficial do projeto, que deve ser conduzida por Prisma.
 
-## Objetivos desta camada
+## Status desta camada
 
-- manter `DDL` e `DML` versionados no repositório;
-- permitir subida previsível do ambiente via Docker Compose;
-- evitar divergência estrutural entre máquinas da equipe;
-- criar uma trilha clara de evolução do banco desde o início do semestre.
+- este diretório está descontinuado para evolução funcional do banco;
+- seu conteúdo existe apenas como resquício de uma estratégia anterior;
+- novas decisões de schema, migrations e seeds não devem nascer aqui;
+- a trilha oficial de persistência deve ser centralizada no Prisma.
 
-## Estrutura adotada
+## Direção oficial
+
+- o backend deve evoluir o banco via `Prisma ORM`;
+- schema, relações e constraints devem ser descritos no Prisma;
+- migrations devem ser geradas pelo fluxo do Prisma;
+- seeds devem seguir o fluxo da aplicação, sem depender de scripts SQL manuais como padrão.
+
+## Estrutura atual
 
 - `init/`: bootstrap de container, executado apenas na criação inicial do volume do PostgreSQL.
-- `migrations/`: scripts SQL versionados para evolução estrutural do schema.
-- `seeds/`: scripts SQL para dados de referência e carga controlada.
-- `scripts/`: automações auxiliares para aplicar migrations e seeds via Docker.
+- `migrations/`: material descontinuado baseado em scripts SQL.
+- `seeds/`: material descontinuado para carga controlada.
+- `scripts/`: automações auxiliares do fluxo descontinuado.
 
-## Regra de responsabilidade por pasta
+## Regra de responsabilidade
 
-- `init` não substitui migrations; ele só prepara o ambiente do container.
-- `migrations` é a fonte oficial de evolução do schema.
-- `seeds` não deve conter dado aleatório de teste; apenas dados controlados e reprodutíveis.
-- novas mudanças de banco devem entrar por novos arquivos versionados, sem reescrever scripts já compartilhados.
-
-## Convenção de nomenclatura
-
-- migrations: `NNN_descricao_curta.sql`
-- seeds: `NNN_descricao_curta.sql`
-
-Exemplos:
-
-- `001_initial_schema.sql`
-- `002_auth_and_users.sql`
-- `001_reference_data.sql`
+- `init` continua sendo apenas bootstrap de ambiente;
+- `migrations` e `seeds` existentes não devem ser tratados como referência para novas decisões arquiteturais;
+- novas mudanças de banco devem entrar pelo Prisma;
+- scripts descontinuados não devem receber expansão funcional.
 
 ## Estratégia operacional
 
-O serviço `db-migrate` do Docker Compose:
+O serviço `db-migrate` do Docker Compose ainda existe apenas para o fluxo descontinuado:
 
 1. espera o PostgreSQL ficar saudável;
-2. garante a existência do schema e da tabela de controle `lead_management.schema_migrations`;
+2. garante a existência do schema e da tabela de controle usada pelo fluxo descontinuado;
 3. aplica migrations pendentes em ordem alfabética;
 4. aplica seeds pendentes em ordem alfabética;
 5. registra tudo na tabela de histórico.
@@ -47,7 +43,7 @@ O serviço `db-migrate` do Docker Compose:
 ## Regras de manutenção
 
 - não editar migration já aplicada em ambiente compartilhado;
-- criar uma nova migration para qualquer ajuste estrutural;
-- escrever SQL idempotente quando fizer sentido;
+- centralizar a evolução futura do banco no Prisma;
+- não expandir o fluxo descontinuado com novos scripts SQL manuais;
 - manter a modelagem documentada em `docs/data/README.md`;
 - alinhar índices e constraints com os relatórios e dashboards esperados do produto.

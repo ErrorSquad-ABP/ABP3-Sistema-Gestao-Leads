@@ -47,7 +47,7 @@ Não deve conhecer:
 
 - NestJS;
 - controllers;
-- SQL;
+- Prisma Client ou detalhes de migrations;
 - implementação concreta de banco.
 
 ### `application`

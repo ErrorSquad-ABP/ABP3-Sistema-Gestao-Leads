@@ -32,7 +32,7 @@ Responsabilidades do controller:
 O controller não deve:
 
 - decidir regra de negócio complexa;
-- montar SQL;
+- acoplar detalhes de persistência ou do Prisma ao fluxo HTTP;
 - validar invariantes de domínio na mão.
 
 ### 2. Orquestração do caso de uso

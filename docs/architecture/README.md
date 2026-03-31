@@ -22,7 +22,7 @@ O projeto precisa atender ao escopo do ABP com uma base técnica organizada, mas
 | --- | --- |
 | `front` | Experiência web, composição de telas, navegação e consumo da API |
 | `back` | Contratos HTTP, autenticação, autorização, regras de negócio e integração com banco |
-| `infra/db` | Bootstrap, migrations, seeds e estratégia SQL versionada |
+| `infra/db` | Material descontinuado de bootstrap SQL, fora da trilha oficial baseada em Prisma |
 | `docs` | Rastreabilidade entre arquitetura, dados, API, qualidade e gestão |
 
 Essa separação preserva fronteira clara entre apresentação e backend, evita acoplamento artificial e mantém a solução pronta para crescimento com disciplina.
@@ -104,7 +104,7 @@ O caminho arquitetural previsto é:
 
 1. Evoluir primeiro com `front` e `back` separados, preservando fronteira estável entre experiência web e API.
 2. Manter o `back` como `monólito modular`, com fronteiras de domínio claras e contratos internos bem definidos.
-3. Escalar leitura analítica com SQL bem escrita, índices, views e materialized views quando necessário.
+3. Escalar leitura analítica com boa modelagem relacional, índices e consultas sustentadas pela camada de persistência do backend.
 4. Introduzir processamento assíncrono para tarefas pesadas, integrações ou consolidações por meio de jobs e filas.
 5. Adicionar cache e read models específicos apenas onde o custo de consulta justificar.
 6. Extrair serviços independentes somente se houver evidência operacional, de throughput ou de autonomia de times.
