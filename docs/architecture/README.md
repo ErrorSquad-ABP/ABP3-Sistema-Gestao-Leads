@@ -62,8 +62,8 @@ Os detalhes da arquitetura foram divididos por assunto para evitar uma documenta
 
 Os diagramas externos já classificados e referenciados para arquitetura são:
 
-- `DG-CLS-01`: diagrama de classes externo em `../diagrams/README.md`;
-- `DG-CLS-02`: diagrama de classes externo em `../diagrams/README.md`.
+- `DG-CLS-01`: `Implementation Lead Management System`, diagrama de classes externo em `../diagrams/README.md`;
+- `DG-CLS-02`: `Domain Lead Management System`, diagrama de classes externo em `../diagrams/README.md`.
 
 ## Módulos previstos
 
