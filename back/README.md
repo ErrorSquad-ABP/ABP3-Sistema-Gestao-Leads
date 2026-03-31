@@ -8,7 +8,7 @@ O backend será a aplicação de API do sistema, responsável por autenticação
 
 - Node.js com TypeScript
 - NestJS para a aplicação de API
-- PostgreSQL como banco relacional
+- PostgreSQL como banco relacional com Prisma ORM
 - Docker para execução padronizada
 - Biome, ESLint e TypeScript Checker como quality gate
 
@@ -53,7 +53,9 @@ back/
 │   ├── main.ts             # Bootstrap do Nest e configuração global
 │   ├── modules/            # Módulos de negócio do sistema
 │   └── shared/             # Config, auth, filtros, pipes e utilitários transversais
+├── prisma/                 # Schema, migrations e seed do banco
 ├── .env.example
+├── prisma.config.ts
 ├── package.json
 ├── tsconfig.build.json
 └── tsconfig.json
@@ -90,6 +92,7 @@ back/
 4. Colocar entidades, enums e contratos em `domain`.
 5. Colocar repositórios e gateways concretos em `infrastructure`.
 6. Colocar apenas preocupações transversais em `shared`.
+7. Centralizar schema, migrations e seed em `prisma/`.
 
 ## Caminho de evolução sugerido
 

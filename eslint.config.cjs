@@ -20,6 +20,7 @@ module.exports = [
 			'**/node_modules/**',
 			'**/coverage/**',
 			'**/.next/**',
+			'back/src/generated/prisma/**',
 		],
 	},
 	{

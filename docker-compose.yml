@@ -17,26 +17,23 @@ services:
       start_period: 5s
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./infra/db/init:/docker-entrypoint-initdb.d:ro
 
-  db-migrate:
-    image: postgres:16-alpine
-    container_name: abp3-db-migrate
+  prisma-migrate:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+      target: dev
+    container_name: abp3-prisma-migrate
     restart: 'no'
     depends_on:
       postgres:
         condition: service_healthy
     environment:
+      NODE_ENV: development
       POSTGRES_DB: lead_management
-      POSTGRES_USER: abp
-      POSTGRES_PASSWORD: abp
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-    volumes:
-      - ./infra/db/migrations:/migrations:ro
-      - ./infra/db/seeds:/seeds:ro
-      - ./infra/db/scripts/apply-migrations.sh:/scripts/apply-migrations.sh:ro
-    entrypoint: ['/bin/sh', '/scripts/apply-migrations.sh']
+      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
+      JWT_SECRET: change-me
+    command: ['npm', 'run', 'prisma:migrate:deploy', '--workspace', 'back']
 
   back:
     build:
@@ -47,7 +44,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      db-migrate:
+      prisma-migrate:
         condition: service_completed_successfully
     environment:
       NODE_ENV: production

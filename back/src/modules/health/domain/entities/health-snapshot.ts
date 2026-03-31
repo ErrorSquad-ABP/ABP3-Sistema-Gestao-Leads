@@ -1,4 +1,5 @@
 type HealthSnapshot = {
+	database: 'ok';
 	runtime: 'nest';
 	service: 'back';
 	status: 'ok';

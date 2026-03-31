@@ -178,5 +178,5 @@ function LandingPage({ apiStatus }: LandingPageProps) {
 	);
 }
 
-export { LandingPage };
 export type { ApiStatusSnapshot };
+export { LandingPage };

@@ -12,10 +12,11 @@ class HealthController {
 	@Get()
 	@ApiOperation({
 		summary: 'Health check da API',
-		description: 'Retorna o estado operacional básico do backend.',
+		description:
+			'Retorna o estado operacional básico do backend e da conexão Prisma.',
 	})
 	@ApiResponse({ status: 200, description: 'API saudável' })
-	getHealth() {
+	async getHealth() {
 		return this.getHealthUseCase.execute();
 	}
 }

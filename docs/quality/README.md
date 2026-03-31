@@ -57,6 +57,18 @@ Extensão recomendada:
 
 - `snyk-security.snyk-vulnerability-scanner`
 
+## Exceção temporária de `npm audit`
+
+O projeto aplica mitigação local para vulnerabilidades transitivas corrigíveis sem troca de stack, usando `overrides` no `package.json` da raiz quando necessário.
+
+No estado atual do ecossistema adotado pelo backend, permanece uma exceção temporária em `path-to-regexp`, trazida por `@nestjs/core`, `@nestjs/platform-express` e `@nestjs/swagger`. Em `2026-03-31`, as versões estáveis mais recentes desses pacotes ainda publicam `path-to-regexp@8.3.0`, portanto o alerta não possui correção limpa via atualização normal de dependência.
+
+Diretriz operacional:
+
+- corrigir localmente o que for resolvível sem ruptura, como `brace-expansion` e `picomatch`;
+- não usar `npm audit fix --force` de forma automática no stack Nest;
+- reavaliar a exceção quando o NestJS publicar versão estável com `path-to-regexp >= 8.4.1`.
+
 ## Política de revisão
 
 - `develop` e `main` são branches protegidas e aceitam mudanças apenas por pull request.
