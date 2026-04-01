@@ -20,7 +20,7 @@ Guia complementar de uso do Next.js nesta base:
 
 - Interface guiada por papéis e permissões vindas do backend.
 - Componentes pequenos, orientados a responsabilidade única.
-- Separação entre `app`, `modules` e `shared`.
+- Separação entre `app`, `features`, `lib` e `components`.
 - Uso preferencial de server components para composição inicial e client components apenas quando houver interação real no navegador.
 - Estado local por feature antes de introduzir complexidade adicional.
 - Consumo de API desacoplado da camada visual.
@@ -31,8 +31,9 @@ Guia complementar de uso do Next.js nesta base:
 front/
 ├── src/
 │   ├── app/                # App Router, layouts, páginas e estilos globais
-│   ├── modules/            # Features por domínio de negócio
-│   └── shared/             # Componentes reutilizáveis, config, hooks, utils, types
+│   ├── features/           # Fluxos por domínio (landing, leads, etc.)
+│   ├── lib/                # Config, HTTP, utilitários compartilhados
+│   └── components/         # UI compartilhada (ex.: shadcn)
 ├── .env.example            # Variáveis do frontend e URL da API
 ├── next.config.ts          # Configuração do Next.js
 ├── next-env.d.ts           # Tipagens geradas pelo Next.js
@@ -54,15 +55,15 @@ front/
 - Não duplicar regra de negócio do backend.
 - Não esconder autorização somente no frontend.
 - Priorizar acessibilidade, feedback visual e responsividade.
-- Centralizar integração HTTP em `shared`.
+- Centralizar integração HTTP em `lib` ou em `features/*/server`.
 - Deixar os componentes de página livres de lógica de infraestrutura.
 - Consumir a API separada por contratos explícitos e payloads previsíveis.
 
 ## Convenções de pastas
 
 - `app`: tudo que compõe o esqueleto global da aplicação.
-- `modules`: telas, componentes e fluxos específicos de cada domínio.
-- `shared`: elementos realmente reaproveitáveis entre módulos.
+- `features`: telas, componentes e fluxos específicos de cada domínio.
+- `lib` e `components`: elementos reaproveitáveis e infraestrutura de UI.
 
 ## Variáveis de ambiente
 
