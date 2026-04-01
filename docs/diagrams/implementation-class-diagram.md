@@ -1,3 +1,5 @@
+```mermaid
+
 ---
 config:
   layout: elk
@@ -5,17 +7,27 @@ config:
 classDiagram
 direction TB
     class AggregateRoot {
-	    -DomainEvent[] _domainEvents
-	    +getDomainEvents() DomainEvent[]
-	    +clearEvents() void
+        -DomainEvent[] _domainEvents
+        #addDomainEvent(event: DomainEvent) void
+        +getDomainEvents() DomainEvent[]
+        +clearEvents() void
+        +hasDomainEvents() boolean
     }
 
     class DomainEvent {
-	    +occurredAt: Date
+        <<abstract>>
+        +eventId: string
+        +eventName: string
+        +occurredAt: Date
+        +aggregateId: string
     }
 
-    class Specification {
-	    +isSatisfiedBy(candidate: T) boolean
+    class Specification~T~ {
+        
+        +isSatisfiedBy(candidate: T) boolean
+        +and(other: Specification~T~) Specification~T~
+        +or(other: Specification~T~) Specification~T~
+        +not() Specification~T~
     }
 
     class IUnitOfWork {
