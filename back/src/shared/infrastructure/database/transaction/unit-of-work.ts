@@ -38,9 +38,13 @@ class UnitOfWork implements IUnitOfWork {
 		}
 
 		let resolveTx!: (tx: Prisma.TransactionClient) => void;
-		const txPromise = new Promise<Prisma.TransactionClient>((resolve) => {
-			resolveTx = resolve;
-		});
+		let rejectTx!: (error: unknown) => void;
+		const txPromise = new Promise<Prisma.TransactionClient>(
+			(resolve, reject) => {
+				resolveTx = resolve;
+				rejectTx = reject;
+			},
+		);
 
 		this.transactionCompletion = this.prisma.$transaction(async (client) => {
 			resolveTx(client);
@@ -50,7 +54,17 @@ class UnitOfWork implements IUnitOfWork {
 			});
 		});
 
-		this.tx = await txPromise;
+		// Fail fast if interactive transaction errors before callback starts.
+		this.transactionCompletion.catch((error: unknown) => {
+			rejectTx(error);
+		});
+
+		try {
+			this.tx = await txPromise;
+		} catch (error) {
+			this.reset();
+			throw error;
+		}
 	}
 
 	async commit(): Promise<void> {
