@@ -56,5 +56,5 @@ class LeadSource {
 	}
 }
 
-export { ALLOWED_LEAD_SOURCES, LeadSource };
 export type { LeadSourceValue };
+export { ALLOWED_LEAD_SOURCES, LeadSource };

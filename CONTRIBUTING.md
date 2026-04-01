@@ -15,7 +15,7 @@
 2. Subir o ambiente com `npm run dev` quando precisar de hot reload ou `npm run compose:up` para validar a execução base.
 3. Implementar a mudança em commits pequenos e descritivos.
 4. Se houver mudança de banco, refletir a alteração no schema e nas migrations do Prisma.
-5. Não criar nem expandir fluxo paralelo com scripts SQL manuais; o conteúdo de `infra/db` está descontinuado.
+5. Manter as mudanças de banco centralizadas em `back/prisma/`.
 6. Executar quality gate local.
 7. Abrir PR para `develop`.
 8. Promover `develop` para `main` quando houver baseline estável.
@@ -42,7 +42,7 @@ npm run build
 
 - o padrão obrigatório é evoluir o banco pelo Prisma, usando schema, migrations e seeds versionados junto da aplicação;
 - o domínio e os casos de uso não devem manipular SQL manualmente como fluxo principal;
-- o conteúdo atual de `infra/db` está descontinuado e não deve orientar novas decisões de documentação nem implementação;
+- os artefatos oficiais de banco vivem em `back/prisma/`;
 - migrations já compartilhadas continuam não devendo ser reescritas, independentemente da ferramenta usada para gerá-las.
 
 ## Observação importante

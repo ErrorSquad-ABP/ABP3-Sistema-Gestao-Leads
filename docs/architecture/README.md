@@ -22,7 +22,7 @@ O projeto precisa atender ao escopo do ABP com uma base técnica organizada, mas
 | --- | --- |
 | `front` | Experiência web, composição de telas, navegação e consumo da API |
 | `back` | Contratos HTTP, autenticação, autorização, regras de negócio e integração com banco |
-| `infra/db` | Material descontinuado de bootstrap SQL, fora da trilha oficial baseada em Prisma |
+| `back/prisma` | Schema, migrations, seed e configuração oficial de persistência com Prisma |
 | `docs` | Rastreabilidade entre arquitetura, dados, API, qualidade e gestão |
 
 Essa separação preserva fronteira clara entre apresentação e backend, evita acoplamento artificial e mantém a solução pronta para crescimento com disciplina.

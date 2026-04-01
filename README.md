@@ -217,11 +217,7 @@ A estratégia oficial de banco do projeto é:
 - manter seeds vinculados ao fluxo da aplicação e do Prisma;
 - não adotar scripts SQL manuais como estratégia de evolução do banco.
 
-## Fluxo descontinuado
-
-- o conteúdo existente em `infra/db` baseado em scripts SQL e `db-migrate` está descontinuado;
-- esse material não é fonte oficial para novas migrations, seeds ou decisões de modelagem;
-- a documentação e a Wiki devem considerar apenas Prisma e seus artefatos como referência principal para evolução do banco.
+Os artefatos oficiais dessa estratégia ficam em `back/prisma/`, junto da configuração do backend.
 
 ## Próximos passos sugeridos
 

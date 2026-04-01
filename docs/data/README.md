@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Esta área será usada para consolidar o modelo relacional, o DER, o dicionário de dados e as decisões de integridade da base PostgreSQL, com a evolução estrutural pensada a partir de ORM e não de scripts SQL manuais.
+Esta área será usada para consolidar o modelo relacional, o DER, o dicionário de dados e as decisões de integridade da base PostgreSQL, com a evolução estrutural centralizada em `Prisma ORM`.
 
 ## Núcleos de dados previstos
 
@@ -33,10 +33,6 @@ Prisma é a tecnologia oficial para evolução do banco no projeto. Isso signifi
 
 Essa direção existe para evitar um problema comum em times acadêmicos: cada máquina ficar com um banco diferente depois de algumas semanas de desenvolvimento, além de reduzir acoplamento prematuro com SQL manual.
 
-## Fluxo descontinuado
-
-Ainda existe um scaffold em `infra/db/` baseado em scripts SQL manuais. Esse material está descontinuado e não deve ser usado como estratégia arquitetural, operacional ou documental do projeto.
-
 ## Regras de evolução do banco
 
 - mudanças estruturais entram por models e novas migrations geradas pelo Prisma;
@@ -56,4 +52,4 @@ Ainda existe um scaffold em `infra/db/` baseado em scripts SQL manuais. Esse mat
 
 ## Bootstrap atual
 
-O bootstrap inicial do banco ainda está representado em `infra/db/init/`, mas esse arranjo está descontinuado. A referência oficial do projeto deve ficar centralizada no Prisma no backend.
+O bootstrap estrutural do banco agora fica centralizado em `back/prisma/schema.prisma`, `back/prisma/migrations/` e `back/prisma/seed.ts`.
