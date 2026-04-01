@@ -24,7 +24,7 @@ direction TB
 
     class Specification~T~ {
         
-        +isSatisfiedBy(candidate: T) boolean
+        +isSatisfiedBy(candidate: T) Promise~boolean~
         +and(other: Specification~T~) Specification~T~
         +or(other: Specification~T~) Specification~T~
         +not() Specification~T~

@@ -49,29 +49,53 @@ describe('shared domain core (aggregate, events, specification)', () => {
 		assert.ok(typeof event.eventId === 'string');
 	});
 
-	it('composes specifications with and, or, not', () => {
+	it('does not allow mutating occurredAt via Date aliasing', () => {
+		const fixed = new Date('2020-01-01T00:00:00.000Z');
+		const event = new SampleEvent('a', 'E', fixed);
+		const first = event.occurredAt;
+		first.setUTCFullYear(2030);
+		assert.equal(event.occurredAt.getTime(), fixed.getTime());
+		assert.notEqual(first.getTime(), event.occurredAt.getTime());
+	});
+
+	it('composes async specifications with and, or, not', async () => {
 		const isPositive: Specification<number> =
 			new (class extends AbstractSpecification<number> {
-				isSatisfiedBy(candidate: number): boolean {
+				async isSatisfiedBy(candidate: number): Promise<boolean> {
 					return candidate > 0;
 				}
 			})();
 
 		const isEven: Specification<number> =
 			new (class extends AbstractSpecification<number> {
-				isSatisfiedBy(candidate: number): boolean {
+				async isSatisfiedBy(candidate: number): Promise<boolean> {
 					return candidate % 2 === 0;
 				}
 			})();
 
 		const positiveAndEven = isPositive.and(isEven);
-		assert.equal(positiveAndEven.isSatisfiedBy(4), true);
-		assert.equal(positiveAndEven.isSatisfiedBy(3), false);
+		assert.equal(await positiveAndEven.isSatisfiedBy(4), true);
+		assert.equal(await positiveAndEven.isSatisfiedBy(3), false);
 
 		const positiveOrEven = isPositive.or(isEven);
-		assert.equal(positiveOrEven.isSatisfiedBy(-2), true);
+		assert.equal(await positiveOrEven.isSatisfiedBy(-2), true);
 
-		assert.equal(isPositive.not().isSatisfiedBy(-1), true);
-		assert.equal(isPositive.not().isSatisfiedBy(1), false);
+		assert.equal(await isPositive.not().isSatisfiedBy(-1), true);
+		assert.equal(await isPositive.not().isSatisfiedBy(1), false);
+	});
+
+	it('allows repository-style async specifications on the same contract', async () => {
+		const seen: number[] = [];
+		const tracked: Specification<number> =
+			new (class extends AbstractSpecification<number> {
+				async isSatisfiedBy(candidate: number): Promise<boolean> {
+					seen.push(candidate);
+					await Promise.resolve();
+					return candidate === 42;
+				}
+			})();
+
+		assert.equal(await tracked.isSatisfiedBy(42), true);
+		assert.deepEqual(seen, [42]);
 	});
 });

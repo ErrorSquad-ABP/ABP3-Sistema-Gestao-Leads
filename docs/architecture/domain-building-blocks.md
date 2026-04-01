@@ -104,6 +104,8 @@ O contrato define intenção. A infraestrutura define detalhe técnico.
 - precisa ser reutilizada;
 - combina múltiplos critérios.
 
+O contrato compartilhado no backend é **assíncrono**: `isSatisfiedBy` retorna `Promise<boolean>`. Assim, especificações puramente em memória e especificações que consultam repositório (por exemplo unicidade de e-mail) implementam a **mesma interface**, sem tipo paralelo nem adaptadores.
+
 Ela deve ser adotada quando realmente trouxer clareza. Não precisa ser introduzida por formalismo.
 
 ## Factories
