@@ -1,3 +1,5 @@
+```mermaid
+
 ---
 config:
   layout: elk
@@ -17,7 +19,7 @@ class DomainEvent {
 
 class Specification {
   <<interface>>
-  +isSatisfiedBy(candidate: T) boolean
+  +isSatisfiedBy(candidate: T) Promise~boolean~
 }
 
 class Name {
