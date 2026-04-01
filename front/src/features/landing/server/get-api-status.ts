@@ -1,4 +1,4 @@
-import { env } from '../../../shared/config/env';
+import { env } from '../../../lib/env';
 import type { ApiStatusSnapshot } from '../components/landing-page';
 
 async function getApiStatus(): Promise<ApiStatusSnapshot> {

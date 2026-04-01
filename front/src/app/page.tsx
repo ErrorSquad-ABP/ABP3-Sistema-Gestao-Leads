@@ -1,5 +1,5 @@
-import { LandingPage } from '../modules/landing/components/landing-page';
-import { getApiStatus } from '../modules/landing/server/get-api-status';
+import { LandingPage } from '../features/landing/components/landing-page';
+import { getApiStatus } from '../features/landing/server/get-api-status';
 
 export const dynamic = 'force-dynamic';
 
