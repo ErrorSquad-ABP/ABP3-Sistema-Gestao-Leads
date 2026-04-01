@@ -1,12 +1,16 @@
 {
 	"extends": "../tsconfig.base.json",
 	"compilerOptions": {
+		"baseUrl": ".",
 		"jsx": "preserve",
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
 		"noEmit": true,
 		"incremental": true,
 		"plugins": [{ "name": "next" }],
+		"paths": {
+			"@/*": ["./src/*"]
+		},
 		"types": ["node"]
 	},
 	"include": [
