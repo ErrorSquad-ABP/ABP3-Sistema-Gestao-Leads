@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 import './globals.css';
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
+import { Geist } from 'next/font/google';
+import { cn } from '@/lib/utils';
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 const metadata: Metadata = {
 	title: 'ErrorSquad-ABP | Sistema de Gestão de Leads',
@@ -19,7 +19,7 @@ type RootLayoutProps = {
 
 function RootLayout({ children }: RootLayoutProps) {
 	return (
-		<html lang="pt-BR" className={cn("font-sans", geist.variable)}>
+		<html lang="pt-BR" className={cn('font-sans', geist.variable)}>
 			<body>{children}</body>
 		</html>
 	);
