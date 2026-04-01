@@ -202,9 +202,9 @@ A lógica de criação e as regras de negócio entre entidades não estão mais 
 Este deve ser o primeiro módulo completamente funcional.
 
 ## Pasta Alvo
-- `modules/lead/application`
-- `modules/lead/presentation`
-- `modules/lead/infrastructure`
+- `modules/leads/application`
+- `modules/leads/presentation`
+- `modules/leads/infrastructure`
 
 ---
 
@@ -492,24 +492,24 @@ Se o objetivo é começar a codificar imediatamente com o menor risco, utilize e
 - [ ] `DomainEventDispatcher`
 - [ ] `OutboxEventProcessor`
 
-### `modules/lead/domain`
+### `modules/leads/domain`
 - [ ] `Lead`
 - [ ] `LeadFactory`
 
-### `modules/lead/application`
+### `modules/leads/application`
 - [ ] DTOs
 - [ ] casos de uso
 
-### `modules/lead/infrastructure`
+### `modules/leads/infrastructure`
 - [ ] `LeadMapper`
 - [ ] `LeadRecord`
 - [ ] `LeadPrismaRepository`
 - [ ] `LeadRepositoryFactory`
 
-### `modules/lead/presentation`
+### `modules/leads/presentation`
 - [ ] `LeadController`
 
-### `modules/customer`, `modules/user`, `modules/team`, `modules/store`, `modules/deal`, `modules/audit`
+### `modules/customers`, `modules/users`, `modules/teams`, `modules/stores`, `modules/deals`, `modules/audit-logs`
 - [ ] replicar o mesmo padrão de camadas após a fatia do lead estar estável
 
 ---

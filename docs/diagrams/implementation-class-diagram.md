@@ -64,6 +64,11 @@ direction TB
 	    +value: string
     }
 
+    class Cpf {
+	    -_value: string
+	    +value: string
+    }
+
     class PasswordHash {
 	    -_value: string
 	    +value: string
@@ -155,9 +160,11 @@ direction TB
 	    +name: Name
 	    +email: Email?
 	    +phone: Phone?
+	    +cpf: Cpf?
 	    +changeName(name: Name) void
 	    +changeEmail(email: Email?) void
 	    +changePhone(phone: Phone?) void
+	    +changeCpf(cpf: Cpf?) void
     }
 
     class Lead {
@@ -239,6 +246,7 @@ direction TB
 	    +delete(id: UUID) Promise~void~
 	    +findById(id: UUID) Promise~Customer?~
 	    +findByEmail(email: string) Promise~Customer?~
+	    +findByCpf(cpf: string) Promise~Customer?~
 	    +list() Promise~Customer[]~
     }
 
@@ -411,6 +419,7 @@ direction TB
 	    +delete(id: UUID) Promise~void~
 	    +findById(id: UUID) Promise~Customer?~
 	    +findByEmail(email: string) Promise~Customer?~
+	    +findByCpf(cpf: string) Promise~Customer?~
 	    +list() Promise~Customer[]~
     }
 
@@ -453,6 +462,7 @@ direction TB
 	    +name: string
 	    +email: string?
 	    +phone: string?
+	    +cpf: string?
     }
 
     class LeadRecord {
@@ -626,6 +636,7 @@ direction TB
     Customer *-- Name
     Customer o-- Email
     Customer o-- Phone
+    Customer o-- Cpf
     Lead *-- LeadSource
     Lead --> LeadStatus
     Lead ..> Customer : customerId
@@ -728,6 +739,7 @@ direction TB
     CustomerFactory ..> Name
     CustomerFactory ..> Email
     CustomerFactory ..> Phone
+    CustomerFactory ..> Cpf
     DealFactory ..> Deal
     DealFactory ..> DealStatus
     DealFactory ..> DealStage

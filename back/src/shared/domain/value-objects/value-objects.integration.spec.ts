@@ -5,6 +5,7 @@ import { DomainValidationError } from '../errors/domain-validation.error.js';
 import {
 	ALLOWED_LEAD_SOURCES,
 	CloseReason,
+	Cpf,
 	Email,
 	LeadSource,
 	Name,
@@ -28,6 +29,7 @@ describe('shared value objects integration', () => {
 			CloseReason.create('Cliente optou por outra oferta').value,
 			['Cliente', 'optou', 'por', 'outra', 'oferta'].join(' '),
 		);
+		assert.equal(Cpf.create('529.982.247-25').value, '52998224725');
 	});
 
 	it('keeps shared value objects aligned with equality semantics', () => {
@@ -45,6 +47,10 @@ describe('shared value objects integration', () => {
 			CloseReason.create('Sem interesse atual').equals(
 				CloseReason.from('Sem interesse atual'),
 			),
+			true,
+		);
+		assert.equal(
+			Cpf.create('52998224725').equals(Cpf.from('529.982.247-25')),
 			true,
 		);
 	});
@@ -88,6 +94,9 @@ describe('shared value objects integration', () => {
 			() => CloseReason.create('bad\nreason'),
 			DomainValidationError,
 		);
+
+		assert.throws(() => Cpf.create('123'), DomainValidationError);
+		assert.throws(() => Cpf.create('11111111111'), DomainValidationError);
 	});
 
 	it('exposes lead source catalog ready for entity constraints', () => {
