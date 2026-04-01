@@ -1,3 +1,4 @@
+export { Cpf } from './cpf.value-object.js';
 export { CloseReason } from './close-reason.value-object.js';
 export { Email } from './email.value-object.js';
 export type { LeadSourceValue } from './lead-source.value-object.js';
