@@ -19,8 +19,9 @@ Os principais motivos são:
 
 - App Router mais adequado para estruturar páginas, layouts e fluxos;
 - suporte natural a `Server Components`, reduzindo código desnecessário no cliente;
-- boa organização para uma aplicação que vai crescer por módulos;
+- boa organização para uma aplicação que vai crescer por features;
 - integração simples com `TypeScript`;
+- ecossistema maduro para `Tailwind CSS 4`, `shadcn/ui` e composição de UI reaproveitável;
 - alinhamento com a ideia de separar a experiência web da API, sem misturar backend de negócio no frontend.
 
 ## Como o Next.js será usado neste projeto
@@ -41,28 +42,42 @@ src/
 ├── app/
 │   ├── layout.tsx
 │   ├── page.tsx
-│   └── globals.css
+│   └── styles.css
+├── components/
+│   └── shared/
 ├── features/
+│   ├── landing/
+│   │   ├── components/
+│   │   └── server/
 │   └── leads/
+│       ├── api/
 │       ├── components/
-│       ├── server/
 │       ├── hooks/
+│       ├── model/
+│       ├── schemas/
 │       └── types/
 ├── lib/
+│   ├── auth/
+│   ├── constants/
 │   ├── env.ts
-│   └── ...
-└── components/
-    └── ui/
+│   ├── http/
+│   ├── query/
+│   ├── routes/
+│   └── utils.ts
+└── styles/
+    └── globals.css
 ```
 
 ## Regra de uso das pastas
 
 - `app`: estrutura global da aplicação, rotas, layouts, páginas e estilos globais.
 - `features`: organização por feature ou domínio de negócio do frontend.
-- `lib`: configuração, clientes HTTP e utilitários compartilhados.
-- `components`: UI reutilizável (por exemplo componentes shadcn).
-- `server`: integração com a API, composição de dados no servidor e adaptação de contrato.
+- `components/shared`: UI reutilizável entre múltiplas features.
+- `lib`: configuração, auth, clientes HTTP, query client, rotas e utilitários compartilhados.
+- `server`: integração com a API, composição de dados no servidor e adaptação de contrato quando a feature exigir execução server-side.
+- `api`: serviços HTTP reutilizáveis por uma feature.
 - `hooks`: comportamento de interface e interação local do cliente, quando necessário.
+- `model`, `schemas` e `types`: contratos, tipagens e validações da feature.
 
 ## Guia rápido de uso no dia a dia
 
@@ -88,7 +103,7 @@ Use `use client` apenas quando a tela ou componente precisar de:
 O padrão esperado é:
 
 - buscar dados no servidor sempre que possível;
-- centralizar chamadas HTTP em `features/*/server` ou em `lib`;
+- centralizar chamadas HTTP em `features/*/server`, `features/*/api` ou `lib/http`;
 - evitar `fetch` espalhado em componentes visuais;
 - manter o contrato com a API explícito.
 
@@ -96,7 +111,7 @@ O padrão esperado é:
 
 - não duplicar regra de negócio do backend;
 - não esconder permissão somente no frontend;
-- não transformar `lib` em pasta de sobras;
+- não transformar `lib` ou `components/shared` em pasta de sobras;
 - não usar `use client` por reflexo;
 - não acoplar componente visual diretamente a detalhes de infraestrutura.
 
@@ -104,6 +119,15 @@ O padrão esperado é:
 
 - `NEXT_PUBLIC_API_URL`: URL pública usada por código exposto ao navegador.
 - `API_INTERNAL_URL`: URL usada pelo servidor do frontend para chamar a API internamente.
+- o acesso a essas variáveis deve passar por `src/lib/env.ts`.
+
+## Stack operacional atual do frontend
+
+- `Next.js 16` com `React 19` e `TypeScript`;
+- `Tailwind CSS 4` com `PostCSS`;
+- `shadcn/ui`, `Radix UI`, `lucide-react`, `class-variance-authority` e `tailwind-merge` para composição visual;
+- `Prettier` para formatação local do workspace do frontend;
+- `ESLint` com `eslint-config-next` para validação estática.
 
 ## Regra de arquitetura importante
 
@@ -111,8 +135,8 @@ Mesmo usando `Next.js`, o frontend não é o backend do sistema. A aplicação w
 
 ## Como evoluir a partir da base atual
 
-1. Criar pastas em `features` por feature de negócio.
+1. Criar novas pastas em `features` por domínio, repetindo o conjunto mínimo de `api`, `components`, `hooks`, `model`, `schemas` e `types` quando fizer sentido.
 2. Priorizar `Server Components` na composição inicial das telas.
-3. Isolar integrações HTTP em funções específicas de servidor.
+3. Isolar integrações HTTP em funções específicas de servidor ou em serviços da feature.
 4. Introduzir `Client Components` apenas quando a interação realmente exigir.
 5. Manter contratos estáveis com a API antes de expandir a interface.

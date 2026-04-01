@@ -6,11 +6,11 @@ O frontend será a aplicação web do sistema, responsável por oferecer uma nav
 
 ## Stack definida
 
-- Next.js com React e TypeScript
+- Next.js 16 com React 19 e TypeScript
 - App Router para composição de rotas, layouts e server components
-- CSS modularizado por responsabilidade
-- Biome para format e lint rápido
-- ESLint para qualidade estática complementar e segurança
+- Tailwind CSS 4, shadcn/ui e Radix para a base visual
+- Prettier para formatação do workspace do frontend
+- ESLint com `eslint-config-next` para qualidade estática complementar
 
 Guia complementar de uso do Next.js nesta base:
 
@@ -30,45 +30,50 @@ Guia complementar de uso do Next.js nesta base:
 ```text
 front/
 ├── src/
-│   ├── app/                # App Router, layouts, páginas e estilos globais
-│   ├── features/           # Fluxos por domínio (landing, leads, etc.)
-│   ├── lib/                # Config, HTTP, utilitários compartilhados
-│   └── components/         # UI compartilhada (ex.: shadcn)
+│   ├── app/                # App Router, páginas, layouts e entrypoint de estilos
+│   ├── components/         # Componentes compartilhados de UI
+│   │   └── shared/
+│   ├── features/           # Fatias por domínio com api, model, schema e UI
+│   ├── lib/                # Config, auth, HTTP, query e utilitários
+│   └── styles/             # CSS compartilhado de apoio, quando necessário
 ├── .env.example            # Variáveis do frontend e URL da API
+├── components.json         # Configuração do shadcn/ui
 ├── next.config.ts          # Configuração do Next.js
 ├── next-env.d.ts           # Tipagens geradas pelo Next.js
+├── postcss.config.mjs      # Integração do Tailwind CSS 4
 ├── package.json
 └── tsconfig.json
 ```
 
-## Módulos previstos
+## Features presentes na base
 
-- `auth`: login, sessão e atualização de credenciais.
-- `dashboard`: indicadores operacionais e analíticos.
-- `leads`: captação, listagem e edição.
-- `customers`: vínculo e manutenção dos clientes.
-- `negotiations`: evolução, estágio, status e histórico.
-- `settings`: perfil do usuário e preferências operacionais.
+- `landing`: página inicial e checagem de disponibilidade da API.
+- `login`: autenticação do usuário.
+- `leads`, `customers`, `deals`, `stores`, `teams` e `users`: fatias previstas para o fluxo comercial e administrativo.
+- `audit-logs`: apoio às telas e consultas de auditoria.
 
 ## Boas práticas esperadas
 
 - Não duplicar regra de negócio do backend.
 - Não esconder autorização somente no frontend.
 - Priorizar acessibilidade, feedback visual e responsividade.
-- Centralizar integração HTTP em `lib` ou em `features/*/server`.
+- Centralizar integração HTTP em `features/*/api`, `features/*/server` ou `lib/http`.
 - Deixar os componentes de página livres de lógica de infraestrutura.
 - Consumir a API separada por contratos explícitos e payloads previsíveis.
 
 ## Convenções de pastas
 
 - `app`: tudo que compõe o esqueleto global da aplicação.
-- `features`: telas, componentes e fluxos específicos de cada domínio.
-- `lib` e `components`: elementos reaproveitáveis e infraestrutura de UI.
+- `features`: telas, componentes, contratos e modelos específicos de cada domínio.
+- `components/shared`: blocos visuais reaproveitáveis entre múltiplas features.
+- `lib`: infraestrutura transversal de frontend, incluindo `env`, clientes HTTP e query setup.
+- `styles`: CSS compartilhado de apoio; o entrypoint global atual do App Router está em `src/app/styles.css`.
 
 ## Variáveis de ambiente
 
 - `NEXT_PUBLIC_API_URL`: URL pública da API para navegação e chamadas expostas ao navegador.
 - `API_INTERNAL_URL`: URL interna usada pelo servidor Next do frontend para consultar a API sem depender da mesma origem.
+- O acesso a essas variáveis deve ser centralizado em `src/lib/env.ts`.
 
 ## Evolução esperada
 
