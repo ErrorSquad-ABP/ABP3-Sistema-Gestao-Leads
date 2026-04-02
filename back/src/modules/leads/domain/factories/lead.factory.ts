@@ -53,19 +53,29 @@ class LeadFactory {
 	}
 
 	reassign(lead: Lead, ownerUserId: string | null): Lead {
+		const nextOwner = ownerUserId === null ? null : Uuid.parse(ownerUserId);
+		const prevOwner = lead.ownerUserId;
+		const unchanged =
+			(prevOwner === null && nextOwner === null) ||
+			(prevOwner !== null && nextOwner !== null && prevOwner.equals(nextOwner));
+
+		if (unchanged) {
+			return lead;
+		}
+
 		const updated = new Lead(
 			lead.id,
 			lead.customerId,
 			lead.storeId,
-			ownerUserId === null ? null : Uuid.parse(ownerUserId),
+			nextOwner,
 			lead.source,
 			lead.status,
 		);
 		updated.recordDomainEvent(
 			new LeadReassignedEvent(
 				lead.id.toString(),
-				lead.ownerUserId?.toString() ?? null,
-				ownerUserId,
+				prevOwner?.toString() ?? null,
+				nextOwner?.toString() ?? null,
 			),
 		);
 		return updated;
