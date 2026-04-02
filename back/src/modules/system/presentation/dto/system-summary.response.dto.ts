@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 class SystemEndpointsDto {
-	@ApiProperty({ example: '/docs' })
+	@ApiProperty({ example: '/api/docs' })
 	docs!: string;
 
 	@ApiProperty({ example: '/api/health' })

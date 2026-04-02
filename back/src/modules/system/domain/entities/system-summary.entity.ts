@@ -2,7 +2,7 @@ type SystemSummary = {
 	appUrl: string;
 	backendPattern: 'modular-monolith';
 	endpoints: {
-		docs: '/docs';
+		docs: '/api/docs';
 		health: '/api/health';
 		v1: '/api/v1';
 	};

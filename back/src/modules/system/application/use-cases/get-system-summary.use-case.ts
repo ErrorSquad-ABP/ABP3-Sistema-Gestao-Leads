@@ -10,7 +10,7 @@ class GetSystemSummaryUseCase {
 			appUrl: env.appUrl,
 			backendPattern: 'modular-monolith',
 			endpoints: {
-				docs: '/docs',
+				docs: '/api/docs',
 				health: '/api/health',
 				v1: '/api/v1',
 			},
