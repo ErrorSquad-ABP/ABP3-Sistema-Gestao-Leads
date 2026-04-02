@@ -1,22 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
-
-import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
+import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
-import type { CreateLeadDto } from '../dto/create-lead.dto.js';
-// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
-import { LeadFactory } from '../../domain/factories/lead.factory.js';
-import { LeadInvalidCustomerError } from '../../domain/errors/lead-invalid-customer.error.js';
-import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
-import { LeadInvalidStoreError } from '../../domain/errors/lead-invalid-store.error.js';
-// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
-import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
-// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
-import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { CustomerRepositoryFactory } from '../../../customers/infrastructure/persistence/factories/customer-repository.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { StoreRepositoryFactory } from '../../../stores/infrastructure/persistence/factories/store-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
+import { LeadInvalidCustomerError } from '../../domain/errors/lead-invalid-customer.error.js';
+import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
+import { LeadInvalidStoreError } from '../../domain/errors/lead-invalid-store.error.js';
+// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
+import { LeadFactory } from '../../domain/factories/lead.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
+import type { CreateLeadDto } from '../dto/create-lead.dto.js';
 
 @Injectable()
 class CreateLeadUseCase {
@@ -32,8 +31,7 @@ class CreateLeadUseCase {
 	) {}
 
 	async execute(dto: CreateLeadDto) {
-		await this.unitOfWork.begin();
-		try {
+		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const users = this.userRepositoryFactory.create(transactionContext);
 			const customers =
@@ -59,13 +57,8 @@ class CreateLeadUseCase {
 			}
 
 			const lead = this.leadFactory.create(dto);
-			const created = await leads.create(lead);
-			await this.unitOfWork.commit();
-			return created;
-		} catch (error) {
-			await this.unitOfWork.rollback();
-			throw error;
-		}
+			return leads.create(lead);
+		});
 	}
 }
 

@@ -1,11 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-
-import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
-// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
-import { LeadFactory } from '../../domain/factories/lead.factory.js';
+import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
+// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
+import { LeadFactory } from '../../domain/factories/lead.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 
@@ -20,8 +19,7 @@ class ConvertLeadUseCase {
 	) {}
 
 	async execute(leadId: string) {
-		await this.unitOfWork.begin();
-		try {
+		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 
@@ -31,13 +29,8 @@ class ConvertLeadUseCase {
 			}
 
 			const convertedLead = this.leadFactory.convert(lead);
-			const converted = await leads.update(convertedLead);
-			await this.unitOfWork.commit();
-			return converted;
-		} catch (error) {
-			await this.unitOfWork.rollback();
-			throw error;
-		}
+			return leads.update(convertedLead);
+		});
 	}
 }
 

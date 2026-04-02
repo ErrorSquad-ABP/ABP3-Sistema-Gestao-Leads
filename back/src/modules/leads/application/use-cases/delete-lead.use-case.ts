@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-
-import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
+import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
@@ -15,8 +14,7 @@ class DeleteLeadUseCase {
 	constructor(private readonly leadRepositoryFactory: LeadRepositoryFactory) {}
 
 	async execute(leadId: string): Promise<void> {
-		await this.unitOfWork.begin();
-		try {
+		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 
@@ -27,11 +25,7 @@ class DeleteLeadUseCase {
 			}
 
 			await leads.delete(leadIdVo);
-			await this.unitOfWork.commit();
-		} catch (error) {
-			await this.unitOfWork.rollback();
-			throw error;
-		}
+		});
 	}
 }
 
