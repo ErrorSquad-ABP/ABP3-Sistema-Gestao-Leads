@@ -1,10 +1,32 @@
-type LeadResponseDto = {
-	readonly id: string;
-	readonly customerId: string;
-	readonly storeId: string;
-	readonly ownerUserId: string | null;
-	readonly source: string;
-	readonly status: string;
-};
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export type { LeadResponseDto };
+import { LEAD_STATUSES } from '../../../../shared/domain/enums/lead-status.enum.js';
+import { ALLOWED_LEAD_SOURCES } from '../../../../shared/domain/value-objects/lead-source.value-object.js';
+
+class LeadResponseDto {
+	@ApiProperty({ format: 'uuid' })
+	id!: string;
+
+	@ApiProperty({ format: 'uuid' })
+	customerId!: string;
+
+	@ApiProperty({ format: 'uuid' })
+	storeId!: string;
+
+	@ApiPropertyOptional({ format: 'uuid', nullable: true })
+	ownerUserId!: string | null;
+
+	@ApiProperty({
+		enum: ALLOWED_LEAD_SOURCES,
+		example: 'whatsapp',
+	})
+	source!: string;
+
+	@ApiProperty({
+		enum: LEAD_STATUSES,
+		example: 'NEW',
+	})
+	status!: string;
+}
+
+export { LeadResponseDto };
