@@ -3,11 +3,11 @@
  */
 type UUID = string;
 
-/** Surrogate integer id for Team (diagram). */
-type TeamId = number;
+/** Team id aligned with Prisma UUID schema. */
+type TeamId = UUID;
 
-/** Surrogate integer id for Store (diagram). */
-type StoreId = number;
+/** Store id aligned with Prisma UUID schema. */
+type StoreId = UUID;
 
 /** Audit log primary key (hash / opaque string). */
 type AuditLogId = string;

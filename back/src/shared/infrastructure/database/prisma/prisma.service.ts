@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 
+import { env } from '../../../../config/env.js';
 import { PrismaClient } from '../../../../generated/prisma/client.js';
 
 @Injectable()
@@ -13,7 +14,7 @@ class PrismaService
 	implements OnModuleInit, OnModuleDestroy
 {
 	constructor() {
-		const connectionString = process.env.DATABASE_URL;
+		const connectionString = env.databaseUrl;
 
 		if (!connectionString) {
 			throw new Error('DATABASE_URL is required to initialize Prisma');

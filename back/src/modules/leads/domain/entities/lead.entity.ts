@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../../../../shared/domain/core/aggregate-root.js';
+import type { DomainEvent } from '../../../../shared/domain/events/domain-event.js';
 import type { LeadStatus } from '../../../../shared/domain/enums/lead-status.enum.js';
 import type {
 	StoreId,
@@ -32,6 +33,14 @@ class Lead extends AggregateRoot {
 		this.ownerUserId = ownerUserId;
 		this.source = source;
 		this.status = status;
+	}
+
+	recordDomainEvent(event: DomainEvent): void {
+		this.addDomainEvent(event);
+	}
+
+	isConverted(): boolean {
+		return this.status === 'CONVERTED';
 	}
 }
 
