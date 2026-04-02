@@ -12,15 +12,18 @@ import {
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
-	ApiCreatedResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
-	ApiOkResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
 } from '@nestjs/swagger';
 
+import {
+	ApiCreatedResponseEnvelope,
+	ApiOkResponseEnvelope,
+	ApiOkResponseEnvelopeArray,
+} from '../../../../shared/presentation/swagger/api-success-response.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ConvertLeadUseCase } from '../../application/use-cases/convert-lead.use-case.js';
@@ -72,7 +75,7 @@ class LeadController {
 
 	@Post()
 	@ApiOperation({ summary: 'Criar lead' })
-	@ApiCreatedResponse({ type: LeadResponseDto })
+	@ApiCreatedResponseEnvelope(LeadResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async create(@Body() body: CreateLeadValidator) {
@@ -87,7 +90,7 @@ class LeadController {
 		format: 'uuid',
 		description: 'Identificador do usuário dono dos leads',
 	})
-	@ApiOkResponse({ type: LeadResponseDto, isArray: true })
+	@ApiOkResponseEnvelopeArray(LeadResponseDto)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	listByOwner(@Param('ownerUserId', ParseUUIDPipe) ownerUserId: string) {
 		return this.listOwnLeadsUseCase
@@ -102,7 +105,7 @@ class LeadController {
 		format: 'uuid',
 		description: 'Identificador do time',
 	})
-	@ApiOkResponse({ type: LeadResponseDto, isArray: true })
+	@ApiOkResponseEnvelopeArray(LeadResponseDto)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	listByTeam(@Param('teamId', ParseUUIDPipe) teamId: string) {
 		return this.listTeamLeadsUseCase
@@ -113,7 +116,7 @@ class LeadController {
 	@Get(':id')
 	@ApiOperation({ summary: 'Buscar lead por id' })
 	@ApiParam({ name: 'id', format: 'uuid' })
-	@ApiOkResponse({ type: LeadResponseDto })
+	@ApiOkResponseEnvelope(LeadResponseDto)
 	@ApiBadRequestResponse({
 		description: 'UUID inválido no parâmetro de rota.',
 	})
@@ -126,7 +129,7 @@ class LeadController {
 	@Patch(':id')
 	@ApiOperation({ summary: 'Atualizar lead' })
 	@ApiParam({ name: 'id', format: 'uuid' })
-	@ApiOkResponse({ type: LeadResponseDto })
+	@ApiOkResponseEnvelope(LeadResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
@@ -140,7 +143,7 @@ class LeadController {
 	@Patch(':id/reassign')
 	@ApiOperation({ summary: 'Reatribuir lead' })
 	@ApiParam({ name: 'id', format: 'uuid' })
-	@ApiOkResponse({ type: LeadResponseDto })
+	@ApiOkResponseEnvelope(LeadResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async reassign(
@@ -158,7 +161,7 @@ class LeadController {
 			'Marca o lead como CONVERTED. Falha em tempo de execução se o lead já estiver convertido (erro de domínio).',
 	})
 	@ApiParam({ name: 'id', format: 'uuid' })
-	@ApiOkResponse({ type: LeadResponseDto })
+	@ApiOkResponseEnvelope(LeadResponseDto)
 	@ApiBadRequestResponse({
 		description: 'UUID inválido no parâmetro de rota.',
 	})

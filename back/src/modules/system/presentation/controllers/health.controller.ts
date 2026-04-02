@@ -1,10 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-	ApiOkResponse,
-	ApiOperation,
-	ApiProperty,
-	ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+
+import { ApiOkResponseEnvelope } from '../../../../shared/presentation/swagger/api-success-response.js';
 
 class HealthResponseDto {
 	@ApiProperty({ example: 'ok' })
@@ -23,7 +20,10 @@ class HealthController {
 		description:
 			'Indica se o processo HTTP está ativo. Não valida conexão com banco ou serviços externos.',
 	})
-	@ApiOkResponse({ description: 'Serviço disponível', type: HealthResponseDto })
+	@ApiOkResponseEnvelope(HealthResponseDto, {
+		description:
+			'Serviço disponível (corpo real: envelope global; `data` contém o payload).',
+	})
 	getHealth(): HealthResponseDto {
 		return {
 			status: 'ok',
