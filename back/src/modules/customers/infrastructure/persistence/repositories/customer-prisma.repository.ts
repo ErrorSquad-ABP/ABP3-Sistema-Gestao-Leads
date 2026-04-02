@@ -2,6 +2,7 @@ import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
+import { Cpf } from '../../../../../shared/domain/value-objects/cpf.value-object.js';
 import { Email } from '../../../../../shared/domain/value-objects/email.value-object.js';
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { Phone } from '../../../../../shared/domain/value-objects/phone.value-object.js';
@@ -14,6 +15,7 @@ type CustomerRecord = {
 	readonly name: string;
 	readonly email: string | null;
 	readonly phone: string | null;
+	readonly cpf: string | null;
 };
 
 class CustomerPrismaRepository implements ICustomerRepository {
@@ -28,6 +30,7 @@ class CustomerPrismaRepository implements ICustomerRepository {
 				email: customer.email?.value ?? null,
 				name: customer.name.value,
 				phone: customer.phone?.value ?? null,
+				cpf: customer.cpf?.value ?? null,
 			},
 		});
 		return this.toDomain(created);
@@ -39,6 +42,7 @@ class CustomerPrismaRepository implements ICustomerRepository {
 				email: customer.email?.value ?? null,
 				name: customer.name.value,
 				phone: customer.phone?.value ?? null,
+				cpf: customer.cpf?.value ?? null,
 			},
 			where: { id: customer.id.value },
 		});
@@ -67,9 +71,15 @@ class CustomerPrismaRepository implements ICustomerRepository {
 		return customer ? this.toDomain(customer) : null;
 	}
 
-	async findByCpf(_cpf: string): Promise<Customer | null> {
-		// CPF is not persisted yet in Prisma schema.
-		return null;
+	/**
+	 * Busca por CPF normalizado (11 dígitos). Entrada inválida: `Cpf.create` lança (falha explícita).
+	 */
+	async findByCpf(cpf: string): Promise<Customer | null> {
+		const normalized = Cpf.create(cpf);
+		const customer = await this.client.customer.findUnique({
+			where: { cpf: normalized.value },
+		});
+		return customer ? this.toDomain(customer) : null;
 	}
 
 	async list(): Promise<Customer[]> {
@@ -85,7 +95,7 @@ class CustomerPrismaRepository implements ICustomerRepository {
 			Name.create(record.name),
 			record.email ? Email.create(record.email) : null,
 			record.phone ? Phone.create(record.phone) : null,
-			null,
+			record.cpf ? Cpf.create(record.cpf) : null,
 		);
 	}
 
