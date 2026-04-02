@@ -10,7 +10,7 @@ import type { LeadRecord } from '../records/lead.record.js';
 
 const LEAD_SOURCE_TO_PRISMA: Record<string, PrismaLeadSource> = {
 	'digital-form': 'WEBSITE',
-	instagram: 'OTHER',
+	instagram: 'INSTAGRAM',
 	other: 'OTHER',
 	'phone-call': 'PHONE',
 	'store-visit': 'WALK_IN',
@@ -19,6 +19,7 @@ const LEAD_SOURCE_TO_PRISMA: Record<string, PrismaLeadSource> = {
 
 const PRISMA_SOURCE_TO_LEAD: Record<PrismaLeadSource, string> = {
 	INDICATION: 'other',
+	INSTAGRAM: 'instagram',
 	OTHER: 'other',
 	PHONE: 'phone-call',
 	WALK_IN: 'store-visit',
