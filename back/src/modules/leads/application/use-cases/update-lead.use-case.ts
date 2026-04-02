@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
+import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import type { UpdateLeadDto } from '../dto/update-lead.dto.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadFactory } from '../../domain/factories/lead.factory.js';
@@ -37,23 +38,23 @@ class UpdateLeadUseCase {
 			const stores = this.storeRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 
-			const existing = await leads.findById(leadId);
+			const existing = await leads.findById(Uuid.parse(leadId));
 			if (!existing) {
 				throw new LeadNotFoundError(leadId);
 			}
 
-			const customer = await customers.findById(dto.customerId);
+			const customer = await customers.findById(Uuid.parse(dto.customerId));
 			if (!customer) {
 				throw new LeadInvalidCustomerError(dto.customerId);
 			}
 
-			const store = await stores.findById(dto.storeId);
+			const store = await stores.findById(Uuid.parse(dto.storeId));
 			if (!store) {
 				throw new LeadInvalidStoreError(dto.storeId);
 			}
 
 			if (dto.ownerUserId) {
-				const owner = await users.findById(dto.ownerUserId);
+				const owner = await users.findById(Uuid.parse(dto.ownerUserId));
 				if (!owner) {
 					throw new LeadInvalidOwnerError(dto.ownerUserId);
 				}

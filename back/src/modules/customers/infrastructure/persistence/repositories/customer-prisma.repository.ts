@@ -1,6 +1,7 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
+import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { Email } from '../../../../../shared/domain/value-objects/email.value-object.js';
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { Phone } from '../../../../../shared/domain/value-objects/phone.value-object.js';
@@ -39,17 +40,23 @@ class CustomerPrismaRepository implements ICustomerRepository {
 				name: customer.name.value,
 				phone: customer.phone?.value ?? null,
 			},
-			where: { id: customer.id },
+			where: { id: customer.id.value },
 		});
 		return this.toDomain(updated);
 	}
 
-	async delete(id: string): Promise<void> {
-		await this.client.customer.delete({ where: { id } });
+	async delete(
+		id: Parameters<ICustomerRepository['delete']>[0],
+	): Promise<void> {
+		await this.client.customer.delete({ where: { id: id.value } });
 	}
 
-	async findById(id: string): Promise<Customer | null> {
-		const customer = await this.client.customer.findUnique({ where: { id } });
+	async findById(
+		id: Parameters<ICustomerRepository['findById']>[0],
+	): Promise<Customer | null> {
+		const customer = await this.client.customer.findUnique({
+			where: { id: id.value },
+		});
 		return customer ? this.toDomain(customer) : null;
 	}
 
@@ -74,7 +81,7 @@ class CustomerPrismaRepository implements ICustomerRepository {
 
 	private toDomain(record: CustomerRecord): Customer {
 		return new Customer(
-			record.id,
+			Uuid.parse(record.id),
 			Name.create(record.name),
 			record.email ? Email.create(record.email) : null,
 			record.phone ? Phone.create(record.phone) : null,

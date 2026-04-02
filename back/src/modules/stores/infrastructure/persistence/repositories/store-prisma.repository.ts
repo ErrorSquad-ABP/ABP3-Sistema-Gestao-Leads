@@ -1,6 +1,7 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
+import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { Store } from '../../../domain/entities/store.entity.js';
 import type { IStoreRepository } from '../../../domain/repositories/store.repository.js';
@@ -29,17 +30,21 @@ class StorePrismaRepository implements IStoreRepository {
 	async update(store: Store): Promise<Store> {
 		const updated = await this.client.store.update({
 			data: { name: store.name.value },
-			where: { id: store.id },
+			where: { id: store.id.value },
 		});
 		return this.toDomain(updated);
 	}
 
-	async delete(id: string): Promise<void> {
-		await this.client.store.delete({ where: { id } });
+	async delete(id: Parameters<IStoreRepository['delete']>[0]): Promise<void> {
+		await this.client.store.delete({ where: { id: id.value } });
 	}
 
-	async findById(id: string): Promise<Store | null> {
-		const store = await this.client.store.findUnique({ where: { id } });
+	async findById(
+		id: Parameters<IStoreRepository['findById']>[0],
+	): Promise<Store | null> {
+		const store = await this.client.store.findUnique({
+			where: { id: id.value },
+		});
 		return store ? this.toDomain(store) : null;
 	}
 
@@ -51,7 +56,7 @@ class StorePrismaRepository implements IStoreRepository {
 	}
 
 	private toDomain(record: StoreRecord): Store {
-		return new Store(record.id, Name.create(record.name));
+		return new Store(Uuid.parse(record.id), Name.create(record.name));
 	}
 
 	private get client(): PrismaClientLike {

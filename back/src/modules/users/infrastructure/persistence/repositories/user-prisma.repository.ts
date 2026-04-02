@@ -1,6 +1,7 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { UserRole as PrismaUserRole } from '../../../../../generated/prisma/enums.js';
 import { parseUserRole } from '../../../../../shared/domain/enums/user-role.enum.js';
+import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { Email } from '../../../../../shared/domain/value-objects/email.value-object.js';
 import { PasswordHash } from '../../../../../shared/domain/value-objects/password-hash.value-object.js';
@@ -46,7 +47,7 @@ class UserPrismaRepository implements IUserRepository {
 				name: user.name.value,
 				password: user.passwordHash.value,
 				role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
-				teamId: user.teamId,
+				teamId: user.teamId?.value ?? null,
 			},
 		});
 		return this.toDomain(created);
@@ -59,19 +60,21 @@ class UserPrismaRepository implements IUserRepository {
 				name: user.name.value,
 				password: user.passwordHash.value,
 				role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
-				teamId: user.teamId,
+				teamId: user.teamId?.value ?? null,
 			},
-			where: { id: user.id },
+			where: { id: user.id.value },
 		});
 		return this.toDomain(updated);
 	}
 
-	async delete(id: string): Promise<void> {
-		await this.client.user.delete({ where: { id } });
+	async delete(id: Parameters<IUserRepository['delete']>[0]): Promise<void> {
+		await this.client.user.delete({ where: { id: id.value } });
 	}
 
-	async findById(id: string): Promise<User | null> {
-		const user = await this.client.user.findUnique({ where: { id } });
+	async findById(
+		id: Parameters<IUserRepository['findById']>[0],
+	): Promise<User | null> {
+		const user = await this.client.user.findUnique({ where: { id: id.value } });
 		return user ? this.toDomain(user) : null;
 	}
 
@@ -89,12 +92,12 @@ class UserPrismaRepository implements IUserRepository {
 
 	private toDomain(record: UserRecord): User {
 		return new User(
-			record.id,
+			Uuid.parse(record.id),
 			Name.create(record.name),
 			Email.create(record.email),
 			PasswordHash.create(record.password),
 			parseUserRole(PRISMA_ROLE_TO_USER[record.role]),
-			record.teamId,
+			record.teamId === null ? null : Uuid.parse(record.teamId),
 		);
 	}
 

@@ -17,6 +17,7 @@ class LeadPrismaRepository implements ILeadRepository {
 		const record = LeadMapper.toRecord(lead);
 		const created = await this.client.lead.create({
 			data: {
+				id: record.id,
 				customerId: record.customerId,
 				ownerUserId: record.ownerUserId,
 				source: record.source,
@@ -42,27 +43,27 @@ class LeadPrismaRepository implements ILeadRepository {
 		return LeadMapper.toDomain(updated);
 	}
 
-	async delete(id: string): Promise<void> {
-		await this.client.lead.delete({ where: { id } });
+	async delete(id: Parameters<ILeadRepository['delete']>[0]): Promise<void> {
+		await this.client.lead.delete({ where: { id: id.value } });
 	}
 
-	async findById(id: string) {
-		const lead = await this.client.lead.findUnique({ where: { id } });
+	async findById(id: Parameters<ILeadRepository['findById']>[0]) {
+		const lead = await this.client.lead.findUnique({ where: { id: id.value } });
 		return lead ? LeadMapper.toDomain(lead) : null;
 	}
 
-	async listByOwner(userId: string) {
+	async listByOwner(userId: Parameters<ILeadRepository['listByOwner']>[0]) {
 		const leads = await this.client.lead.findMany({
 			orderBy: { createdAt: 'desc' },
-			where: { ownerUserId: userId },
+			where: { ownerUserId: userId.value },
 		});
 		return leads.map((lead) => LeadMapper.toDomain(lead));
 	}
 
-	async listByTeam(teamId: string) {
+	async listByTeam(teamId: Parameters<ILeadRepository['listByTeam']>[0]) {
 		const leads = await this.client.lead.findMany({
 			orderBy: { createdAt: 'desc' },
-			where: buildListTeamLeadsWhere(teamId),
+			where: buildListTeamLeadsWhere(teamId.value),
 		});
 		return leads.map((lead) => LeadMapper.toDomain(lead));
 	}

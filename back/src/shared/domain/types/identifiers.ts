@@ -1,15 +1,12 @@
+import type { Uuid } from '../value-objects/uuid.value-object.js';
+
 /**
- * Identifier aliases aligned with the implementation diagram (UUID vs int vs hash).
+ * Aliases nominais sobre {@link Uuid} (todos `@db.Uuid` no Prisma, inclusive AuditLog).
  */
-type UUID = string;
+type AuditLogId = Uuid;
+type StoreId = Uuid;
+type TeamId = Uuid;
+type UUID = Uuid;
 
-/** Team id aligned with Prisma UUID schema. */
-type TeamId = UUID;
-
-/** Store id aligned with Prisma UUID schema. */
-type StoreId = UUID;
-
-/** Audit log primary key (hash / opaque string). */
-type AuditLogId = string;
-
+export { Uuid } from '../value-objects/uuid.value-object.js';
 export type { AuditLogId, StoreId, TeamId, UUID };

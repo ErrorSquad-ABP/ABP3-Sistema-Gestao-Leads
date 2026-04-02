@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
+import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import type { ReassignLeadDto } from '../dto/reassign-lead.dto.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadFactory } from '../../domain/factories/lead.factory.js';
@@ -28,13 +29,13 @@ class ReassignLeadUseCase {
 			const users = this.userRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 
-			const lead = await leads.findById(leadId);
+			const lead = await leads.findById(Uuid.parse(leadId));
 			if (!lead) {
 				throw new LeadNotFoundError(leadId);
 			}
 
 			if (dto.ownerUserId) {
-				const owner = await users.findById(dto.ownerUserId);
+				const owner = await users.findById(Uuid.parse(dto.ownerUserId));
 				if (!owner) {
 					throw new LeadInvalidOwnerError(dto.ownerUserId);
 				}

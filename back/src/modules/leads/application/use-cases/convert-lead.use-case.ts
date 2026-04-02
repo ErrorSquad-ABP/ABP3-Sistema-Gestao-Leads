@@ -4,6 +4,7 @@ import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-w
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadFactory } from '../../domain/factories/lead.factory.js';
+import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 
@@ -23,7 +24,7 @@ class ConvertLeadUseCase {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 
-			const lead = await leads.findById(leadId);
+			const lead = await leads.findById(Uuid.parse(leadId));
 			if (!lead) {
 				throw new LeadNotFoundError(leadId);
 			}

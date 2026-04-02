@@ -4,6 +4,7 @@ import type {
 } from '../../../../../generated/prisma/enums.js';
 import { Lead } from '../../../domain/entities/lead.entity.js';
 import { parseLeadStatus } from '../../../../../shared/domain/enums/lead-status.enum.js';
+import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { LeadSource } from '../../../../../shared/domain/value-objects/lead-source.value-object.js';
 import type { LeadRecord } from '../records/lead.record.js';
 
@@ -45,10 +46,10 @@ const PRISMA_STATUS_TO_LEAD: Record<PrismaLeadStatus, string> = {
 class LeadMapper {
 	static toDomain(record: LeadRecord): Lead {
 		return new Lead(
-			record.id,
-			record.customerId,
-			record.storeId,
-			record.ownerUserId,
+			Uuid.parse(record.id),
+			Uuid.parse(record.customerId),
+			Uuid.parse(record.storeId),
+			record.ownerUserId === null ? null : Uuid.parse(record.ownerUserId),
 			LeadSource.create(PRISMA_SOURCE_TO_LEAD[record.source] ?? 'other'),
 			parseLeadStatus(PRISMA_STATUS_TO_LEAD[record.status] ?? 'NEW'),
 		);
@@ -56,12 +57,12 @@ class LeadMapper {
 
 	static toRecord(lead: Lead): LeadRecord {
 		return {
-			id: lead.id,
-			customerId: lead.customerId,
-			ownerUserId: lead.ownerUserId,
+			id: lead.id.value,
+			customerId: lead.customerId.value,
+			ownerUserId: lead.ownerUserId === null ? null : lead.ownerUserId.value,
 			source: LEAD_SOURCE_TO_PRISMA[lead.source.value] ?? 'OTHER',
 			status: LEAD_STATUS_TO_PRISMA[lead.status] ?? 'NEW',
-			storeId: lead.storeId,
+			storeId: lead.storeId.value,
 		};
 	}
 }
