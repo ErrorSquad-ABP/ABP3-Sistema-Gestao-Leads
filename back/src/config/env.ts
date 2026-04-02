@@ -1,3 +1,12 @@
+import { config as loadDotenv } from 'dotenv';
+
+function loadEnvironmentFiles(): void {
+	loadDotenv({ path: '.env' });
+	loadDotenv({ override: true, path: '.env.local' });
+}
+
+loadEnvironmentFiles();
+
 const env = {
 	appUrl: process.env.APP_URL ?? 'http://localhost:3001',
 	databaseUrl: process.env.DATABASE_URL ?? '',

@@ -21,6 +21,7 @@ enum LeadSource {
   WALK_IN
   INDICATION
   OTHER
+  INSTAGRAM
 }
 
 enum LeadStatus {
@@ -67,6 +68,7 @@ model Customer {
   name       String
   email      String?  @unique
   phone      String?
+  cpf        String?  @unique @db.VarChar(11)
   leads      Lead[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

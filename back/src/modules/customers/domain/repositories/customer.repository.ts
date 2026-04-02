@@ -11,6 +11,7 @@ interface ICustomerRepository {
 	delete(id: UUID): Promise<void>;
 	findById(id: UUID): Promise<Customer | null>;
 	findByEmail(email: string): Promise<Customer | null>;
+	/** CPF inválido (formato/checksum) lança antes da consulta; não retorna `null` silenciosamente por isso. */
 	findByCpf(cpf: string): Promise<Customer | null>;
 	list(): Promise<Customer[]>;
 }

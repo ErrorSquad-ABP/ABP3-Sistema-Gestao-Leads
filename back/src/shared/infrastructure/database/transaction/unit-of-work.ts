@@ -32,6 +32,18 @@ class UnitOfWork implements IUnitOfWork {
 
 	constructor(private readonly prisma: PrismaService) {}
 
+	async run<T>(fn: () => Promise<T>): Promise<T> {
+		await this.begin();
+		try {
+			const result = await fn();
+			await this.commit();
+			return result;
+		} catch (error: unknown) {
+			await this.rollbackIfActive();
+			throw error;
+		}
+	}
+
 	async begin(): Promise<void> {
 		if (this.tx !== null) {
 			throw new Error('Transaction already started');
@@ -98,6 +110,17 @@ class UnitOfWork implements IUnitOfWork {
 			throw new Error('No active transaction');
 		}
 		return new TransactionContext(this.tx);
+	}
+
+	private async rollbackIfActive(): Promise<void> {
+		if (this.tx === null) {
+			return;
+		}
+		try {
+			await this.rollback();
+		} catch {
+			/* Prefer propagating the original failure from run(), not a secondary rollback error */
+		}
 	}
 
 	private reset(): void {

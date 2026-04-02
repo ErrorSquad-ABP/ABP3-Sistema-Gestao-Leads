@@ -4,14 +4,15 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "npm run prisma:generate && tsx watch src/main.ts",
-		"build": "npm run prisma:generate && tsc -p tsconfig.build.json",
+		"dev": "npm run prisma:generate && nest start --watch",
+		"build": "npm run prisma:generate && nest build",
 		"prisma:generate": "prisma generate --config prisma.config.ts",
 		"prisma:migrate:dev": "prisma migrate dev --config prisma.config.ts",
 		"prisma:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
 		"prisma:seed": "prisma db seed --config prisma.config.ts",
-		"start": "node dist/main.js",
-		"start:dev": "npm run prisma:generate && tsx watch src/main.ts",
+		"start": "nest start",
+		"start:dev": "npm run prisma:generate && nest start --watch",
+		"start:debug": "nest start --debug --watch",
 		"start:prod": "node dist/main.js",
 		"typecheck": "npm run prisma:generate && tsc --noEmit -p tsconfig.json"
 	},
@@ -22,16 +23,22 @@
 		"@nestjs/swagger": "11.2.6",
 		"@prisma/adapter-pg": "^7.6.0",
 		"@prisma/client": "^7.6.0",
+		"@scalar/nestjs-api-reference": "^1.1.5",
+		"class-transformer": "^0.5.1",
+		"class-validator": "^0.14.4",
+		"dotenv": "^16.6.1",
+		"express": "^5.2.1",
 		"pg": "^8.20.0",
 		"reflect-metadata": "0.2.2",
 		"rxjs": "7.8.2",
 		"swagger-ui-express": "5.0.1"
 	},
 	"devDependencies": {
+		"@nestjs/cli": "11.0.17",
 		"@types/node": "25.5.0",
-		"dotenv": "^16.6.1",
 		"prisma": "^7.6.0",
-		"tsx": "4.21.0"
+		"tsx": "4.21.0",
+		"typescript": "5.9.3"
 	},
 	"prisma": {
 		"seed": "tsx prisma/seed.ts"
