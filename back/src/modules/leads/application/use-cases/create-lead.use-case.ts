@@ -9,9 +9,13 @@ import { LeadFactory } from '../../domain/factories/lead.factory.js';
 import { LeadInvalidCustomerError } from '../../domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../domain/errors/lead-invalid-store.error.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { CustomerRepositoryFactory } from '../../../customers/infrastructure/persistence/factories/customer-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { StoreRepositoryFactory } from '../../../stores/infrastructure/persistence/factories/store-repository.factory.js';
 
 @Injectable()

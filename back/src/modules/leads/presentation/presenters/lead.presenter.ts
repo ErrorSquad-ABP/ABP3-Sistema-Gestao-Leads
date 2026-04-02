@@ -1,4 +1,4 @@
-import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
+import type { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
 import type { Lead } from '../../domain/entities/lead.entity.js';
 
 class LeadPresenter {

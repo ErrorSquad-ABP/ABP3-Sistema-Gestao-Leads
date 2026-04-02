@@ -6,6 +6,7 @@ import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-
 import { LeadFactory } from '../../domain/factories/lead.factory.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 
 @Injectable()

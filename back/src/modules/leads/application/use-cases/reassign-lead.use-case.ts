@@ -8,7 +8,9 @@ import type { ReassignLeadDto } from '../dto/reassign-lead.dto.js';
 import { LeadFactory } from '../../domain/factories/lead.factory.js';
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 
 @Injectable()
