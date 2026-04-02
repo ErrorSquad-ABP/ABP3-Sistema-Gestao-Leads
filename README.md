@@ -199,8 +199,9 @@ Commits e branches fora desse padrão são recusados pelas regras do GitHub.
 
 1. Instale `Docker` e `Docker Compose`.
 2. Clone o repositório.
-3. Execute `npm run dev`.
-4. Acesse o frontend em `http://localhost:3000`, a API em `http://localhost:3001/api/health` e o PostgreSQL no host em `localhost:5433`.
+3. Configure o backend: copie [`back/.env.example`](./back/.env.example) para `back/.env` e ajuste `DATABASE_URL` / segredos se necessário.
+4. Execute `npm run dev`.
+5. Acesse o frontend em `http://localhost:3000`, a API em `http://localhost:3001/api/health` e o PostgreSQL no host em `localhost:5433`.
 
 ### Execução base mais estável
 

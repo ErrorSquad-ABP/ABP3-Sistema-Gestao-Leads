@@ -54,12 +54,24 @@ back/
 │   ├── modules/            # Módulos de negócio do sistema
 │   └── shared/             # Config, auth, filtros, pipes e utilitários transversais
 ├── prisma/                 # Schema, migrations e seed do banco
-├── .env.example
+├── .env.example            # Modelo versionado (copiar para `.env` / `.env.local`)
 ├── prisma.config.ts
 ├── package.json
 ├── tsconfig.build.json
 └── tsconfig.json
 ```
+
+## Variáveis de ambiente
+
+Referência versionada: [`.env.example`](./.env.example). Na primeira configuração, copie para `.env` na pasta `back` (ou use `.env.local` para valores só na sua máquina; ele sobrescreve `.env`).
+
+| Variável | Obrigatória | Descrição |
+| --- | --- | --- |
+| `PORT` | Não | Porta HTTP da API. Padrão `3001` se omitida. |
+| `APP_URL` | Não | URL base da API (ex.: documentação). Padrão `http://localhost:3001`. |
+| `DATABASE_URL` | Sim para Prisma em runtime | Connection string PostgreSQL. O `prisma.config.ts` tem fallback só para tooling; a aplicação usa `env.hasDatabaseUrl`. |
+| `NODE_ENV` | Não | Ambiente Node. Padrão `development`. |
+| `JWT_SECRET` | Recomendada antes de auth | Presença exposta em `env.hasJwtSecret` para validações futuras. |
 
 ## Módulos previstos
 
