@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 
+import { Public } from '../../../../shared/presentation/decorators/public.decorator.js';
 import { ApiOkResponseEnvelope } from '../../../../shared/presentation/swagger/api-success-response.js';
 
 class HealthResponseDto {
@@ -11,6 +12,7 @@ class HealthResponseDto {
 	timestamp!: string;
 }
 
+@Public()
 @ApiTags('health')
 @Controller('health')
 class HealthController {

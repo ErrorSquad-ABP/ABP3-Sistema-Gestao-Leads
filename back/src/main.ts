@@ -2,8 +2,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module.js';
+import type { AuthConfig } from './config/auth.config.js';
+import { AUTH_CONFIG } from './config/auth-injection.token.js';
 import { env } from './config/env.js';
 import { buildSwaggerConfig } from './config/swagger.js';
 import { DomainErrorFilter } from './shared/presentation/filters/domain-error.filter.js';
@@ -18,7 +21,18 @@ async function bootstrap() {
 	/** Erros → envelope JSON; domínio (`*Error`) com status adequado. */
 	app.useGlobalFilters(new DomainErrorFilter());
 
-	app.enableCors();
+	const authCfg = app.get<AuthConfig>(AUTH_CONFIG);
+	app.use(cookieParser());
+	app.enableCors({
+		origin: (origin, callback) => {
+			if (!origin) {
+				callback(null, true);
+				return;
+			}
+			callback(null, authCfg.frontendOrigins.includes(origin));
+		},
+		credentials: true,
+	});
 	app.enableShutdownHooks();
 	app.setGlobalPrefix('api');
 	app.useGlobalPipes(
