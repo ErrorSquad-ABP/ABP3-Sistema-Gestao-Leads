@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { CustomerRepositoryFactory } from '../customers/infrastructure/persistence/factories/customer-repository.factory.js';
 import { StoreRepositoryFactory } from '../stores/infrastructure/persistence/factories/store-repository.factory.js';
-import { UserRepositoryFactory } from '../users/infrastructure/persistence/factories/user-repository.factory.js';
+import { UsersModule } from '../users/users.module.js';
 import { ConvertLeadUseCase } from './application/use-cases/convert-lead.use-case.js';
 import { CreateLeadUseCase } from './application/use-cases/create-lead.use-case.js';
 import { DeleteLeadUseCase } from './application/use-cases/delete-lead.use-case.js';
@@ -16,11 +16,11 @@ import { LeadRepositoryFactory } from './infrastructure/persistence/factories/le
 import { LeadController } from './presentation/controllers/lead.controller.js';
 
 @Module({
+	imports: [UsersModule],
 	controllers: [LeadController],
 	providers: [
 		LeadFactory,
 		LeadRepositoryFactory,
-		UserRepositoryFactory,
 		CustomerRepositoryFactory,
 		StoreRepositoryFactory,
 		CreateLeadUseCase,
