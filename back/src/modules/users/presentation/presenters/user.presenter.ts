@@ -12,7 +12,7 @@ class UserPresenter {
 		} satisfies UserResponseDto;
 	}
 
-	static toResponseList(users: User[]): UserResponseDto[] {
+	static toResponseList(users: readonly User[]): UserResponseDto[] {
 		return users.map((u) => UserPresenter.toResponse(u));
 	}
 }

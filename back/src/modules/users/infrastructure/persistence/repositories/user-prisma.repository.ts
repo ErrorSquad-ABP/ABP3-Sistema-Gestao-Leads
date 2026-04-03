@@ -102,15 +102,30 @@ class UserPrismaRepository implements IUserRepository {
 	}
 
 	async findByEmail(email: string): Promise<User | null> {
-		const user = await this.client.user.findUnique({ where: { email } });
+		const normalized = Email.create(email).value;
+		const user = await this.client.user.findUnique({
+			where: { email: normalized },
+		});
 		return user ? this.toDomain(user) : null;
 	}
 
-	async list(): Promise<User[]> {
-		const users = await this.client.user.findMany({
-			orderBy: { createdAt: 'desc' },
-		});
-		return users.map((user) => this.toDomain(user));
+	async listPaged(query: {
+		readonly page: number;
+		readonly limit: number;
+	}): Promise<{ readonly users: readonly User[]; readonly total: number }> {
+		const skip = (query.page - 1) * query.limit;
+		const [rows, total] = await Promise.all([
+			this.client.user.findMany({
+				orderBy: { createdAt: 'desc' },
+				skip,
+				take: query.limit,
+			}),
+			this.client.user.count(),
+		]);
+		return {
+			users: rows.map((row) => this.toDomain(row)),
+			total,
+		};
 	}
 
 	private toDomain(record: UserRecord): User {
@@ -150,6 +165,7 @@ class UserPrismaRepository implements IUserRepository {
 				throw new UserEmailAlreadyExistsError(email);
 			}
 		}
+		/* Última linha: corrida ou violação de FK não antecipada no caso de uso. */
 		if (error.code === 'P2003' && teamId !== undefined && teamId !== '') {
 			throw new UserInvalidTeamError(teamId);
 		}

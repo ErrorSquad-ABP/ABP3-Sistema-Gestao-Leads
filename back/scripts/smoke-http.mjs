@@ -56,13 +56,30 @@ async function main() {
 		console.log('OK GET /health');
 	}
 
-	// Listar usuários
+	// Listar usuários (paginado)
 	{
 		const { res, json } = await req('GET', '/users');
 		assert(res.status === 200, `GET /users esperado 200, obteve ${res.status}`);
 		assert(json?.success === true, 'GET /users envelope');
-		assert(Array.isArray(json?.data), 'GET /users data é array');
-		console.log('OK GET /users');
+		const d = json?.data;
+		assert(d && typeof d === 'object', 'GET /users data é objeto');
+		assert(Array.isArray(d.items), 'GET /users data.items é array');
+		assert(typeof d.page === 'number', 'GET /users data.page');
+		assert(typeof d.limit === 'number', 'GET /users data.limit');
+		assert(typeof d.total === 'number', 'GET /users data.total');
+		assert(typeof d.totalPages === 'number', 'GET /users data.totalPages');
+		const expectedPages = d.total === 0 ? 0 : Math.ceil(d.total / d.limit);
+		assert(
+			d.totalPages === expectedPages,
+			`GET /users totalPages esperado ${expectedPages}, obteve ${d.totalPages}`,
+		);
+	}
+	{
+		const { res, json } = await req('GET', '/users?page=1&limit=5');
+		assert(res.status === 200, `GET /users?page&limit esperado 200`);
+		assert(json?.data?.limit === 5, 'GET /users respeita limit');
+		assert(typeof json?.data?.totalPages === 'number', 'totalPages presente');
+		console.log('OK GET /users (paginação)');
 	}
 
 	// Usuário inexistente → 404

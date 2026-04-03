@@ -9,6 +9,7 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
@@ -23,7 +24,7 @@ import {
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
-	ApiOkResponseEnvelopeArray,
+	ApiOkResponseEnvelopePaged,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { UserResponseDto } from '../../application/dto/user-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI
@@ -39,6 +40,8 @@ import { UpdateUserUseCase } from '../../application/use-cases/update-user.use-c
 import { UserPresenter } from '../presenters/user.presenter.js';
 // biome-ignore lint/style/useImportType: validators em runtime
 import { CreateUserValidator } from '../validators/create-user.validator.js';
+// biome-ignore lint/style/useImportType: validators em runtime
+import { ListUsersQueryValidator } from '../validators/list-users-query.validator.js';
 // biome-ignore lint/style/useImportType: validators em runtime
 import { UpdateUserValidator } from '../validators/update-user.validator.js';
 
@@ -95,13 +98,29 @@ class UserController {
 	@ApiOperation({
 		summary: 'Listar usuários',
 		description:
-			'Lista todos os usuários. Proteção por papel administrador será aplicada com RBAC.',
+			'Lista usuários com paginação por página e limite (`page` base 1, `limit` até 100). Proteção por papel administrador será aplicada com RBAC.',
 	})
-	@ApiOkResponseEnvelopeArray(UserResponseDto)
+	@ApiOkResponseEnvelopePaged(UserResponseDto, {
+		description:
+			'Página de usuários: `data.items`, `data.page`, `data.limit`, `data.total`, `data.totalPages` (0 se não houver registros).',
+	})
+	@ApiBadRequestResponse({
+		description:
+			'Query inválida: `page` ou `limit` fora dos intervalos permitidos (ex.: limit > 100).',
+	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async list() {
-		const users = await this.listUsersUseCase.execute();
-		return UserPresenter.toResponseList(users);
+	async list(@Query() query: ListUsersQueryValidator) {
+		const result = await this.listUsersUseCase.execute({
+			page: query.page,
+			limit: query.limit,
+		});
+		return {
+			items: UserPresenter.toResponseList(result.users),
+			page: result.page,
+			limit: result.limit,
+			total: result.total,
+			totalPages: result.totalPages,
+		};
 	}
 
 	@Get(':id')
