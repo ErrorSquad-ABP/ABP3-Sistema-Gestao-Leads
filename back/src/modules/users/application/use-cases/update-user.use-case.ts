@@ -4,11 +4,15 @@ import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 // biome-ignore lint/style/useImportType: Nest DI — metadata de parâmetro no runtime
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
+// biome-ignore lint/style/useImportType: Nest DI
+import { TeamRepositoryFactory } from '../../../teams/infrastructure/persistence/factories/team-repository.factory.js';
 import { User } from '../../domain/entities/user.entity.js';
 import { UserEmailAlreadyExistsError } from '../../domain/errors/user-email-already-exists.error.js';
+import { UserInvalidTeamError } from '../../domain/errors/user-invalid-team.error.js';
 import { UserNotFoundError } from '../../domain/errors/user-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { UserFactory } from '../../domain/factories/user.factory.js';
@@ -34,6 +38,7 @@ class UpdateUserUseCase {
 	constructor(
 		private readonly userFactory: UserFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
+		private readonly teamRepositoryFactory: TeamRepositoryFactory,
 		private readonly passwordHasher: Argon2PasswordHasherService,
 	) {}
 
@@ -48,6 +53,7 @@ class UpdateUserUseCase {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const users = this.userRepositoryFactory.create(transactionContext);
+			const teams = this.teamRepositoryFactory.create(transactionContext);
 
 			const idVo = Uuid.parse(userId);
 			const existing = await users.findById(idVo);
@@ -55,10 +61,20 @@ class UpdateUserUseCase {
 				throw new UserNotFoundError(userId);
 			}
 
-			if (dto.email !== undefined && dto.email !== existing.email.value) {
-				const other = await users.findByEmail(dto.email);
-				if (other && !other.id.equals(existing.id)) {
-					throw new UserEmailAlreadyExistsError(dto.email);
+			if (dto.teamId !== undefined && dto.teamId !== null) {
+				const team = await teams.findById(Uuid.parse(dto.teamId));
+				if (!team) {
+					throw new UserInvalidTeamError(dto.teamId);
+				}
+			}
+
+			if (dto.email !== undefined) {
+				const nextEmail = Email.create(dto.email);
+				if (!nextEmail.equals(existing.email)) {
+					const other = await users.findByEmail(nextEmail.value);
+					if (other && !other.id.equals(existing.id)) {
+						throw new UserEmailAlreadyExistsError(nextEmail.value);
+					}
 				}
 			}
 
