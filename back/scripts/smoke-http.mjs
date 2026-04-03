@@ -20,9 +20,7 @@ async function req(method, path, options = {}) {
 		method,
 		headers: {
 			Accept: 'application/json',
-			...(options.body
-				? { 'Content-Type': 'application/json' }
-				: {}),
+			...(options.body ? { 'Content-Type': 'application/json' } : {}),
 			...options.headers,
 		},
 		body: options.body ? JSON.stringify(options.body) : undefined,
@@ -49,7 +47,10 @@ async function main() {
 	// Health (sem banco no handler)
 	{
 		const { res, json } = await req('GET', '/health');
-		assert(res.status === 200, `GET /health esperado 200, obteve ${res.status}`);
+		assert(
+			res.status === 200,
+			`GET /health esperado 200, obteve ${res.status}`,
+		);
 		assert(json?.success === true, 'GET /health envelope success');
 		assert(json?.data?.status === 'ok', 'GET /health data.status === ok');
 		console.log('OK GET /health');
@@ -67,7 +68,10 @@ async function main() {
 	// Usuário inexistente → 404
 	{
 		const { res, json } = await req('GET', `/users/${SAMPLE_UUID}`);
-		assert(res.status === 404, `GET /users/:id inexistente esperado 404, obteve ${res.status}`);
+		assert(
+			res.status === 404,
+			`GET /users/:id inexistente esperado 404, obteve ${res.status}`,
+		);
 		assert(json?.success === false, 'GET usuário 404 envelope success false');
 		console.log('OK GET /users/:id (404 esperado)');
 	}
@@ -75,7 +79,10 @@ async function main() {
 	// Lead inexistente → 404
 	{
 		const { res, json } = await req('GET', `/leads/${SAMPLE_UUID}`);
-		assert(res.status === 404, `GET /leads/:id inexistente esperado 404, obteve ${res.status}`);
+		assert(
+			res.status === 404,
+			`GET /leads/:id inexistente esperado 404, obteve ${res.status}`,
+		);
 		assert(json?.success === false, 'GET lead 404 envelope');
 		console.log('OK GET /leads/:id (404 esperado)');
 	}
@@ -109,17 +116,20 @@ async function main() {
 
 	// Listas por owner/team (vazias, mas rota deve responder)
 	{
-		const { res, json } = await req(
-			'GET',
-			`/leads/owner/${SAMPLE_UUID}`,
+		const { res, json } = await req('GET', `/leads/owner/${SAMPLE_UUID}`);
+		assert(
+			res.status === 200,
+			`GET leads/owner esperado 200, obteve ${res.status}`,
 		);
-		assert(res.status === 200, `GET leads/owner esperado 200, obteve ${res.status}`);
 		assert(Array.isArray(json?.data), 'leads/owner data array');
 		console.log('OK GET /leads/owner/:ownerUserId');
 	}
 	{
 		const { res, json } = await req('GET', `/leads/team/${SAMPLE_UUID}`);
-		assert(res.status === 200, `GET leads/team esperado 200, obteve ${res.status}`);
+		assert(
+			res.status === 200,
+			`GET leads/team esperado 200, obteve ${res.status}`,
+		);
 		assert(Array.isArray(json?.data), 'leads/team data array');
 		console.log('OK GET /leads/team/:teamId');
 	}
