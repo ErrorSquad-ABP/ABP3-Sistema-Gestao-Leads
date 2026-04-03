@@ -11,7 +11,10 @@ interface IUserRepository {
 	delete(id: UUID): Promise<void>;
 	findById(id: UUID): Promise<User | null>;
 	findByEmail(email: string): Promise<User | null>;
-	list(): Promise<User[]>;
+	listPaged(query: {
+		readonly page: number;
+		readonly limit: number;
+	}): Promise<{ readonly users: readonly User[]; readonly total: number }>;
 }
 
 export type { IUserRepository };
