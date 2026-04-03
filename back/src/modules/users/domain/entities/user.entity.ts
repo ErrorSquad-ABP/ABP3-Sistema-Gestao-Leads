@@ -35,6 +35,26 @@ class User extends AggregateRoot {
 		this.role = role;
 		this.teamId = teamId;
 	}
+
+	/** Compara estado persistível (evita `update` no banco quando não há mudança real). */
+	static sameState(a: User, b: User): boolean {
+		if (!a.id.equals(b.id)) {
+			return false;
+		}
+		if (!a.name.equals(b.name) || !a.email.equals(b.email)) {
+			return false;
+		}
+		if (!a.passwordHash.equals(b.passwordHash) || a.role !== b.role) {
+			return false;
+		}
+		if (a.teamId === null && b.teamId === null) {
+			return true;
+		}
+		if (a.teamId === null || b.teamId === null) {
+			return false;
+		}
+		return a.teamId.equals(b.teamId);
+	}
 }
 
 export { User };

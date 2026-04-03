@@ -1,13 +1,15 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { UserRole as PrismaUserRole } from '../../../../../generated/prisma/enums.js';
+import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import { parseUserRole } from '../../../../../shared/domain/enums/user-role.enum.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
-import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { Email } from '../../../../../shared/domain/value-objects/email.value-object.js';
+import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { PasswordHash } from '../../../../../shared/domain/value-objects/password-hash.value-object.js';
-import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { User } from '../../../domain/entities/user.entity.js';
+import { UserEmailAlreadyExistsError } from '../../../domain/errors/user-email-already-exists.error.js';
+import { UserInvalidTeamError } from '../../../domain/errors/user-invalid-team.error.js';
 import type { IUserRepository } from '../../../domain/repositories/user.repository.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
@@ -34,6 +36,17 @@ const PRISMA_ROLE_TO_USER: Record<PrismaUserRole, string> = {
 	MANAGER: 'MANAGER',
 };
 
+function isPrismaKnownRequest(
+	error: unknown,
+): error is { code: string; meta?: { target?: string | string[] } } {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof (error as { code: unknown }).code === 'string'
+	);
+}
+
 class UserPrismaRepository implements IUserRepository {
 	constructor(
 		private readonly prisma: PrismaService,
@@ -41,30 +54,40 @@ class UserPrismaRepository implements IUserRepository {
 	) {}
 
 	async create(user: User): Promise<User> {
-		const created = await this.client.user.create({
-			data: {
-				email: user.email.value,
-				name: user.name.value,
-				password: user.passwordHash.value,
-				role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
-				teamId: user.teamId?.value ?? null,
-			},
-		});
-		return this.toDomain(created);
+		try {
+			const created = await this.client.user.create({
+				data: {
+					email: user.email.value,
+					name: user.name.value,
+					password: user.passwordHash.value,
+					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
+					teamId: user.teamId?.value ?? null,
+				},
+			});
+			return this.toDomain(created);
+		} catch (error: unknown) {
+			this.rethrowPrismaUserErrors(error, user.email.value, user.teamId?.value);
+			throw error;
+		}
 	}
 
 	async update(user: User): Promise<User> {
-		const updated = await this.client.user.update({
-			data: {
-				email: user.email.value,
-				name: user.name.value,
-				password: user.passwordHash.value,
-				role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
-				teamId: user.teamId?.value ?? null,
-			},
-			where: { id: user.id.value },
-		});
-		return this.toDomain(updated);
+		try {
+			const updated = await this.client.user.update({
+				data: {
+					email: user.email.value,
+					name: user.name.value,
+					password: user.passwordHash.value,
+					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
+					teamId: user.teamId?.value ?? null,
+				},
+				where: { id: user.id.value },
+			});
+			return this.toDomain(updated);
+		} catch (error: unknown) {
+			this.rethrowPrismaUserErrors(error, user.email.value, user.teamId?.value);
+			throw error;
+		}
 	}
 
 	async delete(id: Parameters<IUserRepository['delete']>[0]): Promise<void> {
@@ -106,6 +129,30 @@ class UserPrismaRepository implements IUserRepository {
 			(this.transactionContext?.client as Prisma.TransactionClient) ??
 			this.prisma
 		);
+	}
+
+	private rethrowPrismaUserErrors(
+		error: unknown,
+		email: string,
+		teamId: string | undefined,
+	): void {
+		if (!isPrismaKnownRequest(error)) {
+			return;
+		}
+		if (error.code === 'P2002') {
+			const target = error.meta?.target;
+			const targets = Array.isArray(target)
+				? target
+				: target !== undefined && target !== null
+					? [String(target)]
+					: [];
+			if (targets.some((t) => String(t).toLowerCase().includes('email'))) {
+				throw new UserEmailAlreadyExistsError(email);
+			}
+		}
+		if (error.code === 'P2003' && teamId !== undefined && teamId !== '') {
+			throw new UserInvalidTeamError(teamId);
+		}
 	}
 }
 
