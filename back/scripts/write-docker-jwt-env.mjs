@@ -11,10 +11,7 @@ const { privateKey, publicKey } = generateKeyPairSync('rsa', {
 
 /** Uma linha no .env; `auth.config` faz replace de `\n` literal → quebra de linha PEM. */
 function pemToEnvLine(pem) {
-	return pem
-		.trim()
-		.split(/\r?\n/)
-		.join('\\n');
+	return pem.trim().split(/\r?\n/).join('\\n');
 }
 
 const outPath = resolve(import.meta.dirname, '../../.env.docker-jwt-test');

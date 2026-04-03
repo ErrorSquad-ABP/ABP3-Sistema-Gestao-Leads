@@ -44,6 +44,8 @@ function extractAccessToken(
 			return t;
 		}
 	}
+	// Nome do cookie vem de AUTH_CONFIG (servidor), não de input do cliente.
+	// eslint-disable-next-line security/detect-object-injection -- chave fixa por deploy
 	const c = req.cookies?.[cookieAccessName];
 	if (typeof c === 'string') {
 		const t = c.trim();
@@ -81,7 +83,7 @@ class GlobalAuthGuard implements CanActivate {
 		}
 
 		const token = extractAccessToken(req, this.authConfig.cookieAccessName);
-		if (token === undefined) {
+		if (typeof token !== 'string') {
 			throw new UnauthorizedException();
 		}
 

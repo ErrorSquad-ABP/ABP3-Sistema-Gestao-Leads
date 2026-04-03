@@ -21,7 +21,11 @@ type MockReq = {
 	user?: { userId: string; role: string; jti: string };
 };
 
-function mockContext(req: MockReq, handler: object, cls: object): ExecutionContext {
+function mockContext(
+	req: MockReq,
+	handler: object,
+	cls: object,
+): ExecutionContext {
 	return {
 		switchToHttp: () => ({
 			getRequest: () => req,
@@ -136,6 +140,9 @@ describe('GlobalAuthGuard', () => {
 			path: '/api/x',
 			headers: { authorization: 'Bearer tok' },
 		};
-		assert.equal(await guardAdmin.canActivate(mockContext(req2, handler, H)), true);
+		assert.equal(
+			await guardAdmin.canActivate(mockContext(req2, handler, H)),
+			true,
+		);
 	});
 });
