@@ -34,11 +34,13 @@ enum LeadStatus {
 }
 
 model Team {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  managerId   String?  @db.Uuid
+  manager     User?    @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Store {
@@ -50,17 +52,18 @@ model Store {
 }
 
 model User {
-  id         String    @id @default(uuid()) @db.Uuid
-  name       String
-  email      String    @unique
-  password   String
-  role       UserRole
-  teamId     String?   @db.Uuid
-  team       Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  ownedLeads Lead[]    @relation("LeadOwner")
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  auditLogs  AuditLog[]
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  email        String    @unique
+  password     String
+  role         UserRole
+  teamId       String?   @db.Uuid
+  team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  managedTeams Team[]    @relation("TeamManager")
+  ownedLeads   Lead[]    @relation("LeadOwner")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  auditLogs    AuditLog[]
 }
 
 model Customer {

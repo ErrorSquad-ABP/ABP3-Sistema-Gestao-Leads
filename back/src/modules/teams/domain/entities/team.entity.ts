@@ -10,14 +10,26 @@ import type { Name } from '../../../../shared/domain/value-objects/name.value-ob
  */
 class Team extends AggregateRoot {
 	readonly id: TeamId;
-	readonly name: Name;
-	readonly managerId: UUID | null;
+	name: Name;
+	managerId: UUID | null;
 
 	constructor(id: TeamId, name: Name, managerId: UUID | null) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.managerId = managerId;
+	}
+
+	changeName(name: Name): void {
+		this.name = name;
+	}
+
+	assignManager(userId: UUID): void {
+		this.managerId = userId;
+	}
+
+	clearManager(): void {
+		this.managerId = null;
 	}
 }
 

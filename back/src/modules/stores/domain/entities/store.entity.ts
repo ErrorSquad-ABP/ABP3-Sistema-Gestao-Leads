@@ -7,11 +7,15 @@ import type { Name } from '../../../../shared/domain/value-objects/name.value-ob
  */
 class Store extends AggregateRoot {
 	readonly id: StoreId;
-	readonly name: Name;
+	name: Name;
 
 	constructor(id: StoreId, name: Name) {
 		super();
 		this.id = id;
+		this.name = name;
+	}
+
+	changeName(name: Name): void {
 		this.name = name;
 	}
 }
