@@ -1,19 +1,9 @@
 import 'dotenv/config';
 
-import * as argon2 from 'argon2';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 import { PrismaClient } from '../src/generated/prisma/client.js';
-import {
-	LeadSource,
-	LeadStatus,
-	UserRole,
-} from '../src/shared/constants/enums.js';
-import { customersSeed } from '../src/shared/seeds/customers.seed.js';
-import { leadsSeed } from '../src/shared/seeds/leads.seed.js';
-import { storesSeed } from '../src/shared/seeds/stores.seed.js';
-import { teamsSeed } from '../src/shared/seeds/teams.seed.js';
-import { usersSeed } from '../src/shared/seeds/users.seed.js';
+import { buildDashboardCsvSeed } from './seeds/dashboard-csv.seed.js';
 
 const connectionString =
 	process.env.DATABASE_URL ??
@@ -23,88 +13,28 @@ const prisma = new PrismaClient({
 	adapter: new PrismaPg({ connectionString }),
 });
 
-async function hashPassword(plainPassword: string) {
-	return argon2.hash(plainPassword, {
-		type: argon2.argon2id,
-		memoryCost: 19456,
-		timeCost: 2,
-		parallelism: 1,
-	});
-}
-
 export async function runSeed() {
 	console.log('Running seed...');
+	const dataset = await buildDashboardCsvSeed();
 
-	for (const team of teamsSeed) {
-		await prisma.team.upsert({
-			where: { id: team.id },
-			create: team,
-			update: { name: team.name },
-		});
-	}
+	await prisma.auditLog.deleteMany();
+	await prisma.deal.deleteMany();
+	await prisma.lead.deleteMany();
+	await prisma.customer.deleteMany();
+	await prisma.user.deleteMany();
+	await prisma.store.deleteMany();
+	await prisma.team.deleteMany();
 
-	for (const store of storesSeed) {
-		await prisma.store.upsert({
-			where: { id: store.id },
-			create: store,
-			update: { name: store.name },
-		});
-	}
+	await prisma.team.createMany({ data: dataset.teams });
+	await prisma.store.createMany({ data: dataset.stores });
+	await prisma.user.createMany({ data: dataset.users });
+	await prisma.customer.createMany({ data: dataset.customers });
+	await prisma.lead.createMany({ data: dataset.leads });
+	await prisma.deal.createMany({ data: dataset.deals });
 
-	for (const user of usersSeed) {
-		const password = await hashPassword(user.password);
-
-		await prisma.user.upsert({
-			where: { id: user.id },
-			create: {
-				...user,
-				password,
-				role: UserRole[user.role as keyof typeof UserRole],
-			},
-			update: {
-				name: user.name,
-				email: user.email,
-				password,
-				role: UserRole[user.role as keyof typeof UserRole],
-				teamId: user.teamId,
-			},
-		});
-	}
-
-	for (const customer of customersSeed) {
-		await prisma.customer.upsert({
-			where: { id: customer.id },
-			create: customer,
-			update: {
-				name: customer.name,
-				email: customer.email,
-				phone: customer.phone,
-				cpf: customer.cpf ?? null,
-			},
-		});
-	}
-
-	for (const lead of leadsSeed) {
-		const source = LeadSource[lead.source as keyof typeof LeadSource];
-		const existingLead = await prisma.lead.findFirst({
-			where: {
-				customerId: lead.customerId,
-				storeId: lead.storeId,
-				ownerUserId: lead.ownerUserId,
-				source,
-			},
-		});
-
-		if (!existingLead) {
-			await prisma.lead.create({
-				data: {
-					...lead,
-					source,
-					status: LeadStatus.NEW,
-				},
-			});
-		}
-	}
+	console.log(
+		`Seeded ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users, ${dataset.customers.length} customers, ${dataset.leads.length} leads and ${dataset.deals.length} deals from dashboard CSV.`,
+	);
 
 	console.log('Seed completed.');
 }

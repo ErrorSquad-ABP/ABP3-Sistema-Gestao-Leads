@@ -14,6 +14,8 @@ export const LeadSource = {
 	INDICATION: 'INDICATION',
 	OTHER: 'OTHER',
 	INSTAGRAM: 'INSTAGRAM',
+	FACEBOOK: 'FACEBOOK',
+	MERCADO_LIVRE: 'MERCADO_LIVRE',
 } as const;
 export type LeadSourceValue = (typeof LeadSource)[keyof typeof LeadSource];
 
