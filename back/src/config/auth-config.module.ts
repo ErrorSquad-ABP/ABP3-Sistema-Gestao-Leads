@@ -1,6 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 
-import { assertAuthKeysConfigured, loadAuthConfig } from './auth.config.js';
+import {
+	assertAuthKeysConfigured,
+	assertProductionJwtAudience,
+	loadAuthConfig,
+} from './auth.config.js';
 import { AUTH_CONFIG } from './auth-injection.token.js';
 
 /**
@@ -14,6 +18,7 @@ import { AUTH_CONFIG } from './auth-injection.token.js';
 			useFactory: () => {
 				const c = loadAuthConfig();
 				assertAuthKeysConfigured(c);
+				assertProductionJwtAudience(c);
 				return c;
 			},
 		},

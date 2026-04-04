@@ -7,6 +7,7 @@ import { Name } from '../../../../shared/domain/value-objects/name.value-object.
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 import type { FindUserUseCase } from '../../../users/application/use-cases/find-user.use-case.js';
 import { User } from '../../../users/domain/entities/user.entity.js';
+import { UserNotFoundError } from '../../../users/domain/errors/user-not-found.error.js';
 import { RefreshTokenInvalidError } from '../../domain/errors/refresh-token-invalid.error.js';
 import type { AuthSessionRedisService } from '../../infrastructure/auth-session-redis.service.js';
 import type { AuthTokenService } from '../../infrastructure/auth-token.service.js';
@@ -126,6 +127,44 @@ describe('RefreshTokensUseCase', () => {
 
 		const findUser = {
 			execute: async () => user,
+		} satisfies Pick<FindUserUseCase, 'execute'>;
+
+		const useCase = new RefreshTokensUseCase(
+			tokens as unknown as AuthTokenService,
+			sessions as unknown as AuthSessionRedisService,
+			findUser as unknown as FindUserUseCase,
+		);
+
+		await assert.rejects(
+			() => useCase.execute('jwt'),
+			RefreshTokenInvalidError,
+		);
+	});
+
+	it('mapeia usuário inexistente para refresh inválido (401), não 404', async () => {
+		const user = buildUser();
+		const tokens = {
+			verifyRefreshToken: async () => ({
+				sub: user.id.value,
+				jti: 'old-jti',
+				fam: 'fam-1',
+				typ: 'refresh' as const,
+			}),
+			signAccessToken: async () => ({ token: 'a', jti: 'a' }),
+			signRefreshToken: async () => ({ token: 'r', jti: 'n' }),
+		} satisfies Pick<
+			AuthTokenService,
+			'verifyRefreshToken' | 'signAccessToken' | 'signRefreshToken'
+		>;
+
+		const sessions = {
+			tryRotateRefreshJti: async () => 'rotated' as const,
+		} satisfies Pick<AuthSessionRedisService, 'tryRotateRefreshJti'>;
+
+		const findUser = {
+			execute: async () => {
+				throw new UserNotFoundError(user.id.value);
+			},
 		} satisfies Pick<FindUserUseCase, 'execute'>;
 
 		const useCase = new RefreshTokensUseCase(

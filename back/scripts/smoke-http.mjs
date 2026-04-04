@@ -78,6 +78,21 @@ async function main() {
 		console.log('OK GET /health');
 	}
 
+	// Readiness (Redis — falha se API sem Redis)
+	{
+		const { res, json } = await req('GET', '/health/ready');
+		assert(
+			res.status === 200,
+			`GET /health/ready esperado 200, obteve ${res.status} (Redis acessível?)`,
+		);
+		assert(json?.success === true, 'GET /health/ready envelope success');
+		assert(
+			json?.data?.status === 'ready',
+			'GET /health/ready data.status === ready',
+		);
+		console.log('OK GET /health/ready');
+	}
+
 	// Login inválido → 401
 	{
 		const { res, json } = await req('POST', '/auth/login', {
@@ -145,6 +160,10 @@ async function main() {
 		assert(
 			typeof access === 'string' && access.length > 0,
 			'Login smoke accessToken',
+		);
+		assert(
+			loginJson?.data?.refreshToken === undefined,
+			'Login smoke: refreshToken não deve vir no JSON sem X-Expose-Refresh-Token',
 		);
 		adminAuthHeader = { Authorization: `Bearer ${access}` };
 		adminCookie = cookieHeaderFromResponse(loginRes);

@@ -39,15 +39,7 @@ class LogoutUseCase {
 			const ttl = blacklistTtlSeconds(p.exp);
 			await this.sessions.blacklistJti(p.jti, ttl);
 		} catch {
-			const decoded = this.tokens.decodeUnsafe(token);
-			if (
-				decoded &&
-				decoded.typ === 'access' &&
-				typeof decoded.jti === 'string'
-			) {
-				const ttl = blacklistTtlSeconds(decoded.exp);
-				await this.sessions.blacklistJti(decoded.jti, ttl);
-			}
+			/* Só blacklist com JWT verificado (evita decode sem assinatura). */
 		}
 	}
 
@@ -61,17 +53,7 @@ class LogoutUseCase {
 			const ttl = blacklistTtlSeconds(p.exp);
 			await this.sessions.blacklistJti(p.jti, ttl);
 		} catch {
-			const decoded = this.tokens.decodeUnsafe(token);
-			if (
-				decoded &&
-				decoded.typ === 'refresh' &&
-				typeof decoded.jti === 'string' &&
-				typeof decoded.fam === 'string'
-			) {
-				await this.sessions.deleteRefreshFamily(decoded.fam);
-				const ttl = blacklistTtlSeconds(decoded.exp);
-				await this.sessions.blacklistJti(decoded.jti, ttl);
-			}
+			/* Só revoga refresh com assinatura válida. */
 		}
 	}
 }

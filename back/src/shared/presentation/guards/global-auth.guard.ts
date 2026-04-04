@@ -20,6 +20,7 @@ import type { UserRole } from '../../domain/enums/user-role.enum.js';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
 import { ROLES_KEY } from '../decorators/roles.decorator.js';
 import { isOpenDocumentationPath } from '../utils/documentation-path.util.js';
+import { extractAccessTokenFromRequest } from '../utils/request-auth.util.js';
 
 type JwtUser = {
 	readonly userId: string;
@@ -30,30 +31,6 @@ type JwtUser = {
 function httpPath(req: Pick<Request, 'path' | 'url'>): string {
 	const raw = req.path ?? req.url ?? '';
 	return raw.split('?')[0] ?? raw;
-}
-
-/** Bearer tem prioridade sobre cookie (evita cookie antigo sombrear access novo). */
-function extractAccessToken(
-	req: Request,
-	cookieAccessName: string,
-): string | undefined {
-	const authz = req.headers.authorization;
-	if (typeof authz === 'string' && authz.startsWith('Bearer ')) {
-		const t = authz.slice(7).trim();
-		if (t.length > 0) {
-			return t;
-		}
-	}
-	// Nome do cookie vem de AUTH_CONFIG (servidor), não de input do cliente.
-	// eslint-disable-next-line security/detect-object-injection -- chave fixa por deploy
-	const c = req.cookies?.[cookieAccessName];
-	if (typeof c === 'string') {
-		const t = c.trim();
-		if (t.length > 0) {
-			return t;
-		}
-	}
-	return undefined;
 }
 
 /** Auth global via `AuthTokenService` (evita bug de resolução da Promise com Passport 0.7 + callback customizado no Nest). */
@@ -82,7 +59,10 @@ class GlobalAuthGuard implements CanActivate {
 			return true;
 		}
 
-		const token = extractAccessToken(req, this.authConfig.cookieAccessName);
+		const token = extractAccessTokenFromRequest(
+			req,
+			this.authConfig.cookieAccessName,
+		);
 		if (typeof token !== 'string') {
 			throw new UnauthorizedException();
 		}

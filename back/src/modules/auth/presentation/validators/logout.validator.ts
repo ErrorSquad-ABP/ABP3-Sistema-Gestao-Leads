@@ -13,7 +13,8 @@ class LogoutValidator {
 	accessToken?: string;
 
 	@ApiPropertyOptional({
-		description: 'Refresh JWT se não estiver em cookie.',
+		description:
+			'Refresh JWT se não vier de cookie, `X-Refresh-Token` nem `Authorization: Bearer`.',
 		minLength: 10,
 	})
 	@IsOptional()

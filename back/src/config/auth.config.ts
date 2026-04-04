@@ -33,6 +33,17 @@ function parsePositiveInt(value: string | undefined, fallback: number): number {
 	return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+function parseCookieSameSite(): 'lax' | 'strict' | 'none' {
+	const raw = process.env.AUTH_COOKIE_SAMESITE?.trim().toLowerCase();
+	if (raw === 'strict') {
+		return 'strict';
+	}
+	if (raw === 'none') {
+		return 'none';
+	}
+	return 'lax';
+}
+
 type AuthConfig = {
 	readonly accessPrivateKey: string;
 	readonly accessPublicKey: string;
@@ -48,6 +59,8 @@ type AuthConfig = {
 	readonly frontendOrigins: readonly string[];
 	readonly cookieAccessName: string;
 	readonly cookieRefreshName: string;
+	/** `SameSite` dos cookies auth (`lax` padrão; `strict` endurece CSRF; `none` exige `secure`). */
+	readonly cookieSameSite: 'lax' | 'strict' | 'none';
 	readonly rateLimitLoginMaxAttempts: number;
 	readonly rateLimitLoginWindowSeconds: number;
 	readonly rateLimitRefreshMaxAttempts: number;
@@ -100,6 +113,7 @@ function loadAuthConfig(): AuthConfig {
 			.filter(Boolean),
 		cookieAccessName: process.env.AUTH_COOKIE_ACCESS ?? 'access_token',
 		cookieRefreshName: process.env.AUTH_COOKIE_REFRESH ?? 'refresh_token',
+		cookieSameSite: parseCookieSameSite(),
 		rateLimitLoginMaxAttempts: parsePositiveInt(
 			process.env.AUTH_RATE_LIMIT_LOGIN_MAX,
 			30,
@@ -127,5 +141,20 @@ function assertAuthKeysConfigured(config: AuthConfig): void {
 	}
 }
 
+/** Em produção, `aud` fixo reduz reuso acidental de tokens entre serviços. */
+function assertProductionJwtAudience(config: AuthConfig): void {
+	const nodeEnv = process.env.NODE_ENV ?? 'development';
+	if (nodeEnv === 'production' && !config.audience) {
+		throw new Error(
+			'JWT_AUDIENCE é obrigatório quando NODE_ENV=production (claim aud em sign/verify).',
+		);
+	}
+}
+
 export type { AuthConfig };
-export { assertAuthKeysConfigured, loadAuthConfig, parseDurationToSeconds };
+export {
+	assertAuthKeysConfigured,
+	assertProductionJwtAudience,
+	loadAuthConfig,
+	parseDurationToSeconds,
+};

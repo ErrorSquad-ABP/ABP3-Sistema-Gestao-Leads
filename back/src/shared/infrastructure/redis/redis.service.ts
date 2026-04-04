@@ -30,6 +30,13 @@ class RedisService implements OnModuleInit, OnModuleDestroy {
 		return this.client;
 	}
 
+	async ping(): Promise<void> {
+		const r = await this.client.ping();
+		if (r !== 'PONG') {
+			throw new Error(`Redis PING inesperado: ${String(r)}`);
+		}
+	}
+
 	async setex(key: string, seconds: number, value: string): Promise<void> {
 		await this.client.setex(key, seconds, value);
 	}

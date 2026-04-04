@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: Nest DI
 import { FindUserUseCase } from '../../../users/application/use-cases/find-user.use-case.js';
 import type { User } from '../../../users/domain/entities/user.entity.js';
+import { UserNotFoundError } from '../../../users/domain/errors/user-not-found.error.js';
 import { RefreshTokenInvalidError } from '../../domain/errors/refresh-token-invalid.error.js';
 // biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
 import { AuthSessionRedisService } from '../../infrastructure/auth-session-redis.service.js';
@@ -38,17 +40,21 @@ class RefreshTokensUseCase {
 			throw new RefreshTokenInvalidError();
 		}
 
-		const user = await this.findUser.execute(payload.sub);
-		const access = await this.tokens.signAccessToken(user);
-		const refresh = await this.tokens.signRefreshToken(
-			user.id.value,
-			payload.fam,
-		);
+		let user: User;
+		try {
+			user = await this.findUser.execute(payload.sub);
+		} catch (e) {
+			if (e instanceof UserNotFoundError) {
+				throw new RefreshTokenInvalidError();
+			}
+			throw e;
+		}
 
+		const newRefreshJti = randomUUID();
 		const rotation = await this.sessions.tryRotateRefreshJti(
 			payload.fam,
 			payload.jti,
-			refresh.jti,
+			newRefreshJti,
 		);
 		if (rotation === 'missing') {
 			throw new RefreshTokenInvalidError();
@@ -58,6 +64,13 @@ class RefreshTokensUseCase {
 				'Refresh token inválido ou já foi substituído (use o último refresh emitido).',
 			);
 		}
+
+		const access = await this.tokens.signAccessToken(user);
+		const refresh = await this.tokens.signRefreshToken(
+			user.id.value,
+			payload.fam,
+			newRefreshJti,
+		);
 
 		return {
 			user,

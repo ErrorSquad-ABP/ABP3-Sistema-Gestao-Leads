@@ -42,8 +42,11 @@ class AuthTokenService {
 		};
 	}
 
-	async signAccessToken(user: User): Promise<{ token: string; jti: string }> {
-		const jti = randomUUID();
+	async signAccessToken(
+		user: User,
+		explicitJti?: string,
+	): Promise<{ token: string; jti: string }> {
+		const jti = explicitJti ?? randomUUID();
 		const payload: AccessPayload = {
 			sub: user.id.value,
 			role: user.role,
@@ -62,8 +65,9 @@ class AuthTokenService {
 	async signRefreshToken(
 		userId: string,
 		familyId: string,
+		explicitJti?: string,
 	): Promise<{ token: string; jti: string }> {
-		const jti = randomUUID();
+		const jti = explicitJti ?? randomUUID();
 		const payload: RefreshPayload = {
 			sub: userId,
 			jti,
@@ -103,39 +107,6 @@ class AuthTokenService {
 				...this.jwtIssuerAudience(),
 			},
 		);
-	}
-
-	decodeUnsafe(
-		token: string,
-	): ((AccessPayload | RefreshPayload) & { readonly exp?: number }) | null {
-		const decoded = this.jwt.decode(token, { json: true });
-		if (!decoded || typeof decoded !== 'object') {
-			return null;
-		}
-		const o = decoded as Record<string, unknown>;
-		if (typeof o.sub !== 'string' || typeof o.jti !== 'string') {
-			return null;
-		}
-		const exp = typeof o.exp === 'number' ? o.exp : undefined;
-		if (o.typ === 'access' && typeof o.role === 'string') {
-			return {
-				sub: o.sub,
-				role: o.role,
-				jti: o.jti,
-				typ: 'access',
-				exp,
-			};
-		}
-		if (o.typ === 'refresh' && typeof o.fam === 'string') {
-			return {
-				sub: o.sub,
-				jti: o.jti,
-				fam: o.fam,
-				typ: 'refresh',
-				exp,
-			};
-		}
-		return null;
 	}
 }
 
