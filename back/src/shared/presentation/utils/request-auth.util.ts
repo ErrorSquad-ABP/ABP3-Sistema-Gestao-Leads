@@ -31,4 +31,39 @@ function extractAccessTokenFromRequest(
 	return undefined;
 }
 
-export { extractAccessTokenFromRequest, extractBearerToken };
+/**
+ * Refresh: corpo JSON (refreshToken) tem prioridade sobre cookie HttpOnly.
+ */
+function extractRefreshTokenFromRequest(
+	req: Request,
+	cookieRefreshName: string,
+): string | undefined {
+	const fromStash = req.authRefreshTokenFromBody;
+	if (typeof fromStash === 'string') {
+		const s = fromStash.trim();
+		if (s.length > 0) {
+			return s;
+		}
+	}
+	const body = req.body as Record<string, unknown> | undefined;
+	const fromBody = body?.refreshToken;
+	if (typeof fromBody === 'string') {
+		const t = fromBody.trim();
+		if (t.length > 0) {
+			return t;
+		}
+	}
+	// eslint-disable-next-line security/detect-object-injection -- chave fixa por deploy (AUTH_CONFIG)
+	const c = req.cookies?.[cookieRefreshName];
+	if (typeof c === 'string') {
+		const t = c.trim();
+		return t.length > 0 ? t : undefined;
+	}
+	return undefined;
+}
+
+export {
+	extractAccessTokenFromRequest,
+	extractBearerToken,
+	extractRefreshTokenFromRequest,
+};

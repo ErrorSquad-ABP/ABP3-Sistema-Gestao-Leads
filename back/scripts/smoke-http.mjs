@@ -172,11 +172,42 @@ async function main() {
 		);
 		assert(
 			loginJson?.data?.refreshToken === undefined,
-			'Login smoke: refreshToken não deve vir no JSON sem X-Expose-Refresh-Token',
+			'Login smoke: refresh opaco só em cookie HttpOnly, não no JSON',
 		);
-		adminAuthHeader = { Authorization: `Bearer ${access}` };
-		adminCookie = cookieHeaderFromResponse(loginRes);
-		console.log('OK login smoke (credenciais SMOKE_*)');
+		let cookieAfterLogin = cookieHeaderFromResponse(loginRes);
+		const refreshRes = await fetch(`${BASE.replace(/\/$/, '')}/auth/refresh`, {
+			method: 'POST',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+				...(cookieAfterLogin ? { Cookie: cookieAfterLogin } : {}),
+			},
+			body: JSON.stringify({}),
+		});
+		const refreshText = await refreshRes.text();
+		let refreshJson;
+		try {
+			refreshJson = refreshText ? JSON.parse(refreshText) : null;
+		} catch {
+			refreshJson = null;
+		}
+		assert(
+			refreshRes.status === 200 || refreshRes.status === 201,
+			`POST /auth/refresh esperado 200/201, obteve ${refreshRes.status}`,
+		);
+		assert(refreshJson?.success === true, 'Refresh smoke envelope');
+		const accessAfter = refreshJson?.data?.accessToken;
+		assert(
+			typeof accessAfter === 'string' && accessAfter.length > 0,
+			'Refresh smoke accessToken',
+		);
+		const cookieAfterRefresh = cookieHeaderFromResponse(refreshRes);
+		if (cookieAfterRefresh) {
+			cookieAfterLogin = cookieAfterRefresh;
+		}
+		adminAuthHeader = { Authorization: `Bearer ${accessAfter}` };
+		adminCookie = cookieAfterLogin;
+		console.log('OK login smoke + POST /auth/refresh (credenciais SMOKE_*)');
 	}
 
 	const authHeaders =

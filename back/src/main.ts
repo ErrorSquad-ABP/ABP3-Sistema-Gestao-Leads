@@ -3,8 +3,8 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
-import type { Express } from 'express';
 import cookieParser from 'cookie-parser';
+import type { Express } from 'express';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
@@ -14,6 +14,7 @@ import { env } from './config/env.js';
 import { buildSwaggerConfig } from './config/swagger.js';
 import { DomainErrorFilter } from './shared/presentation/filters/domain-error.filter.js';
 import { ApiResponseInterceptor } from './shared/presentation/interceptors/api-response.interceptor.js';
+import { redactAuthRefreshBodyMiddleware } from './shared/presentation/middleware/redact-auth-refresh-body.middleware.js';
 
 const JSON_BODY_LIMIT = '512kb';
 
@@ -25,6 +26,7 @@ async function bootstrap() {
 	const http = app.getHttpAdapter();
 	if (http.getType() === 'express') {
 		const expressApp = http.getInstance() as Express;
+		expressApp.use(redactAuthRefreshBodyMiddleware);
 		expressApp.set('trust proxy', env.trustProxy);
 		expressApp.use(
 			helmet({

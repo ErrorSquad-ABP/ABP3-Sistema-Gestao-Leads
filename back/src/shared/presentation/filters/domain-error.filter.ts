@@ -9,6 +9,7 @@ import {
 import type { Request, Response } from 'express';
 
 import { InvalidCredentialsError } from '../../../modules/auth/domain/errors/invalid-credentials.error.js';
+import { RefreshTokenInvalidError } from '../../../modules/auth/domain/errors/refresh-token-invalid.error.js';
 import { LeadAlreadyConvertedError } from '../../../modules/leads/domain/errors/lead-already-converted.error.js';
 import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
@@ -166,7 +167,10 @@ class DomainErrorFilter implements ExceptionFilter {
 		if (status !== HttpStatus.UNAUTHORIZED) {
 			return;
 		}
-		if (exception instanceof InvalidCredentialsError) {
+		if (
+			exception instanceof InvalidCredentialsError ||
+			exception instanceof RefreshTokenInvalidError
+		) {
 			this.logSecurityAudit(request, status, exception.code);
 		}
 	}
@@ -175,6 +179,15 @@ class DomainErrorFilter implements ExceptionFilter {
 		exception: unknown,
 	): { status: number; body: ApiErrorEnvelope } | undefined {
 		if (exception instanceof InvalidCredentialsError) {
+			return {
+				status: HttpStatus.UNAUTHORIZED,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
+		if (exception instanceof RefreshTokenInvalidError) {
 			return {
 				status: HttpStatus.UNAUTHORIZED,
 				body: this.toErrorEnvelope(exception.message, [

@@ -22,6 +22,14 @@ class AuthRateLimiterService {
 		);
 	}
 
+	consumeRefreshAttempt(bucketKeyHash: string): void {
+		this.consume(
+			`refresh:${bucketKeyHash}`,
+			this.authConfig.rateLimitRefreshMaxAttempts,
+			this.authConfig.rateLimitRefreshWindowSeconds,
+		);
+	}
+
 	private consume(
 		key: string,
 		maxAttempts: number,

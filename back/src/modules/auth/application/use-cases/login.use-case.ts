@@ -7,6 +7,8 @@ import type { User } from '../../../users/domain/entities/user.entity.js';
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error.js';
 // biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
+import { AuthSessionPrismaRepository } from '../../infrastructure/auth-session.prisma-repository.js';
+// biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
 import { AuthTokenService } from '../../infrastructure/auth-token.service.js';
 
 /** Hash Argon2id fixo (senha desconhecida) para equalizar tempo quando o e-mail não existe. */
@@ -19,14 +21,17 @@ class LoginUseCase {
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly passwordHasher: Argon2PasswordHasherService,
 		private readonly tokens: AuthTokenService,
+		private readonly authSessions: AuthSessionPrismaRepository,
 	) {}
 
 	async execute(
 		email: string,
 		password: string,
+		meta: { readonly userAgent?: string; readonly ipAddress?: string },
 	): Promise<{
 		readonly user: User;
 		readonly accessToken: string;
+		readonly refreshToken: string;
 	}> {
 		const users = this.userRepositoryFactory.create();
 		const user = await users.findByEmail(email);
@@ -43,10 +48,16 @@ class LoginUseCase {
 		}
 
 		const access = await this.tokens.signAccessToken(user);
+		const { refreshToken } = await this.authSessions.createSession({
+			userId: user.id.value,
+			userAgent: meta.userAgent,
+			ipAddress: meta.ipAddress,
+		});
 
 		return {
 			user,
 			accessToken: access.token,
+			refreshToken,
 		};
 	}
 }

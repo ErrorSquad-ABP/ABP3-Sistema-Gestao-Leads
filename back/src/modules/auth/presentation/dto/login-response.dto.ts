@@ -8,7 +8,7 @@ class LoginResponseDto {
 
 	@ApiProperty({
 		description:
-			'Access JWT (também enviado em cookie HttpOnly). Sem refresh token: re-login após expiração.',
+			'Access JWT (também em cookie HttpOnly). Refresh opaco só em cookie HttpOnly (não vem no JSON).',
 	})
 	accessToken!: string;
 }
