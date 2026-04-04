@@ -8,7 +8,6 @@ import { SystemModule } from './modules/system/system.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { PrismaModule } from './shared/infrastructure/database/prisma/prisma.module.js';
 import { TransactionModule } from './shared/infrastructure/database/transaction/transaction.module.js';
-import { RedisModule } from './shared/infrastructure/redis/redis.module.js';
 import { GlobalAuthGuard } from './shared/presentation/guards/global-auth.guard.js';
 
 @Module({
@@ -16,7 +15,6 @@ import { GlobalAuthGuard } from './shared/presentation/guards/global-auth.guard.
 		AuthConfigModule,
 		PrismaModule,
 		TransactionModule,
-		RedisModule,
 		SystemModule,
 		UsersModule,
 		AuthModule,

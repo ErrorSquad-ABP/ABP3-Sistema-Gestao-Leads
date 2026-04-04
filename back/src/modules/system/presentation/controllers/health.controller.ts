@@ -2,7 +2,7 @@ import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 
 // biome-ignore lint/style/useImportType: classe necessária em runtime para DI (Nest)
-import { RedisService } from '../../../../shared/infrastructure/redis/redis.service.js';
+import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { Public } from '../../../../shared/presentation/decorators/public.decorator.js';
 import { ApiOkResponseEnvelope } from '../../../../shared/presentation/swagger/api-success-response.js';
 
@@ -26,7 +26,7 @@ class HealthReadyResponseDto {
 @ApiTags('health')
 @Controller('health')
 class HealthController {
-	constructor(private readonly redis: RedisService) {}
+	constructor(private readonly prisma: PrismaService) {}
 
 	@Get()
 	@ApiOperation({
@@ -47,16 +47,16 @@ class HealthController {
 
 	@Get('ready')
 	@ApiOperation({
-		summary: 'Readiness (Redis)',
+		summary: 'Readiness (PostgreSQL)',
 		description:
-			'Verifica Redis (sessões auth / rate limit). Retorna 503 se indisponível.',
+			'Verifica ligação ao Postgres (Prisma). Retorna 503 se indisponível.',
 	})
 	@ApiOkResponseEnvelope(HealthReadyResponseDto)
 	async getReady(): Promise<HealthReadyResponseDto> {
 		try {
-			await this.redis.ping();
+			await this.prisma.assertConnection();
 		} catch {
-			throw new ServiceUnavailableException('Redis indisponível.');
+			throw new ServiceUnavailableException('Base de dados indisponível.');
 		}
 		return {
 			status: 'ready',

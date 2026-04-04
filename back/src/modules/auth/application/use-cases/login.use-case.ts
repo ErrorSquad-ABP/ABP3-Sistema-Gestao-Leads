@@ -1,14 +1,11 @@
-import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 
-// biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
+// biome-ignore lint/style/useImportType: Nest DI
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import type { User } from '../../../users/domain/entities/user.entity.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error.js';
-// biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
-import { AuthSessionRedisService } from '../../infrastructure/auth-session-redis.service.js';
 // biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
 import { AuthTokenService } from '../../infrastructure/auth-token.service.js';
 
@@ -22,7 +19,6 @@ class LoginUseCase {
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly passwordHasher: Argon2PasswordHasherService,
 		private readonly tokens: AuthTokenService,
-		private readonly sessions: AuthSessionRedisService,
 	) {}
 
 	async execute(
@@ -31,7 +27,6 @@ class LoginUseCase {
 	): Promise<{
 		readonly user: User;
 		readonly accessToken: string;
-		readonly refreshToken: string;
 	}> {
 		const users = this.userRepositoryFactory.create();
 		const user = await users.findByEmail(email);
@@ -47,15 +42,11 @@ class LoginUseCase {
 			throw new InvalidCredentialsError();
 		}
 
-		const familyId = randomUUID();
 		const access = await this.tokens.signAccessToken(user);
-		const refresh = await this.tokens.signRefreshToken(user.id.value, familyId);
-		await this.sessions.setCurrentRefreshJti(familyId, refresh.jti);
 
 		return {
 			user,
 			accessToken: access.token,
-			refreshToken: refresh.token,
 		};
 	}
 }

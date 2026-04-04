@@ -13,8 +13,6 @@ import type { Request } from 'express';
 import type { AuthConfig } from '../../../config/auth.config.js';
 import { AUTH_CONFIG } from '../../../config/auth-injection.token.js';
 // biome-ignore lint/style/useImportType: classes necessárias para DI (Nest)
-import { AuthSessionRedisService } from '../../../modules/auth/infrastructure/auth-session-redis.service.js';
-// biome-ignore lint/style/useImportType: classes necessárias para DI (Nest)
 import { AuthTokenService } from '../../../modules/auth/infrastructure/auth-token.service.js';
 import type { UserRole } from '../../domain/enums/user-role.enum.js';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
@@ -33,13 +31,12 @@ function httpPath(req: Pick<Request, 'path' | 'url'>): string {
 	return raw.split('?')[0] ?? raw;
 }
 
-/** Auth global via `AuthTokenService` (evita bug de resolução da Promise com Passport 0.7 + callback customizado no Nest). */
+/** Auth global via `AuthTokenService` (JWT stateless). */
 @Injectable()
 class GlobalAuthGuard implements CanActivate {
 	constructor(
 		private readonly reflector: Reflector,
 		private readonly tokens: AuthTokenService,
-		private readonly sessions: AuthSessionRedisService,
 		@Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig,
 	) {}
 
@@ -84,10 +81,6 @@ class GlobalAuthGuard implements CanActivate {
 			payload.role.length === 0
 		) {
 			throw new UnauthorizedException();
-		}
-
-		if (await this.sessions.isJtiBlacklisted(payload.jti)) {
-			throw new UnauthorizedException('Token revogado.');
 		}
 
 		const user: JwtUser = {

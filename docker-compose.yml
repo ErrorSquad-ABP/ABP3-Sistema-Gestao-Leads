@@ -18,19 +18,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7-alpine
-    container_name: abp3-redis
-    restart: unless-stopped
-    ports:
-      - '6379:6379'
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 3s
-
   prisma-migrate:
     build:
       context: .
@@ -57,8 +44,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
       prisma-migrate:
         condition: service_completed_successfully
     environment:
@@ -66,18 +51,13 @@ services:
       PORT: 3001
       APP_URL: http://localhost:3001
       DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
-      REDIS_URL: redis://redis:6379
       JWT_SECRET: change-me
       JWT_ACCESS_PRIVATE_KEY: ${JWT_ACCESS_PRIVATE_KEY}
       JWT_ACCESS_PUBLIC_KEY: ${JWT_ACCESS_PUBLIC_KEY}
-      JWT_REFRESH_PRIVATE_KEY: ${JWT_REFRESH_PRIVATE_KEY:-}
-      JWT_REFRESH_PUBLIC_KEY: ${JWT_REFRESH_PUBLIC_KEY:-}
       JWT_ISSUER: ${JWT_ISSUER:-abp3-leads-api}
       JWT_AUDIENCE: ${JWT_AUDIENCE:-abp3-leads-api}
       AUTH_RATE_LIMIT_LOGIN_MAX: ${AUTH_RATE_LIMIT_LOGIN_MAX:-}
       AUTH_RATE_LIMIT_LOGIN_WINDOW_SEC: ${AUTH_RATE_LIMIT_LOGIN_WINDOW_SEC:-}
-      AUTH_RATE_LIMIT_REFRESH_MAX: ${AUTH_RATE_LIMIT_REFRESH_MAX:-}
-      AUTH_RATE_LIMIT_REFRESH_WINDOW_SEC: ${AUTH_RATE_LIMIT_REFRESH_WINDOW_SEC:-}
       FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:3000}
     ports:
       - '3001:3001'

@@ -5,12 +5,18 @@
  *
  * Rotas protegidas exigem JWT. Opcional: SMOKE_ADMIN_EMAIL + SMOKE_ADMIN_PASSWORD
  * (usuário com role ADMINISTRATOR no banco) para validar listagem de usuários e leads autenticados.
+ *
+ * Opcional: SMOKE_INVALID_LOGIN_PASSWORD — palavra-passe só para o teste de login inválido (401).
+ * Se omitida, usa valor derivado do PID (evita literal fixo no código).
  */
 
 const BASE = process.env.BASE_URL ?? 'http://127.0.0.1:3001/api';
 const SAMPLE_UUID = '00000000-0000-4000-8000-000000000001';
 const SMOKE_ADMIN_EMAIL = process.env.SMOKE_ADMIN_EMAIL;
 const SMOKE_ADMIN_PASSWORD = process.env.SMOKE_ADMIN_PASSWORD;
+const SMOKE_INVALID_LOGIN_PASSWORD =
+	process.env.SMOKE_INVALID_LOGIN_PASSWORD ??
+	`__smoke_invalid_${process.pid}__`;
 
 function fail(msg) {
 	console.error(`[FALHA] ${msg}`);
@@ -78,12 +84,12 @@ async function main() {
 		console.log('OK GET /health');
 	}
 
-	// Readiness (Redis — falha se API sem Redis)
+	// Readiness (PostgreSQL — falha se API sem DATABASE_URL/banco)
 	{
 		const { res, json } = await req('GET', '/health/ready');
 		assert(
 			res.status === 200,
-			`GET /health/ready esperado 200, obteve ${res.status} (Redis acessível?)`,
+			`GET /health/ready esperado 200, obteve ${res.status} (Postgres acessível?)`,
 		);
 		assert(json?.success === true, 'GET /health/ready envelope success');
 		assert(
@@ -96,7 +102,10 @@ async function main() {
 	// Login inválido → 401
 	{
 		const { res, json } = await req('POST', '/auth/login', {
-			body: { email: 'naoexiste@example.com', password: 'senha1234' },
+			body: {
+				email: 'naoexiste@example.com',
+				password: SMOKE_INVALID_LOGIN_PASSWORD,
+			},
 		});
 		assert(
 			res.status === 401,

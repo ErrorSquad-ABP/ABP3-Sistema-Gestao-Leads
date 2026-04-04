@@ -31,43 +31,4 @@ function extractAccessTokenFromRequest(
 	return undefined;
 }
 
-function headerXRefreshToken(req: Request): string | undefined {
-	const raw = req.headers['x-refresh-token'];
-	const v =
-		typeof raw === 'string'
-			? raw.trim()
-			: Array.isArray(raw)
-				? raw[0]?.trim()
-				: undefined;
-	return v !== undefined && v.length > 0 ? v : undefined;
-}
-
-/**
- * Refresh: cookie → `X-Refresh-Token` → Bearer.
- * `bodyRefresh` só em fluxos que aceitam corpo (ex.: logout), sempre por último.
- */
-function extractRefreshTokenFromRequest(
-	req: Request,
-	cookieRefreshName: string,
-	bodyRefresh?: string | undefined,
-): string | undefined {
-	// eslint-disable-next-line security/detect-object-injection -- chave fixa por deploy (AUTH_CONFIG)
-	const fromCookie = req.cookies?.[cookieRefreshName];
-	const cookieStr =
-		typeof fromCookie === 'string' && fromCookie.trim().length > 0
-			? fromCookie.trim()
-			: undefined;
-	const fromX = headerXRefreshToken(req);
-	const fromBearer = extractBearerToken(req);
-	const fromBody =
-		typeof bodyRefresh === 'string' && bodyRefresh.trim().length > 0
-			? bodyRefresh.trim()
-			: undefined;
-	return cookieStr ?? fromX ?? fromBearer ?? fromBody;
-}
-
-export {
-	extractAccessTokenFromRequest,
-	extractBearerToken,
-	extractRefreshTokenFromRequest,
-};
+export { extractAccessTokenFromRequest, extractBearerToken };

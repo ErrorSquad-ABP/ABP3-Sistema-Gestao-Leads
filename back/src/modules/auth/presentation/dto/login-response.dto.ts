@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { UserResponseDto } from '../../../users/application/dto/user-response.dto.js';
 
@@ -8,15 +8,9 @@ class LoginResponseDto {
 
 	@ApiProperty({
 		description:
-			'Access JWT (também enviado em cookie HttpOnly). Útil para clientes sem cookies.',
+			'Access JWT (também enviado em cookie HttpOnly). Sem refresh token: re-login após expiração.',
 	})
 	accessToken!: string;
-
-	@ApiPropertyOptional({
-		description:
-			'Só é devolvido quando o cliente envia o cabeçalho `X-Expose-Refresh-Token: true` (ou `1`). Caso contrário o refresh fica apenas em cookie HttpOnly, evitando leitura por JavaScript no browser.',
-	})
-	refreshToken?: string;
 }
 
 export { LoginResponseDto };

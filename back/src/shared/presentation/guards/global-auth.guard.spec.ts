@@ -43,12 +43,10 @@ describe('GlobalAuthGuard', () => {
 				throw new Error('should not call');
 			},
 		};
-		const sessions = { isJtiBlacklisted: async () => false };
 		const authConfig = { cookieAccessName: 'access_token' };
 		const guard = new GlobalAuthGuard(
 			reflector,
 			tokens as never,
-			sessions as never,
 			authConfig as never,
 		);
 		class H {}
@@ -70,12 +68,10 @@ describe('GlobalAuthGuard', () => {
 				jti: 'j1',
 			}),
 		};
-		const sessions = { isJtiBlacklisted: async () => false };
 		const authConfig = { cookieAccessName: 'access_token' };
 		const guard = new GlobalAuthGuard(
 			reflector,
 			tokens as never,
-			sessions as never,
 			authConfig as never,
 		);
 		class H {}
@@ -103,12 +99,10 @@ describe('GlobalAuthGuard', () => {
 				jti: 'j1',
 			}),
 		};
-		const sessions = { isJtiBlacklisted: async () => false };
 		const authConfig = { cookieAccessName: 'access_token' };
 		const guard = new GlobalAuthGuard(
 			reflector,
 			tokens as never,
-			sessions as never,
 			authConfig as never,
 		);
 		class H {}
@@ -133,7 +127,6 @@ describe('GlobalAuthGuard', () => {
 		const guardAdmin = new GlobalAuthGuard(
 			reflector,
 			tokensAdmin as never,
-			sessions as never,
 			authConfig as never,
 		);
 		const req2: MockReq = {
