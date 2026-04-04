@@ -1,8 +1,8 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
-import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
+import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { Store } from '../../../domain/entities/store.entity.js';
 import type { IStoreRepository } from '../../../domain/repositories/store.repository.js';
 

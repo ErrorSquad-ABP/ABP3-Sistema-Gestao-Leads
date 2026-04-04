@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { writeFileSync } from 'node:fs';
 import { generateKeyPairSync } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', {

@@ -1,11 +1,11 @@
+import { parseLeadStatus } from '../../../../shared/domain/enums/lead-status.enum.js';
+import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { LeadSource } from '../../../../shared/domain/value-objects/lead-source.value-object.js';
 import { Lead } from '../entities/lead.entity.js';
 import { LeadAlreadyConvertedError } from '../errors/lead-already-converted.error.js';
 import { LeadConvertedEvent } from '../events/lead-converted.event.js';
 import { LeadReassignedEvent } from '../events/lead-reassigned.event.js';
 import { LeadRegisteredEvent } from '../events/lead-registered.event.js';
-import { parseLeadStatus } from '../../../../shared/domain/enums/lead-status.enum.js';
-import { Uuid } from '../../../../shared/domain/types/identifiers.js';
-import { LeadSource } from '../../../../shared/domain/value-objects/lead-source.value-object.js';
 
 type CreateLeadParams = {
 	readonly customerId: string;
@@ -98,5 +98,5 @@ class LeadFactory {
 	}
 }
 
-export { LeadFactory };
 export type { CreateLeadParams, UpdateLeadParams };
+export { LeadFactory };

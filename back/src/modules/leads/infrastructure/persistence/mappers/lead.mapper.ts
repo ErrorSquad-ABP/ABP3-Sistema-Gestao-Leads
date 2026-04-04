@@ -2,10 +2,10 @@ import type {
 	LeadSource as PrismaLeadSource,
 	LeadStatus as PrismaLeadStatus,
 } from '../../../../../generated/prisma/enums.js';
-import { Lead } from '../../../domain/entities/lead.entity.js';
 import { parseLeadStatus } from '../../../../../shared/domain/enums/lead-status.enum.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { LeadSource } from '../../../../../shared/domain/value-objects/lead-source.value-object.js';
+import { Lead } from '../../../domain/entities/lead.entity.js';
 import type { LeadRecord } from '../records/lead.record.js';
 
 const LEAD_SOURCE_TO_PRISMA: Record<string, PrismaLeadSource> = {

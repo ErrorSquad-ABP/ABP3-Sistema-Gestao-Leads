@@ -18,13 +18,13 @@ const parseCanonicalDealStatus = dealStatusEnum.parseCanonical;
 const assertDealStatus = dealStatusEnum.assert;
 const assertCanonicalDealStatus = dealStatusEnum.assertCanonical;
 
+export type { DealStatus };
 export {
-	DEAL_STATUSES,
 	assertCanonicalDealStatus,
 	assertDealStatus,
+	DEAL_STATUSES,
 	isCanonicalDealStatus,
 	isDealStatus,
 	parseCanonicalDealStatus,
 	parseDealStatus,
 };
-export type { DealStatus };

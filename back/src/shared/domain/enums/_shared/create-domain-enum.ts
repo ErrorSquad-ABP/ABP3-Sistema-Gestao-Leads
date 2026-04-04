@@ -198,5 +198,5 @@ function createDomainEnum<TValues extends readonly string[]>(
 	};
 }
 
-export { createDomainEnum };
 export type { DomainEnum, DomainEnumConfig, DomainEnumContext };
+export { createDomainEnum };

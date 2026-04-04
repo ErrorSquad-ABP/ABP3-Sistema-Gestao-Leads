@@ -23,13 +23,13 @@ const parseCanonicalDealStage = dealStageEnum.parseCanonical;
 const assertDealStage = dealStageEnum.assert;
 const assertCanonicalDealStage = dealStageEnum.assertCanonical;
 
+export type { DealStage };
 export {
-	DEAL_STAGES,
 	assertCanonicalDealStage,
 	assertDealStage,
+	DEAL_STAGES,
 	isCanonicalDealStage,
 	isDealStage,
 	parseCanonicalDealStage,
 	parseDealStage,
 };
-export type { DealStage };
