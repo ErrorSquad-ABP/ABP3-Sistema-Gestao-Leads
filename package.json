@@ -32,7 +32,8 @@
 		"typecheck": "npm run typecheck --workspaces --if-present",
 		"quality:gate:blocking": "npm run guard:root-package && npm run format:check && npm run lint:check && npm run typecheck && npm run lint:eslint && npm run build",
 		"quality:gate:advisory": "npm run guard:root-package && npm run format:check && npm run lint:check && npm run lint:eslint",
-		"build": "npm run build --workspaces --if-present"
+		"build": "npm run build --workspaces --if-present",
+		"security:check": "node scripts/security-check.mjs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.8",
