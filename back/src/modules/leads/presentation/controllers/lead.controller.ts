@@ -25,29 +25,17 @@ import {
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { ConvertLeadUseCase } from '../../application/use-cases/convert-lead.use-case.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { CreateLeadUseCase } from '../../application/use-cases/create-lead.use-case.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { DeleteLeadUseCase } from '../../application/use-cases/delete-lead.use-case.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { FindLeadUseCase } from '../../application/use-cases/find-lead.use-case.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { ListOwnLeadsUseCase } from '../../application/use-cases/list-own-leads.use-case.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { ListTeamLeadsUseCase } from '../../application/use-cases/list-team-leads.use-case.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { ReassignLeadUseCase } from '../../application/use-cases/reassign-lead.use-case.js';
-// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
-import { UpdateLeadUseCase } from '../../application/use-cases/update-lead.use-case.js';
+import type { ConvertLeadUseCase } from '../../application/use-cases/convert-lead.use-case.js';
+import type { CreateLeadUseCase } from '../../application/use-cases/create-lead.use-case.js';
+import type { DeleteLeadUseCase } from '../../application/use-cases/delete-lead.use-case.js';
+import type { ReassignLeadUseCase } from '../../application/use-cases/reassign-lead.use-case.js';
+import type { UpdateLeadUseCase } from '../../application/use-cases/update-lead.use-case.js';
+import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
+import type { LeadDetailsQuery } from '../../infrastructure/queries/lead-details.query.js';
 import { LeadPresenter } from '../presenters/lead.presenter.js';
-// biome-ignore lint/style/useImportType: presenter e validators usados em runtime
-import { CreateLeadValidator } from '../validators/create-lead.validator.js';
-// biome-ignore lint/style/useImportType: presenter e validators usados em runtime
-import { ReassignLeadValidator } from '../validators/reassign-lead.validator.js';
-// biome-ignore lint/style/useImportType: presenter e validators usados em runtime
-import { UpdateLeadValidator } from '../validators/update-lead.validator.js';
+import type { CreateLeadValidator } from '../validators/create-lead.validator.js';
+import type { ReassignLeadValidator } from '../validators/reassign-lead.validator.js';
+import type { UpdateLeadValidator } from '../validators/update-lead.validator.js';
 
 const BAD_REQUEST = {
 	description:
@@ -65,12 +53,10 @@ class LeadController {
 	constructor(
 		private readonly createLeadUseCase: CreateLeadUseCase,
 		private readonly updateLeadUseCase: UpdateLeadUseCase,
-		private readonly findLeadUseCase: FindLeadUseCase,
-		private readonly listOwnLeadsUseCase: ListOwnLeadsUseCase,
-		private readonly listTeamLeadsUseCase: ListTeamLeadsUseCase,
 		private readonly reassignLeadUseCase: ReassignLeadUseCase,
 		private readonly convertLeadUseCase: ConvertLeadUseCase,
 		private readonly deleteLeadUseCase: DeleteLeadUseCase,
+		private readonly leadDetailsQuery: LeadDetailsQuery,
 	) {}
 
 	@Post()
@@ -80,7 +66,7 @@ class LeadController {
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async create(@Body() body: CreateLeadValidator) {
 		const lead = await this.createLeadUseCase.execute(body);
-		return LeadPresenter.toResponse(lead);
+		return this.loadResponse(lead.id.value);
 	}
 
 	@Get('owner/:ownerUserId')
@@ -92,10 +78,9 @@ class LeadController {
 	})
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listByOwner(@Param('ownerUserId', ParseUUIDPipe) ownerUserId: string) {
-		return this.listOwnLeadsUseCase
-			.execute(ownerUserId)
-			.then((leads) => LeadPresenter.toResponseList(leads));
+	async listByOwner(@Param('ownerUserId', ParseUUIDPipe) ownerUserId: string) {
+		const leads = await this.leadDetailsQuery.listByOwner(ownerUserId);
+		return LeadPresenter.toResponseList(leads);
 	}
 
 	@Get('team/:teamId')
@@ -107,10 +92,9 @@ class LeadController {
 	})
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listByTeam(@Param('teamId', ParseUUIDPipe) teamId: string) {
-		return this.listTeamLeadsUseCase
-			.execute(teamId)
-			.then((leads) => LeadPresenter.toResponseList(leads));
+	async listByTeam(@Param('teamId', ParseUUIDPipe) teamId: string) {
+		const leads = await this.leadDetailsQuery.listByTeam(teamId);
+		return LeadPresenter.toResponseList(leads);
 	}
 
 	@Get(':id')
@@ -122,8 +106,7 @@ class LeadController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async findById(@Param('id', ParseUUIDPipe) id: string) {
-		const lead = await this.findLeadUseCase.execute(id);
-		return LeadPresenter.toResponse(lead);
+		return this.loadResponse(id);
 	}
 
 	@Patch(':id')
@@ -136,8 +119,8 @@ class LeadController {
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateLeadValidator,
 	) {
-		const lead = await this.updateLeadUseCase.execute(id, body);
-		return LeadPresenter.toResponse(lead);
+		await this.updateLeadUseCase.execute(id, body);
+		return this.loadResponse(id);
 	}
 
 	@Patch(':id/reassign')
@@ -150,15 +133,15 @@ class LeadController {
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: ReassignLeadValidator,
 	) {
-		const lead = await this.reassignLeadUseCase.execute(id, body);
-		return LeadPresenter.toResponse(lead);
+		await this.reassignLeadUseCase.execute(id, body);
+		return this.loadResponse(id);
 	}
 
 	@Patch(':id/convert')
 	@ApiOperation({
 		summary: 'Converter lead',
 		description:
-			'Marca o lead como CONVERTED. Falha em tempo de execução se o lead já estiver convertido (erro de domínio).',
+			'Marca o lead como CONVERTED. Falha em tempo de execução se o lead já estiver convertido.',
 	})
 	@ApiParam({ name: 'id', format: 'uuid' })
 	@ApiOkResponseEnvelope(LeadResponseDto)
@@ -167,8 +150,8 @@ class LeadController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async convert(@Param('id', ParseUUIDPipe) id: string) {
-		const lead = await this.convertLeadUseCase.execute(id);
-		return LeadPresenter.toResponse(lead);
+		await this.convertLeadUseCase.execute(id);
+		return this.loadResponse(id);
 	}
 
 	@Delete(':id')
@@ -176,8 +159,7 @@ class LeadController {
 	@ApiOperation({ summary: 'Excluir lead' })
 	@ApiParam({ name: 'id', format: 'uuid' })
 	@ApiNoContentResponse({
-		description:
-			'Lead removido (sem corpo JSON; envelope aplicado apenas em respostas com corpo).',
+		description: 'Lead removido com sucesso.',
 	})
 	@ApiBadRequestResponse({
 		description: 'UUID inválido no parâmetro de rota.',
@@ -185,6 +167,14 @@ class LeadController {
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
 		await this.deleteLeadUseCase.execute(id);
+	}
+
+	private async loadResponse(id: string) {
+		const lead = await this.leadDetailsQuery.findById(id);
+		if (!lead) {
+			throw new LeadNotFoundError(id);
+		}
+		return LeadPresenter.toResponse(lead);
 	}
 }
 

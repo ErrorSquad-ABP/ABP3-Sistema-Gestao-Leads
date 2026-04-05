@@ -9,7 +9,9 @@ loadEnvironmentFiles();
 
 const env = {
 	appUrl: process.env.APP_URL ?? 'http://localhost:3001',
-	databaseUrl: process.env.DATABASE_URL ?? '',
+	databaseUrl:
+		process.env.DATABASE_URL ??
+		'postgresql://abp:abp@localhost:5433/lead_management',
 	hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
 	hasJwtSecret: Boolean(process.env.JWT_SECRET),
 	nodeEnv: process.env.NODE_ENV ?? 'development',

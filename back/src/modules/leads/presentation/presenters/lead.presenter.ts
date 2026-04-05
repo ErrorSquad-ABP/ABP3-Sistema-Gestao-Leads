@@ -1,19 +1,22 @@
 import type { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
-import type { Lead } from '../../domain/entities/lead.entity.js';
+import type { LeadDetailsView } from '../../infrastructure/queries/lead-details.query.js';
 
 class LeadPresenter {
-	static toResponse(lead: Lead): LeadResponseDto {
+	static toResponse(lead: LeadDetailsView): LeadResponseDto {
 		return {
-			id: lead.id.value,
-			customerId: lead.customerId.value,
-			ownerUserId: lead.ownerUserId === null ? null : lead.ownerUserId.value,
-			source: lead.source.value,
+			id: lead.id,
+			customerId: lead.customerId,
+			ownerUserId: lead.ownerUserId,
+			source: lead.source,
 			status: lead.status,
-			storeId: lead.storeId.value,
+			storeId: lead.storeId,
+			customer: lead.customer,
+			store: lead.store,
+			owner: lead.owner,
 		} as LeadResponseDto;
 	}
 
-	static toResponseList(leads: Lead[]): LeadResponseDto[] {
+	static toResponseList(leads: readonly LeadDetailsView[]): LeadResponseDto[] {
 		return leads.map((lead) => LeadPresenter.toResponse(lead));
 	}
 }

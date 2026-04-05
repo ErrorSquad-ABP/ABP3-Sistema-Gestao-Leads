@@ -9,6 +9,7 @@
 		"start": "next start",
 		"lint": "eslint",
 		"format": "prettier --write \"**/*.{ts,tsx}\"",
+		"test:http": "node ./scripts/smoke-http-leads.mjs",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {

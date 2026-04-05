@@ -12,6 +12,7 @@ import { ListTeamLeadsUseCase } from './application/use-cases/list-team-leads.us
 import { ReassignLeadUseCase } from './application/use-cases/reassign-lead.use-case.js';
 import { UpdateLeadUseCase } from './application/use-cases/update-lead.use-case.js';
 import { LeadFactory } from './domain/factories/lead.factory.js';
+import { LeadDetailsQuery } from './infrastructure/queries/lead-details.query.js';
 import { LeadRepositoryFactory } from './infrastructure/persistence/factories/lead-repository.factory.js';
 import { LeadController } from './presentation/controllers/lead.controller.js';
 
@@ -23,6 +24,7 @@ import { LeadController } from './presentation/controllers/lead.controller.js';
 		LeadRepositoryFactory,
 		CustomerRepositoryFactory,
 		StoreRepositoryFactory,
+		LeadDetailsQuery,
 		CreateLeadUseCase,
 		UpdateLeadUseCase,
 		FindLeadUseCase,

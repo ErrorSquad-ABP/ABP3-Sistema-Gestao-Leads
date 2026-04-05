@@ -1,0 +1,9 @@
+const USER_ROLES = [
+	'ADMIN',
+	'ADMINISTRATOR',
+	'ATTENDANT',
+	'GENERAL_MANAGER',
+	'MANAGER',
+] as const;
+
+export { USER_ROLES };
