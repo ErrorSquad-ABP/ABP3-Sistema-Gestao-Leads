@@ -151,9 +151,19 @@ function assertProductionJwtAudience(config: AuthConfig): void {
 	}
 }
 
+function assertCookieSameSiteSecure(config: AuthConfig): void {
+	const nodeEnv = process.env.NODE_ENV ?? 'development';
+	if (config.cookieSameSite === 'none' && nodeEnv !== 'production') {
+		throw new Error(
+			'AUTH_COOKIE_SAMESITE=none exige cookies Secure. Em desenvolvimento, use lax/strict ou rode com HTTPS/produção.',
+		);
+	}
+}
+
 export type { AuthConfig };
 export {
 	assertAuthKeysConfigured,
+	assertCookieSameSiteSecure,
 	assertProductionJwtAudience,
 	loadAuthConfig,
 	parseDurationToSeconds,

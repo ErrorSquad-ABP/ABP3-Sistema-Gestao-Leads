@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 
 import {
 	assertAuthKeysConfigured,
+	assertCookieSameSiteSecure,
 	assertProductionJwtAudience,
 	loadAuthConfig,
 } from './auth.config.js';
@@ -19,6 +20,7 @@ import { AUTH_CONFIG } from './auth-injection.token.js';
 				const c = loadAuthConfig();
 				assertAuthKeysConfigured(c);
 				assertProductionJwtAudience(c);
+				assertCookieSameSiteSecure(c);
 				return c;
 			},
 		},

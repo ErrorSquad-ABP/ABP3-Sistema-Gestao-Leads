@@ -19,6 +19,20 @@ type CreateSessionInput = {
 	readonly ipAddress: string | undefined;
 };
 
+function advisoryKeysFromUuid(uuid: string): { readonly k1: number; readonly k2: number } {
+	// UUID canonical: 8-4-4-4-12 (hex). Usamos duas palavras de 32 bits estáveis (sem hash),
+	// para evitar colisões teóricas de `hashtext()` no lock.
+	const hex = uuid.replaceAll('-', '').toLowerCase();
+	if (!/^[0-9a-f]{32}$/.test(hex)) {
+		// Fallback: entradas inválidas não devem acontecer (userId vem do domínio/DB).
+		// Usar um lock global aqui seria pior; preferimos falhar cedo.
+		throw new Error(`userId inválido para advisory lock: ${uuid}`);
+	}
+	const a = Number.parseInt(hex.slice(0, 8), 16) | 0;
+	const b = Number.parseInt(hex.slice(24, 32), 16) | 0;
+	return { k1: a, k2: b };
+}
+
 @Injectable()
 class AuthSessionPrismaRepository {
 	constructor(
@@ -28,6 +42,28 @@ class AuthSessionPrismaRepository {
 
 	private pepper(): string {
 		return this.authConfig.refreshTokenPepper;
+	}
+
+	async getUserIdByValidRefreshToken(rawRefreshToken: string): Promise<string> {
+		const parsed = parseRefreshToken(rawRefreshToken);
+		if (parsed === null) {
+			throw new RefreshTokenInvalidError();
+		}
+		const hash = hashRefreshSecret(parsed.secret, this.pepper());
+		const now = new Date();
+		const session = await this.prisma.authSession.findFirst({
+			where: {
+				id: parsed.sessionId,
+				refreshTokenHash: hash,
+				revokedAt: null,
+				expiresAt: { gt: now },
+			},
+			select: { userId: true },
+		});
+		if (session === null) {
+			throw new RefreshTokenInvalidError();
+		}
+		return session.userId;
 	}
 
 	async createSession(input: CreateSessionInput): Promise<{
@@ -41,33 +77,11 @@ class AuthSessionPrismaRepository {
 		);
 		const max = this.authConfig.maxActiveSessionsPerUser;
 		await this.prisma.$transaction(async (tx) => {
-			if (max > 0) {
-				const now = new Date();
-				const activeCount = await tx.authSession.count({
-					where: {
-						userId: input.userId,
-						revokedAt: null,
-						expiresAt: { gt: now },
-					},
-				});
-				if (activeCount >= max) {
-					const oldest = await tx.authSession.findFirst({
-						where: {
-							userId: input.userId,
-							revokedAt: null,
-							expiresAt: { gt: now },
-						},
-						orderBy: { createdAt: 'asc' },
-						select: { id: true },
-					});
-					if (oldest !== null) {
-						await tx.authSession.update({
-							where: { id: oldest.id },
-							data: { revokedAt: now },
-						});
-					}
-				}
-			}
+			// Serialize criação/limpeza por utilizador para evitar race em burst de logins.
+			// Advisory lock evita depender do nome da tabela `User` no Postgres.
+			const keys = advisoryKeysFromUuid(input.userId);
+			await tx.$queryRaw`SELECT pg_advisory_xact_lock(${keys.k1}::int, ${keys.k2}::int)`;
+
 			await tx.authSession.create({
 				data: {
 					id: sessionId,
@@ -78,6 +92,25 @@ class AuthSessionPrismaRepository {
 					ipAddress: input.ipAddress ?? null,
 				},
 			});
+
+			if (max > 0) {
+				const now = new Date();
+				await tx.$queryRaw`
+					WITH ranked AS (
+						SELECT
+							"id",
+							ROW_NUMBER() OVER (ORDER BY "createdAt" DESC) AS rn
+						FROM "auth_sessions"
+						WHERE
+							"userId" = ${input.userId}
+							AND "revokedAt" IS NULL
+							AND "expiresAt" > ${now}
+					)
+					UPDATE "auth_sessions"
+					SET "revokedAt" = ${now}
+					WHERE "id" IN (SELECT "id" FROM ranked WHERE rn > ${max})
+				`;
+			}
 		});
 		return { refreshToken: buildRefreshToken(sessionId, secret) };
 	}
@@ -100,13 +133,17 @@ class AuthSessionPrismaRepository {
 		const newSecret = generateRefreshSecret();
 		const newHash = hashRefreshSecret(newSecret, this.pepper());
 		const now = new Date();
+		const newExpiresAt = new Date(
+			now.getTime() + this.authConfig.refreshTtlSeconds * 1000,
+		);
 
 		return this.prisma.$transaction(async (tx) => {
 			const rows = await tx.$queryRaw<Array<{ userId: string }>>`
 				UPDATE "auth_sessions"
 				SET
 					"refreshTokenHash" = ${newHash},
-					"lastUsedAt" = ${now}
+					"lastUsedAt" = ${now},
+					"expiresAt" = ${newExpiresAt}
 				WHERE
 					"id" = ${parsed.sessionId}
 					AND "refreshTokenHash" = ${oldHash}

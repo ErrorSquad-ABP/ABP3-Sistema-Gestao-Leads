@@ -23,8 +23,8 @@ describe('RefreshTokensUseCase', () => {
 			null,
 		);
 		const authSessions = {
+			getUserIdByValidRefreshToken: mock.fn(async () => user.id.value),
 			rotateRefreshToken: mock.fn(async () => ({
-				userId: user.id.value,
 				refreshToken: `${user.id.value}.newsecretbase64urlAAAAAAAAAAAAAAAAAAAAAAAAAAA`,
 			})),
 		};
@@ -48,6 +48,7 @@ describe('RefreshTokensUseCase', () => {
 		const out = await uc.execute(raw, {});
 		assert.equal(out.accessToken, 'access-jwt');
 		assert.ok(out.refreshToken.includes('.'));
+		assert.equal(authSessions.getUserIdByValidRefreshToken.mock.calls.length, 1);
 		assert.equal(authSessions.rotateRefreshToken.mock.calls.length, 1);
 		assert.equal(tokens.signAccessToken.mock.calls.length, 1);
 	});
@@ -55,8 +56,8 @@ describe('RefreshTokensUseCase', () => {
 	it('lança RefreshTokenInvalidError se utilizador não existe', async () => {
 		const uid = '00000000-0000-4000-8000-000000000099';
 		const authSessions = {
+			getUserIdByValidRefreshToken: mock.fn(async () => uid),
 			rotateRefreshToken: mock.fn(async () => ({
-				userId: uid,
 				refreshToken: `${uid}.newsecretbase64urlAAAAAAAAAAAAAAAAAAAAAAAAAAA`,
 			})),
 		};
@@ -75,5 +76,35 @@ describe('RefreshTokensUseCase', () => {
 		);
 		const raw = `${uid}.oldsecretbase64urlAAAAAAAAAAAAAAAAAAAAAAAAAAA`;
 		await assert.rejects(() => uc.execute(raw, {}), RefreshTokenInvalidError);
+	});
+
+	it('não consome a sessão se falhar ao assinar access token', async () => {
+		const uid = '00000000-0000-4000-8000-000000000042';
+		const authSessions = {
+			getUserIdByValidRefreshToken: mock.fn(async () => uid),
+			rotateRefreshToken: mock.fn(async () => ({
+				refreshToken: `${uid}.newsecretbase64urlAAAAAAAAAAAAAAAAAAAAAAAAAAA`,
+			})),
+		};
+		const userRepositoryFactory = {
+			create: () => ({
+				findById: mock.fn(async () => ({
+					id: { value: uid },
+				})),
+			}),
+		};
+		const tokens = {
+			signAccessToken: mock.fn(async () => {
+				throw new Error('transient-sign-error');
+			}),
+		};
+		const uc = new RefreshTokensUseCase(
+			authSessions as never,
+			userRepositoryFactory as never,
+			tokens as never,
+		);
+		const raw = `${uid}.oldsecretbase64urlAAAAAAAAAAAAAAAAAAAAAAAAAAA`;
+		await assert.rejects(() => uc.execute(raw, {}));
+		assert.equal(authSessions.rotateRefreshToken.mock.calls.length, 0);
 	});
 });

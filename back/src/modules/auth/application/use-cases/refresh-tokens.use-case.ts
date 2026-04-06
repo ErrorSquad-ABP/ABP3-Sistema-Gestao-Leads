@@ -26,16 +26,16 @@ class RefreshTokensUseCase {
 		readonly accessToken: string;
 		readonly refreshToken: string;
 	}> {
-		const rotated = await this.authSessions.rotateRefreshToken(
-			rawRefreshToken,
-			meta,
-		);
 		const users = this.userRepositoryFactory.create();
-		const user = await users.findById(Uuid.parse(rotated.userId));
+		const userId = await this.authSessions.getUserIdByValidRefreshToken(
+			rawRefreshToken,
+		);
+		const user = await users.findById(Uuid.parse(userId));
 		if (user === null) {
 			throw new RefreshTokenInvalidError();
 		}
 		const access = await this.tokens.signAccessToken(user);
+		const rotated = await this.authSessions.rotateRefreshToken(rawRefreshToken, meta);
 		return {
 			user,
 			accessToken: access.token,
