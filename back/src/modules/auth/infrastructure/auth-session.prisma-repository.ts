@@ -19,7 +19,10 @@ type CreateSessionInput = {
 	readonly ipAddress: string | undefined;
 };
 
-function advisoryKeysFromUuid(uuid: string): { readonly k1: number; readonly k2: number } {
+function advisoryKeysFromUuid(uuid: string): {
+	readonly k1: number;
+	readonly k2: number;
+} {
 	// UUID canonical: 8-4-4-4-12 (hex). Usamos duas palavras de 32 bits estáveis (sem hash),
 	// para evitar colisões teóricas de `hashtext()` no lock.
 	const hex = uuid.replaceAll('-', '').toLowerCase();

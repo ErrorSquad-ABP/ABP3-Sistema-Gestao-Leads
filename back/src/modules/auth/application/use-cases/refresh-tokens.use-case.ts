@@ -27,15 +27,17 @@ class RefreshTokensUseCase {
 		readonly refreshToken: string;
 	}> {
 		const users = this.userRepositoryFactory.create();
-		const userId = await this.authSessions.getUserIdByValidRefreshToken(
-			rawRefreshToken,
-		);
+		const userId =
+			await this.authSessions.getUserIdByValidRefreshToken(rawRefreshToken);
 		const user = await users.findById(Uuid.parse(userId));
 		if (user === null) {
 			throw new RefreshTokenInvalidError();
 		}
 		const access = await this.tokens.signAccessToken(user);
-		const rotated = await this.authSessions.rotateRefreshToken(rawRefreshToken, meta);
+		const rotated = await this.authSessions.rotateRefreshToken(
+			rawRefreshToken,
+			meta,
+		);
 		return {
 			user,
 			accessToken: access.token,

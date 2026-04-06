@@ -23,10 +23,15 @@ describe('AuthSessionPrismaRepository', () => {
 		};
 
 		const prisma = {
-			$transaction: mock.fn(async (fn: (txArg: typeof tx) => Promise<unknown>) => fn(tx)),
+			$transaction: mock.fn(
+				async (fn: (txArg: typeof tx) => Promise<unknown>) => fn(tx),
+			),
 		};
 
-		const repo = new AuthSessionPrismaRepository(prisma as never, authConfig as never);
+		const repo = new AuthSessionPrismaRepository(
+			prisma as never,
+			authConfig as never,
+		);
 		await repo.createSession({
 			userId: '00000000-0000-4000-8000-000000000042',
 			userAgent: undefined,
@@ -62,10 +67,15 @@ describe('AuthSessionPrismaRepository', () => {
 		};
 
 		const prisma = {
-			$transaction: mock.fn(async (fn: (txArg: typeof tx) => Promise<unknown>) => fn(tx)),
+			$transaction: mock.fn(
+				async (fn: (txArg: typeof tx) => Promise<unknown>) => fn(tx),
+			),
 		};
 
-		const repo = new AuthSessionPrismaRepository(prisma as never, authConfig as never);
+		const repo = new AuthSessionPrismaRepository(
+			prisma as never,
+			authConfig as never,
+		);
 		await repo.rotateRefreshToken(
 			'00000000-0000-4000-8000-000000000042.secretbase64urlAAAAAAAAAAAAAAAAAAAAAAAAAAA',
 			{},
@@ -77,4 +87,3 @@ describe('AuthSessionPrismaRepository', () => {
 		);
 	});
 });
-

@@ -48,7 +48,10 @@ describe('RefreshTokensUseCase', () => {
 		const out = await uc.execute(raw, {});
 		assert.equal(out.accessToken, 'access-jwt');
 		assert.ok(out.refreshToken.includes('.'));
-		assert.equal(authSessions.getUserIdByValidRefreshToken.mock.calls.length, 1);
+		assert.equal(
+			authSessions.getUserIdByValidRefreshToken.mock.calls.length,
+			1,
+		);
 		assert.equal(authSessions.rotateRefreshToken.mock.calls.length, 1);
 		assert.equal(tokens.signAccessToken.mock.calls.length, 1);
 	});
