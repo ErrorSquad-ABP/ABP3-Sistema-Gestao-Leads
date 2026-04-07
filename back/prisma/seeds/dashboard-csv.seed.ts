@@ -17,7 +17,7 @@ import {
 	LeadSource,
 	LeadStatus,
 	UserRole,
-} from '../../src/shared/constants/enums.js';
+} from '../../src/generated/prisma/enums.js';
 
 type DashboardCsvRow = {
 	lead_id: string;
@@ -197,6 +197,14 @@ function trimNullable(value: string) {
 	return normalized.length > 0 ? normalized : null;
 }
 
+function buildCustomerKey(row: DashboardCsvRow) {
+	return (
+		trimNullable(row.customer_cpf) ??
+		trimNullable(row.customer_email)?.toLowerCase() ??
+		`lead:${row.lead_id.trim()}`
+	);
+}
+
 function parseDate(value: string) {
 	const normalized = value.trim();
 
@@ -310,40 +318,33 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 
 	const userIdByEmail = new Map(users.map((user) => [user.email, user.id]));
 
-	const customers = Array.from(
-		new Map(
-			rows.map((row) => {
-				const customerKey =
-					trimNullable(row.customer_cpf) ??
-					trimNullable(row.customer_email)?.toLowerCase() ??
-					`lead:${row.lead_id.trim()}`;
+	const customersByKey = new Map(
+		rows.map((row) => {
+			const customerKey = buildCustomerKey(row);
 
-				return [
-					customerKey,
-					{
-						id: deterministicUuid(`customer:${customerKey}`),
-						name: row.customer_name.trim(),
-						email: trimNullable(row.customer_email)?.toLowerCase() ?? null,
-						phone: trimNullable(row.customer_phone),
-						cpf: trimNullable(row.customer_cpf),
-					},
-				];
-			}),
-		).values(),
+			return [
+				customerKey,
+				{
+					id: deterministicUuid(`customer:${customerKey}`),
+					name: row.customer_name.trim(),
+					email: trimNullable(row.customer_email)?.toLowerCase() ?? null,
+					phone: trimNullable(row.customer_phone),
+					cpf: trimNullable(row.customer_cpf),
+				},
+			];
+		}),
 	);
 
+	const customers = Array.from(customersByKey.values());
 	const customerIdByKey = new Map(
-		customers.map((customer) => [
-			customer.cpf ?? customer.email ?? '',
+		Array.from(customersByKey.entries(), ([customerKey, customer]) => [
+			customerKey,
 			customer.id,
 		]),
 	);
 
 	const leads = rows.map((row) => {
-		const customerKey =
-			trimNullable(row.customer_cpf) ??
-			trimNullable(row.customer_email)?.toLowerCase() ??
-			'';
+		const customerKey = buildCustomerKey(row);
 		const leadId = deterministicUuid(`lead:${row.lead_id.trim()}`);
 		const createdAt = parseDate(row.lead_created_at) ?? new Date();
 		const updatedAt =
@@ -355,7 +356,7 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 			id: leadId,
 			customerId:
 				customerIdByKey.get(customerKey) ??
-				deterministicUuid(`customer:fallback:${row.lead_id.trim()}`),
+				deterministicUuid(`customer:${customerKey}`),
 			storeId:
 				storeIdByTeamName.get(row.team_name.trim()) ??
 				deterministicUuid(`store:${row.team_name.trim()}`),
