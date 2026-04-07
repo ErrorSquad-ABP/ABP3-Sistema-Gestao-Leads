@@ -96,7 +96,9 @@ Entregar um fluxo mínimo utilizável para acesso ao sistema e operação inicia
 - estruturar telas de login e sessão;
 - criar fluxo inicial de acesso autenticado;
 - preparar interfaces mínimas para usuários, clientes e leads;
-- integrar a aplicação web com a API via contratos explícitos.
+- integrar a aplicação web com a API via contratos explícitos;
+- decidir por tela quando usar composição com endpoints por recurso e quando justificar endpoint agregador;
+- evitar tratar mocks como direção principal da sprint, priorizando integração real sempre que o backend já sustentar o fluxo.
 
 ### Frente 5 - Documentação e contratos
 
@@ -117,6 +119,7 @@ Entregar um fluxo mínimo utilizável para acesso ao sistema e operação inicia
 - Toda autorização continua centralizada no backend.
 - Nenhuma história será considerada concluída sem aderência ao `Definition of Done`.
 - O escopo deve privilegiar completude funcional mínima, não volume de endpoints.
+- A API deve seguir orientação por recurso como padrão; endpoint agregador é exceção consciente para dashboards e telas realmente pesadas.
 - Se houver risco de sobrecarga, `US-08` é a primeira candidata a sair do compromisso principal.
 - O time deve fechar a sprint com demonstração funcional dos fluxos entregues.
 

@@ -79,7 +79,8 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 | Preparar interface inicial para usuários | `US-04` | Operação administrativa básica |
 | Preparar interface inicial para clientes | `US-06` | Cadastro e manutenção inicial |
 | Preparar interface inicial para leads | `US-07` | Fluxo operacional básico do núcleo comercial |
-| Integrar frontend e backend por contratos explícitos | `US-01` a `US-07` | Consumo HTTP/JSON consistente |
+| Integrar frontend e backend por contratos explícitos | `US-01` a `US-07` | Consumo HTTP/JSON consistente, sem depender de mocks como direção principal |
+| Decidir por tela entre composição por recurso e endpoint agregador | `US-01` a `US-07` | Contratos do frontend estáveis e coerentes com o custo de cada tela |
 
 ### Frente 5 - Documentação e contratos
 
@@ -117,6 +118,7 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 - A modelagem relacional desta sprint concentra grande parte do risco de atraso.
 - RBAC pode crescer demais se o time tentar resolver todos os cenários avançados de uma vez.
 - O frontend pode ficar dependente demais do backend se os contratos mínimos não forem fechados cedo.
+- O frontend pode degradar a manutenção se o time começar a criar endpoints agregadores para qualquer tela sem critério de domínio.
 - O excesso de paralelismo sem integração frequente pode quebrar a coesão da sprint.
 
 ## Impactos e implicações

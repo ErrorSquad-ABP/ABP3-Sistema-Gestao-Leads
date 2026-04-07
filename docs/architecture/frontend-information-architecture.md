@@ -391,6 +391,41 @@ Os nomes abaixo são contratos-alvo para guiar frontend e backend em paralelo. A
 | `stores` | `GET /stores`, `POST /stores`, `PATCH /stores/:id`, `DELETE /stores/:id` |
 | `audit-logs` | `GET /audit-logs`, `GET /audit-logs/:id` |
 
+## Estratégia de endpoints por tela
+
+O frontend não deve depender de uma API feita de endpoints gigantes por padrão, nem de uma explosão de chamadas sem critério. A decisão recomendada para o projeto é:
+
+- modelar endpoints separados por recurso e responsabilidade como regra geral;
+- compor a tela no frontend quando os blocos forem independentes;
+- criar endpoint agregador apenas para telas que sempre precisem de muitos blocos juntos.
+
+### Regra prática
+
+| Tipo de tela | Estratégia recomendada | Exemplo |
+| --- | --- | --- |
+| Tela simples | Subrotas e recursos separados | `GET /leads`, `GET /customers/:id`, `PATCH /users/:id` |
+| Detalhe com poucos relacionamentos | Recurso principal + subrotas específicas | `GET /leads/:id`, `GET /leads/:id/history` |
+| Dashboard | Endpoint agregador por tela | `GET /dashboards/operational`, `GET /dashboards/analytic` |
+| Tela muito acoplada e sempre carregada em bloco | Endpoint de composição dedicado | futuro `GET /leads/:id/overview`, se realmente necessário |
+
+```mermaid
+flowchart TD
+  Start[Tela precisa de dados] --> Q1{Mostra um recurso principal\ncom poucos blocos relacionados?}
+  Q1 -->|Sim| Split[Usar endpoints por recurso e subrotas]
+  Q1 -->|Nao| Q2{A tela sempre precisa\ncarregar muitos blocos juntos?}
+  Q2 -->|Nao| Compose[Compor no frontend\ncom chamadas independentes]
+  Q2 -->|Sim| Q3{E um dashboard ou detalhe\ncomplexo de carga unificada?}
+  Q3 -->|Sim| Aggregate[Criar endpoint agregador\nespecifico da tela]
+  Q3 -->|Nao| Split
+```
+
+### Decisão aplicada ao ABP
+
+- `auth`, `users`, `teams`, `stores`, `customers` e `leads` devem seguir orientação por recurso e subrotas.
+- `dashboards` já nascem como endpoints agregadores, porque a tela sempre consome indicadores consolidados.
+- o detalhe de lead deve começar com recurso principal + subrotas específicas; só deve ganhar um endpoint único de composição se a tela realmente ficar pesada demais para orquestrar.
+- a Sprint 1 deve preferir integração real com endpoints existentes, em vez de montar uma camada de mocks como direção principal do produto.
+
 ## Organização de implementação no frontend
 
 ### Estrutura esperada
@@ -490,7 +525,7 @@ front/src/
 
 - O sistema ainda precisa de uma convenção formal de nomes para estágio e status de negociação.
 - A granularidade exata do `Gerente Geral` em telas operacionais depende do contrato final da API.
-- Se o backend atrasar contratos de dashboard, o frontend deve avançar com mocks tipados e layout estável, sem inventar regra de negócio.
+- A decisão entre composição por recurso e endpoint agregador deve ser registrada por tela antes de estabilizar os contratos do frontend.
 - Kanban é opcional. Se entrar, deve ser uma visualização alternativa de leads ou negociação, nunca substituto do fluxo exigido pelo edital.
 
 ## Entregáveis documentais derivados deste plano

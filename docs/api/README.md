@@ -40,6 +40,42 @@ Prefixo inicial sugerido:
 - Decorators do Nest usados para roteamento, documentação e composição dos contratos da API.
 - Swagger disponível para documentação técnica inicial da API.
 
+## Estratégia de desenho dos endpoints
+
+A API deve seguir orientação por recurso como padrão. Isso significa:
+
+- endpoints separados por domínio e responsabilidade;
+- subrotas quando a relação entre recurso principal e bloco derivado for clara;
+- endpoint agregador apenas para telas que sempre precisem de muitos blocos juntos.
+
+### Regra de decisão
+
+| Cenário | Estratégia |
+| --- | --- |
+| CRUD e telas simples | Endpoints por recurso |
+| Recurso principal com dados auxiliares independentes | Recurso principal + subrotas |
+| Dashboard e visão consolidada | Endpoint agregador por tela |
+| Detalhe muito complexo e sempre carregado em bloco | Endpoint de composição específico, se justificado |
+
+```mermaid
+flowchart TD
+  A[Tela ou caso de uso] --> B{Dados pertencem a um recurso\nprincipal bem definido?}
+  B -->|Sim| C[Modelar endpoint por recurso]
+  C --> D{Existe bloco relacionado\nque merece autonomia?}
+  D -->|Sim| E[Criar subrota especifica]
+  D -->|Nao| F[Manter no endpoint principal]
+  B -->|Nao| G{Tela sempre exige carga\nconsolidada de muitos blocos?}
+  G -->|Sim| H[Criar endpoint agregador da tela]
+  G -->|Nao| I[Compor no frontend com endpoints separados]
+```
+
+### Decisão atual do projeto
+
+- `auth`, `users`, `teams`, `stores`, `customers` e `leads` seguem desenho por recurso.
+- `dashboards` podem e devem ter endpoints agregadores por tela.
+- o detalhe de lead deve começar simples, com recurso principal e subrotas como histórico; só deve ganhar endpoint de composição se houver ganho real de desempenho e simplicidade.
+- a API não deve nascer acoplada à UI inteira; agregação é exceção consciente, não regra padrão.
+
 ## Próximos passos
 
 1. Definir contratos mínimos da Sprint 1.
