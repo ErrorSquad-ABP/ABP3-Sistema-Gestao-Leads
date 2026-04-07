@@ -77,6 +77,9 @@ type AuthConfig = {
 	readonly rateLimitLoginWindowSeconds: number;
 	readonly rateLimitRefreshMaxAttempts: number;
 	readonly rateLimitRefreshWindowSeconds: number;
+	/** PATCH `auth/me/email` e `auth/me/password` (por processo). */
+	readonly rateLimitCredentialUpdateMaxAttempts: number;
+	readonly rateLimitCredentialUpdateWindowSeconds: number;
 	/** `0` = sem limite; ao exceder, revoga-se a sessão mais antiga antes de criar outra. */
 	readonly maxActiveSessionsPerUser: number;
 };
@@ -124,6 +127,14 @@ function loadAuthConfig(): AuthConfig {
 		),
 		rateLimitRefreshWindowSeconds: parsePositiveInt(
 			process.env.AUTH_RATE_LIMIT_REFRESH_WINDOW_SEC,
+			60,
+		),
+		rateLimitCredentialUpdateMaxAttempts: parsePositiveInt(
+			process.env.AUTH_RATE_LIMIT_CREDENTIAL_UPDATE_MAX,
+			20,
+		),
+		rateLimitCredentialUpdateWindowSeconds: parsePositiveInt(
+			process.env.AUTH_RATE_LIMIT_CREDENTIAL_UPDATE_WINDOW_SEC,
 			60,
 		),
 		maxActiveSessionsPerUser: parseNonNegativeInt(

@@ -7,6 +7,8 @@ import { UsersModule } from '../users/users.module.js';
 import { LoginUseCase } from './application/use-cases/login.use-case.js';
 import { LogoutUseCase } from './application/use-cases/logout.use-case.js';
 import { RefreshTokensUseCase } from './application/use-cases/refresh-tokens.use-case.js';
+import { UpdateOwnEmailUseCase } from './application/use-cases/update-own-email.use-case.js';
+import { UpdateOwnPasswordUseCase } from './application/use-cases/update-own-password.use-case.js';
 import { AuthRateLimiterService } from './infrastructure/auth-rate-limiter.service.js';
 import { AuthSessionPrismaRepository } from './infrastructure/auth-session.prisma-repository.js';
 import { AuthTokenService } from './infrastructure/auth-token.service.js';
@@ -41,6 +43,8 @@ import { AuthController } from './presentation/controllers/auth.controller.js';
 		LoginUseCase,
 		RefreshTokensUseCase,
 		LogoutUseCase,
+		UpdateOwnEmailUseCase,
+		UpdateOwnPasswordUseCase,
 	],
 	exports: [AuthTokenService],
 })

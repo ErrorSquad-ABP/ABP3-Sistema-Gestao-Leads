@@ -5,13 +5,16 @@ import {
 	Get,
 	HttpCode,
 	Inject,
+	Patch,
 	Post,
 	Req,
 	Res,
 	UnauthorizedException,
 } from '@nestjs/common';
 import {
+	ApiBadRequestResponse,
 	ApiBearerAuth,
+	ApiConflictResponse,
 	ApiNoContentResponse,
 	ApiOperation,
 	ApiTags,
@@ -38,6 +41,10 @@ import { LogoutUseCase } from '../../application/use-cases/logout.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { RefreshTokensUseCase } from '../../application/use-cases/refresh-tokens.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI
+import { UpdateOwnEmailUseCase } from '../../application/use-cases/update-own-email.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI
+import { UpdateOwnPasswordUseCase } from '../../application/use-cases/update-own-password.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI
 import { AuthRateLimiterService } from '../../infrastructure/auth-rate-limiter.service.js';
 import {
 	CurrentUser,
@@ -51,6 +58,10 @@ import { LoginValidator } from '../validators/login.validator.js';
 import { LogoutValidator } from '../validators/logout.validator.js';
 // biome-ignore lint/style/useImportType: validators em runtime
 import { RefreshValidator } from '../validators/refresh.validator.js';
+// biome-ignore lint/style/useImportType: validators em runtime
+import { UpdateOwnEmailValidator } from '../validators/update-own-email.validator.js';
+// biome-ignore lint/style/useImportType: validators em runtime
+import { UpdateOwnPasswordValidator } from '../validators/update-own-password.validator.js';
 
 /** IP do cliente via Express (`trust proxy` em `main.ts` + `TRUST_PROXY`). */
 function clientIp(req: Request): string {
@@ -77,6 +88,8 @@ class AuthController {
 		private readonly refreshTokensUseCase: RefreshTokensUseCase,
 		private readonly logoutUseCase: LogoutUseCase,
 		private readonly findUser: FindUserUseCase,
+		private readonly updateOwnEmailUseCase: UpdateOwnEmailUseCase,
+		private readonly updateOwnPasswordUseCase: UpdateOwnPasswordUseCase,
 	) {}
 
 	/** HttpOnly cookies auth (access + refresh): mesmas flags de segurança. */
@@ -224,6 +237,92 @@ class AuthController {
 	async me(@CurrentUser() user: JwtUser): Promise<UserResponseDto> {
 		try {
 			const u = await this.findUser.execute(user.userId);
+			return UserPresenter.toResponse(u);
+		} catch (e) {
+			if (e instanceof UserNotFoundError) {
+				throw new UnauthorizedException(
+					'Sessão inválida ou utilizador já não existe.',
+				);
+			}
+			throw e;
+		}
+	}
+
+	@Patch('auth/me/email')
+	@ApiBearerAuth()
+	@ApiOperation({
+		summary: 'Atualizar o próprio e-mail',
+		description:
+			'Exige a senha atual. Se o e-mail mudar, todas as sessões de refresh deste utilizador são revogadas (é necessário voltar a autenticar-se). O access JWT em curso continua válido até expirar (claims não incluem e-mail).',
+	})
+	@ApiOkResponseEnvelope(UserResponseDto)
+	@ApiUnauthorizedResponse({
+		description: 'Senha atual incorreta ou utilizador já não existe.',
+	})
+	@ApiConflictResponse({ description: 'E-mail já usado por outro utilizador.' })
+	@ApiBadRequestResponse({
+		description: 'Corpo inválido (ValidationPipe).',
+	})
+	@ApiTooManyRequestsResponse({
+		description:
+			'Excesso de tentativas de alteração de credenciais no intervalo configurado.',
+	})
+	async updateOwnEmail(
+		@Req() req: Request,
+		@CurrentUser() jwtUser: JwtUser,
+		@Body() body: UpdateOwnEmailValidator,
+	): Promise<UserResponseDto> {
+		this.authRateLimiter.consumeCredentialUpdateAttempt(
+			rateLimitBucketHash([clientIp(req), jwtUser.userId]),
+		);
+		try {
+			const u = await this.updateOwnEmailUseCase.execute(jwtUser.userId, {
+				currentPassword: body.currentPassword,
+				email: body.email,
+			});
+			return UserPresenter.toResponse(u);
+		} catch (e) {
+			if (e instanceof UserNotFoundError) {
+				throw new UnauthorizedException(
+					'Sessão inválida ou utilizador já não existe.',
+				);
+			}
+			throw e;
+		}
+	}
+
+	@Patch('auth/me/password')
+	@ApiBearerAuth()
+	@ApiOperation({
+		summary: 'Atualizar a própria senha',
+		description:
+			'Exige a senha atual. Após sucesso, todas as sessões de refresh são revogadas; novo login necessário para obter refresh. Access JWT atual mantém-se até expirar.',
+	})
+	@ApiOkResponseEnvelope(UserResponseDto)
+	@ApiUnauthorizedResponse({
+		description: 'Senha atual incorreta ou utilizador já não existe.',
+	})
+	@ApiBadRequestResponse({
+		description:
+			'Validação do corpo ou nova senha igual à atual (`user.password.unchanged`).',
+	})
+	@ApiTooManyRequestsResponse({
+		description:
+			'Excesso de tentativas de alteração de credenciais no intervalo configurado.',
+	})
+	async updateOwnPassword(
+		@Req() req: Request,
+		@CurrentUser() jwtUser: JwtUser,
+		@Body() body: UpdateOwnPasswordValidator,
+	): Promise<UserResponseDto> {
+		this.authRateLimiter.consumeCredentialUpdateAttempt(
+			rateLimitBucketHash([clientIp(req), jwtUser.userId]),
+		);
+		try {
+			const u = await this.updateOwnPasswordUseCase.execute(jwtUser.userId, {
+				currentPassword: body.currentPassword,
+				newPassword: body.newPassword,
+			});
 			return UserPresenter.toResponse(u);
 		} catch (e) {
 			if (e instanceof UserNotFoundError) {

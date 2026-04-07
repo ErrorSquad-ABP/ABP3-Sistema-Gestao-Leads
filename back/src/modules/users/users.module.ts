@@ -24,6 +24,7 @@ import { UserController } from './presentation/controllers/user.controller.js';
 		DeleteUserUseCase,
 	],
 	exports: [
+		UserFactory,
 		UserRepositoryFactory,
 		Argon2PasswordHasherService,
 		FindUserUseCase,
