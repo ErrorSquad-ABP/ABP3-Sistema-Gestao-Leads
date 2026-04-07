@@ -6,7 +6,7 @@
 
 ## Objetivo
 
-Consolidar o mapa de navegação, escopo de telas, princípios de UX e referências visuais (shadcn / identidade Valle) para guiar a implementação do frontend no escopo do edital **Sistema de Gestão de Leads com Dashboard Analítico** (RF01–RF07 e RNFs aplicáveis à UI). Este ficheiro é a **fonte de verdade** para priorização de rotas e shells; a Wiki do projeto deve espelhar o mesmo conteúdo (ver [`../wiki/README.md`](../wiki/README.md)).
+Consolidar o mapa de navegação, escopo de telas, princípios de UX e referências visuais (shadcn / identidade Valle) para guiar a implementação do frontend no escopo do edital **Sistema de Gestão de Leads com Dashboard Analítico** (RF01–RF07 e RNFs aplicáveis à UI). Este ficheiro é a **fonte de verdade** para priorização de rotas e shells; a [Wiki do GitHub](https://github.com/ErrorSquad-ABP/ABP3-Sistema-Gestao-Leads/wiki) deve espelhar o mesmo conteúdo quando a equipa atualizar o remoto.
 
 ## Contexto do repositório
 

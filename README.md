@@ -186,7 +186,7 @@ Commits e branches fora desse padrão são recusados pelas regras do GitHub.
 - [`docs/architecture/README.md`](./docs/architecture/README.md)
 - [`docs/architecture/next-frontend.md`](./docs/architecture/next-frontend.md)
 - [`docs/architecture/frontend-information-architecture.md`](./docs/architecture/frontend-information-architecture.md) (plano de IA/UX do frontend)
-- [`docs/wiki/README.md`](./docs/wiki/README.md) (índice para espelhamento na Wiki)
+- [Wiki do GitHub](https://github.com/ErrorSquad-ABP/ABP3-Sistema-Gestao-Leads/wiki) (espelho da documentação em `docs/`, hospedada no remoto)
 - [`docs/architecture/nest-backend.md`](./docs/architecture/nest-backend.md)
 - [`docs/api/README.md`](./docs/api/README.md)
 - [`docs/data/README.md`](./docs/data/README.md)

@@ -2,7 +2,7 @@
 
 Este diretório concentra os artefatos de apoio técnico, analítico e de gestão do projeto. A proposta é manter tudo versionado junto com o código para reduzir dispersão de conhecimento e facilitar rastreabilidade entre requisito, arquitetura, backlog e entrega.
 
-A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A fonte primária continua sendo o repositório, e a Wiki funciona como camada adicional de navegação e consulta.
+A **Wiki do GitHub** ([repositório](https://github.com/ErrorSquad-ABP/ABP3-Sistema-Gestao-Leads/wiki)) deve manter espelhamento 1:1 destes artefatos versionados. A fonte primária continua sendo o repositório (`docs/`); **não** existe pasta `wiki/` local — a Wiki é só no remoto.
 
 ## Estrutura
 
@@ -22,7 +22,6 @@ A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A f
 | Descrição da arquitetura adotada | `architecture/README.md` |
 | Guia do frontend em Next.js | `architecture/next-frontend.md` |
 | Plano de IA/UX do frontend (Mermaid, escopo edital) | `architecture/frontend-information-architecture.md` |
-| Índice Wiki (espelho `docs/`) | `wiki/README.md` |
 | Guia do backend em NestJS | `architecture/nest-backend.md` |
 | DDD e Clean Architecture no backend | `architecture/ddd-clean-architecture.md` |
 | Estrutura modular do backend | `architecture/backend-module-structure.md` |
