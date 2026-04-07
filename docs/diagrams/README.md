@@ -18,6 +18,12 @@ No momento, existem dois diagramas externos em `Mermaid` compartilhados em modo 
 
 Eles ficam registrados aqui como referência oficial externa e devem ser considerados parte válida do conjunto arquitetural atual do projeto.
 
+## Diagramas versionados no repositório (Mermaid em Markdown)
+
+| Código | Local | Tipo | Descrição |
+| --- | --- | --- | --- |
+| `DG-IA-FRONT-01` | [`../architecture/frontend-information-architecture.md`](../architecture/frontend-information-architecture.md) | Vários (flowchart, sequence) | Mapa da app, RBAC UI, shell, jornada lead/negociação, widgets RF05 |
+
 ## Links externos classificados
 
 | Código | Ferramenta | Tipo atual | Nome do diagrama | Link |

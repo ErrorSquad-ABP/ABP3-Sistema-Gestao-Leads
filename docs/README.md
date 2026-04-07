@@ -21,6 +21,8 @@ A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A f
 | Visão geral do produto | `../README.md` |
 | Descrição da arquitetura adotada | `architecture/README.md` |
 | Guia do frontend em Next.js | `architecture/next-frontend.md` |
+| Plano de IA/UX do frontend (Mermaid, escopo edital) | `architecture/frontend-information-architecture.md` |
+| Índice Wiki (espelho `docs/`) | `wiki/README.md` |
 | Guia do backend em NestJS | `architecture/nest-backend.md` |
 | DDD e Clean Architecture no backend | `architecture/ddd-clean-architecture.md` |
 | Estrutura modular do backend | `architecture/backend-module-structure.md` |

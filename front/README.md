@@ -12,9 +12,10 @@ O frontend será a aplicação web do sistema, responsável por oferecer uma nav
 - Prettier para formatação do workspace do frontend
 - ESLint com `eslint-config-next` para qualidade estática complementar
 
-Guia complementar de uso do Next.js nesta base:
+Guias complementares:
 
-- [`../docs/architecture/next-frontend.md`](../docs/architecture/next-frontend.md)
+- **Plano de navegação, telas e UX (implementação):** [`../docs/architecture/frontend-information-architecture.md`](../docs/architecture/frontend-information-architecture.md)
+- Uso do Next.js nesta base: [`../docs/architecture/next-frontend.md`](../docs/architecture/next-frontend.md)
 
 ## Princípios de implementação
 

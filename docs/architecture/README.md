@@ -51,6 +51,7 @@ Os detalhes da arquitetura foram divididos por assunto para evitar uma documenta
 | Guia | Foco |
 | --- | --- |
 | [`next-frontend.md`](./next-frontend.md) | Estrutura e uso do frontend em Next.js |
+| [`frontend-information-architecture.md`](./frontend-information-architecture.md) | Arquitetura da Informação, UX, diagramas Mermaid e plano de implementação do frontend (escopo RF01–RF07) |
 | [`nest-backend.md`](./nest-backend.md) | Uso do NestJS no backend e integração com a arquitetura |
 | [`ddd-clean-architecture.md`](./ddd-clean-architecture.md) | Princípios de DDD, Clean Architecture e regra de dependência |
 | [`backend-module-structure.md`](./backend-module-structure.md) | Estrutura modular do backend e papel de cada camada |
@@ -64,6 +65,10 @@ Os diagramas externos já classificados e referenciados para arquitetura são:
 
 - `DG-CLS-01`: `Implementation Lead Management System`, diagrama de classes externo em `../diagrams/README.md`;
 - `DG-CLS-02`: `Domain Lead Management System`, diagrama de classes externo em `../diagrams/README.md`.
+
+Diagramas Mermaid versionados no repositório:
+
+- `DG-IA-FRONT-01`: fluxos de IA/UX do frontend em [`frontend-information-architecture.md`](./frontend-information-architecture.md) (também em `../diagrams/README.md`).
 
 ## Módulos previstos
 
