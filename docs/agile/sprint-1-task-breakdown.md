@@ -117,7 +117,7 @@ Se um card não cabe em 1 a 2 dias úteis de esforço focado, ele provavelmente 
 
 | ID | Tarefa | Relacionamento | Dependências | Entregável objetivo |
 | --- | --- | --- | --- | --- |
-| `S1-FRONT-01` | Fechar contratos mínimos do frontend para a sprint | `US-01` a `US-07` | `S1-AUTH-05`, `S1-ADM-02`, `S1-CRM-03`, `S1-CRM-07` | Mapa de rotas e contratos estável |
+| `S1-FRONT-01` | Fechar contratos mínimos do frontend para a sprint | `US-01` a `US-07` | `S1-AUTH-05`, `S1-ADM-02`, `S1-CRM-03`, `S1-CRM-07` | Mapa de rotas, contratos e estratégia de composição por tela estável |
 | `S1-FRONT-02` | Implementar tela de login | `US-01` | `S1-FRONT-01`, `S1-AUTH-05` | Entrada funcional no sistema |
 | `S1-FRONT-03` | Implementar sessão autenticada e redirecionamento inicial | `US-01` | `S1-FRONT-02`, `S1-AUTH-08` | Navegação mínima protegida |
 | `S1-FRONT-04` | Implementar tela de perfil para atualização do próprio acesso | `US-02` | `S1-FRONT-03`, `S1-AUTH-06`, `S1-AUTH-07` | Fluxo de perfil funcional |
@@ -145,7 +145,7 @@ Se um card não cabe em 1 a 2 dias úteis de esforço focado, ele provavelmente 
 | `S1-DOC-02` | Atualizar contratos mínimos de usuários, equipes e lojas | `US-04`, `US-05` | `S1-ADM-03`, `S1-ADM-05`, `S1-ADM-07` | Documentação mínima das rotas administrativas |
 | `S1-DOC-03` | Atualizar contratos mínimos de clientes e leads | `US-06`, `US-07` | `S1-CRM-02`, `S1-CRM-07`, `S1-CRM-08` | Documentação mínima do fluxo comercial |
 | `S1-DOC-04` | Sincronizar backlog, planning e estado real da sprint | Todas | Execução em curso | Artefatos ágeis coerentes |
-| `S1-DOC-05` | Registrar decisões arquiteturais que surgirem durante a sprint | Todas | Demandas reais | Continuidade de contexto técnico |
+| `S1-DOC-05` | Registrar decisões arquiteturais que surgirem durante a sprint | Todas | Demandas reais | Continuidade de contexto técnico, incluindo decisão entre subrotas e endpoint agregador por tela |
 | `S1-QA-01` | Validar fluxo mínimo ponta a ponta em ambiente local | `US-01` a `US-07` | Módulos principais concluídos | Demonstração funcional da sprint |
 | `S1-QA-02` | Validar build, lint, typecheck e subida via Docker | Todas | `S1-QA-01` | Critérios de qualidade atendidos |
 
@@ -188,6 +188,39 @@ Antes de mover um card para `Done`, o time deve conseguir responder:
 - em qual módulo, tela ou artefato ela terminou;
 - se há dependência desbloqueada por ela;
 - se existe impacto documental ou contratual a atualizar.
+
+## Estado real sincronizado em `2026-04-07`
+
+Esta seção existe para manter o breakdown coerente com o board da sprint e com o que já está integrado em `develop`.
+
+### Concluídas ou já sustentadas pelo repositório
+
+- `S1-DAT-01` a `S1-DAT-06`
+- `S1-AUTH-01` a `S1-AUTH-05`
+- `S1-AUTH-08`
+- `S1-ADM-01` a `S1-ADM-03`
+- `S1-CRM-04` a `S1-CRM-08`
+- `S1-DOC-05`
+
+### Em andamento
+
+- `S1-DOC-04`
+- `S1-AUTH-09`
+- `S1-AUTH-10`
+- `S1-FRONT-01`
+
+### Abertas e ainda não fechadas no repositório
+
+- `S1-AUTH-06` e `S1-AUTH-07`
+- `S1-ADM-04` a `S1-ADM-08`
+- `S1-CRM-01` a `S1-CRM-03`
+- `S1-DAT-07`
+- `S1-QA-01` e `S1-QA-02`
+
+### Escopo condicional mantido como corte
+
+- `S1-CRM-09`
+- `S1-FRONT-14`
 
 ## Próximos passos
 

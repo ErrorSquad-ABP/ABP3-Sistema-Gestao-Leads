@@ -292,7 +292,7 @@ Sugestão de labels:
 ## Definition of Done específico para cartões de frontend
 
 - rota ou componente principal entregue;
-- integração HTTP funcional ou mock tipado temporário claramente sinalizado;
+- integração HTTP funcional com contrato explícito da API ou justificativa registrada para dependência ainda não liberada;
 - estados de `loading`, `empty`, `error` e `403` tratados quando aplicável;
 - textos da interface consistentes com o domínio;
 - responsividade mínima validada;
