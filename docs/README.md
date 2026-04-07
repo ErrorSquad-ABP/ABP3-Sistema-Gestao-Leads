@@ -21,7 +21,7 @@ A **Wiki do GitHub** ([repositório](https://github.com/ErrorSquad-ABP/ABP3-Sist
 | Visão geral do produto | `../README.md` |
 | Descrição da arquitetura adotada | `architecture/README.md` |
 | Guia do frontend em Next.js | `architecture/next-frontend.md` |
-| Plano de IA/UX do frontend (Mermaid, escopo edital) | `architecture/frontend-information-architecture.md` |
+| Plano de implementação, IA e UX do frontend | `architecture/frontend-information-architecture.md` |
 | Guia do backend em NestJS | `architecture/nest-backend.md` |
 | DDD e Clean Architecture no backend | `architecture/ddd-clean-architecture.md` |
 | Estrutura modular do backend | `architecture/backend-module-structure.md` |
@@ -33,8 +33,10 @@ A **Wiki do GitHub** ([repositório](https://github.com/ErrorSquad-ABP/ABP3-Sist
 | Modelo relacional e DER | `data/README.md` |
 | Definition of Done | `agile/definition-of-done.md` |
 | Product backlog inicial | `agile/product-backlog.md` |
+| Backlog operacional de implementação do frontend | `agile/frontend-implementation-backlog.md` |
 | Sprint 1 Goal | `agile/sprint-1-goal.md` |
 | Sprint 1 Backlog | `agile/sprint-1-backlog.md` |
+| Quebra detalhada das tarefas da Sprint 1 | `agile/sprint-1-task-breakdown.md` |
 | Sprint 1 Planning | `agile/sprint-1-planning.md` |
 | Sprints e cadência | `agile/sprints.md` |
 | Fluxo de qualidade e revisão | `quality/README.md` |

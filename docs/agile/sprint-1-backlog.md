@@ -127,6 +127,6 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 
 ## Próximos passos
 
-1. Quebrar os itens deste backlog em tarefas atribuíveis ao time.
+1. Usar [`sprint-1-task-breakdown.md`](./sprint-1-task-breakdown.md) como base para quebrar os cards atribuíveis ao time.
 2. Revisar diariamente se o progresso está preservando o Sprint Goal.
 3. Atualizar o backlog ao final da sprint com o resultado real das entregas.

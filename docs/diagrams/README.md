@@ -22,7 +22,7 @@ Eles ficam registrados aqui como referência oficial externa e devem ser conside
 
 | Código | Local | Tipo | Descrição |
 | --- | --- | --- | --- |
-| `DG-IA-FRONT-01` | [`../architecture/frontend-information-architecture.md`](../architecture/frontend-information-architecture.md) | Vários (flowchart, sequence) | Mapa da app, RBAC UI, shell, jornada lead/negociação, widgets RF05 |
+| `DG-IA-FRONT-01` | [`../architecture/frontend-information-architecture.md`](../architecture/frontend-information-architecture.md) | Vários (flowchart, sequence) | Mapa da app, homes por papel, shell, fluxos críticos, dashboards operacional/analítico e apoio à implementação do frontend |
 
 ## Links externos classificados
 

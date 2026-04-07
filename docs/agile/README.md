@@ -21,8 +21,10 @@
 
 - [`definition-of-done.md`](./definition-of-done.md)
 - [`product-backlog.md`](./product-backlog.md)
+- [`frontend-implementation-backlog.md`](./frontend-implementation-backlog.md)
 - [`sprint-1-goal.md`](./sprint-1-goal.md)
 - [`sprint-1-backlog.md`](./sprint-1-backlog.md)
+- [`sprint-1-task-breakdown.md`](./sprint-1-task-breakdown.md)
 - [`sprint-1-planning.md`](./sprint-1-planning.md)
 - [`sprints.md`](./sprints.md)
 
