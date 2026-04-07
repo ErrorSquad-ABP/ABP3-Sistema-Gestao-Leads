@@ -140,6 +140,65 @@ Entregar um fluxo mínimo utilizável para acesso ao sistema e operação inicia
 - lead pode ser criado, listado e editado com os vínculos essenciais;
 - a entrega consegue ser demonstrada em ambiente local via Docker.
 
+## Registro de decisões arquiteturais da sprint
+
+As decisões abaixo foram registradas ao longo da Sprint 1 para evitar perda de contexto entre planning, implementação e Trello.
+
+### `DEC-01` - API orientada por recurso como padrão
+
+- `auth`, `users`, `teams`, `stores`, `customers` e `leads` devem seguir desenho por recurso.
+- Subrotas entram quando um bloco derivado ainda pertence claramente ao recurso principal.
+- Endpoint agregador é exceção deliberada, não padrão automático da API.
+
+### `DEC-02` - Endpoint agregador restrito a telas que realmente pedem carga unificada
+
+- `dashboards` são o caso mais claro de endpoint agregador por tela.
+- Detalhes complexos, como um futuro `lead overview`, só devem ganhar endpoint próprio se a composição por recurso realmente ficar cara ou confusa.
+- Telas simples e CRUDs continuam compostos por contratos menores e reutilizáveis.
+
+### `DEC-03` - Sprint 1 prioriza integração real sobre mocks como direção principal
+
+- A sprint pode conviver com lacunas temporárias de integração, mas o direcionamento oficial do produto não deve depender de uma camada de mocks como estratégia de evolução.
+- Sempre que o backend já sustentar o fluxo, o frontend deve preferir integração real por contrato explícito.
+
+### `DEC-04` - O frontend da sprint é uma aplicação autenticada, não um site institucional
+
+- O produto demonstrável da Sprint 1 é uma interface operacional autenticada.
+- Referências visuais da 1000 Valle e de blocos `shadcn` entram como linguagem de interface, não como justificativa para desviar o escopo para landing page ou marketing.
+
+## Snapshot do estado real da sprint em `2026-04-07`
+
+Este snapshot existe para manter o planning coerente com o que já está integrado em `develop` e com o que ainda permanece aberto no board.
+
+### Já sustentado pelo repositório
+
+- `S1-DAT-01` a `S1-DAT-06`
+- `S1-AUTH-01` a `S1-AUTH-05`
+- `S1-AUTH-08`
+- `S1-ADM-01` a `S1-ADM-03`
+- `S1-CRM-04` a `S1-CRM-08`
+- `S1-DOC-05`
+
+### Em andamento no recorte da sprint
+
+- `S1-DOC-04`
+- `S1-AUTH-09`
+- `S1-AUTH-10`
+- `S1-FRONT-01`
+
+### Ainda abertos para fechamento do objetivo da sprint
+
+- `S1-AUTH-06` e `S1-AUTH-07`
+- `S1-ADM-04` a `S1-ADM-08`
+- `S1-CRM-01` a `S1-CRM-03`
+- `S1-DAT-07`
+- `S1-QA-01` e `S1-QA-02`
+
+### Mantidos como corte natural caso a sprint aperte
+
+- `S1-CRM-09`
+- `S1-FRONT-14`
+
 ## Relação com o Definition of Done
 
 Esta sprint adota integralmente os critérios definidos em `[definition-of-done.md](./definition-of-done.md)`, especialmente:

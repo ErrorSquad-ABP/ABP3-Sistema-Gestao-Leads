@@ -189,6 +189,39 @@ Antes de mover um card para `Done`, o time deve conseguir responder:
 - se há dependência desbloqueada por ela;
 - se existe impacto documental ou contratual a atualizar.
 
+## Estado real sincronizado em `2026-04-07`
+
+Esta seção existe para manter o breakdown coerente com o board da sprint e com o que já está integrado em `develop`.
+
+### Concluídas ou já sustentadas pelo repositório
+
+- `S1-DAT-01` a `S1-DAT-06`
+- `S1-AUTH-01` a `S1-AUTH-05`
+- `S1-AUTH-08`
+- `S1-ADM-01` a `S1-ADM-03`
+- `S1-CRM-04` a `S1-CRM-08`
+- `S1-DOC-05`
+
+### Em andamento
+
+- `S1-DOC-04`
+- `S1-AUTH-09`
+- `S1-AUTH-10`
+- `S1-FRONT-01`
+
+### Abertas e ainda não fechadas no repositório
+
+- `S1-AUTH-06` e `S1-AUTH-07`
+- `S1-ADM-04` a `S1-ADM-08`
+- `S1-CRM-01` a `S1-CRM-03`
+- `S1-DAT-07`
+- `S1-QA-01` e `S1-QA-02`
+
+### Escopo condicional mantido como corte
+
+- `S1-CRM-09`
+- `S1-FRONT-14`
+
 ## Próximos passos
 
 1. Transformar esta quebra em cards de Trello.

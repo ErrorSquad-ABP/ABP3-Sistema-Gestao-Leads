@@ -127,6 +127,32 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 - O documento reduz ambiguidade entre o que está comprometido e o que ainda é condicional.
 - Ele também ajuda a separar claramente o que é entrega de Sprint 1 e o que deve ficar para as sprints seguintes.
 
+## Snapshot operacional em `2026-04-07`
+
+Este snapshot foi incluído para sincronizar backlog, planning e leitura real do `develop`.
+
+### Blocos já materializados no repositório
+
+- modelagem relacional base da Sprint 1;
+- autenticação com JWT, login e guard global de autenticação;
+- CRUD inicial de usuários;
+- módulo de leads com criação, consulta, edição e operações centrais;
+- decisão arquitetural sobre contratos por recurso e endpoint agregador por tela.
+
+### Blocos ainda em aberto
+
+- atualização do próprio acesso;
+- módulos HTTP de equipes, lojas e clientes;
+- seed mínimo utilizável;
+- validação final de qualidade e demonstração ponta a ponta;
+- fechamento do contrato mínimo do frontend autenticado.
+
+### Leitura prática para acompanhamento diário
+
+- `US-01`, `US-04` e parte de `US-07` já têm sustentação concreta no repositório;
+- `US-02`, `US-05` e `US-06` ainda dependem de fechamento funcional real;
+- `US-08` continua corretamente tratado como condicional.
+
 ## Próximos passos
 
 1. Usar [`sprint-1-task-breakdown.md`](./sprint-1-task-breakdown.md) como base para quebrar os cards atribuíveis ao time.
