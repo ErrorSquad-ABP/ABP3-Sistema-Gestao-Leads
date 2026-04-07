@@ -1,6 +1,6 @@
 import { AggregateRoot } from '../../../../shared/domain/core/aggregate-root.js';
-import type { DomainEvent } from '../../../../shared/domain/events/domain-event.js';
 import type { LeadStatus } from '../../../../shared/domain/enums/lead-status.enum.js';
+import type { DomainEvent } from '../../../../shared/domain/events/domain-event.js';
 import type {
 	StoreId,
 	UUID,

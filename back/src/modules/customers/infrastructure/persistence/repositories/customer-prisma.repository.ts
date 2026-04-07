@@ -1,11 +1,11 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
-import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { Cpf } from '../../../../../shared/domain/value-objects/cpf.value-object.js';
 import { Email } from '../../../../../shared/domain/value-objects/email.value-object.js';
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { Phone } from '../../../../../shared/domain/value-objects/phone.value-object.js';
+import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { Customer } from '../../../domain/entities/customer.entity.js';
 import type { ICustomerRepository } from '../../../domain/repositories/customer.repository.js';
 

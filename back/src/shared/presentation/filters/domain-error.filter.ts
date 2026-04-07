@@ -6,8 +6,10 @@ import {
 	HttpStatus,
 	Logger,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 
+import { InvalidCredentialsError } from '../../../modules/auth/domain/errors/invalid-credentials.error.js';
+import { RefreshTokenInvalidError } from '../../../modules/auth/domain/errors/refresh-token-invalid.error.js';
 import { LeadAlreadyConvertedError } from '../../../modules/leads/domain/errors/lead-already-converted.error.js';
 import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
@@ -33,9 +35,11 @@ class DomainErrorFilter implements ExceptionFilter {
 	catch(exception: unknown, host: ArgumentsHost): void {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse<Response>();
+		const request = ctx.getRequest<Request>();
 
 		if (exception instanceof HttpException) {
 			const status = exception.getStatus();
+			this.logHttpSecurityEvent(request, status, exception);
 			const envelope = this.httpExceptionToEnvelope(status, exception);
 			response.status(status).json(envelope);
 			return;
@@ -43,6 +47,7 @@ class DomainErrorFilter implements ExceptionFilter {
 
 		const mapped = this.mapDomainException(exception);
 		if (mapped) {
+			this.logDomainAuthSecurityEvent(request, exception, mapped.status);
 			response.status(mapped.status).json(mapped.body);
 			return;
 		}
@@ -113,9 +118,84 @@ class DomainErrorFilter implements ExceptionFilter {
 		]);
 	}
 
+	private isAuthRelatedPath(request: Request): boolean {
+		const p = request.path ?? request.url?.split('?')[0] ?? '';
+		return p.includes('/auth');
+	}
+
+	/** Auditoria leve: sem corpo, tokens ou credenciais — só método, path, IP e código. */
+	private logSecurityAudit(
+		request: Request,
+		status: number,
+		code: string,
+	): void {
+		this.logger.warn(
+			JSON.stringify({
+				event: 'security.audit',
+				status,
+				code,
+				method: request.method,
+				path: request.path ?? request.url?.split('?')[0] ?? '',
+				ip: request.ip ?? request.socket?.remoteAddress ?? '',
+			}),
+		);
+	}
+
+	private logHttpSecurityEvent(
+		request: Request,
+		status: number,
+		_exception: HttpException,
+	): void {
+		if (status === HttpStatus.TOO_MANY_REQUESTS) {
+			this.logSecurityAudit(request, status, 'http.429');
+			return;
+		}
+		if (status === HttpStatus.FORBIDDEN) {
+			this.logSecurityAudit(request, status, 'http.403');
+			return;
+		}
+		if (status === HttpStatus.UNAUTHORIZED && this.isAuthRelatedPath(request)) {
+			this.logSecurityAudit(request, status, 'http.401');
+		}
+	}
+
+	private logDomainAuthSecurityEvent(
+		request: Request,
+		exception: unknown,
+		status: number,
+	): void {
+		if (status !== HttpStatus.UNAUTHORIZED) {
+			return;
+		}
+		if (
+			exception instanceof InvalidCredentialsError ||
+			exception instanceof RefreshTokenInvalidError
+		) {
+			this.logSecurityAudit(request, status, exception.code);
+		}
+	}
+
 	private mapDomainException(
 		exception: unknown,
 	): { status: number; body: ApiErrorEnvelope } | undefined {
+		if (exception instanceof InvalidCredentialsError) {
+			return {
+				status: HttpStatus.UNAUTHORIZED,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
+		if (exception instanceof RefreshTokenInvalidError) {
+			return {
+				status: HttpStatus.UNAUTHORIZED,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
 		if (exception instanceof LeadNotFoundError) {
 			return {
 				status: HttpStatus.NOT_FOUND,

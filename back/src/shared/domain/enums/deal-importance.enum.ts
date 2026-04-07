@@ -18,13 +18,13 @@ const parseCanonicalDealImportance = dealImportanceEnum.parseCanonical;
 const assertDealImportance = dealImportanceEnum.assert;
 const assertCanonicalDealImportance = dealImportanceEnum.assertCanonical;
 
+export type { DealImportance };
 export {
-	DEAL_IMPORTANCES,
 	assertCanonicalDealImportance,
 	assertDealImportance,
+	DEAL_IMPORTANCES,
 	isCanonicalDealImportance,
 	isDealImportance,
 	parseCanonicalDealImportance,
 	parseDealImportance,
 };
-export type { DealImportance };

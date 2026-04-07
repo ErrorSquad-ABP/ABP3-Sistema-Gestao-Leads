@@ -50,17 +50,36 @@ model Store {
 }
 
 model User {
-  id         String    @id @default(uuid()) @db.Uuid
-  name       String
-  email      String    @unique
-  password   String
-  role       UserRole
-  teamId     String?   @db.Uuid
-  team       Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  ownedLeads Lead[]    @relation("LeadOwner")
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  auditLogs  AuditLog[]
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String
+  email        String        @unique
+  password     String
+  role         UserRole
+  teamId       String?       @db.Uuid
+  team         Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  ownedLeads   Lead[]        @relation("LeadOwner")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  auditLogs    AuditLog[]
+  authSessions AuthSession[]
+}
+
+/// Sessão de refresh opaco (hash do segredo em disco; token `<id>.<secret>` só no cliente).
+model AuthSession {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @db.VarChar(64)
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  userAgent        String?
+  ipAddress        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("auth_sessions")
 }
 
 model Customer {

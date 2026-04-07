@@ -5,7 +5,8 @@ import {
 	Injectable,
 	type NestInterceptor,
 } from '@nestjs/common';
-import type { Reflector } from '@nestjs/core';
+// biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
+import { Reflector } from '@nestjs/core';
 import type { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
