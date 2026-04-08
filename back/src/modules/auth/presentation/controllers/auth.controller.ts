@@ -50,6 +50,7 @@ import {
 	CurrentUser,
 	type JwtUser,
 } from '../decorators/current-user.decorator.js';
+import { CredentialUpdateUserResponseDto } from '../dto/credential-update-user-response.dto.js';
 import { LoginResponseDto } from '../dto/login-response.dto.js';
 import { RefreshResponseDto } from '../dto/refresh-response.dto.js';
 // biome-ignore lint/style/useImportType: validators em runtime
@@ -101,6 +102,13 @@ class AuthController {
 			path: '/',
 		} as const;
 		return maxAgeMs === undefined ? base : { ...base, maxAge: maxAgeMs };
+	}
+
+	private clearRefreshTokenCookie(res: Response): void {
+		res.clearCookie(
+			this.authConfig.cookieRefreshName,
+			this.authHttpOnlyCookieOptions(),
+		);
 	}
 
 	private clientMeta(req: Request): {
@@ -253,9 +261,9 @@ class AuthController {
 	@ApiOperation({
 		summary: 'Atualizar o próprio e-mail',
 		description:
-			'Exige a senha atual. Se o e-mail mudar, todas as sessões de refresh deste utilizador são revogadas (é necessário voltar a autenticar-se). O access JWT em curso continua válido até expirar (claims não incluem e-mail).',
+			'Exige a senha atual. Se o e-mail mudar, todas as sessões de refresh deste utilizador são revogadas; a resposta limpa o cookie HttpOnly de refresh e `data.refreshSessionsRevoked` fica true (reautenticação necessária após expirar o access). Se o e-mail efetivo não mudar, as sessões mantêm-se e o cookie de refresh não é tocado (`refreshSessionsRevoked` false). O access JWT em curso continua válido até expirar.',
 	})
-	@ApiOkResponseEnvelope(UserResponseDto)
+	@ApiOkResponseEnvelope(CredentialUpdateUserResponseDto)
 	@ApiUnauthorizedResponse({
 		description: 'Senha atual incorreta ou utilizador já não existe.',
 	})
@@ -271,16 +279,24 @@ class AuthController {
 		@Req() req: Request,
 		@CurrentUser() jwtUser: JwtUser,
 		@Body() body: UpdateOwnEmailValidator,
-	): Promise<UserResponseDto> {
+		@Res({ passthrough: true }) res: Response,
+	): Promise<CredentialUpdateUserResponseDto> {
 		this.authRateLimiter.consumeCredentialUpdateAttempt(
 			rateLimitBucketHash([clientIp(req), jwtUser.userId]),
 		);
 		try {
-			const u = await this.updateOwnEmailUseCase.execute(jwtUser.userId, {
-				currentPassword: body.currentPassword,
-				email: body.email,
-			});
-			return UserPresenter.toResponse(u);
+			const { user: u, refreshSessionsRevoked } =
+				await this.updateOwnEmailUseCase.execute(jwtUser.userId, {
+					currentPassword: body.currentPassword,
+					email: body.email,
+				});
+			if (refreshSessionsRevoked) {
+				this.clearRefreshTokenCookie(res);
+			}
+			return {
+				...UserPresenter.toResponse(u),
+				refreshSessionsRevoked,
+			};
 		} catch (e) {
 			if (e instanceof UserNotFoundError) {
 				throw new UnauthorizedException(
@@ -296,9 +312,9 @@ class AuthController {
 	@ApiOperation({
 		summary: 'Atualizar a própria senha',
 		description:
-			'Exige a senha atual. Após sucesso, todas as sessões de refresh são revogadas; novo login necessário para obter refresh. Access JWT atual mantém-se até expirar.',
+			'Exige a senha atual. Após sucesso, todas as sessões de refresh são revogadas; a resposta limpa o cookie HttpOnly de refresh e `data.refreshSessionsRevoked` é sempre true. Novo login necessário para obter refresh após expirar o access JWT atual.',
 	})
-	@ApiOkResponseEnvelope(UserResponseDto)
+	@ApiOkResponseEnvelope(CredentialUpdateUserResponseDto)
 	@ApiUnauthorizedResponse({
 		description: 'Senha atual incorreta ou utilizador já não existe.',
 	})
@@ -314,7 +330,8 @@ class AuthController {
 		@Req() req: Request,
 		@CurrentUser() jwtUser: JwtUser,
 		@Body() body: UpdateOwnPasswordValidator,
-	): Promise<UserResponseDto> {
+		@Res({ passthrough: true }) res: Response,
+	): Promise<CredentialUpdateUserResponseDto> {
 		this.authRateLimiter.consumeCredentialUpdateAttempt(
 			rateLimitBucketHash([clientIp(req), jwtUser.userId]),
 		);
@@ -323,7 +340,11 @@ class AuthController {
 				currentPassword: body.currentPassword,
 				newPassword: body.newPassword,
 			});
-			return UserPresenter.toResponse(u);
+			this.clearRefreshTokenCookie(res);
+			return {
+				...UserPresenter.toResponse(u),
+				refreshSessionsRevoked: true,
+			};
 		} catch (e) {
 			if (e instanceof UserNotFoundError) {
 				throw new UnauthorizedException(

@@ -30,38 +30,43 @@ class UpdateOwnEmailUseCase {
 	async execute(
 		actorUserId: string,
 		dto: { readonly currentPassword: string; readonly email: string },
-	): Promise<User> {
-		const { user } = await this.unitOfWork.run(async () => {
-			const transactionContext = this.unitOfWork.getTransactionContext();
-			const users = this.userRepositoryFactory.create(transactionContext);
-			const existing = await loadUserAndVerifyCurrentPassword(
-				users,
-				actorUserId,
-				dto.currentPassword,
-				this.passwordHasher,
-			);
+	): Promise<{
+		readonly user: User;
+		readonly refreshSessionsRevoked: boolean;
+	}> {
+		const { user, refreshSessionsRevoked } = await this.unitOfWork.run(
+			async () => {
+				const transactionContext = this.unitOfWork.getTransactionContext();
+				const users = this.userRepositoryFactory.create(transactionContext);
+				const existing = await loadUserAndVerifyCurrentPassword(
+					users,
+					actorUserId,
+					dto.currentPassword,
+					this.passwordHasher,
+				);
 
-			const nextEmail = Email.create(dto.email);
-			if (!nextEmail.equals(existing.email)) {
-				const other = await users.findByEmail(nextEmail.value);
-				if (other !== null && !other.id.equals(existing.id)) {
-					throw new UserEmailAlreadyExistsError(nextEmail.value);
+				const nextEmail = Email.create(dto.email);
+				if (!nextEmail.equals(existing.email)) {
+					const other = await users.findByEmail(nextEmail.value);
+					if (other !== null && !other.id.equals(existing.id)) {
+						throw new UserEmailAlreadyExistsError(nextEmail.value);
+					}
 				}
-			}
 
-			const next = this.userFactory.update(existing, { email: dto.email });
-			if (User.sameState(existing, next)) {
-				return { user: existing };
-			}
-			const saved = await users.update(next);
-			await this.authSessions.revokeAllActiveSessionsForUser(
-				actorUserId,
-				transactionContext,
-			);
-			return { user: saved };
-		});
+				const next = this.userFactory.update(existing, { email: dto.email });
+				if (User.sameState(existing, next)) {
+					return { user: existing, refreshSessionsRevoked: false };
+				}
+				const saved = await users.update(next);
+				await this.authSessions.revokeAllActiveSessionsForUser(
+					actorUserId,
+					transactionContext,
+				);
+				return { user: saved, refreshSessionsRevoked: true };
+			},
+		);
 
-		return user;
+		return { user, refreshSessionsRevoked };
 	}
 }
 

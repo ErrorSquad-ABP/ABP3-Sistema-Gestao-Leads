@@ -154,7 +154,8 @@ describe('UpdateOwnEmailUseCase', () => {
 			currentPassword: 'okpassword',
 			email: 'new@example.com',
 		});
-		assert.equal(out.email.value, 'new@example.com');
+		assert.equal(out.user.email.value, 'new@example.com');
+		assert.equal(out.refreshSessionsRevoked, true);
 		assert.equal(users.update.mock.calls.length, 1);
 		assert.equal(
 			authSessions.revokeAllActiveSessionsForUser.mock.calls.length,
@@ -198,7 +199,8 @@ describe('UpdateOwnEmailUseCase', () => {
 			currentPassword: 'okpassword',
 			email: 'old@example.com',
 		});
-		assert.equal(out.email.value, 'old@example.com');
+		assert.equal(out.user.email.value, 'old@example.com');
+		assert.equal(out.refreshSessionsRevoked, false);
 		assert.equal(users.update.mock.calls.length, 0);
 		assert.equal(
 			authSessions.revokeAllActiveSessionsForUser.mock.calls.length,
