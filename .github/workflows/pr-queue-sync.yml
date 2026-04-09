@@ -1,0 +1,34 @@
+name: PR Queue Sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+concurrency:
+  group: pr-queue-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Sync PR queue snapshot to Slack
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_SYNC_WEBHOOK_URL: ${{ secrets.SLACK_SYNC_WEBHOOK_URL }}
+          SLACK_SYNC_WEBHOOK_TOKEN: ${{ secrets.SLACK_SYNC_WEBHOOK_TOKEN }}
+        run: node scripts/send-pr-queue-sync-webhook.mjs
