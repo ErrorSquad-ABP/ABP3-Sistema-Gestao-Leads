@@ -203,6 +203,8 @@ async function main() {
 			title: event.pull_request.title,
 			htmlUrl: event.pull_request.html_url,
 			authorLogin: event.pull_request.user?.login ?? null,
+			baseRefName: event.pull_request.base?.ref ?? null,
+			headRefName: event.pull_request.head?.ref ?? null,
 		},
 		review: {
 			id: event.review.id,
