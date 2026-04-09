@@ -1,0 +1,32 @@
+name: PR Review Notify
+
+on:
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    if: |
+      github.event.review.state == 'approved' ||
+      github.event.review.state == 'changes_requested'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Send PR review notification to external relay
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_REVIEW_NOTIFY_WEBHOOK_URL: ${{ secrets.PR_REVIEW_NOTIFY_WEBHOOK_URL }}
+          PR_REVIEW_NOTIFY_WEBHOOK_TOKEN: ${{ secrets.PR_REVIEW_NOTIFY_WEBHOOK_TOKEN }}
+        run: node scripts/send-pr-review-notify-webhook.mjs
