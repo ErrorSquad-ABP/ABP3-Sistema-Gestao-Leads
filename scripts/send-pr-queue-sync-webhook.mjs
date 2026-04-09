@@ -117,11 +117,7 @@ function buildStatusCounts(items) {
 	return counts;
 }
 
-function buildSnapshotPayload({
-	repository,
-	defaultBranch,
-	items,
-}) {
+function buildSnapshotPayload({ repository, defaultBranch, items }) {
 	const counts = buildStatusCounts(items);
 	const groupedByBase = items.reduce((acc, item) => {
 		const key = item.baseRef ?? 'unknown';

@@ -107,14 +107,17 @@ function buildSnapshotPayload({
 }) {
 	const counts = countCardsByList(trelloLists);
 	const doingCards =
-		trelloLists.find((list) => list.name.toUpperCase() === 'DOING')?.cards ?? [];
-	const reviewCards =
-		trelloLists.find((list) => list.name.toUpperCase() === 'REVIEW')?.cards ?? [];
-	const blockedCards =
-		trelloLists.find((list) => list.name.toUpperCase() === 'BLOCKED')?.cards ?? [];
-	const conditionalCards =
-		trelloLists.find((list) => list.name.toUpperCase() === 'CONDITIONAL')?.cards ??
+		trelloLists.find((list) => list.name.toUpperCase() === 'DOING')?.cards ??
 		[];
+	const reviewCards =
+		trelloLists.find((list) => list.name.toUpperCase() === 'REVIEW')?.cards ??
+		[];
+	const blockedCards =
+		trelloLists.find((list) => list.name.toUpperCase() === 'BLOCKED')?.cards ??
+		[];
+	const conditionalCards =
+		trelloLists.find((list) => list.name.toUpperCase() === 'CONDITIONAL')
+			?.cards ?? [];
 
 	const trelloLines = [
 		`- Board: ${trelloBoard.url}`,
@@ -157,7 +160,9 @@ function buildSnapshotPayload({
 			highlightLines:
 				highlightLines.length > 0
 					? highlightLines
-					: ['- Nenhum card em DOING, REVIEW, BLOCKED ou CONDITIONAL no momento.'],
+					: [
+							'- Nenhum card em DOING, REVIEW, BLOCKED ou CONDITIONAL no momento.',
+						],
 			prLines,
 			docLines,
 			operationalLines,
