@@ -19,11 +19,11 @@
 		"smoke:http": "node scripts/smoke-http.mjs"
 	},
 	"dependencies": {
-		"@nestjs/common": "11.1.17",
-		"@nestjs/core": "11.1.17",
+		"@nestjs/common": "11.1.18",
+		"@nestjs/core": "11.1.18",
 		"@nestjs/jwt": "^11.0.2",
 		"@nestjs/passport": "^11.0.5",
-		"@nestjs/platform-express": "11.1.17",
+		"@nestjs/platform-express": "11.1.18",
 		"@nestjs/swagger": "11.2.6",
 		"@prisma/adapter-pg": "^7.6.0",
 		"@prisma/client": "^7.6.0",

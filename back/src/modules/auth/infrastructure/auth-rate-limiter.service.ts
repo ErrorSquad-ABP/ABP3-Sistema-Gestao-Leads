@@ -30,6 +30,14 @@ class AuthRateLimiterService {
 		);
 	}
 
+	consumeCredentialUpdateAttempt(bucketKeyHash: string): void {
+		this.consume(
+			`credential_update:${bucketKeyHash}`,
+			this.authConfig.rateLimitCredentialUpdateMaxAttempts,
+			this.authConfig.rateLimitCredentialUpdateWindowSeconds,
+		);
+	}
+
 	private consume(
 		key: string,
 		maxAttempts: number,

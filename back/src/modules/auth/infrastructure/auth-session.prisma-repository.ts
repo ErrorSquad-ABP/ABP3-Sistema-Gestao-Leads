@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-
 import type { AuthConfig } from '../../../config/auth.config.js';
 import { AUTH_CONFIG } from '../../../config/auth-injection.token.js';
+import type { Prisma } from '../../../generated/prisma/client.js';
+import type { TransactionContext } from '../../../shared/application/contracts/transaction-context.js';
 // biome-ignore lint/style/useImportType: Nest injeta instância em runtime
 import { PrismaService } from '../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { RefreshTokenInvalidError } from '../domain/errors/refresh-token-invalid.error.js';
@@ -45,6 +46,15 @@ class AuthSessionPrismaRepository {
 
 	private pepper(): string {
 		return this.authConfig.refreshTokenPepper;
+	}
+
+	private db(
+		transactionContext?: TransactionContext,
+	): PrismaService | Prisma.TransactionClient {
+		if (transactionContext !== undefined) {
+			return transactionContext.client as Prisma.TransactionClient;
+		}
+		return this.prisma;
 	}
 
 	async getUserIdByValidRefreshToken(rawRefreshToken: string): Promise<string> {
@@ -178,6 +188,25 @@ class AuthSessionPrismaRepository {
 				userId: rotated.userId,
 				refreshToken: buildRefreshToken(parsed.sessionId, newSecret),
 			};
+		});
+	}
+
+	/**
+	 * Revoga sessões de refresh ainda válidas (`expiresAt` futuro) e não revogadas.
+	 * `transactionContext` alinha revogação com o mesmo commit do `users.update`.
+	 */
+	async revokeAllActiveSessionsForUser(
+		userId: string,
+		transactionContext?: TransactionContext,
+	): Promise<void> {
+		const now = new Date();
+		await this.db(transactionContext).authSession.updateMany({
+			where: {
+				userId,
+				revokedAt: null,
+				expiresAt: { gt: now },
+			},
+			data: { revokedAt: now },
 		});
 	}
 
