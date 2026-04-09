@@ -1,0 +1,40 @@
+name: PR Comment Notify
+
+on:
+  issue_comment:
+    types:
+      - created
+  pull_request_review_comment:
+    types:
+      - created
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    if: |
+      github.event.sender.type != 'Bot' &&
+      (
+        github.event_name == 'pull_request_review_comment' ||
+        github.event.issue.pull_request
+      )
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Send PR comment notification to external relay
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_REVIEW_NOTIFY_WEBHOOK_URL: ${{ secrets.PR_REVIEW_NOTIFY_WEBHOOK_URL }}
+          PR_REVIEW_NOTIFY_WEBHOOK_TOKEN: ${{ secrets.PR_REVIEW_NOTIFY_WEBHOOK_TOKEN }}
+        run: node scripts/send-pr-comment-notify-webhook.mjs
