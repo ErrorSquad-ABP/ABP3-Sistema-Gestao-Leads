@@ -22,7 +22,7 @@ O projeto precisa atender ao escopo do ABP com uma base técnica organizada, mas
 | --- | --- |
 | `front` | Experiência web, composição de telas, navegação e consumo da API |
 | `back` | Contratos HTTP, autenticação, autorização, regras de negócio e integração com banco |
-| `infra/db` | Bootstrap, migrations, seeds e estratégia SQL versionada |
+| `back/prisma` | Schema, migrations, seed e configuração oficial de persistência com Prisma |
 | `docs` | Rastreabilidade entre arquitetura, dados, API, qualidade e gestão |
 
 Essa separação preserva fronteira clara entre apresentação e backend, evita acoplamento artificial e mantém a solução pronta para crescimento com disciplina.
@@ -51,6 +51,7 @@ Os detalhes da arquitetura foram divididos por assunto para evitar uma documenta
 | Guia | Foco |
 | --- | --- |
 | [`next-frontend.md`](./next-frontend.md) | Estrutura e uso do frontend em Next.js |
+| [`frontend-information-architecture.md`](./frontend-information-architecture.md) | Arquitetura da Informação, UX, diagramas Mermaid e plano de implementação do frontend (escopo RF01–RF07) |
 | [`nest-backend.md`](./nest-backend.md) | Uso do NestJS no backend e integração com a arquitetura |
 | [`ddd-clean-architecture.md`](./ddd-clean-architecture.md) | Princípios de DDD, Clean Architecture e regra de dependência |
 | [`backend-module-structure.md`](./backend-module-structure.md) | Estrutura modular do backend e papel de cada camada |
@@ -64,6 +65,10 @@ Os diagramas externos já classificados e referenciados para arquitetura são:
 
 - `DG-CLS-01`: `Implementation Lead Management System`, diagrama de classes externo em `../diagrams/README.md`;
 - `DG-CLS-02`: `Domain Lead Management System`, diagrama de classes externo em `../diagrams/README.md`.
+
+Diagramas Mermaid versionados no repositório:
+
+- `DG-IA-FRONT-01`: fluxos de IA/UX do frontend em [`frontend-information-architecture.md`](./frontend-information-architecture.md) (também em `../diagrams/README.md`).
 
 ## Módulos previstos
 
@@ -104,7 +109,7 @@ O caminho arquitetural previsto é:
 
 1. Evoluir primeiro com `front` e `back` separados, preservando fronteira estável entre experiência web e API.
 2. Manter o `back` como `monólito modular`, com fronteiras de domínio claras e contratos internos bem definidos.
-3. Escalar leitura analítica com SQL bem escrita, índices, views e materialized views quando necessário.
+3. Escalar leitura analítica com boa modelagem relacional, índices e consultas sustentadas pela camada de persistência do backend.
 4. Introduzir processamento assíncrono para tarefas pesadas, integrações ou consolidações por meio de jobs e filas.
 5. Adicionar cache e read models específicos apenas onde o custo de consulta justificar.
 6. Extrair serviços independentes somente se houver evidência operacional, de throughput ou de autonomia de times.

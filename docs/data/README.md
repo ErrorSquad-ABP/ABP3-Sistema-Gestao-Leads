@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Esta área será usada para consolidar o modelo relacional, o DER, o dicionário de dados e as decisões de integridade da base PostgreSQL.
+Esta área será usada para consolidar o modelo relacional, o DER, o dicionário de dados e as decisões de integridade da base PostgreSQL, com a evolução estrutural centralizada em `Prisma ORM`.
 
 ## Núcleos de dados previstos
 
@@ -20,35 +20,36 @@ Esta área será usada para consolidar o modelo relacional, o DER, o dicionário
 - Chaves estrangeiras explícitas e integridade referencial obrigatória.
 - Histórico de mudanças para negociação e trilhas de auditoria.
 - Índices orientados a consultas analíticas e filtros temporais.
-- Estratégia de DDL e DML versionada no repositório.
+- Estratégia de schema, migrations e seeds versionada no repositório por meio do Prisma.
 
-## Estratégia SQL adotada
+## Estratégia de persistência adotada
 
-O projeto passa a diferenciar claramente quatro responsabilidades:
+Prisma é a tecnologia oficial para evolução do banco no projeto. Isso significa:
 
-- `infra/db/init/`: bootstrap do container PostgreSQL;
-- `infra/db/migrations/`: evolução estrutural do banco em SQL versionado;
-- `infra/db/seeds/`: dados de referência versionados;
-- `lead_management.schema_migrations`: tabela de controle do que já foi aplicado.
+- o schema da aplicação deve ser descrito no ORM;
+- mudanças estruturais devem nascer de models, relações, enums e constraints modeladas no Prisma;
+- migrations devem ser geradas e aplicadas pelo fluxo do Prisma;
+- seeds devem ser tratadas como parte do fluxo da aplicação, mantendo reprodutibilidade e versionamento.
 
-Essa separação existe para evitar um problema comum em times acadêmicos: cada máquina ficar com um banco diferente depois de algumas semanas de desenvolvimento.
+Essa direção existe para evitar um problema comum em times acadêmicos: cada máquina ficar com um banco diferente depois de algumas semanas de desenvolvimento, além de reduzir acoplamento prematuro com SQL manual.
 
 ## Regras de evolução do banco
 
-- mudanças estruturais entram em novas migrations SQL;
+- mudanças estruturais entram por models e novas migrations geradas pelo Prisma;
 - migrations antigas não devem ser reescritas depois de compartilhadas;
 - seeds devem ser reprodutíveis e voltados a dados estáveis;
 - o Docker Compose deve continuar sendo capaz de subir um ambiente consistente do zero;
-- o modelo lógico e o DER devem acompanhar a evolução das migrations.
+- o modelo lógico e o DER devem acompanhar a evolução das migrations;
+- scripts SQL manuais não devem ser introduzidos como caminho oficial de evolução.
 
 ## Artefatos planejados
 
 - DER oficial
 - Dicionário de dados
-- Scripts SQL versionados
+- Schema, migrations e seeds versionados por ORM
 - Estratégia de migração
 - Política de dados de referência
 
 ## Bootstrap atual
 
-O bootstrap inicial do banco está em `infra/db/init/`, enquanto a evolução versionada já parte de `infra/db/migrations/001_initial_schema.sql`.
+O bootstrap estrutural do banco agora fica centralizado em `back/prisma/schema.prisma`, `back/prisma/migrations/` e `back/prisma/seed.ts`.

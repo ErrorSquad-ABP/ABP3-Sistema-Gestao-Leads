@@ -11,3 +11,4 @@ coverage
 !.env.example
 postgres-data
 .vscode/settings.json
+back/src/generated/prisma

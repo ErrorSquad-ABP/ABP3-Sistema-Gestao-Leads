@@ -1,3 +1,5 @@
+```mermaid
+
 ---
 config:
   layout: elk
@@ -17,7 +19,7 @@ class DomainEvent {
 
 class Specification {
   <<interface>>
-  +isSatisfiedBy(candidate: T) boolean
+  +isSatisfiedBy(candidate: T) Promise~boolean~
 }
 
 class Name {
@@ -31,6 +33,11 @@ class Email {
 }
 
 class Phone {
+  -_value: string
+  +value: string
+}
+
+class Cpf {
   -_value: string
   +value: string
 }
@@ -132,9 +139,11 @@ class Customer {
   +name: Name
   +email: Email?
   +phone: Phone?
+  +cpf: Cpf?
   +changeName(name: Name) void
   +changeEmail(email: Email?) void
   +changePhone(phone: Phone?) void
+  +changeCpf(cpf: Cpf?) void
 }
 
 class Lead {
@@ -220,6 +229,7 @@ class ICustomerRepository {
   +delete(id: UUID) Promise~void~
   +findById(id: UUID) Promise~Customer?~
   +findByEmail(email: string) Promise~Customer?~
+  +findByCpf(cpf: string) Promise~Customer?~
   +list() Promise~Customer[]~
 }
 
@@ -355,6 +365,7 @@ Store *-- Name
 Customer *-- Name
 Customer o-- Email
 Customer o-- Phone
+Customer o-- Cpf
 
 Lead *-- LeadSource
 Lead --> LeadStatus
@@ -384,6 +395,7 @@ CustomerFactory ..> Customer
 CustomerFactory ..> Name
 CustomerFactory ..> Email
 CustomerFactory ..> Phone
+CustomerFactory ..> Cpf
 
 DealFactory ..> Deal
 DealFactory ..> DealStatus

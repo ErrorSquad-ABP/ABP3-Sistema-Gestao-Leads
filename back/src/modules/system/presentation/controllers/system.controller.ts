@@ -1,9 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Public } from '../../../../shared/presentation/decorators/public.decorator.js';
+import { ApiOkResponseEnvelope } from '../../../../shared/presentation/swagger/api-success-response.js';
 // biome-ignore lint/style/useImportType: Nest depende da classe em runtime para metadata de DI.
 import { GetSystemSummaryUseCase } from '../../application/use-cases/get-system-summary.use-case.js';
+import { SystemSummaryResponseDto } from '../dto/system-summary.response.dto.js';
 
+@Public()
 @ApiTags('system')
 @Controller('v1')
 class SystemController {
@@ -17,7 +20,10 @@ class SystemController {
 		description:
 			'Retorna o estado inicial da API, módulos planejados e metadados arquiteturais.',
 	})
-	@ApiResponse({ status: 200, description: 'Resumo retornado com sucesso' })
+	@ApiOkResponseEnvelope(SystemSummaryResponseDto, {
+		description:
+			'Resumo retornado com sucesso (corpo real: envelope global; `data` contém o payload).',
+	})
 	getSummary() {
 		return this.getSystemSummaryUseCase.execute();
 	}

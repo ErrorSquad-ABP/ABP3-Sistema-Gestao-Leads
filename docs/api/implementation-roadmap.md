@@ -202,9 +202,9 @@ A lógica de criação e as regras de negócio entre entidades não estão mais 
 Este deve ser o primeiro módulo completamente funcional.
 
 ## Pasta Alvo
-- `modules/lead/application`
-- `modules/lead/presentation`
-- `modules/lead/infrastructure`
+- `modules/leads/application`
+- `modules/leads/presentation`
+- `modules/leads/infrastructure`
 
 ---
 
@@ -302,27 +302,27 @@ O módulo `Lead` torna-se a primeira funcionalidade utilizável de ponta a ponta
 - `OutboxEventRecord`
 
 ## Repositórios Concretos
-- `LeadSqlRepository`
-- `UserSqlRepository`
-- `TeamSqlRepository`
-- `StoreSqlRepository`
-- `CustomerSqlRepository`
-- `DealSqlRepository`
-- `AuditLogSqlRepository`
+- `LeadPrismaRepository`
+- `UserPrismaRepository`
+- `TeamPrismaRepository`
+- `StorePrismaRepository`
+- `CustomerPrismaRepository`
+- `DealPrismaRepository`
+- `AuditLogPrismaRepository`
 
 ## Factories
 - `LeadRepositoryFactory`
 
 ## Ordem Recomendada
 1. `LeadRecord`
-2. `LeadSqlRepository`
+2. `LeadPrismaRepository`
 3. `LeadRepositoryFactory`
 4. Records restantes
 5. Repositórios restantes
 
 ## Checklist
 - [ ] Implementar `LeadRecord`
-- [ ] Implementar `LeadSqlRepository`
+- [ ] Implementar `LeadPrismaRepository`
 - [ ] Implementar `LeadRepositoryFactory`
 - [ ] Implementar `UserRecord`
 - [ ] Implementar `TeamRecord`
@@ -332,12 +332,12 @@ O módulo `Lead` torna-se a primeira funcionalidade utilizável de ponta a ponta
 - [ ] Implementar `DealHistoryRecord`
 - [ ] Implementar `AuditLogRecord`
 - [ ] Implementar `OutboxEventRecord`
-- [ ] Implementar `UserSqlRepository`
-- [ ] Implementar `TeamSqlRepository`
-- [ ] Implementar `StoreSqlRepository`
-- [ ] Implementar `CustomerSqlRepository`
-- [ ] Implementar `DealSqlRepository`
-- [ ] Implementar `AuditLogSqlRepository`
+- [ ] Implementar `UserPrismaRepository`
+- [ ] Implementar `TeamPrismaRepository`
+- [ ] Implementar `StorePrismaRepository`
+- [ ] Implementar `CustomerPrismaRepository`
+- [ ] Implementar `DealPrismaRepository`
+- [ ] Implementar `AuditLogPrismaRepository`
 
 ## Resultado Esperado
 A aplicação ganha suporte concreto de persistência alinhado com o diagrama de implementação.
@@ -457,7 +457,7 @@ Se o objetivo é começar a codificar imediatamente com o menor risco, utilize e
 20. `LeadResponseDto`
 21. `LeadMapper`
 22. `LeadRecord`
-23. `LeadSqlRepository`
+23. `LeadPrismaRepository`
 24. `CreateLeadUseCase`
 25. `FindLeadUseCase`
 26. `LeadController`
@@ -492,24 +492,24 @@ Se o objetivo é começar a codificar imediatamente com o menor risco, utilize e
 - [ ] `DomainEventDispatcher`
 - [ ] `OutboxEventProcessor`
 
-### `modules/lead/domain`
+### `modules/leads/domain`
 - [ ] `Lead`
 - [ ] `LeadFactory`
 
-### `modules/lead/application`
+### `modules/leads/application`
 - [ ] DTOs
 - [ ] casos de uso
 
-### `modules/lead/infrastructure`
+### `modules/leads/infrastructure`
 - [ ] `LeadMapper`
 - [ ] `LeadRecord`
-- [ ] `LeadSqlRepository`
+- [ ] `LeadPrismaRepository`
 - [ ] `LeadRepositoryFactory`
 
-### `modules/lead/presentation`
+### `modules/leads/presentation`
 - [ ] `LeadController`
 
-### `modules/customer`, `modules/user`, `modules/team`, `modules/store`, `modules/deal`, `modules/audit`
+### `modules/customers`, `modules/users`, `modules/teams`, `modules/stores`, `modules/deals`, `modules/audit-logs`
 - [ ] replicar o mesmo padrão de camadas após a fatia do lead estar estável
 
 ---
@@ -529,7 +529,7 @@ Comece com:
 - contrato de repositório do lead
 - factory do lead
 - DTOs e mapper do lead
-- SQL repository do lead
+- Prisma repository do lead
 - casos de uso do lead
 - controller do lead
 - events/outbox

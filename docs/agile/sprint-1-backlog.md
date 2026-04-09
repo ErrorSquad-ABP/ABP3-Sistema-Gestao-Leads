@@ -79,7 +79,8 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 | Preparar interface inicial para usuários | `US-04` | Operação administrativa básica |
 | Preparar interface inicial para clientes | `US-06` | Cadastro e manutenção inicial |
 | Preparar interface inicial para leads | `US-07` | Fluxo operacional básico do núcleo comercial |
-| Integrar frontend e backend por contratos explícitos | `US-01` a `US-07` | Consumo HTTP/JSON consistente |
+| Integrar frontend e backend por contratos explícitos | `US-01` a `US-07` | Consumo HTTP/JSON consistente, sem depender de mocks como direção principal |
+| Decidir por tela entre composição por recurso e endpoint agregador | `US-01` a `US-07` | Contratos do frontend estáveis e coerentes com o custo de cada tela |
 
 ### Frente 5 - Documentação e contratos
 
@@ -117,6 +118,7 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 - A modelagem relacional desta sprint concentra grande parte do risco de atraso.
 - RBAC pode crescer demais se o time tentar resolver todos os cenários avançados de uma vez.
 - O frontend pode ficar dependente demais do backend se os contratos mínimos não forem fechados cedo.
+- O frontend pode degradar a manutenção se o time começar a criar endpoints agregadores para qualquer tela sem critério de domínio.
 - O excesso de paralelismo sem integração frequente pode quebrar a coesão da sprint.
 
 ## Impactos e implicações
@@ -125,8 +127,34 @@ Este backlog deriva do `Product Backlog` e do `Sprint Planning` já aprovados. E
 - O documento reduz ambiguidade entre o que está comprometido e o que ainda é condicional.
 - Ele também ajuda a separar claramente o que é entrega de Sprint 1 e o que deve ficar para as sprints seguintes.
 
+## Snapshot operacional em `2026-04-07`
+
+Este snapshot foi incluído para sincronizar backlog, planning e leitura real do `develop`.
+
+### Blocos já materializados no repositório
+
+- modelagem relacional base da Sprint 1;
+- autenticação com JWT, login e guard global de autenticação;
+- CRUD inicial de usuários;
+- módulo de leads com criação, consulta, edição e operações centrais;
+- decisão arquitetural sobre contratos por recurso e endpoint agregador por tela.
+
+### Blocos ainda em aberto
+
+- atualização do próprio acesso;
+- módulos HTTP de equipes, lojas e clientes;
+- seed mínimo utilizável;
+- validação final de qualidade e demonstração ponta a ponta;
+- fechamento do contrato mínimo do frontend autenticado.
+
+### Leitura prática para acompanhamento diário
+
+- `US-01`, `US-04` e parte de `US-07` já têm sustentação concreta no repositório;
+- `US-02`, `US-05` e `US-06` ainda dependem de fechamento funcional real;
+- `US-08` continua corretamente tratado como condicional.
+
 ## Próximos passos
 
-1. Quebrar os itens deste backlog em tarefas atribuíveis ao time.
+1. Usar [`sprint-1-task-breakdown.md`](./sprint-1-task-breakdown.md) como base para quebrar os cards atribuíveis ao time.
 2. Revisar diariamente se o progresso está preservando o Sprint Goal.
 3. Atualizar o backlog ao final da sprint com o resultado real das entregas.

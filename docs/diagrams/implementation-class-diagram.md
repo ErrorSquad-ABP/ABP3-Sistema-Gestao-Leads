@@ -1,3 +1,5 @@
+```mermaid
+
 ---
 config:
   layout: elk
@@ -5,17 +7,27 @@ config:
 classDiagram
 direction TB
     class AggregateRoot {
-	    -DomainEvent[] _domainEvents
-	    +getDomainEvents() DomainEvent[]
-	    +clearEvents() void
+        -DomainEvent[] _domainEvents
+        #addDomainEvent(event: DomainEvent) void
+        +getDomainEvents() DomainEvent[]
+        +clearEvents() void
+        +hasDomainEvents() boolean
     }
 
     class DomainEvent {
-	    +occurredAt: Date
+        <<abstract>>
+        +eventId: string
+        +eventName: string
+        +occurredAt: Date
+        +aggregateId: string
     }
 
-    class Specification {
-	    +isSatisfiedBy(candidate: T) boolean
+    class Specification~T~ {
+        
+        +isSatisfiedBy(candidate: T) Promise~boolean~
+        +and(other: Specification~T~) Specification~T~
+        +or(other: Specification~T~) Specification~T~
+        +not() Specification~T~
     }
 
     class IUnitOfWork {
@@ -48,6 +60,11 @@ direction TB
     }
 
     class Phone {
+	    -_value: string
+	    +value: string
+    }
+
+    class Cpf {
 	    -_value: string
 	    +value: string
     }
@@ -143,9 +160,11 @@ direction TB
 	    +name: Name
 	    +email: Email?
 	    +phone: Phone?
+	    +cpf: Cpf?
 	    +changeName(name: Name) void
 	    +changeEmail(email: Email?) void
 	    +changePhone(phone: Phone?) void
+	    +changeCpf(cpf: Cpf?) void
     }
 
     class Lead {
@@ -227,6 +246,7 @@ direction TB
 	    +delete(id: UUID) Promise~void~
 	    +findById(id: UUID) Promise~Customer?~
 	    +findByEmail(email: string) Promise~Customer?~
+	    +findByCpf(cpf: string) Promise~Customer?~
 	    +list() Promise~Customer[]~
     }
 
@@ -353,7 +373,7 @@ direction TB
 	    +status: LeadStatus
     }
 
-    class LeadSqlRepository {
+    class LeadPrismaRepository {
 	    -mapper: LeadMapper
 	    -transactionContext: TransactionContext
 	    +create(lead: Lead) Promise~Lead~
@@ -368,7 +388,7 @@ direction TB
 	    +create(context: TransactionContext) ILeadRepository
     }
 
-    class UserSqlRepository {
+    class UserPrismaRepository {
 	    +create(user: User) Promise~User~
 	    +update(user: User) Promise~User~
 	    +delete(id: UUID) Promise~void~
@@ -377,7 +397,7 @@ direction TB
 	    +list() Promise~User[]~
     }
 
-    class TeamSqlRepository {
+    class TeamPrismaRepository {
 	    +create(team: Team) Promise~Team~
 	    +update(team: Team) Promise~Team~
 	    +delete(id: int) Promise~void~
@@ -385,7 +405,7 @@ direction TB
 	    +list() Promise~Team[]~
     }
 
-    class StoreSqlRepository {
+    class StorePrismaRepository {
 	    +create(store: Store) Promise~Store~
 	    +update(store: Store) Promise~Store~
 	    +delete(id: int) Promise~void~
@@ -393,16 +413,17 @@ direction TB
 	    +list() Promise~Store[]~
     }
 
-    class CustomerSqlRepository {
+    class CustomerPrismaRepository {
 	    +create(customer: Customer) Promise~Customer~
 	    +update(customer: Customer) Promise~Customer~
 	    +delete(id: UUID) Promise~void~
 	    +findById(id: UUID) Promise~Customer?~
 	    +findByEmail(email: string) Promise~Customer?~
+	    +findByCpf(cpf: string) Promise~Customer?~
 	    +list() Promise~Customer[]~
     }
 
-    class DealSqlRepository {
+    class DealPrismaRepository {
 	    +create(deal: Deal) Promise~Deal~
 	    +update(deal: Deal) Promise~Deal~
 	    +delete(id: UUID) Promise~void~
@@ -411,7 +432,7 @@ direction TB
 	    +list() Promise~Deal[]~
     }
 
-    class AuditLogSqlRepository {
+    class AuditLogPrismaRepository {
 	    +create(log: AuditLog) Promise~AuditLog~
 	    +list() Promise~AuditLog[]~
     }
@@ -441,6 +462,7 @@ direction TB
 	    +name: string
 	    +email: string?
 	    +phone: string?
+	    +cpf: string?
     }
 
     class LeadRecord {
@@ -614,6 +636,7 @@ direction TB
     Customer *-- Name
     Customer o-- Email
     Customer o-- Phone
+    Customer o-- Cpf
     Lead *-- LeadSource
     Lead --> LeadStatus
     Lead ..> Customer : customerId
@@ -678,17 +701,17 @@ direction TB
     LeadMapper ..> CreateLeadDto
     LeadMapper ..> UpdateLeadDto
     LeadMapper ..> LeadResponseDto
-    ILeadRepository <|.. LeadSqlRepository
-    LeadSqlRepository ..> LeadMapper
-    LeadSqlRepository ..> TransactionContext
+    ILeadRepository <|.. LeadPrismaRepository
+    LeadPrismaRepository ..> LeadMapper
+    LeadPrismaRepository ..> TransactionContext
     LeadRepositoryFactory ..> ILeadRepository
-    LeadRepositoryFactory ..> LeadSqlRepository
-    IUserRepository <|.. UserSqlRepository
-    ITeamRepository <|.. TeamSqlRepository
-    IStoreRepository <|.. StoreSqlRepository
-    ICustomerRepository <|.. CustomerSqlRepository
-    IDealRepository <|.. DealSqlRepository
-    IAuditLogRepository <|.. AuditLogSqlRepository
+    LeadRepositoryFactory ..> LeadPrismaRepository
+    IUserRepository <|.. UserPrismaRepository
+    ITeamRepository <|.. TeamPrismaRepository
+    IStoreRepository <|.. StorePrismaRepository
+    ICustomerRepository <|.. CustomerPrismaRepository
+    IDealRepository <|.. DealPrismaRepository
+    IAuditLogRepository <|.. AuditLogPrismaRepository
     IUserRepository ..> User
     ITeamRepository ..> Team
     IStoreRepository ..> Store
@@ -696,19 +719,19 @@ direction TB
     ILeadRepository ..> Lead
     IDealRepository ..> Deal
     IAuditLogRepository ..> AuditLog
-    UserSqlRepository ..> TransactionContext
-    TeamSqlRepository ..> TransactionContext
-    StoreSqlRepository ..> TransactionContext
-    CustomerSqlRepository ..> TransactionContext
-    DealSqlRepository ..> TransactionContext
-    AuditLogSqlRepository ..> TransactionContext
-    LeadSqlRepository ..> LeadRecord
-    UserSqlRepository ..> UserRecord
-    TeamSqlRepository ..> TeamRecord
-    StoreSqlRepository ..> StoreRecord
-    CustomerSqlRepository ..> CustomerRecord
-    DealSqlRepository ..> DealRecord
-    AuditLogSqlRepository ..> AuditLogRecord
+    UserPrismaRepository ..> TransactionContext
+    TeamPrismaRepository ..> TransactionContext
+    StorePrismaRepository ..> TransactionContext
+    CustomerPrismaRepository ..> TransactionContext
+    DealPrismaRepository ..> TransactionContext
+    AuditLogPrismaRepository ..> TransactionContext
+    LeadPrismaRepository ..> LeadRecord
+    UserPrismaRepository ..> UserRecord
+    TeamPrismaRepository ..> TeamRecord
+    StorePrismaRepository ..> StoreRecord
+    CustomerPrismaRepository ..> CustomerRecord
+    DealPrismaRepository ..> DealRecord
+    AuditLogPrismaRepository ..> AuditLogRecord
     LeadFactory ..> Lead
     LeadFactory ..> LeadSource
     LeadFactory ..> LeadStatus
@@ -716,6 +739,7 @@ direction TB
     CustomerFactory ..> Name
     CustomerFactory ..> Email
     CustomerFactory ..> Phone
+    CustomerFactory ..> Cpf
     DealFactory ..> Deal
     DealFactory ..> DealStatus
     DealFactory ..> DealStage

@@ -1,0 +1,131 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ATTENDANT
+  MANAGER
+  GENERAL_MANAGER
+  ADMIN
+}
+
+enum LeadSource {
+  WEBSITE
+  WHATSAPP
+  PHONE
+  WALK_IN
+  INDICATION
+  OTHER
+  INSTAGRAM
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  NEGOTIATING
+  CONVERTED
+  LOST
+}
+
+model Team {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  leads     Lead[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String
+  email        String        @unique
+  password     String
+  role         UserRole
+  teamId       String?       @db.Uuid
+  team         Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  ownedLeads   Lead[]        @relation("LeadOwner")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  auditLogs    AuditLog[]
+  authSessions AuthSession[]
+}
+
+/// Sessão de refresh opaco (hash do segredo em disco; token `<id>.<secret>` só no cliente).
+model AuthSession {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @db.VarChar(64)
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  userAgent        String?
+  ipAddress        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model Customer {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  email      String?  @unique
+  phone      String?
+  cpf        String?  @unique @db.VarChar(11)
+  leads      Lead[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Lead {
+  id          String      @id @default(uuid()) @db.Uuid
+  customerId  String      @db.Uuid
+  storeId     String      @db.Uuid
+  ownerUserId String?     @db.Uuid
+  source      LeadSource
+  status      LeadStatus  @default(NEW)
+  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  store       Store       @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  owner       User?       @relation("LeadOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  deals       Deal[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Deal {
+  id        String   @id @default(uuid()) @db.Uuid
+  leadId    String   @db.Uuid
+  title     String
+  value     Decimal? @db.Decimal(12, 2)
+  closedAt  DateTime?
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @db.Uuid
+  action      String
+  entityName  String
+  entityId    String?
+  metadata    Json?
+  actorUser   User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+}

@@ -8,7 +8,7 @@ O backend será a aplicação de API do sistema, responsável por autenticação
 
 - Node.js com TypeScript
 - NestJS para a aplicação de API
-- PostgreSQL como banco relacional
+- PostgreSQL como banco relacional com Prisma ORM
 - Docker para execução padronizada
 - Biome, ESLint e TypeScript Checker como quality gate
 
@@ -53,11 +53,25 @@ back/
 │   ├── main.ts             # Bootstrap do Nest e configuração global
 │   ├── modules/            # Módulos de negócio do sistema
 │   └── shared/             # Config, auth, filtros, pipes e utilitários transversais
-├── .env.example
+├── prisma/                 # Schema, migrations e seed do banco
+├── .env.example            # Modelo versionado (copiar para `.env` / `.env.local`)
+├── prisma.config.ts
 ├── package.json
 ├── tsconfig.build.json
 └── tsconfig.json
 ```
+
+## Variáveis de ambiente
+
+Referência versionada: [`.env.example`](./.env.example). Na primeira configuração, copie para `.env` na pasta `back` (ou use `.env.local` para valores só na sua máquina; ele sobrescreve `.env`).
+
+| Variável | Obrigatória | Descrição |
+| --- | --- | --- |
+| `PORT` | Não | Porta HTTP da API. Padrão `3001` se omitida. |
+| `APP_URL` | Não | URL base da API (ex.: documentação). Padrão `http://localhost:3001`. |
+| `DATABASE_URL` | Sim para Prisma em runtime | Connection string PostgreSQL. O `prisma.config.ts` tem fallback só para tooling; a aplicação usa `env.hasDatabaseUrl`. |
+| `NODE_ENV` | Não | Ambiente Node. Padrão `development`. |
+| `JWT_SECRET` | Recomendada antes de auth | Presença exposta em `env.hasJwtSecret` para validações futuras. |
 
 ## Módulos previstos
 
@@ -90,6 +104,7 @@ back/
 4. Colocar entidades, enums e contratos em `domain`.
 5. Colocar repositórios e gateways concretos em `infrastructure`.
 6. Colocar apenas preocupações transversais em `shared`.
+7. Centralizar schema, migrations e seed em `prisma/`.
 
 ## Caminho de evolução sugerido
 
