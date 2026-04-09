@@ -2,8 +2,6 @@ name: PR Queue Sync
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '*/30 * * * *'
 
 concurrency:
   group: pr-queue-sync
