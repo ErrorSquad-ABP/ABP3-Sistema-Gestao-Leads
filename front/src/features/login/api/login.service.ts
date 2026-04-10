@@ -5,7 +5,11 @@ import {
 	authenticatedUserSchema,
 	loginResponseSchema,
 } from '../schemas/login.schema';
-import type { AuthenticatedUser, LoginInput, LoginResponse } from '../types/login.types';
+import type {
+	AuthenticatedUser,
+	LoginInput,
+	LoginResponse,
+} from '../types/login.types';
 
 async function login(input: LoginInput): Promise<LoginResponse> {
 	const payload = await apiFetch<unknown>('/api/auth/login', {

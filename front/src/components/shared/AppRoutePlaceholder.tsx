@@ -1,16 +1,19 @@
 import { ArrowUpRight, ShieldCheck } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
 
 type AppRoutePlaceholderProps = {
 	title: string;
 	description: string;
 };
 
-function AppRoutePlaceholder({
-	title,
-	description,
-}: AppRoutePlaceholderProps) {
+function AppRoutePlaceholder({ title, description }: AppRoutePlaceholderProps) {
 	return (
 		<main className="flex min-h-screen items-center justify-center px-4 py-10">
 			<Card className="w-full max-w-2xl bg-white/90 backdrop-blur">

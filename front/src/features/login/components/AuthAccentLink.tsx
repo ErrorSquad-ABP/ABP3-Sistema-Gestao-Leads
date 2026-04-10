@@ -12,11 +12,7 @@ type AuthAccentLinkProps = {
 	href: string;
 };
 
-function AuthAccentLink({
-	children,
-	className,
-	href,
-}: AuthAccentLinkProps) {
+function AuthAccentLink({ children, className, href }: AuthAccentLinkProps) {
 	const [isHovered, setIsHovered] = useState(false);
 
 	return (
