@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { CustomerRepositoryFactory } from '../customers/infrastructure/persistence/factories/customer-repository.factory.js';
+import { CustomersModule } from '../customers/customers.module.js';
 import { StoreRepositoryFactory } from '../stores/infrastructure/persistence/factories/store-repository.factory.js';
 import { UsersModule } from '../users/users.module.js';
 import { ConvertLeadUseCase } from './application/use-cases/convert-lead.use-case.js';
@@ -16,12 +16,11 @@ import { LeadRepositoryFactory } from './infrastructure/persistence/factories/le
 import { LeadController } from './presentation/controllers/lead.controller.js';
 
 @Module({
-	imports: [UsersModule],
+	imports: [UsersModule, CustomersModule],
 	controllers: [LeadController],
 	providers: [
 		LeadFactory,
 		LeadRepositoryFactory,
-		CustomerRepositoryFactory,
 		StoreRepositoryFactory,
 		CreateLeadUseCase,
 		UpdateLeadUseCase,

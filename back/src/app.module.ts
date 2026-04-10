@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { LeadsModule } from './modules/leads/leads.module.js';
 import { SystemModule } from './modules/system/system.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { CustomersModule } from './modules/customers/customers.module.js';
 import { PrismaModule } from './shared/infrastructure/database/prisma/prisma.module.js';
 import { TransactionModule } from './shared/infrastructure/database/transaction/transaction.module.js';
 import { GlobalAuthGuard } from './shared/presentation/guards/global-auth.guard.js';
@@ -17,6 +18,7 @@ import { GlobalAuthGuard } from './shared/presentation/guards/global-auth.guard.
 		TransactionModule,
 		SystemModule,
 		UsersModule,
+		CustomersModule,
 		AuthModule,
 		LeadsModule,
 	],
