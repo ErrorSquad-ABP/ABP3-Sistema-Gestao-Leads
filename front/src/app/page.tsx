@@ -1,12 +1,9 @@
-import { LandingPage } from '../features/landing/components/landing-page';
-import { getApiStatus } from '../features/landing/server/get-api-status';
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+import { appRoutes } from '@/lib/routes/app-routes';
 
-async function HomePage() {
-	const apiStatus = await getApiStatus();
-
-	return <LandingPage apiStatus={apiStatus} />;
+function HomePage() {
+	redirect(appRoutes.auth.login);
 }
 
 export default HomePage;
