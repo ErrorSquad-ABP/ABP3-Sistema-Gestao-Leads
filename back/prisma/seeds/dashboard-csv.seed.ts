@@ -82,7 +82,7 @@ const CSV_FILE_PATH = resolve(
 	'dados_dashboard_ficticios.csv',
 );
 
-const DEFAULT_PASSWORD = '123456';
+const DEFAULT_PASSWORD = 'admin123';
 const SUPPORT_USERS = [
 	{
 		email: 'admin@crm.com',
