@@ -8,6 +8,7 @@ const appRoutes = {
 	app: {
 		root: '/app',
 		leads: '/app/leads',
+		users: '/app/users',
 		dashboard: {
 			operational: '/app/dashboard/operational',
 			analytic: '/app/dashboard/analytic',

@@ -1,91 +1,81 @@
-'use client';
+import { Headset, ShieldCheck, UserRoundCog } from 'lucide-react';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { appRoutes } from '@/lib/routes/app-routes';
-import { cn } from '@/lib/utils';
-
-import { forgotPasswordSchema } from '../schemas/forgot-password.schema';
-import type { ForgotPasswordInput } from '../types/auth-forms.types';
 import { AuthAccentLink } from './AuthAccentLink';
 import { AuthScreenLayout } from './AuthScreenLayout';
-import { AuthToast } from './AuthToast';
 
 function ForgotPasswordForm() {
-	const [toastVisible, setToastVisible] = useState(false);
-	const form = useForm<ForgotPasswordInput>({
-		resolver: zodResolver(forgotPasswordSchema),
-		defaultValues: {
-			email: '',
-		},
-	});
-
-	const handleSubmit = form.handleSubmit(() => {
-		setToastVisible(true);
-	});
-
 	return (
 		<AuthScreenLayout
-			asideTitle="Recupere seu acesso e volte rapidamente para a operação."
-			overlay={
-				toastVisible ? (
-					<AuthToast
-						description="A recuperação automática de senha ainda não está disponível nesta etapa. Solicite o reset ao administrador responsável."
-						onClose={() => setToastVisible(false)}
-						title="Fluxo indisponível"
-						variant="warning"
-					/>
-				) : null
-			}
-			subtitle="Informe o seu e-mail para continuar"
-			title="Esqueceu a senha?"
+			asideTitle="Regularize o acesso à operação com apoio do administrador responsável."
+			subtitle="Siga as orientações abaixo para recuperar o acesso"
+			title="Recuperação de acesso"
 		>
-			<form className="w-full space-y-4" noValidate onSubmit={handleSubmit}>
-				<div className="space-y-4">
-					<div className="space-y-1.5">
-						<Label
-							className="text-[0.82rem] font-normal text-[#6b7687]"
-							htmlFor="email"
-						>
-							E-mail*
-						</Label>
-						<Input
-							autoComplete="email"
-							className={cn(
-								'h-10 rounded-md border-[#d6dce5] bg-white px-3 text-[0.85rem] text-[#1b2430] shadow-none placeholder:text-[#97a2b1] focus-visible:border-[#2d3648]/45',
-								form.formState.errors.email
-									? 'border-destructive focus-visible:border-destructive'
-									: null,
-							)}
-							id="email"
-							inputMode="email"
-							placeholder="exemplo@leadcrm.com"
-							type="email"
-							{...form.register('email')}
-						/>
-						{form.formState.errors.email ? (
-							<p className="inline-flex items-center gap-2 text-sm text-destructive">
-								<AlertCircle className="size-4" />
-								{form.formState.errors.email.message}
+			<div className="w-full space-y-4 rounded-2xl border border-[#d6dce5] bg-white px-5 py-5 text-[#1b2430] shadow-[0_20px_60px_-28px_rgba(15,23,42,0.16)]">
+				<div className="space-y-1">
+					<p className="text-sm font-medium text-[#1b2430]">
+						Este ambiente não envia e-mails de redefinição automaticamente.
+					</p>
+					<p className="text-[0.82rem] leading-6 text-[#6b7687]">
+						O acesso é regularizado manualmente por um administrador ou pelo
+						suporte responsável pelo sistema.
+					</p>
+				</div>
+
+				<div className="space-y-3">
+					<div className="flex items-start gap-3 rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 py-3">
+						<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f5ede8]">
+							<UserRoundCog
+								aria-hidden="true"
+								className="size-4 text-[#D96C3F]"
+							/>
+						</div>
+						<div className="min-w-0">
+							<p className="text-[0.84rem] font-medium text-[#1b2430]">
+								1. Separe o e-mail usado no acesso
 							</p>
-						) : null}
+							<p className="mt-1 text-[0.8rem] leading-6 text-[#6b7687]">
+								Informe ao administrador o e-mail vinculado à sua conta para que
+								ele localize o utilizador correto.
+							</p>
+						</div>
+					</div>
+
+					<div className="flex items-start gap-3 rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 py-3">
+						<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f5ede8]">
+							<ShieldCheck
+								aria-hidden="true"
+								className="size-4 text-[#D96C3F]"
+							/>
+						</div>
+						<div className="min-w-0">
+							<p className="text-[0.84rem] font-medium text-[#1b2430]">
+								2. Solicite a regularização do acesso
+							</p>
+							<p className="mt-1 text-[0.8rem] leading-6 text-[#6b7687]">
+								O administrador poderá redefinir a credencial ou orientar o
+								próximo passo conforme o perfil da sua conta.
+							</p>
+						</div>
+					</div>
+
+					<div className="flex items-start gap-3 rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 py-3">
+						<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f5ede8]">
+							<Headset aria-hidden="true" className="size-4 text-[#D96C3F]" />
+						</div>
+						<div className="min-w-0">
+							<p className="text-[0.84rem] font-medium text-[#1b2430]">
+								3. Se necessário, acione o suporte interno
+							</p>
+							<p className="mt-1 text-[0.8rem] leading-6 text-[#6b7687]">
+								Caso não saiba quem administra o sistema, procure o responsável
+								da operação ou o canal interno de suporte da sua equipe.
+							</p>
+						</div>
 					</div>
 				</div>
 
-				<Button
-					className="h-9 w-full rounded-md bg-[#2D3648] text-[0.85rem] font-medium text-white shadow-none hover:bg-[#232B3B]"
-					type="submit"
-				>
-					Enviar instruções
-				</Button>
-
-				<p className="text-center text-[0.82rem]">
+				<p className="border-t border-[#d6dce5] pt-4 text-center text-[0.82rem]">
 					<span className="text-[#6b7687]">Lembrou da senha? </span>
 					<AuthAccentLink
 						className="inline-block whitespace-nowrap text-[0.82rem] font-medium"
@@ -94,7 +84,7 @@ function ForgotPasswordForm() {
 						Voltar para entrar
 					</AuthAccentLink>
 				</p>
-			</form>
+			</div>
 		</AuthScreenLayout>
 	);
 }

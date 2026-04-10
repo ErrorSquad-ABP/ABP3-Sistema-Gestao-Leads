@@ -1,15 +1,9 @@
-import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
-import { RegisterForm } from '@/features/login/components/RegisterForm';
-
-const metadata: Metadata = {
-	title: 'Criar Conta | Sistema de Gestão de Leads',
-	description: 'Solicitação de acesso ao Sistema de Gestão de Leads.',
-};
+import { appRoutes } from '@/lib/routes/app-routes';
 
 function RegisterPage() {
-	return <RegisterForm />;
+	redirect(appRoutes.auth.login);
 }
 
-export { metadata };
 export default RegisterPage;

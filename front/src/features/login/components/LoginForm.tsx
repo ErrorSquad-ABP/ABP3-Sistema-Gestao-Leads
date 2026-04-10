@@ -7,7 +7,6 @@ import { startTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -121,17 +120,21 @@ function LoginForm() {
 			title="Bem-vindo ao Lead CRM"
 		>
 			<div className="w-full space-y-4">
-				<div className="space-y-4">
-					{loginErrorMessage ? (
-						<Alert variant="destructive">
-							<AlertTitle>Falha no acesso</AlertTitle>
-							<AlertDescription>{loginErrorMessage}</AlertDescription>
-						</Alert>
-					) : null}
-				</div>
-
 				<form className="space-y-4" noValidate onSubmit={handleSubmit}>
 					<div className="space-y-4">
+						{loginErrorMessage ? (
+							<div className="flex items-start gap-2.5 rounded-md border border-[#f1c7c4] bg-[#fff7f7] px-3 py-2.5 text-[0.82rem] text-[#7a2f2a]">
+								<AlertCircle
+									aria-hidden="true"
+									className="mt-0.5 size-4 shrink-0 text-[#c65a52]"
+								/>
+								<div className="min-w-0">
+									<p className="font-medium leading-5">Falha no acesso</p>
+									<p className="mt-0.5 leading-5">{loginErrorMessage}</p>
+								</div>
+							</div>
+						) : null}
+
 						<div className="space-y-1.5">
 							<Label
 								className="text-[0.82rem] font-normal text-[#6b7687]"
@@ -194,7 +197,7 @@ function LoginForm() {
 								className="font-medium"
 								href={appRoutes.auth.forgotPassword}
 							>
-								Esqueceu a senha?
+								Recuperar acesso
 							</AuthAccentLink>
 						</div>
 					</div>
@@ -214,14 +217,8 @@ function LoginForm() {
 						)}
 					</Button>
 
-					<p className="text-center text-[0.82rem]">
-						<span className="text-[#6b7687]">Não tem uma conta? </span>
-						<AuthAccentLink
-							className="inline-block whitespace-nowrap text-[0.82rem] font-medium"
-							href={appRoutes.auth.register}
-						>
-							Criar conta
-						</AuthAccentLink>
+					<p className="text-center text-[0.82rem] text-[#6b7687]">
+						O acesso ao sistema é provisionado pelo administrador.
 					</p>
 				</form>
 			</div>
