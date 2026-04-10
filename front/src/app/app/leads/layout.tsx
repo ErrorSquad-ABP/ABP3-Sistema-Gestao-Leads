@@ -7,7 +7,7 @@ type LeadsLayoutProps = {
 };
 
 async function LeadsLayout({ children }: LeadsLayoutProps) {
-	await requireUserWithRoles(['ATTENDANT']);
+	await requireUserWithRoles(['ATTENDANT', 'MANAGER', 'ADMINISTRATOR']);
 
 	return children;
 }
