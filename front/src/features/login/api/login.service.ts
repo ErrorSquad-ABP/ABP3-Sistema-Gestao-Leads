@@ -20,9 +20,17 @@ async function login(input: LoginInput): Promise<LoginResponse> {
 	return loginResponseSchema.parse(payload);
 }
 
-async function fetchCurrentUser(): Promise<AuthenticatedUser | null> {
+type FetchCurrentUserOptions = {
+	signal?: AbortSignal;
+};
+
+async function fetchCurrentUser(
+	options: FetchCurrentUserOptions = {},
+): Promise<AuthenticatedUser | null> {
 	try {
-		const payload = await apiFetch<unknown>('/api/auth/me');
+		const payload = await apiFetch<unknown>('/api/auth/me', {
+			signal: options.signal,
+		});
 		return authenticatedUserSchema.parse(payload);
 	} catch (error) {
 		if (
