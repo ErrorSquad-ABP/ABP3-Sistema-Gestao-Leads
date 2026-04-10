@@ -134,13 +134,9 @@ async function apiFetch<TData>(path: string, options: ApiFetchOptions = {}) {
 		}
 
 		if (error instanceof TypeError) {
-			throw new ApiError(
-				'Não foi possível conectar à API no momento.',
-				503,
-				{
-					code: 'network.unreachable',
-				},
-			);
+			throw new ApiError('Não foi possível conectar à API no momento.', 503, {
+				code: 'network.unreachable',
+			});
 		}
 
 		throw error;

@@ -14,7 +14,7 @@ type AuthToastProps = {
 	variant?: AuthToastVariant;
 };
 
-	function getToastVisuals(variant: AuthToastVariant) {
+function getToastVisuals(variant: AuthToastVariant) {
 	switch (variant) {
 		case 'success':
 			return {

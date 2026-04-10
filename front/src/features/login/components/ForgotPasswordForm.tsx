@@ -49,7 +49,10 @@ function ForgotPasswordForm() {
 			<form className="w-full space-y-4" noValidate onSubmit={handleSubmit}>
 				<div className="space-y-4">
 					<div className="space-y-1.5">
-						<Label className="text-[0.82rem] font-normal text-[#6b7687]" htmlFor="email">
+						<Label
+							className="text-[0.82rem] font-normal text-[#6b7687]"
+							htmlFor="email"
+						>
 							E-mail*
 						</Label>
 						<Input

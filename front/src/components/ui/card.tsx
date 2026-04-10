@@ -15,13 +15,21 @@ function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-	return <div className={cn('flex flex-col gap-2 p-6', className)} {...props} />;
+	return (
+		<div className={cn('flex flex-col gap-2 p-6', className)} {...props} />
+	);
 }
 
-function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+function CardTitle({
+	className,
+	...props
+}: HTMLAttributes<HTMLHeadingElement>) {
 	return (
 		<h2
-			className={cn('text-2xl font-semibold tracking-tight text-foreground', className)}
+			className={cn(
+				'text-2xl font-semibold tracking-tight text-foreground',
+				className,
+			)}
 			{...props}
 		/>
 	);
@@ -32,7 +40,10 @@ function CardDescription({
 	...props
 }: HTMLAttributes<HTMLParagraphElement>) {
 	return (
-		<p className={cn('text-sm leading-6 text-muted-foreground', className)} {...props} />
+		<p
+			className={cn('text-sm leading-6 text-muted-foreground', className)}
+			{...props}
+		/>
 	);
 }
 
@@ -41,7 +52,16 @@ function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-	return <div className={cn('flex items-center p-6 pt-0', className)} {...props} />;
+	return (
+		<div className={cn('flex items-center p-6 pt-0', className)} {...props} />
+	);
 }
 
-export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
+export {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+};

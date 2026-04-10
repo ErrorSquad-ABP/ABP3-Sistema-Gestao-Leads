@@ -100,7 +100,9 @@ function LoginForm() {
 		: currentUserQuery.isError
 			? {
 					id: 'session-unavailable',
-					icon: <WifiOff aria-hidden="true" className="size-4 text-[#D96C3F]" />,
+					icon: (
+						<WifiOff aria-hidden="true" className="size-4 text-[#D96C3F]" />
+					),
 					label: 'Sessão indisponível',
 					message:
 						'Não foi possível validar a sessão atual. Você ainda pode entrar normalmente; se o problema persistir, verifique a disponibilidade da API.',
@@ -136,7 +138,10 @@ function LoginForm() {
 				<form className="space-y-4" noValidate onSubmit={handleSubmit}>
 					<div className="space-y-4">
 						<div className="space-y-1.5">
-							<Label className="text-[0.82rem] font-normal text-[#6b7687]" htmlFor="email">
+							<Label
+								className="text-[0.82rem] font-normal text-[#6b7687]"
+								htmlFor="email"
+							>
 								E-mail*
 							</Label>
 							<Input
@@ -162,7 +167,10 @@ function LoginForm() {
 						</div>
 
 						<div className="space-y-1.5">
-							<Label className="text-[0.82rem] font-normal text-[#6b7687]" htmlFor="password">
+							<Label
+								className="text-[0.82rem] font-normal text-[#6b7687]"
+								htmlFor="password"
+							>
 								Senha*
 							</Label>
 							<Input
@@ -208,7 +216,10 @@ function LoginForm() {
 								</span>
 								Lembrar este dispositivo
 							</button>
-							<AuthAccentLink className="font-medium" href={appRoutes.auth.forgotPassword}>
+							<AuthAccentLink
+								className="font-medium"
+								href={appRoutes.auth.forgotPassword}
+							>
 								Esqueceu a senha?
 							</AuthAccentLink>
 						</div>
