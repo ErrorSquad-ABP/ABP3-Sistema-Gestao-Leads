@@ -7,7 +7,7 @@ import { fetchCurrentUser } from '../api/login.service';
 function useCurrentUserQuery() {
 	return useQuery({
 		queryKey: queryKeys.auth.currentUser,
-		queryFn: fetchCurrentUser,
+		queryFn: ({ signal }) => fetchCurrentUser({ signal }),
 	});
 }
 

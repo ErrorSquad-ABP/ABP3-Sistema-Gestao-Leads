@@ -2,26 +2,19 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-	AlertCircle,
-	Check,
-	Circle,
-	LoaderCircle,
-	WifiOff,
-} from 'lucide-react';
-import { startTransition, useEffect, useState } from 'react';
+import { AlertCircle, LoaderCircle, WifiOff } from 'lucide-react';
+import { startTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { resolveHomeRouteByRole } from '@/lib/auth/session';
 import { queryKeys } from '@/lib/constants/query-keys';
 import { isApiError } from '@/lib/http/api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
 
 import { useLoginMutation } from '../hooks/login.mutations';
 import { useCurrentUserQuery } from '../hooks/login.queries';
@@ -53,7 +46,6 @@ function LoginForm() {
 	const currentUserQuery = useCurrentUserQuery();
 	const loginMutation = useLoginMutation();
 	const currentUser = currentUserQuery.data ?? null;
-	const [rememberDevice, setRememberDevice] = useState(false);
 	const form = useForm<LoginInput>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
@@ -68,15 +60,18 @@ function LoginForm() {
 		}
 
 		startTransition(() => {
-			router.replace(resolveHomeRouteByRole(currentUser.role));
+			router.replace(appRoutes.app.root);
 		});
 	}, [currentUser, router]);
 
 	const handleSubmit = form.handleSubmit(async (values) => {
+		await queryClient.cancelQueries({
+			queryKey: queryKeys.auth.currentUser,
+		});
 		const result = await loginMutation.mutateAsync(values);
 		queryClient.setQueryData(queryKeys.auth.currentUser, result.user);
 		startTransition(() => {
-			router.replace(resolveHomeRouteByRole(result.user.role));
+			router.replace(appRoutes.app.root);
 		});
 	});
 
@@ -194,28 +189,7 @@ function LoginForm() {
 							) : null}
 						</div>
 
-						<div className="flex flex-wrap items-center justify-between gap-4 text-[0.82rem]">
-							<button
-								className="flex cursor-pointer items-center gap-3 text-[#6b7687] transition-colors hover:text-[#2d3648]"
-								onClick={() => setRememberDevice((value) => !value)}
-								type="button"
-							>
-								<span
-									className={cn(
-										'flex size-3.5 items-center justify-center rounded-[3px] border bg-white transition-colors',
-										rememberDevice
-											? 'border-[#D96C3F] bg-[#D96C3F]'
-											: 'border-[#d2d9e1]',
-									)}
-								>
-									{rememberDevice ? (
-										<Check className="size-3.5 text-white" />
-									) : (
-										<Circle className="size-0" />
-									)}
-								</span>
-								Lembrar este dispositivo
-							</button>
+						<div className="flex flex-wrap items-center justify-end gap-4 text-[0.82rem]">
 							<AuthAccentLink
 								className="font-medium"
 								href={appRoutes.auth.forgotPassword}
