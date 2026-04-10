@@ -9,7 +9,7 @@ type AnalyticDashboardLayoutProps = {
 async function AnalyticDashboardLayout({
 	children,
 }: AnalyticDashboardLayoutProps) {
-	await requireUserWithRoles(['GENERAL_MANAGER', 'ADMINISTRATOR']);
+	await requireUserWithRoles(['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR']);
 
 	return children;
 }

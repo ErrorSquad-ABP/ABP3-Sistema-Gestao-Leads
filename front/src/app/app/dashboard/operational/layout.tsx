@@ -9,7 +9,7 @@ type OperationalDashboardLayoutProps = {
 async function OperationalDashboardLayout({
 	children,
 }: OperationalDashboardLayoutProps) {
-	await requireUserWithRoles(['MANAGER']);
+	await requireUserWithRoles(['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR']);
 
 	return children;
 }
