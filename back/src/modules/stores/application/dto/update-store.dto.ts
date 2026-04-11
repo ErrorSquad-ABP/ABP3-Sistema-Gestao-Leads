@@ -1,5 +1,5 @@
 type UpdateStoreDto = {
-	readonly name: string;
+	readonly name?: string;
 };
 
 export type { UpdateStoreDto };

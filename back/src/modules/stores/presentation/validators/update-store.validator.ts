@@ -1,13 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 class UpdateStoreValidator {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		example: 'Loja Centro',
 	})
+	@IsOptional()
 	@IsString()
-	@IsNotEmpty()
-	name!: string;
+	@MinLength(1)
+	name?: string;
 }
 
 export { UpdateStoreValidator };

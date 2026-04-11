@@ -1,13 +1,20 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID, ValidateIf } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import {
+	IsOptional,
+	IsString,
+	IsUUID,
+	MinLength,
+	ValidateIf,
+} from 'class-validator';
 
 class UpdateTeamValidator {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		example: 'Equipe Comercial',
 	})
+	@IsOptional()
 	@IsString()
-	@IsNotEmpty()
-	name!: string;
+	@MinLength(1)
+	name?: string;
 
 	@ApiPropertyOptional({
 		format: 'uuid',
@@ -15,9 +22,10 @@ class UpdateTeamValidator {
 		description:
 			'Gerente da equipe; omita ou use null para equipe sem gerente.',
 	})
+	@IsOptional()
 	@ValidateIf((_, value) => value !== null && value !== undefined)
 	@IsUUID()
-	managerId!: string | null;
+	managerId?: string | null;
 }
 
 export { UpdateTeamValidator };

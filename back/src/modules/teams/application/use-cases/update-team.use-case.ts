@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
+import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
@@ -13,6 +14,10 @@ import { TeamFactory } from '../../domain/factories/team.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { TeamRepositoryFactory } from '../../infrastructure/persistence/factories/team-repository.factory.js';
 import type { UpdateTeamDto } from '../dto/update-team.dto.js';
+
+function hasTeamUpdatePayload(dto: UpdateTeamDto): boolean {
+	return dto.name !== undefined || dto.managerId !== undefined;
+}
 
 @Injectable()
 class UpdateTeamUseCase {
@@ -26,6 +31,13 @@ class UpdateTeamUseCase {
 	) {}
 
 	async execute(teamId: string, dto: UpdateTeamDto) {
+		if (!hasTeamUpdatePayload(dto)) {
+			throw new DomainValidationError(
+				'Informe ao menos um campo para atualizar a equipe.',
+				{ code: 'team.update.no_fields' },
+			);
+		}
+
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const teams = this.teamRepositoryFactory.create(transactionContext);

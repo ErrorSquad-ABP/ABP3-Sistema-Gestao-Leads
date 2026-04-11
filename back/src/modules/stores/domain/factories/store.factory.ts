@@ -7,7 +7,7 @@ type CreateStoreParams = {
 };
 
 type UpdateStoreParams = {
-	readonly name: string;
+	readonly name?: string;
 };
 
 class StoreFactory {
@@ -17,7 +17,9 @@ class StoreFactory {
 
 	update(store: Store, params: UpdateStoreParams): Store {
 		const updatedStore = new Store(store.id, store.name);
-		updatedStore.changeName(Name.create(params.name));
+		if (params.name !== undefined) {
+			updatedStore.changeName(Name.create(params.name));
+		}
 		return updatedStore;
 	}
 }

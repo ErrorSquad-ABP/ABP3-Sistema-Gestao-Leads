@@ -12,8 +12,10 @@ import {
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
+	ApiConflictResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
+	ApiNotFoundResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
@@ -46,6 +48,11 @@ const BAD_REQUEST = {
 		'Corpo ou parametros invalidos (falha de validacao do ValidationPipe).',
 };
 
+const PATCH_BAD_REQUEST = {
+	description:
+		'Corpo invalido: falha do ValidationPipe, nenhum campo enviado para atualizacao (codigo team.update.no_fields) ou managerId sem papel compativel de gerencia.',
+};
+
 const SERVER_ERROR = {
 	description:
 		'Erro interno ou erro de dominio ainda nao mapeado para status HTTP especifico.',
@@ -63,9 +70,17 @@ class TeamController {
 	) {}
 
 	@Post()
-	@ApiOperation({ summary: 'Criar team' })
+	@ApiOperation({
+		summary: 'Criar team',
+		description:
+			'CRUD administrativo de equipes (US-05). Quando RBAC estiver ativo, deve ficar restrito a administrador.',
+	})
 	@ApiCreatedResponseEnvelope(TeamResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiConflictResponse({
+		description:
+			'Conflito de negocio relacionado ao contrato da equipe, quando aplicavel.',
+	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async create(@Body() body: CreateTeamValidator) {
 		const team = await this.createTeamUseCase.execute(body);
@@ -73,7 +88,11 @@ class TeamController {
 	}
 
 	@Get()
-	@ApiOperation({ summary: 'Listar teams' })
+	@ApiOperation({
+		summary: 'Listar teams',
+		description:
+			'Lista as equipes disponiveis para operacao administrativa da US-05.',
+	})
 	@ApiOkResponseEnvelopeArray(TeamResponseDto)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	list() {
@@ -89,6 +108,9 @@ class TeamController {
 	@ApiBadRequestResponse({
 		description: 'UUID invalido no parametro de rota.',
 	})
+	@ApiNotFoundResponse({
+		description: 'Equipe nao encontrada.',
+	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async findById(@Param('id', ParseUUIDPipe) id: string) {
 		const team = await this.findTeamUseCase.execute(id);
@@ -99,7 +121,10 @@ class TeamController {
 	@ApiOperation({ summary: 'Atualizar team' })
 	@ApiParam({ name: 'id', format: 'uuid' })
 	@ApiOkResponseEnvelope(TeamResponseDto)
-	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiBadRequestResponse(PATCH_BAD_REQUEST)
+	@ApiNotFoundResponse({
+		description: 'Equipe nao encontrada.',
+	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
 		@Param('id', ParseUUIDPipe) id: string,
@@ -119,6 +144,9 @@ class TeamController {
 	})
 	@ApiBadRequestResponse({
 		description: 'UUID invalido no parametro de rota.',
+	})
+	@ApiNotFoundResponse({
+		description: 'Equipe nao encontrada.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {

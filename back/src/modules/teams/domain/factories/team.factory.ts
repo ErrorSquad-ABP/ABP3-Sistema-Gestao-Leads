@@ -8,8 +8,8 @@ type CreateTeamParams = {
 };
 
 type UpdateTeamParams = {
-	readonly name: string;
-	readonly managerId: string | null;
+	readonly name?: string;
+	readonly managerId?: string | null;
 };
 
 class TeamFactory {
@@ -23,11 +23,14 @@ class TeamFactory {
 
 	update(team: Team, params: UpdateTeamParams): Team {
 		const updatedTeam = new Team(team.id, team.name, team.managerId);
-		updatedTeam.changeName(Name.create(params.name));
+		if (params.name !== undefined) {
+			updatedTeam.changeName(Name.create(params.name));
+		}
 
-		if (params.managerId) {
+		if (params.managerId !== undefined && params.managerId !== null) {
 			updatedTeam.assignManager(Uuid.parse(params.managerId));
-		} else {
+		}
+		if (params.managerId === null) {
 			updatedTeam.clearManager();
 		}
 
