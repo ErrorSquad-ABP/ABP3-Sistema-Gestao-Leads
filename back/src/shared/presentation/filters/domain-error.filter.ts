@@ -13,6 +13,10 @@ import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/l
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead-invalid-store.error.js';
 import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not-found.error.js';
+import { StoreHasLinkedLeadsError } from '../../../modules/stores/domain/errors/store-has-linked-leads.error.js';
+import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
+import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
+import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
 import { UserInvalidTeamError } from '../../../modules/users/domain/errors/user-invalid-team.error.js';
 import { UserNotFoundError } from '../../../modules/users/domain/errors/user-not-found.error.js';
@@ -125,6 +129,24 @@ class DomainErrorFilter implements ExceptionFilter {
 			};
 		}
 
+		if (exception instanceof TeamNotFoundError) {
+			return {
+				status: HttpStatus.NOT_FOUND,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
+		if (exception instanceof StoreNotFoundError) {
+			return {
+				status: HttpStatus.NOT_FOUND,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
 		if (exception instanceof UserNotFoundError) {
 			return {
 				status: HttpStatus.NOT_FOUND,
@@ -152,6 +174,15 @@ class DomainErrorFilter implements ExceptionFilter {
 			};
 		}
 
+		if (exception instanceof TeamInvalidManagerError) {
+			return {
+				status: HttpStatus.BAD_REQUEST,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
 		if (
 			exception instanceof LeadInvalidCustomerError ||
 			exception instanceof LeadInvalidStoreError ||
@@ -166,6 +197,15 @@ class DomainErrorFilter implements ExceptionFilter {
 		}
 
 		if (exception instanceof LeadAlreadyConvertedError) {
+			return {
+				status: HttpStatus.CONFLICT,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
+		if (exception instanceof StoreHasLinkedLeadsError) {
 			return {
 				status: HttpStatus.CONFLICT,
 				body: this.toErrorEnvelope(exception.message, [

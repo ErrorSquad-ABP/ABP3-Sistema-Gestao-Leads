@@ -2,9 +2,21 @@ import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { IStoreRepository } from '../../../domain/repositories/store.repository.js';
+import { StoreHasLinkedLeadsError } from '../../../domain/errors/store-has-linked-leads.error.js';
 import { StoreMapper } from '../mappers/store.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
+
+function isPrismaKnownRequest(
+	error: unknown,
+): error is { code: string; meta?: { field_name?: string } } {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof (error as { code: unknown }).code === 'string'
+	);
+}
 
 class StorePrismaRepository implements IStoreRepository {
 	constructor(
@@ -33,7 +45,14 @@ class StorePrismaRepository implements IStoreRepository {
 	}
 
 	async delete(id: Parameters<IStoreRepository['delete']>[0]): Promise<void> {
-		await this.client.store.delete({ where: { id: id.value } });
+		try {
+			await this.client.store.delete({ where: { id: id.value } });
+		} catch (error: unknown) {
+			if (isPrismaKnownRequest(error) && error.code === 'P2003') {
+				throw new StoreHasLinkedLeadsError(id.value);
+			}
+			throw error;
+		}
 	}
 
 	async findById(id: Parameters<IStoreRepository['findById']>[0]) {

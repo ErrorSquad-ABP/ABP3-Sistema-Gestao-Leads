@@ -5,6 +5,7 @@ import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-w
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
+import { canManageTeam } from '../services/team-manager-policy.js';
 import { TeamInvalidManagerError } from '../../domain/errors/team-invalid-manager.error.js';
 import { TeamNotFoundError } from '../../domain/errors/team-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
@@ -37,7 +38,7 @@ class UpdateTeamUseCase {
 
 			if (dto.managerId) {
 				const manager = await users.findById(Uuid.parse(dto.managerId));
-				if (!manager) {
+				if (!manager || !canManageTeam(manager.role)) {
 					throw new TeamInvalidManagerError(dto.managerId);
 				}
 			}
