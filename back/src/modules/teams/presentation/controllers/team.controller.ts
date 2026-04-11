@@ -50,7 +50,7 @@ const BAD_REQUEST = {
 
 const PATCH_BAD_REQUEST = {
 	description:
-		'Corpo invalido: falha do ValidationPipe, nenhum campo enviado para atualizacao (codigo team.update.no_fields) ou managerId sem papel compativel de gerencia.',
+		'Corpo invalido: falha do ValidationPipe, nenhum campo enviado para atualizacao (codigo team.update.no_fields), managerId sem papel compativel de gerencia ou storeId inexistente.',
 };
 
 const SERVER_ERROR = {
@@ -73,7 +73,7 @@ class TeamController {
 	@ApiOperation({
 		summary: 'Criar team',
 		description:
-			'CRUD administrativo de equipes (US-05). Quando RBAC estiver ativo, deve ficar restrito a administrador.',
+			'CRUD administrativo de equipes (US-05). Permite definir gerente e loja para compor o vinculo basico entre usuario, equipe e loja.',
 	})
 	@ApiCreatedResponseEnvelope(TeamResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)

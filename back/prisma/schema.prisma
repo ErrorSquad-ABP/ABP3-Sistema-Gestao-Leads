@@ -37,7 +37,9 @@ model Team {
   id          String   @id @default(uuid()) @db.Uuid
   name        String
   managerId   String?  @db.Uuid
+  storeId     String?  @db.Uuid
   manager     User?    @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
+  store       Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
   users       User[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -46,6 +48,7 @@ model Team {
 model Store {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
+  teams     Team[]
   leads     Lead[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

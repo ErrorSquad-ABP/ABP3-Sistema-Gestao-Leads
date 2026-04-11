@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { StoreRepositoryFactory } from '../stores/infrastructure/persistence/factories/store-repository.factory.js';
 import { UserRepositoryFactory } from '../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { CreateTeamUseCase } from './application/use-cases/create-team.use-case.js';
 import { DeleteTeamUseCase } from './application/use-cases/delete-team.use-case.js';
@@ -15,6 +16,7 @@ import { TeamController } from './presentation/controllers/team.controller.js';
 	providers: [
 		TeamFactory,
 		TeamRepositoryFactory,
+		StoreRepositoryFactory,
 		UserRepositoryFactory,
 		CreateTeamUseCase,
 		UpdateTeamUseCase,

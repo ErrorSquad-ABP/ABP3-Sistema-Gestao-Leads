@@ -26,6 +26,17 @@ class UpdateTeamValidator {
 	@ValidateIf((_, value) => value !== null && value !== undefined)
 	@IsUUID()
 	managerId?: string | null;
+
+	@ApiPropertyOptional({
+		format: 'uuid',
+		nullable: true,
+		description:
+			'Loja vinculada a equipe; omita para manter o valor atual ou use null para remover o vinculo.',
+	})
+	@IsOptional()
+	@ValidateIf((_, value) => value !== null && value !== undefined)
+	@IsUUID()
+	storeId?: string | null;
 }
 
 export { UpdateTeamValidator };

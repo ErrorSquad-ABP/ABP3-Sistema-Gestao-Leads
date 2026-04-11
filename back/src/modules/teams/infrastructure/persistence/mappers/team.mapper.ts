@@ -9,6 +9,7 @@ class TeamMapper {
 			Uuid.parse(record.id),
 			Name.create(record.name),
 			record.managerId === null ? null : Uuid.parse(record.managerId),
+			record.storeId === null ? null : Uuid.parse(record.storeId),
 		);
 	}
 
@@ -17,6 +18,7 @@ class TeamMapper {
 			id: team.id.value,
 			name: team.name.value,
 			managerId: team.managerId?.value ?? null,
+			storeId: team.storeId?.value ?? null,
 		};
 	}
 }

@@ -7,6 +7,7 @@ class TeamPresenter {
 			id: team.id.value,
 			name: team.name.value,
 			managerId: team.managerId?.value ?? null,
+			storeId: team.storeId?.value ?? null,
 		} as TeamResponseDto;
 	}
 

@@ -18,6 +18,16 @@ class CreateTeamValidator {
 	@ValidateIf((_, value) => value !== null && value !== undefined)
 	@IsUUID()
 	managerId!: string | null;
+
+	@ApiPropertyOptional({
+		format: 'uuid',
+		nullable: true,
+		description:
+			'Loja vinculada a equipe; omita ou use null para equipe ainda sem loja definida.',
+	})
+	@ValidateIf((_, value) => value !== null && value !== undefined)
+	@IsUUID()
+	storeId!: string | null;
 }
 
 export { CreateTeamValidator };

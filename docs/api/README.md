@@ -45,7 +45,7 @@ Prefixo inicial sugerido:
 - `teams` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
 - `stores` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
 - Os endpoints de `PATCH` em `teams` e `stores` aceitam atualizacao parcial e retornam `400` quando nenhum campo e enviado.
-- `teams` valida previamente `managerId` e aceita apenas usuarios com papel compativel com gerencia.
+- `teams` valida previamente `managerId` e `storeId`, aceitando apenas usuarios com papel compativel com gerencia e lojas existentes para fechar o vinculo organizacional basico.
 - `stores` retorna conflito de negocio ao tentar excluir loja ainda vinculada a leads.
 
 ## Proximos passos

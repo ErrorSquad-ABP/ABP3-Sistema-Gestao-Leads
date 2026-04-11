@@ -13,6 +13,14 @@ class TeamResponseDto {
 		description: 'Usuario gerente responsavel pela equipe.',
 	})
 	managerId!: string | null;
+
+	@ApiPropertyOptional({
+		format: 'uuid',
+		nullable: true,
+		description:
+			'Loja vinculada a equipe para compor a estrutura organizacional.',
+	})
+	storeId!: string | null;
 }
 
 export { TeamResponseDto };

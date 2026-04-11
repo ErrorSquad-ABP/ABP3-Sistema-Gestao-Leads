@@ -16,6 +16,7 @@ import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not
 import { StoreHasLinkedLeadsError } from '../../../modules/stores/domain/errors/store-has-linked-leads.error.js';
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
 import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
+import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
 import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
 import { UserInvalidTeamError } from '../../../modules/users/domain/errors/user-invalid-team.error.js';
@@ -175,6 +176,15 @@ class DomainErrorFilter implements ExceptionFilter {
 		}
 
 		if (exception instanceof TeamInvalidManagerError) {
+			return {
+				status: HttpStatus.BAD_REQUEST,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
+		if (exception instanceof TeamInvalidStoreError) {
 			return {
 				status: HttpStatus.BAD_REQUEST,
 				body: this.toErrorEnvelope(exception.message, [

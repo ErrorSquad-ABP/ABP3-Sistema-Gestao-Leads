@@ -19,6 +19,7 @@ class TeamPrismaRepository implements ITeamRepository {
 				id: record.id,
 				name: record.name,
 				managerId: record.managerId,
+				storeId: record.storeId,
 			},
 		});
 		return TeamMapper.toDomain(created);
@@ -30,6 +31,7 @@ class TeamPrismaRepository implements ITeamRepository {
 			data: {
 				name: record.name,
 				managerId: record.managerId,
+				storeId: record.storeId,
 			},
 			where: { id: record.id },
 		});
