@@ -29,6 +29,43 @@ class Customer extends AggregateRoot {
 		this.phone = phone;
 		this.cpf = cpf;
 	}
+
+	/** Compara estado persistível (evita `update` no banco quando não há mudança real). */
+	static sameState(a: Customer, b: Customer): boolean {
+		if (!a.id.equals(b.id)) {
+			return false;
+		}
+		if (!a.name.equals(b.name)) {
+			return false;
+		}
+
+		// Email comparison
+		if (a.email === null && b.email === null) {
+			// both null - same
+		} else if (a.email === null || b.email === null) {
+			return false; // one null, one not - different
+		} else if (!a.email.equals(b.email)) {
+			return false; // both non-null but different - different
+		}
+
+		// Phone comparison
+		if (a.phone === null && b.phone === null) {
+			// both null - same
+		} else if (a.phone === null || b.phone === null) {
+			return false; // one null, one not - different
+		} else if (!a.phone.equals(b.phone)) {
+			return false; // both non-null but different - different
+		}
+
+		// CPF comparison
+		if (a.cpf === null && b.cpf === null) {
+			return true; // both null - same
+		}
+		if (a.cpf === null || b.cpf === null) {
+			return false; // one null, one not - different
+		}
+		return a.cpf.equals(b.cpf); // both non-null - compare
+	}
 }
 
 export { Customer };
