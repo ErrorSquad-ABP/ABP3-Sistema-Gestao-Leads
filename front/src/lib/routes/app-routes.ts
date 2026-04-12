@@ -7,7 +7,10 @@ const appRoutes = {
 	},
 	app: {
 		root: '/app',
+		customers: '/app/customers',
 		leads: '/app/leads',
+		stores: '/app/stores',
+		teams: '/app/teams',
 		users: '/app/users',
 		dashboard: {
 			operational: '/app/dashboard/operational',

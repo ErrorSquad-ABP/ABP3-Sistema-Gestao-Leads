@@ -20,6 +20,13 @@ async function login(input: LoginInput): Promise<LoginResponse> {
 	return loginResponseSchema.parse(payload);
 }
 
+async function logout(): Promise<void> {
+	await apiFetch('/api/auth/logout', {
+		method: 'POST',
+		body: {},
+	});
+}
+
 type FetchCurrentUserOptions = {
 	signal?: AbortSignal;
 };
@@ -44,4 +51,4 @@ async function fetchCurrentUser(
 	}
 }
 
-export { fetchCurrentUser, login };
+export { fetchCurrentUser, login, logout };
