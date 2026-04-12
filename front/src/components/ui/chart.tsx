@@ -39,6 +39,10 @@ function useChart() {
 	return context;
 }
 
+function getChartConfigEntry(config: ChartConfig, key: string) {
+	return Object.entries(config).find(([configKey]) => configKey === key)?.[1];
+}
+
 function ChartContainer({
 	id,
 	className,
@@ -152,8 +156,7 @@ function ChartTooltipContent({
 		const itemConfig = getPayloadConfigFromPayload(config, item, key);
 		let value = itemConfig?.label;
 		if (!labelKey && typeof label === 'string') {
-			// eslint-disable-next-line security/detect-object-injection
-			value = config[label]?.label ?? label;
+			value = getChartConfigEntry(config, label)?.label ?? label;
 		}
 
 		if (labelFormatter) {
@@ -357,13 +360,10 @@ function getPayloadConfigFromPayload(
 		] as string;
 	}
 
-	if (configLabelKey in config) {
-		// eslint-disable-next-line security/detect-object-injection
-		return config[configLabelKey];
-	}
-
-	// eslint-disable-next-line security/detect-object-injection
-	return config[key];
+	return (
+		getChartConfigEntry(config, configLabelKey) ??
+		getChartConfigEntry(config, key)
+	);
 }
 
 export {
