@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import AppSidebar from '@/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar';
 import { requireAuthenticatedUser } from '@/lib/auth/session';
 
 type ProtectedAppLayoutProps = {
@@ -7,9 +8,9 @@ type ProtectedAppLayoutProps = {
 };
 
 async function ProtectedAppLayout({ children }: ProtectedAppLayoutProps) {
-	await requireAuthenticatedUser();
+	const currentUser = await requireAuthenticatedUser();
 
-	return children;
+	return <AppSidebar currentUser={currentUser}>{children}</AppSidebar>;
 }
 
 export default ProtectedAppLayout;

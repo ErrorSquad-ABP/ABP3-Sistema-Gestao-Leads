@@ -44,4 +44,10 @@ async function fetchCurrentUser(
 	}
 }
 
-export { fetchCurrentUser, login };
+async function logout() {
+	await apiFetch('/api/auth/logout', {
+		method: 'POST',
+	});
+}
+
+export { fetchCurrentUser, login, logout };
