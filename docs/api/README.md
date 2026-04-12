@@ -1,85 +1,46 @@
 # API REST
 
-## Direção inicial
+## Estado atual (contrato vigente)
 
-A API será uma aplicação `NestJS` separada, orientada a recursos, com versionamento por prefixo e contratos explícitos entre `front` e `back`.
+A API é a aplicação **NestJS** em `back/`, com prefixo global **`/api`**.
 
-Prefixo inicial sugerido:
+- **OpenAPI**: `GET /api/docs-json`; Swagger UI em `/api/docs`; Scalar em `/api/scalar`.
+- **Respostas JSON com corpo**: envelope `{ success, message, data, errors }` (interceptor global + filtro de erros).
+- **Autenticação**: access JWT (cookie HttpOnly e/ou `Authorization: Bearer`); refresh opaco em cookie; ver `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`.
+- **Persistência**: **Prisma** + PostgreSQL; senhas com **Argon2**.
+- **Autorização**: guard de autenticação **global** (`GlobalAuthGuard`) + decorador `@Roles()` com papéis canónicos (`ATTENDANT`, `MANAGER`, `GENERAL_MANAGER`, `ADMINISTRATOR`).
+- **Nota sobre `v1`**: existe `GET /api/v1` (resumo do sistema). Os recursos REST (`/api/users`, `/api/leads`, …) **não** usam o prefixo `/api/v1/` no path.
 
-```text
-/api/v1
-```
+Documentação histórica que usava `/api/v1` em todos os recursos, `PUT /auth/credentials`, papéis `ADMIN` / `MANAGER_GERAL` ou respostas sem envelope foi **substituída** pelos ficheiros abaixo, alinhados ao repositório.
 
-## Recursos previstos
+## Recursos previstos (produto)
 
-- `/auth`
-- `/users`
-- `/teams`
-- `/stores`
-- `/customers`
-- `/leads`
-- `/negotiations`
-- `/dashboards`
-- `/audit-logs`
+- `/auth`, `/users`, `/teams`, `/stores`, `/customers`, `/leads`, `/negotiations`, `/dashboards`, `/audit-logs`
+
+Nem todos têm controllers HTTP nesta fase; ver [endpoints-sprint-1.md](./endpoints-sprint-1.md).
 
 ## Regras operacionais
 
-- JWT obrigatório para rotas protegidas.
-- RBAC aplicado no backend conforme papel do usuário.
-- Filtros temporais validados no servidor.
-- Logs de acesso e operações com data, hora e usuário responsável.
-- Comunicação com o frontend exclusivamente por `HTTP/JSON`.
+- JWT (access) para rotas protegidas; rotas marcadas com `@Public()` não exigem token.
+- RBAC no backend; validação de papel via `@Roles()` quando aplicável.
+- Comunicação com o frontend por `HTTP/JSON`; CORS com `credentials` quando há cookies.
 
-## Convenções propostas
+## Documentação de endpoints
 
-- Respostas com payload consistente e códigos HTTP semânticos.
-- Erros de domínio desacoplados da tecnologia de transporte.
-- Paginação e filtros sempre explícitos em query params.
-- Recursos analíticos separados dos recursos transacionais quando necessário.
-- Controllers do Nest funcionando apenas como adaptação HTTP, sem concentrar regra de negócio.
-- Decorators do Nest usados para roteamento, documentação e composição dos contratos da API.
-- Swagger disponível para documentação técnica inicial da API.
+### Começar por aqui
 
-## Documentação de Endpoints
+**[SPRINT-1-ENDPOINTS-SUMMARY.md](./SPRINT-1-ENDPOINTS-SUMMARY.md)** — Índice rápido e links.
 
-### 🚀 Comece Por Aqui
+### Sprint 1 — Detalhe
 
-**[SPRINT-1-ENDPOINTS-SUMMARY.md](./SPRINT-1-ENDPOINTS-SUMMARY.md)** — Sumário visual com links rápidos, visão geral de todos os 31 endpoints e roteiro para backend/frontend.
+- **[Contratos mínimos (vigentes)](./endpoints-sprint-1.md)** — Rotas e contratos alinhados ao código em `back/`.
+- **[Rastreabilidade](./traceability-endpoints-to-requirements.md)** — US-01 a US-07, RF/RNF (com nota onde a API ainda não cobre o requisito).
+- **[Guia de implementação](./implementation-guide-sprint-1.md)** — Padrão do repositório: módulos em `modules/*`, use cases, Prisma, guard global.
 
-### Sprint 1 — Documentação Detalhada
-
-- **[Contratos Mínimos de Endpoints da Sprint 1](./endpoints-sprint-1.md)** — Especificação completa dos endpoints necessários para US-01 a US-07, com:
-  - Métodos HTTP e rotas
-  - Contratos de requisição e resposta
-  - Códigos de status HTTP
-  - Autenticação e autorização requerida
-  - Validações e restrições
-  - Tratamento de erros padrão
-
-- **[Rastreabilidade: Endpoints → User Stories → Requisitos](./traceability-endpoints-to-requirements.md)** — Mapa de rastreabilidade que vincula:
-  - Endpoints aos requisitos funcionais (RF) e não-funcionais (RNF)
-  - User stories às dependências e sequência de implementação
-  - Checklist de alinhamento técnico para frontend, backend e revisão
-
-- **[Guia Prático: Implementação de Endpoints da Sprint 1](./implementation-guide-sprint-1.md)** — Roteiro executável para o time de backend:
-  - Roadmap de implementação com fases e estimativas
-  - Checklist de validação por endpoint
-  - Padrão de implementação recomendado (NestJS + DDD)
-  - Ordem recomendada de execução
-  - Testes unitários e integração
-  - Checklist final da sprint
-
-Baseado em: `US-01`, `US-02`, `US-03`, `US-04`, `US-05`, `US-06`, `US-07`
-
-### Sprints futuras
-
-- [Endpoint documentation for Sprint 2 (em desenvolvimento)]
-- [Endpoint documentation for Sprint 3 (em desenvolvimento)]
+Baseado em: `US-01` … `US-07`.
 
 ## Próximos passos
 
-1. ✅ Definir contratos mínimos da Sprint 1 — [Consultar endpoints-sprint-1.md](./endpoints-sprint-1.md)
-2. Implementar controllers e endpoints conforme contratos
-3. Integrar Swagger com decorators do NestJS para documentação automática
-4. Validar contratos com frontend e time técnico
-5. Criar documentação de endpoints por módulo (iterativo com desenvolvimento)
+1. Manter `endpoints-sprint-1.md` e OpenAPI sincronizados após mudanças em controllers.
+2. Implementar rotas em falta (US-02 dedicada, US-05, US-06) seguindo as convenções deste README.
+3. Validar integração com o frontend contra `/api/docs-json` e testes.
