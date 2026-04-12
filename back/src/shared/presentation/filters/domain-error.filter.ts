@@ -10,6 +10,9 @@ import type { Request, Response } from 'express';
 
 import { InvalidCredentialsError } from '../../../modules/auth/domain/errors/invalid-credentials.error.js';
 import { RefreshTokenInvalidError } from '../../../modules/auth/domain/errors/refresh-token-invalid.error.js';
+import { CustomerCpfAlreadyExistsError } from '../../../modules/customers/domain/errors/customer-cpf-already-exists.error.js';
+import { CustomerEmailAlreadyExistsError } from '../../../modules/customers/domain/errors/customer-email-already-exists.error.js';
+import { CustomerNotFoundError } from '../../../modules/customers/domain/errors/customer-not-found.error.js';
 import { LeadAlreadyConvertedError } from '../../../modules/leads/domain/errors/lead-already-converted.error.js';
 import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
@@ -214,7 +217,28 @@ class DomainErrorFilter implements ExceptionFilter {
 			};
 		}
 
+		if (exception instanceof CustomerNotFoundError) {
+			return {
+				status: HttpStatus.NOT_FOUND,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
 		if (exception instanceof UserEmailAlreadyExistsError) {
+			return {
+				status: HttpStatus.CONFLICT,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
+		if (
+			exception instanceof CustomerEmailAlreadyExistsError ||
+			exception instanceof CustomerCpfAlreadyExistsError
+		) {
 			return {
 				status: HttpStatus.CONFLICT,
 				body: this.toErrorEnvelope(exception.message, [

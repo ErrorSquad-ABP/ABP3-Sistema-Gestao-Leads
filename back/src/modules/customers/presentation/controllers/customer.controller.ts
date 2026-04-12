@@ -13,8 +13,10 @@ import {
 import {
 	ApiBadRequestResponse,
 	ApiBearerAuth,
+	ApiConflictResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
+	ApiNotFoundResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
@@ -52,6 +54,16 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
 };
 
+const NOT_FOUND_CUSTOMER = {
+	description:
+		'Cliente não encontrado (envelope de erro; código `customer.not_found`).',
+};
+
+const CONFLICT_CUSTOMER = {
+	description:
+		'E-mail ou CPF já cadastrado para outro cliente (`customer.email_already_exists` ou `customer.cpf_already_exists`).',
+};
+
 @ApiBearerAuth()
 @ApiTags('customers')
 @Controller('customers')
@@ -68,6 +80,7 @@ class CustomerController {
 	@ApiOperation({ summary: 'Criar cliente' })
 	@ApiCreatedResponseEnvelope(CustomerResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiConflictResponse(CONFLICT_CUSTOMER)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async create(@Body() body: CreateCustomerValidator) {
 		const customer = await this.createCustomerUseCase.execute({
@@ -95,6 +108,7 @@ class CustomerController {
 	@ApiBadRequestResponse({
 		description: 'UUID inválido no parâmetro de rota.',
 	})
+	@ApiNotFoundResponse(NOT_FOUND_CUSTOMER)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async findById(@Param('id', ParseUUIDPipe) id: string) {
 		const customer = await this.findCustomerUseCase.execute(id);
@@ -106,6 +120,8 @@ class CustomerController {
 	@ApiParam({ name: 'id', format: 'uuid' })
 	@ApiOkResponseEnvelope(CustomerResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiNotFoundResponse(NOT_FOUND_CUSTOMER)
+	@ApiConflictResponse(CONFLICT_CUSTOMER)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
 		@Param('id', ParseUUIDPipe) id: string,
@@ -131,6 +147,7 @@ class CustomerController {
 	@ApiBadRequestResponse({
 		description: 'UUID inválido no parâmetro de rota.',
 	})
+	@ApiNotFoundResponse(NOT_FOUND_CUSTOMER)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
 		await this.deleteCustomerUseCase.execute(id);

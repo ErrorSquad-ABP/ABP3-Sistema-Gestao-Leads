@@ -4,10 +4,12 @@ import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Cpf } from '../../../../shared/domain/value-objects/cpf.value-object.js';
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
-import type { CustomerFactory } from '../../domain/factories/customer.factory.js';
 import { CustomerCpfAlreadyExistsError } from '../../domain/errors/customer-cpf-already-exists.error.js';
 import { CustomerEmailAlreadyExistsError } from '../../domain/errors/customer-email-already-exists.error.js';
-import type { CustomerRepositoryFactory } from '../../infrastructure/persistence/factories/customer-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest DI — classes must exist at runtime for constructor metadata
+import { CustomerFactory } from '../../domain/factories/customer.factory.js';
+// biome-ignore lint/style/useImportType: Nest DI — classes must exist at runtime for constructor metadata
+import { CustomerRepositoryFactory } from '../../infrastructure/persistence/factories/customer-repository.factory.js';
 import type { CreateCustomerDto } from '../dto/create-customer.dto.js';
 
 @Injectable()
