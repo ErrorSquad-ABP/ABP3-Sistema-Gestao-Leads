@@ -24,6 +24,14 @@
 	--destructive-foreground: #ffffff;
 	--success: #eef5f1;
 	--success-foreground: #1b2430;
+	--sidebar: #f4f6f8;
+	--sidebar-foreground: #1b2430;
+	--sidebar-primary: #2d3648;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #f7ebe4;
+	--sidebar-accent-foreground: #d96c3f;
+	--sidebar-border: #d4dce6;
+	--sidebar-ring: rgba(45, 54, 72, 0.22);
 	--radius: 1rem;
 }
 
@@ -50,6 +58,14 @@
 	--color-destructive-foreground: var(--destructive-foreground);
 	--color-success: var(--success);
 	--color-success-foreground: var(--success-foreground);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
 	--radius-sm: calc(var(--radius) - 0.25rem);
 	--radius-md: calc(var(--radius) - 0.125rem);
 	--radius-lg: var(--radius);

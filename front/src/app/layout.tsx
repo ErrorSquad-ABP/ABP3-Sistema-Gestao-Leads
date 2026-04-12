@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Providers } from '@/lib/query/providers';
 
 import './styles.css';
@@ -27,7 +28,9 @@ function RootLayout({ children }: RootLayoutProps) {
 			<body
 				className={`${inter.className} min-h-screen bg-background font-sans text-foreground antialiased`}
 			>
-				<Providers>{children}</Providers>
+				<TooltipProvider>
+					<Providers>{children}</Providers>
+				</TooltipProvider>
 			</body>
 		</html>
 	);
