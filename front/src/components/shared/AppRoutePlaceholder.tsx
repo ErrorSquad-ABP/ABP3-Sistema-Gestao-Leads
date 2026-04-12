@@ -1,5 +1,7 @@
-import { ArrowUpRight, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowUpRight, ShieldCheck, UserRoundCog } from 'lucide-react';
 
+import { buttonVariants } from '@/components/ui/button';
 import {
 	Card,
 	CardContent,
@@ -7,6 +9,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
+import { appRoutes } from '@/lib/routes/app-routes';
+import { cn } from '@/lib/utils';
 
 type AppRoutePlaceholderProps = {
 	title: string;
@@ -34,6 +38,15 @@ function AppRoutePlaceholder({ title, description }: AppRoutePlaceholderProps) {
 					<div className="inline-flex items-center gap-2 font-medium text-foreground">
 						<ArrowUpRight className="size-4 text-primary" />
 						Destino inicial preparado para a próxima etapa do frontend.
+					</div>
+					<div className="flex flex-wrap gap-3">
+						<Link
+							className={cn(buttonVariants(), 'h-10 rounded-md px-4')}
+							href={appRoutes.app.profile}
+						>
+							<UserRoundCog className="size-4" />
+							Ir para meu perfil
+						</Link>
 					</div>
 				</CardContent>
 			</Card>
