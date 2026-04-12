@@ -73,50 +73,21 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 ---
 
-### 1.2 PUT `/api/v1/auth/credentials`
+### 1.2 PATCH `/api/v1/auth/me/email` e PATCH `/api/v1/auth/me/password`
 
 **User Story**: `US-02` - Permitir atualização do próprio e-mail e da própria senha
 
-**Descrição**: Atualiza e-mail e/ou senha do usuário autenticado.
+⚠️ **STATUS**: Endpoints ainda não implementados no backend
+
+**Descrição Esperada**: Atualizar e-mail e/ou senha do usuário autenticado separadamente.
 
 **Autenticação**: JWT obrigatório
 
-**Request**:
-```json
-{
-  "currentPassword": "string (obrigatório para validação)",
-  "email": "string (opcional, novo e-mail)",
-  "newPassword": "string (opcional, mínimo 8 caracteres)"
-}
-```
+**Nota**: A arquitetura atual prevê duas rotas separadas:
+- `PATCH /api/v1/auth/me/email`: para atualização de e-mail
+- `PATCH /api/v1/auth/me/password`: para atualização de senha
 
-**Response (200 - Sucesso)**:
-```json
-{
-  "message": "Credentials updated successfully",
-  "user": {
-    "id": "string (UUID)",
-    "email": "string (novo e-mail se atualizado)",
-    "updatedAt": "string (ISO 8601)"
-  }
-}
-```
-
-**Response (400 - Validação)**:
-```json
-{
-  "error": "Current password is incorrect",
-  "code": "AUTH_INVALID_PASSWORD"
-}
-```
-
-**Response (401 - Não autenticado)**:
-```json
-{
-  "error": "JWT token invalid or expired",
-  "code": "AUTH_TOKEN_INVALID"
-}
-```
+Estas rotas serão implementadas conforme progresso da sprint. Consulte a branch `develop` ou a tasks `S1-AUTH-05`, `S1-AUTH-06`, `S1-AUTH-07` para acompanhar o status de implementação.
 
 ---
 
@@ -130,7 +101,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN` ou `MANAGER_GERAL` apenas
+**Autorização**: `ADMIN` ou `GENERAL_MANAGER` apenas
 
 **Request**:
 ```json
@@ -183,7 +154,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN` vê todos; `MANAGER_GERAL` vê da loja; `MANAGER` vê da equipe; `ATTENDANT` vê apenas a si mesmo
+**Autorização**: `ADMIN` vê todos; `GENERAL_MANAGER` vê da loja; `MANAGER` vê da equipe; `ATTENDANT` vê apenas a si mesmo
 
 **Query Params**:
 - `offset` (number, opcional, padrão 0)
@@ -260,7 +231,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN`, `MANAGER_GERAL` ou gerenciador da equipe
+**Autorização**: `ADMIN`, `GENERAL_MANAGER` ou gerenciador da equipe
 
 **Path Params**:
 - `id` (string UUID, obrigatório)
@@ -299,7 +270,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN` ou `MANAGER_GERAL` apenas
+**Autorização**: `ADMIN` ou `GENERAL_MANAGER` apenas
 
 **Path Params**:
 - `id` (string UUID, obrigatório)
@@ -319,6 +290,12 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 ## Team Module (US-05)
 
+⚠️ **STATUS**: Endpoints de Teams ainda não implementados no backend.
+
+**Módulo existente em**: `back/src/modules/teams/` (domínio e infraestrutura)
+**Controllers HTTP**: Não disponível nesta sprint
+**Status de Implementação**: Aguardando desenvolvimento dos controllers e apresentação REST
+
 ### 3.1 POST `/api/v1/teams`
 
 **User Story**: `US-05` - Criar módulo de equipes
@@ -327,7 +304,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN` ou `MANAGER_GERAL` apenas
+**Autorização**: `ADMIN` ou `GENERAL_MANAGER` apenas
 
 **Request**:
 ```json
@@ -359,7 +336,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN` vê todas; `MANAGER_GERAL` vê da loja; outros veem apenas a própria equipe
+**Autorização**: `ADMIN` vê todas; `GENERAL_MANAGER` vê da loja; outros veem apenas a própria equipe
 
 **Query Params**:
 - `offset` (number, opcional)
@@ -421,7 +398,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN` ou `MANAGER_GERAL` apenas
+**Autorização**: `ADMIN` ou `GENERAL_MANAGER` apenas
 
 **Path Params**:
 - `id` (string UUID, obrigatório)
@@ -448,6 +425,12 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 ---
 
 ## Store Module (US-05)
+
+⚠️ **STATUS**: Endpoints de Stores ainda não implementados no backend.
+
+**Módulo existente em**: `back/src/modules/stores/` (domínio e infraestrutura)
+**Controllers HTTP**: Não disponível nesta sprint
+**Status de Implementação**: Aguardando desenvolvimento dos controllers e apresentação REST
 
 ### 4.1 POST `/api/v1/stores`
 
@@ -591,6 +574,12 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 ## Customer Module (US-06)
 
+⚠️ **STATUS**: Endpoints de Customers ainda não implementados no backend.
+
+**Módulo existente em**: `back/src/modules/customers/` (domínio e infraestrutura)
+**Controllers HTTP**: Não disponível nesta sprint
+**Status de Implementação**: Aguardando desenvolvimento dos controllers e apresentação REST
+
 ### 5.1 POST `/api/v1/customers`
 
 **User Story**: `US-06` - Criar módulo de clientes
@@ -599,7 +588,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN`, `MANAGER_GERAL`, `MANAGER` ou `ATTENDANT` conforme escopo
+**Autorização**: `ADMIN`, `GENERAL_MANAGER`, `MANAGER` ou `ATTENDANT` conforme escopo
 
 **Request**:
 ```json
@@ -758,13 +747,13 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 
 **Autenticação**: JWT obrigatório
 
-**Autorização**: `ADMIN`, `MANAGER_GERAL`, `MANAGER`, `ATTENDANT` (preenche como responsável)
+**Autorização**: `ADMIN`, `GENERAL_MANAGER`, `MANAGER`, `ATTENDANT` (preenche como responsável)
 
 **Request**:
 ```json
 {
   "customerId": "string (UUID, obrigatório)",
-  "origin": "string (enum: PHONE, EMAIL, WHATSAPP, WEBSITE, REFERRAL, obrigatório)",
+  "origin": "string (enum: WEBSITE, WHATSAPP, PHONE, WALK_IN, INDICATION, OTHER, INSTAGRAM, obrigatório)",
   "storeId": "string (UUID, obrigatório)",
   "importance": "string (enum: LOW, MEDIUM, HIGH, obrigatório)",
   "description": "string (opcional, notas iniciais)",
@@ -803,7 +792,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 **Autorização**:
 - `ATTENDANT`: vê apenas seus próprios leads
 - `MANAGER`: vê leads de sua equipe
-- `MANAGER_GERAL`: vê leads de sua loja
+- `GENERAL_MANAGER`: vê leads de sua loja
 - `ADMIN`: vê todos
 
 **Query Params**:
@@ -934,17 +923,19 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 ### Roles (Papéis)
 
 - `ADMIN`: Acesso total ao sistema
-- `MANAGER_GERAL`: Gerente geral de loja
+- `GENERAL_MANAGER`: Gerente geral de loja
 - `MANAGER`: Gerente de equipe
 - `ATTENDANT`: Atendente/operacional
 
 ### Lead Origin
 
-- `PHONE`: Telefonema
-- `EMAIL`: E-mail
+- `WEBSITE`: Website/Portal
 - `WHATSAPP`: WhatsApp
-- `WEBSITE`: Website
-- `REFERRAL`: Indicação
+- `PHONE`: Telefonema
+- `WALK_IN`: Visita presencial/Entrada direta
+- `INDICATION`: Indicação
+- `OTHER`: Outro
+- `INSTAGRAM`: Instagram
 
 ### Lead Importance
 
@@ -952,11 +943,13 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 - `MEDIUM`: Média
 - `HIGH`: Alta
 
-### Lead Status (Mínimo para Sprint 1)
+### Lead Status
 
 - `NEW`: Novo
-- `IN_PROGRESS`: Em andamento
+- `CONTACTED`: Contatado
 - `QUALIFIED`: Qualificado
+- `NEGOTIATING`: Em negociação
+- `CONVERTED`: Convertido
 - `LOST`: Perdido
 
 ---
@@ -1020,7 +1013,7 @@ Facilitar o alinhamento entre frontend, backend e revisão técnica, estabelecen
 2. **Escopo de Dados**: Além da autorização de rota, aplicar filtros de escopo:
    - `ATTENDANT`: vê apenas seus dados
    - `MANAGER`: vê dados da equipe
-   - `MANAGER_GERAL`: vê dados da loja
+   - `GENERAL_MANAGER`: vê dados da loja
    - `ADMIN`: vê tudo
 
 3. **Paginação**: Implementar com `offset` e `limit`. Padrão mínimo: 10 registros por página.
