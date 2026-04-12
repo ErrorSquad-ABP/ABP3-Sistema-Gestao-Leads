@@ -150,11 +150,11 @@ function ChartTooltipContent({
 		const [item] = payload;
 		const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`;
 		const itemConfig = getPayloadConfigFromPayload(config, item, key);
-		const value =
-			!labelKey && typeof label === 'string'
-				// eslint-disable-next-line security/detect-object-injection
-				? (config[label]?.label ?? label)
-				: itemConfig?.label;
+		let value = itemConfig?.label;
+		if (!labelKey && typeof label === 'string') {
+			// eslint-disable-next-line security/detect-object-injection
+			value = config[label]?.label ?? label;
+		}
 
 		if (labelFormatter) {
 			return (
