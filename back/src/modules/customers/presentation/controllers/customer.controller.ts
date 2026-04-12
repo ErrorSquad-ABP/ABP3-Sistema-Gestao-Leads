@@ -90,9 +90,7 @@ class CustomerController {
 			cpf: body.cpf ?? null,
 		});
 
-		return {
-			data: CustomerPresenter.toResponse(customer),
-		};
+		return CustomerPresenter.toResponse(customer);
 	}
 
 	@Get()
@@ -106,9 +104,7 @@ class CustomerController {
 	async list() {
 		const customers = await this.listCustomersUseCase.execute();
 
-		return {
-			data: CustomerPresenter.toResponseMany(customers),
-		};
+		return CustomerPresenter.toResponseMany(customers);
 	}
 
 	@Get(':id')
@@ -130,9 +126,7 @@ class CustomerController {
 	async find(@Param('id', new ParseUUIDPipe()) id: string) {
 		const customer = await this.findCustomerUseCase.execute(id);
 
-		return {
-			data: CustomerPresenter.toResponse(customer),
-		};
+		return CustomerPresenter.toResponse(customer);
 	}
 
 	@Patch(':id')
@@ -167,9 +161,7 @@ class CustomerController {
 			cpf: body.cpf,
 		});
 
-		return {
-			data: CustomerPresenter.toResponse(customer),
-		};
+		return CustomerPresenter.toResponse(customer);
 	}
 
 	@Delete(':id')
