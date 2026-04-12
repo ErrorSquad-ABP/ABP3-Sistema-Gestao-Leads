@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import type { Customer } from '../../domain/entities/customer.entity.js';
+import { CustomerNotFoundError } from '../../domain/errors/customer-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { CustomerRepositoryFactory } from '../../infrastructure/persistence/factories/customer-repository.factory.js';
 
@@ -16,7 +17,7 @@ class FindCustomerUseCase {
 		const customer = await repository.findById(Uuid.parse(id));
 
 		if (!customer) {
-			throw new Error(`Customer with id ${id} not found`);
+			throw new CustomerNotFoundError(id);
 		}
 
 		return customer;

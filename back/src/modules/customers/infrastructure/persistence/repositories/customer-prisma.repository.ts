@@ -7,7 +7,20 @@ import { Name } from '../../../../../shared/domain/value-objects/name.value-obje
 import { Phone } from '../../../../../shared/domain/value-objects/phone.value-object.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { Customer } from '../../../domain/entities/customer.entity.js';
+import { CustomerCpfAlreadyExistsError } from '../../../domain/errors/customer-cpf-already-exists.error.js';
+import { CustomerEmailAlreadyExistsError } from '../../../domain/errors/customer-email-already-exists.error.js';
 import type { ICustomerRepository } from '../../../domain/repositories/customer.repository.js';
+
+function isPrismaKnownRequest(
+	error: unknown,
+): error is { code: string; meta?: { target?: string | string[] } } {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof (error as { code: unknown }).code === 'string'
+	);
+}
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
 type CustomerRecord = {
@@ -25,28 +38,38 @@ class CustomerPrismaRepository implements ICustomerRepository {
 	) {}
 
 	async create(customer: Customer): Promise<Customer> {
-		const created = await this.client.customer.create({
-			data: {
-				email: customer.email?.value ?? null,
-				name: customer.name.value,
-				phone: customer.phone?.value ?? null,
-				cpf: customer.cpf?.value ?? null,
-			},
-		});
-		return this.toDomain(created);
+		try {
+			const created = await this.client.customer.create({
+				data: {
+					email: customer.email?.value ?? null,
+					name: customer.name.value,
+					phone: customer.phone?.value ?? null,
+					cpf: customer.cpf?.value ?? null,
+				},
+			});
+			return this.toDomain(created);
+		} catch (error: unknown) {
+			this.rethrowPrismaCustomerUniqueErrors(error, customer);
+			throw error;
+		}
 	}
 
 	async update(customer: Customer): Promise<Customer> {
-		const updated = await this.client.customer.update({
-			data: {
-				email: customer.email?.value ?? null,
-				name: customer.name.value,
-				phone: customer.phone?.value ?? null,
-				cpf: customer.cpf?.value ?? null,
-			},
-			where: { id: customer.id.value },
-		});
-		return this.toDomain(updated);
+		try {
+			const updated = await this.client.customer.update({
+				data: {
+					email: customer.email?.value ?? null,
+					name: customer.name.value,
+					phone: customer.phone?.value ?? null,
+					cpf: customer.cpf?.value ?? null,
+				},
+				where: { id: customer.id.value },
+			});
+			return this.toDomain(updated);
+		} catch (error: unknown) {
+			this.rethrowPrismaCustomerUniqueErrors(error, customer);
+			throw error;
+		}
 	}
 
 	async delete(
@@ -104,6 +127,28 @@ class CustomerPrismaRepository implements ICustomerRepository {
 			(this.transactionContext?.client as Prisma.TransactionClient) ??
 			this.prisma
 		);
+	}
+
+	private rethrowPrismaCustomerUniqueErrors(
+		error: unknown,
+		customer: Customer,
+	): void {
+		if (!isPrismaKnownRequest(error) || error.code !== 'P2002') {
+			return;
+		}
+		const target = error.meta?.target;
+		const targets = Array.isArray(target)
+			? target
+			: target !== undefined && target !== null
+				? [String(target)]
+				: [];
+		const lowered = targets.map((t) => String(t).toLowerCase());
+		if (lowered.some((t) => t.includes('email')) && customer.email) {
+			throw new CustomerEmailAlreadyExistsError(customer.email.value);
+		}
+		if (lowered.some((t) => t.includes('cpf')) && customer.cpf) {
+			throw new CustomerCpfAlreadyExistsError(customer.cpf.value);
+		}
 	}
 }
 

@@ -13,8 +13,10 @@ import {
 import {
 	ApiBadRequestResponse,
 	ApiBearerAuth,
+	ApiConflictResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
+	ApiNotFoundResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
@@ -52,6 +54,16 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
 };
 
+const CUSTOMER_NOT_FOUND = {
+	description:
+		'Cliente não encontrado (`customer.not_found`). Envelope JSON de erro.',
+};
+
+const CUSTOMER_CONFLICT = {
+	description:
+		'Violação de unicidade: e-mail ou CPF já usado por outro cliente (`customer.email_already_exists`, `customer.cpf_already_exists`). Envelope JSON de erro.',
+};
+
 @ApiBearerAuth()
 @ApiTags('customers')
 @Controller('customers')
@@ -72,6 +84,7 @@ class CustomerController {
 	})
 	@ApiCreatedResponseEnvelope(CustomerResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiConflictResponse(CUSTOMER_CONFLICT)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async create(@Body() body: CreateCustomerValidator) {
 		const customer = await this.createCustomerUseCase.execute({
@@ -103,6 +116,7 @@ class CustomerController {
 	@ApiBadRequestResponse({
 		description: 'UUID inválido no parâmetro de rota.',
 	})
+	@ApiNotFoundResponse(CUSTOMER_NOT_FOUND)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async findById(@Param('id', ParseUUIDPipe) id: string) {
 		const customer = await this.findCustomerUseCase.execute(id);
@@ -114,6 +128,8 @@ class CustomerController {
 	@ApiParam({ name: 'id', format: 'uuid' })
 	@ApiOkResponseEnvelope(CustomerResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiNotFoundResponse(CUSTOMER_NOT_FOUND)
+	@ApiConflictResponse(CUSTOMER_CONFLICT)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
 		@Param('id', ParseUUIDPipe) id: string,
