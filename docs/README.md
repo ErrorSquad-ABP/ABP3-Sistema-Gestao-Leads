@@ -12,6 +12,8 @@ A **Wiki do GitHub** ([repositório](https://github.com/ErrorSquad-ABP/ABP3-Sist
 - `data/`: modelo de dados, DER, dicionário e estratégia de persistência orientada a Prisma.
 - `agile/`: backlog, cerimônias, Definition of Done, retrospectivas e planejamento de sprints.
 - `quality/`: fluxo de validação, critérios de CI e convenções de revisão técnica.
+- `runbooks/`: setup local, bootstrap operacional e procedimentos de subida da stack.
+- `auth/`: estado atual de autenticação, sessão e autorização.
 - `templates/`: modelos de documentação para manter consistência entre novos arquivos Markdown.
 
 ## Entregáveis previstos
@@ -40,6 +42,8 @@ A **Wiki do GitHub** ([repositório](https://github.com/ErrorSquad-ABP/ABP3-Sist
 | Sprint 1 Planning | `agile/sprint-1-planning.md` |
 | Sprints e cadência | `agile/sprints.md` |
 | Fluxo de qualidade e revisão | `quality/README.md` |
+| Runbooks operacionais | `runbooks/README.md` |
+| Estado atual de auth e RBAC | `auth/current-state.md` |
 
 ## Princípios de documentação
 
