@@ -27,8 +27,14 @@ import type { AuthConfig } from '../../../../config/auth.config.js';
 import { AUTH_CONFIG } from '../../../../config/auth-injection.token.js';
 import { env } from '../../../../config/env.js';
 import { Public } from '../../../../shared/presentation/decorators/public.decorator.js';
-import { ApiOkResponseEnvelope } from '../../../../shared/presentation/swagger/api-success-response.js';
-import { extractRefreshTokenFromRequest } from '../../../../shared/presentation/utils/request-auth.util.js';
+import {
+	ApiOkResponseEnvelope,
+	ApiOkResponseEnvelopeNullable,
+} from '../../../../shared/presentation/swagger/api-success-response.js';
+import {
+	extractAccessTokenFromRequest,
+	extractRefreshTokenFromRequest,
+} from '../../../../shared/presentation/utils/request-auth.util.js';
 import { UserResponseDto } from '../../../users/application/dto/user-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { FindUserUseCase } from '../../../users/application/use-cases/find-user.use-case.js';
@@ -46,6 +52,8 @@ import { UpdateOwnEmailUseCase } from '../../application/use-cases/update-own-em
 import { UpdateOwnPasswordUseCase } from '../../application/use-cases/update-own-password.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { AuthRateLimiterService } from '../../infrastructure/auth-rate-limiter.service.js';
+// biome-ignore lint/style/useImportType: Nest DI
+import { AuthTokenService } from '../../infrastructure/auth-token.service.js';
 import {
 	CurrentUser,
 	type JwtUser,
@@ -84,6 +92,7 @@ function refreshRateLimitTokenPart(raw: string): string {
 class AuthController {
 	constructor(
 		@Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig,
+		private readonly authTokens: AuthTokenService,
 		private readonly authRateLimiter: AuthRateLimiterService,
 		private readonly loginUseCase: LoginUseCase,
 		private readonly refreshTokensUseCase: RefreshTokensUseCase,
@@ -235,6 +244,60 @@ class AuthController {
 		const opts = this.authHttpOnlyCookieOptions();
 		res.clearCookie(this.authConfig.cookieAccessName, opts);
 		res.clearCookie(this.authConfig.cookieRefreshName, opts);
+	}
+
+	/**
+	 * Igual a `GET /auth/me` quando há access JWT válido; sem token ou com token inválido
+	 * responde **200** com `data: null` (evita 401 no browser em páginas como login).
+	 */
+	@Public()
+	@Get('auth/session')
+	@ApiOperation({
+		summary: 'Utilizador da sessão (opcional, sem 401)',
+		description:
+			'Rota pública: não passa pelo `GlobalAuthGuard`. Com access JWT válido (cookie ou `Authorization: Bearer`) devolve o mesmo corpo que `GET /auth/me`; sem token, token inválido ou utilizador inexistente devolve `data: null` e **sempre HTTP 200** — adequado a SPAs que consultam a sessão antes do login sem poluir o console com 401.',
+	})
+	@ApiOkResponseEnvelopeNullable(UserResponseDto, {
+		description:
+			'Envelope `{ success, message, data, errors }` com `data` = `UserResponseDto` ou `null`.',
+	})
+	async session(@Req() req: Request): Promise<UserResponseDto | null> {
+		const token = extractAccessTokenFromRequest(
+			req,
+			this.authConfig.cookieAccessName,
+		);
+		if (typeof token !== 'string') {
+			return null;
+		}
+
+		let payload: Awaited<ReturnType<AuthTokenService['verifyAccessToken']>>;
+		try {
+			payload = await this.authTokens.verifyAccessToken(token);
+		} catch {
+			return null;
+		}
+
+		if (
+			payload.typ !== 'access' ||
+			typeof payload.sub !== 'string' ||
+			payload.sub.length === 0 ||
+			typeof payload.jti !== 'string' ||
+			payload.jti.length === 0 ||
+			typeof payload.role !== 'string' ||
+			payload.role.length === 0
+		) {
+			return null;
+		}
+
+		try {
+			const u = await this.findUser.execute(payload.sub);
+			return UserPresenter.toResponse(u);
+		} catch (e) {
+			if (e instanceof UserNotFoundError) {
+				return null;
+			}
+			throw e;
+		}
 	}
 
 	@Get('auth/me')
