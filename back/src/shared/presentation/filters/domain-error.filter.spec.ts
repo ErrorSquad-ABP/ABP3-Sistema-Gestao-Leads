@@ -8,13 +8,28 @@ import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team
 import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { DomainErrorFilter } from './domain-error.filter.js';
 
+function mapDomainException(filter: DomainErrorFilter, exception: unknown) {
+	const mapper = Reflect.get(filter, 'mapDomainException') as (
+		error: unknown,
+	) => ReturnType<DomainErrorFilter['catch']> | {
+		status: number;
+		body: {
+			errors?: Array<{ code?: string }>;
+		};
+	} | undefined;
+
+	return mapper.call(filter, exception);
+}
+
 describe('DomainErrorFilter', () => {
 	it('maps team and store not found errors to 404', () => {
 		const filter = new DomainErrorFilter();
-		const teamMapped = filter['mapDomainException'](
+		const teamMapped = mapDomainException(
+			filter,
 			new TeamNotFoundError('11111111-1111-4111-8111-111111111111'),
 		);
-		const storeMapped = filter['mapDomainException'](
+		const storeMapped = mapDomainException(
+			filter,
 			new StoreNotFoundError('22222222-2222-4222-8222-222222222222'),
 		);
 
@@ -26,13 +41,16 @@ describe('DomainErrorFilter', () => {
 
 	it('maps business validation and conflict errors from teams and stores', () => {
 		const filter = new DomainErrorFilter();
-		const invalidManagerMapped = filter['mapDomainException'](
+		const invalidManagerMapped = mapDomainException(
+			filter,
 			new TeamInvalidManagerError('33333333-3333-4333-8333-333333333333'),
 		);
-		const invalidStoreMapped = filter['mapDomainException'](
+		const invalidStoreMapped = mapDomainException(
+			filter,
 			new TeamInvalidStoreError('44444444-4444-4444-8444-444444444444'),
 		);
-		const linkedLeadsMapped = filter['mapDomainException'](
+		const linkedLeadsMapped = mapDomainException(
+			filter,
 			new StoreHasLinkedLeadsError('55555555-5555-4555-8555-555555555555'),
 		);
 

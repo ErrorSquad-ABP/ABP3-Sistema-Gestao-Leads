@@ -148,6 +148,24 @@ class DomainErrorFilter implements ExceptionFilter {
 			};
 		}
 
+		if (exception instanceof TeamInvalidManagerError) {
+			return {
+				status: HttpStatus.BAD_REQUEST,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
+		if (exception instanceof TeamInvalidStoreError) {
+			return {
+				status: HttpStatus.BAD_REQUEST,
+				body: this.toErrorEnvelope(exception.message, [
+					{ code: exception.code, message: exception.message },
+				]),
+			};
+		}
+
 		if (exception instanceof UserNotFoundError) {
 			return {
 				status: HttpStatus.NOT_FOUND,
@@ -167,24 +185,6 @@ class DomainErrorFilter implements ExceptionFilter {
 		}
 
 		if (exception instanceof UserInvalidTeamError) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof TeamInvalidManagerError) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof TeamInvalidStoreError) {
 			return {
 				status: HttpStatus.BAD_REQUEST,
 				body: this.toErrorEnvelope(exception.message, [

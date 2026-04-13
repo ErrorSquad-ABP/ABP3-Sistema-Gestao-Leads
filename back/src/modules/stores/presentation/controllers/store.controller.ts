@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
+	ApiBearerAuth,
 	ApiConflictResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
@@ -21,6 +22,7 @@ import {
 	ApiTags,
 } from '@nestjs/swagger';
 
+import { Roles } from '../../../../shared/presentation/decorators/roles.decorator.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
@@ -58,7 +60,9 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de dominio ainda nao mapeado para status HTTP especifico.',
 };
 
+@ApiBearerAuth()
 @ApiTags('stores')
+@Roles('ADMINISTRATOR')
 @Controller('stores')
 class StoreController {
 	constructor(
