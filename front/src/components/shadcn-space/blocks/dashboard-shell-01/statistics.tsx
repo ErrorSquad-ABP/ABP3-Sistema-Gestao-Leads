@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -92,7 +93,7 @@ const StatisticsBlock = ({
 							</div>
 							<div className="flex items-center gap-6">
 								{mainDashboard.metrics.map((metric, index) => (
-									<div key={index} className="flex items-center gap-6">
+									<div key={metric.label} className="flex items-center gap-6">
 										<div>
 											<p className="text-xs font-normal text-muted-foreground">
 												{metric.label}
@@ -121,9 +122,9 @@ const StatisticsBlock = ({
 							</div>
 						</div>
 						{/* image */}
-						<img
+						<Image
 							src="https://images.shadcnspace.com/assets/backgrounds/stats-01.webp"
-							alt="user-img"
+							alt=""
 							width={211}
 							height={168}
 							className="absolute bottom-0 right-0 hidden sm:block"
@@ -131,8 +132,11 @@ const StatisticsBlock = ({
 					</CardContent>
 				</Card>
 			</div>
-			{secondaryStats.map((stat, index) => (
-				<div key={index} className="col-span-12 sm:col-span-6 xl:col-span-3">
+			{secondaryStats.map((stat) => (
+				<div
+					key={stat.title}
+					className="col-span-12 sm:col-span-6 xl:col-span-3"
+				>
 					<Card className="py-6 ring-0 border rounded-2xl">
 						<CardContent className="px-6 flex items-start justify-between">
 							<div className="flex flex-col gap-5 justify-between">

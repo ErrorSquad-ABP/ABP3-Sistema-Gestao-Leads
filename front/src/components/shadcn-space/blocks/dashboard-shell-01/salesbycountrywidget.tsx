@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -122,9 +123,9 @@ const SalesByCountryWidget = ({
 							</span>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							{dropdownItems.map((item, index) => (
+							{dropdownItems.map((item) => (
 								<DropdownMenuItem
-									key={index}
+									key={`${item.title}-${item.link ?? ''}`}
 									className="font-normal cursor-pointer"
 								>
 									{item.link ? (
@@ -156,7 +157,7 @@ const SalesByCountryWidget = ({
 					}}
 				>
 					{recentTransData.map((item, index) => (
-						<React.Fragment key={index}>
+						<React.Fragment key={`${item.img}-${item.title}-${item.country}`}>
 							<motion.div
 								className="flex gap-3 items-center px-6"
 								variants={{
@@ -178,7 +179,13 @@ const SalesByCountryWidget = ({
 									whileHover={{ rotate: 5, scale: 1.1 }}
 									transition={{ type: 'spring', stiffness: 400 }}
 								>
-									<img src={item.img} alt="icon" width={32} height={32} />
+									<Image
+										src={item.img}
+										alt=""
+										width={32}
+										height={32}
+										className="size-8 object-cover"
+									/>
 								</motion.div>
 								<div className="flex items-center justify-between flex-1">
 									<div>
