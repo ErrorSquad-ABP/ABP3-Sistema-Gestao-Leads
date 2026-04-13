@@ -200,18 +200,14 @@ function ChartTooltipContent({
 				{payload
 					.filter((item) => item.type !== 'none')
 					.map((item, index) => {
-						const itemKey = `${nameKey ?? item.name ?? item.dataKey ?? 'value'}`;
-						const itemConfig = getPayloadConfigFromPayload(
-							config,
-							item,
-							itemKey,
-						);
+						const key = `${nameKey ?? item.name ?? item.dataKey ?? 'value'}`;
+						const itemConfig = getPayloadConfigFromPayload(config, item, key);
 						const indicatorColor = color ?? item.payload?.fill ?? item.color;
-						const rowReactKey = `tt-${itemKey}-${String(item.dataKey ?? '')}-${String(item.value ?? '')}-${String(indicatorColor ?? '')}`;
+						const rowKey = `${String(item.dataKey)}-${String(item.name)}-${String(item.color)}-${String(item.value)}`;
 
 						return (
 							<div
-								key={rowReactKey}
+								key={rowKey}
 								className={cn(
 									'flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground',
 									indicator === 'dot' && 'items-center',
@@ -304,13 +300,13 @@ function ChartLegendContent({
 			{payload
 				.filter((item) => item.type !== 'none')
 				.map((item) => {
-					const itemKey = `${nameKey ?? item.dataKey ?? 'value'}`;
-					const itemConfig = getPayloadConfigFromPayload(config, item, itemKey);
-					const legendReactKey = `lg-${itemKey}-${String(item.color ?? '')}-${String(item.value ?? '')}`;
+					const key = `${nameKey ?? item.dataKey ?? 'value'}`;
+					const itemConfig = getPayloadConfigFromPayload(config, item, key);
+					const legendKey = `${key}-${String(item.dataKey)}-${String(item.color)}-${String(item.value)}`;
 
 					return (
 						<div
-							key={legendReactKey}
+							key={legendKey}
 							className={cn(
 								'flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground',
 							)}

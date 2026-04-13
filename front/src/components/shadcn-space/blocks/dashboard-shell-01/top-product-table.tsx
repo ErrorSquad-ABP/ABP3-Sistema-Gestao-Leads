@@ -73,7 +73,7 @@ const TopProductTable = () => {
 
 	const checkboxTableData: ProjectData[] = [
 		{
-			id: 'web-app-olivia',
+			id: 'row-1',
 			project: 'Web App Project',
 			date: '04 June 2026',
 			budget: '12,000',
@@ -87,7 +87,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-orange-400',
 		},
 		{
-			id: 'materialm-barbara',
+			id: 'row-2',
 			project: 'MaterialM Admin',
 			date: '09 January 2026',
 			budget: '8000',
@@ -101,7 +101,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-blue-500',
 		},
 		{
-			id: 'digital-marketing-leonard-1',
+			id: 'row-3',
 			project: 'Digital Marketing',
 			date: '15 April 2026',
 			budget: '15,000',
@@ -115,7 +115,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-amber-300',
 		},
 		{
-			id: 'shadcn-evelyn',
+			id: 'row-4',
 			project: 'Shadcn Space Design',
 			date: '30 March 2026',
 			budget: '1000',
@@ -129,7 +129,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-red-500',
 		},
 		{
-			id: 'graphic-tommy',
+			id: 'row-5',
 			project: 'Graphic Design',
 			date: '23 October 2026',
 			budget: '7000',
@@ -143,7 +143,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-teal-400',
 		},
 		{
-			id: 'digital-marketing-leonard-2',
+			id: 'row-6',
 			project: 'Digital Marketing',
 			date: '15 April 2026',
 			budget: '15,000',
@@ -233,7 +233,7 @@ const TopProductTable = () => {
 											<Image
 												src={item.avatar}
 												alt=""
-												className="h-9 w-9 rounded-full object-cover"
+												className="h-9 w-9 rounded-full"
 												width={36}
 												height={36}
 											/>

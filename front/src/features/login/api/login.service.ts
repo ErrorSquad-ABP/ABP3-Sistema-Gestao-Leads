@@ -28,12 +28,9 @@ async function fetchCurrentUser(
 	options: FetchCurrentUserOptions = {},
 ): Promise<AuthenticatedUser | null> {
 	try {
-		const payload = await apiFetch<unknown>('/api/auth/session', {
+		const payload = await apiFetch<unknown>('/api/auth/me', {
 			signal: options.signal,
 		});
-		if (payload === null) {
-			return null;
-		}
 		return authenticatedUserSchema.parse(payload);
 	} catch (error) {
 		if (

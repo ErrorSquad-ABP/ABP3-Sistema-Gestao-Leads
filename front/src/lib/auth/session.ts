@@ -32,7 +32,7 @@ const getCurrentUserFromRequest = cache(
 		}
 
 		const response = await fetch(
-			`${env.apiInternalUrl.replace(/\/$/, '')}/api/auth/session`,
+			`${env.apiInternalUrl.replace(/\/$/, '')}/api/auth/me`,
 			{
 				cache: 'no-store',
 				headers: {
@@ -41,6 +41,10 @@ const getCurrentUserFromRequest = cache(
 				},
 			},
 		);
+
+		if (response.status === 401 || response.status === 403) {
+			return null;
+		}
 
 		if (!response.ok) {
 			throw new Error(
@@ -56,11 +60,7 @@ const getCurrentUserFromRequest = cache(
 			'success' in payload &&
 			'data' in payload
 		) {
-			const data = (payload as { data: unknown }).data;
-			if (data === null) {
-				return null;
-			}
-			return authenticatedUserSchema.parse(data);
+			return authenticatedUserSchema.parse((payload as { data: unknown }).data);
 		}
 
 		return authenticatedUserSchema.parse(payload);
@@ -71,7 +71,7 @@ async function requireAuthenticatedUser() {
 	const currentUser = await getCurrentUserFromRequest();
 
 	if (!currentUser) {
-		redirect(appRoutes.auth.login);
+		redirect(appRoutes.system.unauthorized);
 	}
 
 	return currentUser;

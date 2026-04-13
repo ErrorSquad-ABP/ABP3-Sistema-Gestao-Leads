@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useRef } from 'react';
+import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import {
 	DropdownMenu,
@@ -157,7 +157,9 @@ const SalesByCountryWidget = ({
 					}}
 				>
 					{recentTransData.map((item, index) => (
-						<React.Fragment key={`${item.img}-${item.title}-${item.country}`}>
+						<React.Fragment
+							key={`${item.img}-${item.title}-${item.country}-${item.rank}`}
+						>
 							<motion.div
 								className="flex gap-3 items-center px-6"
 								variants={{
@@ -184,7 +186,7 @@ const SalesByCountryWidget = ({
 										alt=""
 										width={32}
 										height={32}
-										className="size-8 object-cover"
+										className="h-8 w-8"
 									/>
 								</motion.div>
 								<div className="flex items-center justify-between flex-1">
