@@ -2,7 +2,7 @@ import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { IStoreRepository } from '../../../domain/repositories/store.repository.js';
-import { StoreHasLinkedLeadsError } from '../../../domain/errors/store-has-linked-leads.error.js';
+import { StoreDeleteBlockedError } from '../../../domain/errors/store-delete-blocked.error.js';
 import { StoreMapper } from '../mappers/store.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
@@ -15,6 +15,14 @@ function isPrismaKnownRequest(
 		error !== null &&
 		'code' in error &&
 		typeof (error as { code: unknown }).code === 'string'
+	);
+}
+
+/** Violação de FK ao excluir pai (Prisma: P2003 / P2014 conforme versão). */
+function isForeignKeyViolationOnDelete(error: unknown): boolean {
+	return (
+		isPrismaKnownRequest(error) &&
+		(error.code === 'P2003' || error.code === 'P2014')
 	);
 }
 
@@ -48,8 +56,8 @@ class StorePrismaRepository implements IStoreRepository {
 		try {
 			await this.client.store.delete({ where: { id: id.value } });
 		} catch (error: unknown) {
-			if (isPrismaKnownRequest(error) && error.code === 'P2003') {
-				throw new StoreHasLinkedLeadsError(id.value);
+			if (isForeignKeyViolationOnDelete(error)) {
+				throw StoreDeleteBlockedError.fromReferentialIntegrityFailure(id.value);
 			}
 			throw error;
 		}
@@ -67,6 +75,14 @@ class StorePrismaRepository implements IStoreRepository {
 			orderBy: { createdAt: 'desc' },
 		});
 		return stores.map((store) => StoreMapper.toDomain(store));
+	}
+
+	async countBlockingReferences(id: Parameters<IStoreRepository['delete']>[0]) {
+		const [leads, teams] = await Promise.all([
+			this.client.lead.count({ where: { storeId: id.value } }),
+			this.client.team.count({ where: { storeId: id.value } }),
+		]);
+		return { leads, teams };
 	}
 
 	private get client(): PrismaClientLike {

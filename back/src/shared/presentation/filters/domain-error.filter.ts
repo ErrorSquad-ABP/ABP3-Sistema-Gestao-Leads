@@ -13,13 +13,12 @@ import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/l
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead-invalid-store.error.js';
 import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not-found.error.js';
-import { StoreHasLinkedLeadsError } from '../../../modules/stores/domain/errors/store-has-linked-leads.error.js';
+import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/store-delete-blocked.error.js';
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
 import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
 import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
 import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
-import { UserInvalidTeamError } from '../../../modules/users/domain/errors/user-invalid-team.error.js';
 import { UserNotFoundError } from '../../../modules/users/domain/errors/user-not-found.error.js';
 import { DomainValidationError } from '../../domain/errors/domain-validation.error.js';
 import type {
@@ -30,6 +29,21 @@ import type {
 /**
  * Mapeia erros de domínio e `HttpException` para o envelope `{ success, message, data, errors }`.
  * Registrado globalmente em `main.ts` via `useGlobalFilters`.
+ *
+ * Contrato HTTP (domínio → status) — manter alinhado aos casos de uso:
+ *
+ * | Classe | Status |
+ * | --- | --- |
+ * | `LeadNotFoundError` | 404 |
+ * | `LeadInvalidCustomerError`, `LeadInvalidStoreError`, `LeadInvalidOwnerError` | 400 |
+ * | `LeadAlreadyConvertedError` | 409 |
+ * | `StoreNotFoundError` | 404 |
+ * | `StoreDeleteBlockedError` | 409 |
+ * | `TeamNotFoundError` | 404 |
+ * | `TeamInvalidManagerError`, `TeamInvalidStoreError` | 400 |
+ * | `UserNotFoundError` | 404 |
+ * | `UserEmailAlreadyExistsError` | 409 |
+ * | `DomainValidationError` | 400 |
  */
 @Catch()
 class DomainErrorFilter implements ExceptionFilter {
@@ -118,79 +132,24 @@ class DomainErrorFilter implements ExceptionFilter {
 		]);
 	}
 
+	private envelopeForCodedError(
+		exception: { readonly message: string; readonly code: string },
+		status: HttpStatus,
+	): { status: number; body: ApiErrorEnvelope } {
+		return {
+			status,
+			body: this.toErrorEnvelope(exception.message, [
+				{ code: exception.code, message: exception.message },
+			]),
+		};
+	}
+
 	private mapDomainException(
 		exception: unknown,
 	): { status: number; body: ApiErrorEnvelope } | undefined {
+		// --- Leads ---
 		if (exception instanceof LeadNotFoundError) {
-			return {
-				status: HttpStatus.NOT_FOUND,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof TeamNotFoundError) {
-			return {
-				status: HttpStatus.NOT_FOUND,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof StoreNotFoundError) {
-			return {
-				status: HttpStatus.NOT_FOUND,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof TeamInvalidManagerError) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof TeamInvalidStoreError) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof UserNotFoundError) {
-			return {
-				status: HttpStatus.NOT_FOUND,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof UserEmailAlreadyExistsError) {
-			return {
-				status: HttpStatus.CONFLICT,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
-		}
-
-		if (exception instanceof UserInvalidTeamError) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
 
 		if (
@@ -198,30 +157,53 @@ class DomainErrorFilter implements ExceptionFilter {
 			exception instanceof LeadInvalidStoreError ||
 			exception instanceof LeadInvalidOwnerError
 		) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
 		}
 
 		if (exception instanceof LeadAlreadyConvertedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+
+		// --- Stores ---
+		if (exception instanceof StoreNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+
+		if (exception instanceof StoreDeleteBlockedError) {
 			return {
 				status: HttpStatus.CONFLICT,
 				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
+					{
+						code: exception.code,
+						message: exception.message,
+						details: {
+							leads: exception.leads,
+							teams: exception.teams,
+						},
+					},
 				]),
 			};
 		}
 
-		if (exception instanceof StoreHasLinkedLeadsError) {
-			return {
-				status: HttpStatus.CONFLICT,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+		// --- Teams ---
+		if (exception instanceof TeamNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+
+		if (
+			exception instanceof TeamInvalidManagerError ||
+			exception instanceof TeamInvalidStoreError
+		) {
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
+		}
+
+		// --- Users ---
+		if (exception instanceof UserNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+
+		if (exception instanceof UserEmailAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
 		}
 
 		if (exception instanceof DomainValidationError) {

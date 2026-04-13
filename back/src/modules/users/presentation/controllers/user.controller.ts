@@ -13,14 +13,18 @@ import {
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
+	ApiBearerAuth,
 	ApiConflictResponse,
+	ApiForbiddenResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
+	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+import { Roles } from '../../../../shared/presentation/decorators/roles.decorator.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
@@ -60,7 +64,19 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
 };
 
+const UNAUTHORIZED = {
+	description: 'Token Bearer ausente ou inválido.',
+};
+
+const FORBIDDEN = {
+	description: 'Papel insuficiente: operações exigem ADMINISTRATOR.',
+};
+
+@ApiBearerAuth('access-token')
 @ApiTags('users')
+@ApiUnauthorizedResponse(UNAUTHORIZED)
+@ApiForbiddenResponse(FORBIDDEN)
+@Roles('ADMINISTRATOR')
 @Controller('users')
 class UserController {
 	constructor(
@@ -89,7 +105,6 @@ class UserController {
 			email: body.email,
 			password: body.password,
 			role: body.role,
-			teamId: body.teamId ?? null,
 		});
 		return UserPresenter.toResponse(user);
 	}

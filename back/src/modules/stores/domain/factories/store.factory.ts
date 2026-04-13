@@ -6,23 +6,11 @@ type CreateStoreParams = {
 	readonly name: string;
 };
 
-type UpdateStoreParams = {
-	readonly name?: string;
-};
-
 class StoreFactory {
 	create(params: CreateStoreParams): Store {
 		return new Store(Uuid.generate(), Name.create(params.name));
 	}
-
-	update(store: Store, params: UpdateStoreParams): Store {
-		const updatedStore = new Store(store.id, store.name);
-		if (params.name !== undefined) {
-			updatedStore.changeName(Name.create(params.name));
-		}
-		return updatedStore;
-	}
 }
 
+export type { CreateStoreParams };
 export { StoreFactory };
-export type { CreateStoreParams, UpdateStoreParams };

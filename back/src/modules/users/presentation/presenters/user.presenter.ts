@@ -8,7 +8,8 @@ class UserPresenter {
 			name: user.name.value,
 			email: user.email.value,
 			role: user.role,
-			teamId: user.teamId === null ? null : user.teamId.value,
+			memberTeamIds: user.memberTeamIds.map((id) => id.value),
+			managedTeamIds: user.managedTeamIds.map((id) => id.value),
 		} satisfies UserResponseDto;
 	}
 

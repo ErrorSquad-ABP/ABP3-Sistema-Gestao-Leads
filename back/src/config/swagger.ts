@@ -14,6 +14,16 @@ function buildSwaggerConfig() {
 			].join(' '),
 		)
 		.setVersion('0.1.0')
+		.addBearerAuth(
+			{
+				type: 'http',
+				scheme: 'bearer',
+				bearerFormat: 'JWT',
+				description:
+					'JWT de sessão. `users` e `stores`: papel ADMINISTRATOR. `teams`: MANAGER, GENERAL_MANAGER ou ADMINISTRATOR (estrutura comercial), quando guards JWT estiverem ativos.',
+			},
+			'access-token',
+		)
 		.build();
 }
 

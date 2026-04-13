@@ -33,40 +33,46 @@ enum LeadStatus {
   LOST
 }
 
-model Team {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String
-  managerId   String?  @db.Uuid
-  storeId     String?  @db.Uuid
-  manager     User?    @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
-  store       Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
-  users       User[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Store {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  teams     Team[]
-  leads     Lead[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model User {
-  id           String    @id @default(uuid()) @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
   name         String
-  email        String    @unique
+  email        String   @unique
   password     String
   role         UserRole
-  teamId       String?   @db.Uuid
-  team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  managedTeams Team[]    @relation("TeamManager")
-  ownedLeads   Lead[]    @relation("LeadOwner")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+
+  memberTeams  Team[]   @relation("TeamMembers")
+  managedTeams Team[]   @relation("TeamManager")
+
+  ownedLeads   Lead[]   @relation("LeadOwner")
   auditLogs    AuditLog[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Team {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+
+  storeId     String     @db.Uuid
+  store       Store      @relation(fields: [storeId], references: [id], onDelete: Restrict)
+
+  members     User[]     @relation("TeamMembers")
+  managerId   String?    @db.Uuid
+  manager     User?      @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+
+model Store {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  teams       Team[]
+  leads       Lead[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Customer {

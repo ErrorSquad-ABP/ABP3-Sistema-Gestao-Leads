@@ -14,12 +14,14 @@ import {
 	ApiBadRequestResponse,
 	ApiBearerAuth,
 	ApiConflictResponse,
+	ApiForbiddenResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
 	ApiNotFoundResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
+	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 import { Roles } from '../../../../shared/presentation/decorators/roles.decorator.js';
@@ -60,8 +62,18 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de dominio ainda nao mapeado para status HTTP especifico.',
 };
 
-@ApiBearerAuth()
+const UNAUTHORIZED = {
+	description: 'Token Bearer ausente ou invalido.',
+};
+
+const FORBIDDEN = {
+	description: 'Papel insuficiente: operacoes exigem ADMINISTRATOR.',
+};
+
+@ApiBearerAuth('access-token')
 @ApiTags('stores')
+@ApiUnauthorizedResponse(UNAUTHORIZED)
+@ApiForbiddenResponse(FORBIDDEN)
 @Roles('ADMINISTRATOR')
 @Controller('stores')
 class StoreController {
@@ -77,7 +89,7 @@ class StoreController {
 	@ApiOperation({
 		summary: 'Criar store',
 		description:
-			'CRUD administrativo de lojas (US-05). Quando RBAC estiver ativo, deve ficar restrito a administrador.',
+			'CRUD administrativo de lojas (US-05). Exige JWT e papel ADMINISTRATOR (ver guards quando RBAC estiver ligado em runtime).',
 	})
 	@ApiCreatedResponseEnvelope(StoreResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)

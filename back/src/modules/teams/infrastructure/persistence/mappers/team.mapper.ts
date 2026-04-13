@@ -3,13 +3,24 @@ import { Name } from '../../../../../shared/domain/value-objects/name.value-obje
 import { Team } from '../../../domain/entities/team.entity.js';
 import type { TeamRecord } from '../records/team.record.js';
 
+type TeamPrismaRow = {
+	readonly id: string;
+	readonly name: string;
+	readonly storeId: string;
+	readonly managerId: string | null;
+	readonly members: readonly { readonly id: string }[];
+};
+
 class TeamMapper {
-	static toDomain(record: TeamRecord): Team {
+	static toDomain(record: TeamPrismaRow): Team {
 		return new Team(
 			Uuid.parse(record.id),
 			Name.create(record.name),
+			Uuid.parse(record.storeId),
 			record.managerId === null ? null : Uuid.parse(record.managerId),
-			record.storeId === null ? null : Uuid.parse(record.storeId),
+			record.members.map((m) => Uuid.parse(m.id)),
+			null,
+			'persistence',
 		);
 	}
 
@@ -17,8 +28,9 @@ class TeamMapper {
 		return {
 			id: team.id.value,
 			name: team.name.value,
+			storeId: team.storeId.value,
 			managerId: team.managerId?.value ?? null,
-			storeId: team.storeId?.value ?? null,
+			memberUserIds: team.memberUserIds.map((id) => id.value),
 		};
 	}
 }

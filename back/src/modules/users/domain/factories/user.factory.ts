@@ -10,15 +10,6 @@ type CreateUserParams = {
 	readonly email: string;
 	readonly passwordHash: string;
 	readonly role: string;
-	readonly teamId: string | null;
-};
-
-type UpdateUserParams = {
-	readonly name?: string;
-	readonly email?: string;
-	readonly passwordHash?: PasswordHash;
-	readonly role?: string;
-	readonly teamId?: string | null;
 };
 
 class UserFactory {
@@ -29,25 +20,11 @@ class UserFactory {
 			Email.create(params.email),
 			PasswordHash.create(params.passwordHash),
 			parseUserRole(params.role),
-			params.teamId === null ? null : Uuid.parse(params.teamId),
-		);
-	}
-
-	update(existing: User, params: UpdateUserParams): User {
-		return new User(
-			existing.id,
-			params.name !== undefined ? Name.create(params.name) : existing.name,
-			params.email !== undefined ? Email.create(params.email) : existing.email,
-			params.passwordHash ?? existing.passwordHash,
-			params.role !== undefined ? parseUserRole(params.role) : existing.role,
-			params.teamId !== undefined
-				? params.teamId === null
-					? null
-					: Uuid.parse(params.teamId)
-				: existing.teamId,
+			[],
+			[],
 		);
 	}
 }
 
-export type { CreateUserParams, UpdateUserParams };
+export type { CreateUserParams };
 export { UserFactory };

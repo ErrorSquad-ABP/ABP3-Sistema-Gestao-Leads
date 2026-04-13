@@ -1,56 +1,40 @@
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 import { Team } from '../entities/team.entity.js';
 
 type CreateTeamParams = {
 	readonly name: string;
+	readonly storeId: string;
 	readonly managerId: string | null;
-	readonly storeId: string | null;
-};
-
-type UpdateTeamParams = {
-	readonly name?: string;
-	readonly managerId?: string | null;
-	readonly storeId?: string | null;
+	/** Papel do utilizador gerente; obrigatório quando `managerId` não é null (validado no agregado). */
+	readonly managerRole: UserRole | null;
+	/** Opcional: ids de usuários que entram como membros na criação. */
+	readonly initialMemberUserIds?: readonly string[];
 };
 
 class TeamFactory {
 	create(params: CreateTeamParams): Team {
+		const memberIds =
+			params.initialMemberUserIds?.map((id) => Uuid.parse(id)) ?? [];
+		const unique: typeof memberIds = [];
+		for (const id of memberIds) {
+			if (!unique.some((u) => u.equals(id))) {
+				unique.push(id);
+			}
+		}
+
 		return new Team(
 			Uuid.generate(),
 			Name.create(params.name),
-			params.managerId ? Uuid.parse(params.managerId) : null,
-			params.storeId ? Uuid.parse(params.storeId) : null,
+			Uuid.parse(params.storeId),
+			params.managerId === null ? null : Uuid.parse(params.managerId),
+			unique,
+			params.managerRole,
+			'new',
 		);
-	}
-
-	update(team: Team, params: UpdateTeamParams): Team {
-		const updatedTeam = new Team(
-			team.id,
-			team.name,
-			team.managerId,
-			team.storeId,
-		);
-		if (params.name !== undefined) {
-			updatedTeam.changeName(Name.create(params.name));
-		}
-
-		if (params.managerId !== undefined && params.managerId !== null) {
-			updatedTeam.assignManager(Uuid.parse(params.managerId));
-		}
-		if (params.managerId === null) {
-			updatedTeam.clearManager();
-		}
-		if (params.storeId !== undefined && params.storeId !== null) {
-			updatedTeam.assignStore(Uuid.parse(params.storeId));
-		}
-		if (params.storeId === null) {
-			updatedTeam.clearStore();
-		}
-
-		return updatedTeam;
 	}
 }
 
+export type { CreateTeamParams };
 export { TeamFactory };
-export type { CreateTeamParams, UpdateTeamParams };

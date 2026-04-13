@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { USER_ROLES } from '../../../../shared/domain/enums/user-role.enum.js';
 
@@ -19,12 +19,19 @@ class UserResponseDto {
 	})
 	role!: string;
 
-	@ApiPropertyOptional({
+	@ApiProperty({
+		type: [String],
 		format: 'uuid',
-		nullable: true,
-		description: 'Equipe opcional; null se o usuário não pertence a time.',
+		description: 'Equipes das quais o usuário é membro.',
 	})
-	teamId!: string | null;
+	memberTeamIds!: string[];
+
+	@ApiProperty({
+		type: [String],
+		format: 'uuid',
+		description: 'Equipes que o usuário gerencia.',
+	})
+	managedTeamIds!: string[];
 }
 
 export { UserResponseDto };

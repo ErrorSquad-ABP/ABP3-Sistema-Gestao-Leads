@@ -3,8 +3,6 @@ import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
-// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
-import { LeadFactory } from '../../domain/factories/lead.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 
@@ -13,10 +11,7 @@ class ConvertLeadUseCase {
 	@Inject(UNIT_OF_WORK)
 	private readonly unitOfWork!: IUnitOfWork;
 
-	constructor(
-		private readonly leadFactory: LeadFactory,
-		private readonly leadRepositoryFactory: LeadRepositoryFactory,
-	) {}
+	constructor(private readonly leadRepositoryFactory: LeadRepositoryFactory) {}
 
 	async execute(leadId: string) {
 		return this.unitOfWork.run(async () => {
@@ -28,8 +23,8 @@ class ConvertLeadUseCase {
 				throw new LeadNotFoundError(leadId);
 			}
 
-			const convertedLead = this.leadFactory.convert(lead);
-			return leads.update(convertedLead);
+			lead.convert();
+			return leads.update(lead);
 		});
 	}
 }

@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
+import { parseLeadStatus } from '../../../../shared/domain/enums/lead-status.enum.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { LeadSource } from '../../../../shared/domain/value-objects/lead-source.value-object.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { CustomerRepositoryFactory } from '../../../customers/infrastructure/persistence/factories/customer-repository.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
@@ -12,8 +14,6 @@ import { LeadInvalidCustomerError } from '../../domain/errors/lead-invalid-custo
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../domain/errors/lead-invalid-store.error.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
-// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
-import { LeadFactory } from '../../domain/factories/lead.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 import type { UpdateLeadDto } from '../dto/update-lead.dto.js';
@@ -24,7 +24,6 @@ class UpdateLeadUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
-		private readonly leadFactory: LeadFactory,
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
@@ -62,8 +61,15 @@ class UpdateLeadUseCase {
 				}
 			}
 
-			const updatedLead = this.leadFactory.update(existing, dto);
-			return leads.update(updatedLead);
+			existing.changeCustomer(Uuid.parse(dto.customerId));
+			existing.changeStore(Uuid.parse(dto.storeId));
+			existing.changeSource(LeadSource.create(dto.source));
+			existing.changeStatus(parseLeadStatus(dto.status));
+			existing.reassign(
+				dto.ownerUserId === null ? null : Uuid.parse(dto.ownerUserId),
+			);
+
+			return leads.update(existing);
 		});
 	}
 }

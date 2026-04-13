@@ -7,20 +7,23 @@ class TeamResponseDto {
 	@ApiProperty({ example: 'Equipe Comercial' })
 	name!: string;
 
-	@ApiPropertyOptional({
-		format: 'uuid',
-		nullable: true,
-		description: 'Usuario gerente responsavel pela equipe.',
-	})
-	managerId!: string | null;
+	@ApiProperty({ format: 'uuid' })
+	storeId!: string;
 
 	@ApiPropertyOptional({
 		format: 'uuid',
 		nullable: true,
 		description:
-			'Loja vinculada a equipe para compor a estrutura organizacional.',
+			'Gerente da equipe (relação TeamManager); independente da lista de membros.',
 	})
-	storeId!: string | null;
+	managerId!: string | null;
+
+	@ApiProperty({
+		type: [String],
+		format: 'uuid',
+		description: 'Usuários membros da equipe (relação TeamMembers).',
+	})
+	memberUserIds!: string[];
 }
 
 export { TeamResponseDto };

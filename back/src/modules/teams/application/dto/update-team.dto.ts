@@ -1,7 +1,6 @@
 type UpdateTeamDto = {
 	readonly name?: string;
-	readonly managerId?: string | null;
-	readonly storeId?: string | null;
+	readonly storeId?: string;
 };
 
 export type { UpdateTeamDto };

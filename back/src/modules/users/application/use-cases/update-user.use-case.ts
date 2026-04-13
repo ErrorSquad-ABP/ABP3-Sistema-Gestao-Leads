@@ -3,19 +3,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
+import { parseUserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
+import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 // biome-ignore lint/style/useImportType: Nest DI — metadata de parâmetro no runtime
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
-// biome-ignore lint/style/useImportType: Nest DI
-import { TeamRepositoryFactory } from '../../../teams/infrastructure/persistence/factories/team-repository.factory.js';
-import { User } from '../../domain/entities/user.entity.js';
 import { UserEmailAlreadyExistsError } from '../../domain/errors/user-email-already-exists.error.js';
-import { UserInvalidTeamError } from '../../domain/errors/user-invalid-team.error.js';
 import { UserNotFoundError } from '../../domain/errors/user-not-found.error.js';
-// biome-ignore lint/style/useImportType: Nest DI
-import { UserFactory } from '../../domain/factories/user.factory.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { UserRepositoryFactory } from '../../infrastructure/persistence/factories/user-repository.factory.js';
 import type { UpdateUserDto } from '../dto/update-user.dto.js';
@@ -25,8 +21,7 @@ function hasUserUpdatePayload(dto: UpdateUserDto): boolean {
 		dto.name !== undefined ||
 		dto.email !== undefined ||
 		dto.password !== undefined ||
-		dto.role !== undefined ||
-		dto.teamId !== undefined
+		dto.role !== undefined
 	);
 }
 
@@ -36,9 +31,7 @@ class UpdateUserUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
-		private readonly userFactory: UserFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
-		private readonly teamRepositoryFactory: TeamRepositoryFactory,
 		private readonly passwordHasher: Argon2PasswordHasherService,
 	) {}
 
@@ -53,19 +46,11 @@ class UpdateUserUseCase {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const users = this.userRepositoryFactory.create(transactionContext);
-			const teams = this.teamRepositoryFactory.create(transactionContext);
 
 			const idVo = Uuid.parse(userId);
 			const existing = await users.findById(idVo);
 			if (!existing) {
 				throw new UserNotFoundError(userId);
-			}
-
-			if (dto.teamId !== undefined && dto.teamId !== null) {
-				const team = await teams.findById(Uuid.parse(dto.teamId));
-				if (!team) {
-					throw new UserInvalidTeamError(dto.teamId);
-				}
 			}
 
 			if (dto.email !== undefined) {
@@ -78,25 +63,43 @@ class UpdateUserUseCase {
 				}
 			}
 
-			let passwordHash: PasswordHash | undefined;
+			let shouldPersist = false;
+
+			if (dto.name !== undefined) {
+				const next = Name.create(dto.name);
+				if (!next.equals(existing.name)) {
+					existing.changeName(next);
+					shouldPersist = true;
+				}
+			}
+			if (dto.email !== undefined) {
+				const next = Email.create(dto.email);
+				if (!next.equals(existing.email)) {
+					existing.changeEmail(next);
+					shouldPersist = true;
+				}
+			}
 			if (dto.password !== undefined) {
 				const hashed = await this.passwordHasher.hash(dto.password);
-				passwordHash = PasswordHash.create(hashed);
+				const next = PasswordHash.create(hashed);
+				if (!next.equals(existing.passwordHash)) {
+					existing.changePasswordHash(next);
+					shouldPersist = true;
+				}
+			}
+			if (dto.role !== undefined) {
+				const next = parseUserRole(dto.role);
+				if (next !== existing.role) {
+					existing.changeRole(next);
+					shouldPersist = true;
+				}
 			}
 
-			const updated = this.userFactory.update(existing, {
-				name: dto.name,
-				email: dto.email,
-				passwordHash,
-				role: dto.role,
-				teamId: dto.teamId,
-			});
-
-			if (User.sameState(existing, updated)) {
+			if (!shouldPersist) {
 				return existing;
 			}
 
-			return users.update(updated);
+			return users.update(existing);
 		});
 	}
 }

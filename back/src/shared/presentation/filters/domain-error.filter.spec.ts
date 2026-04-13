@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { StoreHasLinkedLeadsError } from '../../../modules/stores/domain/errors/store-has-linked-leads.error.js';
+import type { ArgumentsHost } from '@nestjs/common';
+
+import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/store-delete-blocked.error.js';
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
 import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
 import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
@@ -11,14 +13,42 @@ import { DomainErrorFilter } from './domain-error.filter.js';
 function mapDomainException(filter: DomainErrorFilter, exception: unknown) {
 	const mapper = Reflect.get(filter, 'mapDomainException') as (
 		error: unknown,
-	) => ReturnType<DomainErrorFilter['catch']> | {
-		status: number;
-		body: {
-			errors?: Array<{ code?: string }>;
-		};
-	} | undefined;
+	) =>
+		| {
+				status: number;
+				body: { errors?: Array<{ code?: string }> };
+		  }
+		| undefined;
 
 	return mapper.call(filter, exception);
+}
+
+function createHttpHost(): {
+	readonly host: ArgumentsHost;
+	readonly getStatus: () => number;
+	readonly getBody: () => unknown;
+} {
+	let status = 0;
+	let body: unknown;
+	const response = {
+		status(code: number) {
+			status = code;
+			return this;
+		},
+		json(payload: unknown) {
+			body = payload;
+		},
+	};
+	const host = {
+		switchToHttp: () => ({
+			getResponse: () => response,
+		}),
+	};
+	return {
+		host: host as ArgumentsHost,
+		getStatus: () => status,
+		getBody: () => body,
+	};
 }
 
 describe('DomainErrorFilter', () => {
@@ -34,9 +64,9 @@ describe('DomainErrorFilter', () => {
 		);
 
 		assert.equal(teamMapped?.status, 404);
-		assert.equal(teamMapped?.body.errors[0]?.code, 'team.not_found');
+		assert.equal(teamMapped?.body.errors?.[0]?.code, 'team.not_found');
 		assert.equal(storeMapped?.status, 404);
-		assert.equal(storeMapped?.body.errors[0]?.code, 'store.not_found');
+		assert.equal(storeMapped?.body.errors?.[0]?.code, 'store.not_found');
 	});
 
 	it('maps business validation and conflict errors from teams and stores', () => {
@@ -49,25 +79,78 @@ describe('DomainErrorFilter', () => {
 			filter,
 			new TeamInvalidStoreError('44444444-4444-4444-8444-444444444444'),
 		);
-		const linkedLeadsMapped = mapDomainException(
+		const deleteBlockedMapped = mapDomainException(
 			filter,
-			new StoreHasLinkedLeadsError('55555555-5555-4555-8555-555555555555'),
+			StoreDeleteBlockedError.withCounts(
+				'55555555-5555-4555-8555-555555555555',
+				{
+					leads: 2,
+					teams: 0,
+				},
+			),
 		);
 
 		assert.equal(invalidManagerMapped?.status, 400);
 		assert.equal(
-			invalidManagerMapped?.body.errors[0]?.code,
+			invalidManagerMapped?.body.errors?.[0]?.code,
 			'team.invalid_manager',
 		);
 		assert.equal(invalidStoreMapped?.status, 400);
 		assert.equal(
-			invalidStoreMapped?.body.errors[0]?.code,
+			invalidStoreMapped?.body.errors?.[0]?.code,
 			'team.invalid_store',
 		);
-		assert.equal(linkedLeadsMapped?.status, 409);
+		assert.equal(deleteBlockedMapped?.status, 409);
 		assert.equal(
-			linkedLeadsMapped?.body.errors[0]?.code,
-			'store.has_linked_leads',
+			deleteBlockedMapped?.body.errors?.[0]?.code,
+			'store.delete_blocked',
 		);
+	});
+
+	it('catch() aplica status HTTP correto para erros de stores e teams (ciclo completo)', () => {
+		const filter = new DomainErrorFilter();
+
+		{
+			const { host, getStatus, getBody } = createHttpHost();
+			filter.catch(
+				new StoreNotFoundError('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+				host,
+			);
+			assert.equal(getStatus(), 404);
+			const b = getBody() as {
+				success: boolean;
+				errors?: Array<{ code: string }>;
+			};
+			assert.equal(b.success, false);
+			assert.equal(b.errors?.[0]?.code, 'store.not_found');
+		}
+
+		{
+			const { host, getStatus, getBody } = createHttpHost();
+			filter.catch(
+				new TeamNotFoundError('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
+				host,
+			);
+			assert.equal(getStatus(), 404);
+			const b = getBody() as {
+				success: boolean;
+				errors?: Array<{ code: string }>;
+			};
+			assert.equal(b.errors?.[0]?.code, 'team.not_found');
+		}
+
+		{
+			const { host, getStatus, getBody } = createHttpHost();
+			filter.catch(
+				new TeamInvalidManagerError('cccccccc-cccc-4ccc-8ccc-cccccccccccc'),
+				host,
+			);
+			assert.equal(getStatus(), 400);
+			const b = getBody() as {
+				success: boolean;
+				errors?: Array<{ code: string }>;
+			};
+			assert.equal(b.errors?.[0]?.code, 'team.invalid_manager');
+		}
 	});
 });

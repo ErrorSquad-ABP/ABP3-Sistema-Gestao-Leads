@@ -14,21 +14,26 @@ function buildStore(name = 'Loja Centro'): Store {
 }
 
 describe('StoreFactory', () => {
-	it('aplica apenas os campos informados no update', () => {
+	it('create instancia loja com nome valido', () => {
 		const factory = new StoreFactory();
-		const existing = buildStore();
-		const next = factory.update(existing, { name: 'Loja Norte' });
+		const store = factory.create({ name: 'Loja Norte' });
 
-		assert.equal(next.name.value, 'Loja Norte');
-		assert.equal(next.id.value, existing.id.value);
+		assert.equal(store.name.value, 'Loja Norte');
+		assert.ok(Uuid.parse(store.id.value));
+	});
+});
+
+describe('Store entity', () => {
+	it('rename altera o nome quando diferente', () => {
+		const store = buildStore();
+		store.rename(Name.create('Loja Norte'));
+		assert.equal(store.name.value, 'Loja Norte');
 	});
 
-	it('preserva o estado quando nenhum campo mutavel e enviado', () => {
-		const factory = new StoreFactory();
-		const existing = buildStore();
-		const next = factory.update(existing, {});
-
-		assert.equal(next.name.value, existing.name.value);
-		assert.equal(next.id.value, existing.id.value);
+	it('rename ignora nome equivalente', () => {
+		const store = buildStore('Loja Centro');
+		const before = store.name.value;
+		store.rename(Name.create('Loja Centro'));
+		assert.equal(store.name.value, before);
 	});
 });

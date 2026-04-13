@@ -6,9 +6,10 @@ class TeamPresenter {
 		return {
 			id: team.id.value,
 			name: team.name.value,
+			storeId: team.storeId.value,
 			managerId: team.managerId?.value ?? null,
-			storeId: team.storeId?.value ?? null,
-		} as TeamResponseDto;
+			memberUserIds: team.memberUserIds.map((id) => id.value),
+		} satisfies TeamResponseDto;
 	}
 
 	static toResponseList(teams: Team[]): TeamResponseDto[] {

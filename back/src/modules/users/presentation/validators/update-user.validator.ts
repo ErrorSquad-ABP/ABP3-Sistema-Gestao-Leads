@@ -4,9 +4,7 @@ import {
 	IsIn,
 	IsOptional,
 	IsString,
-	IsUUID,
 	MinLength,
-	ValidateIf,
 } from 'class-validator';
 
 import { USER_ROLES } from '../../../../shared/domain/enums/user-role.enum.js';
@@ -39,16 +37,6 @@ class UpdateUserValidator {
 	@IsString()
 	@IsIn(USER_ROLE_VALUES)
 	role?: string;
-
-	@ApiPropertyOptional({
-		format: 'uuid',
-		nullable: true,
-		description: 'Nova equipe; null remove o vínculo.',
-	})
-	@IsOptional()
-	@ValidateIf((_, value) => value !== null && value !== undefined)
-	@IsUUID()
-	teamId?: string | null;
 }
 
 export { UpdateUserValidator };

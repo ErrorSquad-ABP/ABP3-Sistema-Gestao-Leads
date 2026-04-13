@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID, ValidateIf } from 'class-validator';
+import {
+	IsArray,
+	IsNotEmpty,
+	IsOptional,
+	IsString,
+	IsUUID,
+	ValidateIf,
+} from 'class-validator';
 
 class CreateTeamValidator {
 	@ApiProperty({
@@ -9,25 +16,32 @@ class CreateTeamValidator {
 	@IsNotEmpty()
 	name!: string;
 
+	@ApiProperty({
+		format: 'uuid',
+		description: 'Loja obrigatória (FK em Team).',
+	})
+	@IsUUID()
+	storeId!: string;
+
 	@ApiPropertyOptional({
 		format: 'uuid',
 		nullable: true,
 		description:
 			'Gerente da equipe; omita ou use null para equipe sem gerente.',
 	})
+	@IsOptional()
 	@ValidateIf((_, value) => value !== null && value !== undefined)
 	@IsUUID()
-	managerId!: string | null;
+	managerId?: string | null;
 
 	@ApiPropertyOptional({
-		format: 'uuid',
-		nullable: true,
-		description:
-			'Loja vinculada a equipe; omita ou use null para equipe ainda sem loja definida.',
+		type: [String],
+		description: 'Usuários que serão conectados como membros na criação.',
 	})
-	@ValidateIf((_, value) => value !== null && value !== undefined)
-	@IsUUID()
-	storeId!: string | null;
+	@IsOptional()
+	@IsArray()
+	@IsUUID('4', { each: true })
+	initialMemberUserIds?: string[];
 }
 
 export { CreateTeamValidator };

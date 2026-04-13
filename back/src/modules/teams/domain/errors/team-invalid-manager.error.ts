@@ -3,7 +3,7 @@ class TeamInvalidManagerError extends Error {
 
 	constructor(managerId: string) {
 		super(
-			`Manager with id "${managerId}" was not found or does not have a compatible role`,
+			`User "${managerId}" cannot be assigned as team manager: role must be MANAGER, GENERAL_MANAGER, or ADMINISTRATOR`,
 		);
 		this.name = TeamInvalidManagerError.name;
 	}

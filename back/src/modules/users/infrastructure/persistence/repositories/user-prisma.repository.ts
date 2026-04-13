@@ -9,17 +9,18 @@ import { PasswordHash } from '../../../../../shared/domain/value-objects/passwor
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { User } from '../../../domain/entities/user.entity.js';
 import { UserEmailAlreadyExistsError } from '../../../domain/errors/user-email-already-exists.error.js';
-import { UserInvalidTeamError } from '../../../domain/errors/user-invalid-team.error.js';
 import type { IUserRepository } from '../../../domain/repositories/user.repository.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
+
 type UserRecord = {
 	readonly id: string;
 	readonly name: string;
 	readonly email: string;
 	readonly password: string;
 	readonly role: PrismaUserRole;
-	readonly teamId: string | null;
+	readonly memberTeams: readonly { readonly id: string }[];
+	readonly managedTeams: readonly { readonly id: string }[];
 };
 
 const USER_ROLE_TO_PRISMA: Record<string, PrismaUserRole> = {
@@ -35,6 +36,11 @@ const PRISMA_ROLE_TO_USER: Record<PrismaUserRole, string> = {
 	GENERAL_MANAGER: 'GENERAL_MANAGER',
 	MANAGER: 'MANAGER',
 };
+
+const userTeamsInclude = {
+	memberTeams: { select: { id: true } },
+	managedTeams: { select: { id: true } },
+} as const;
 
 function isPrismaKnownRequest(
 	error: unknown,
@@ -61,12 +67,12 @@ class UserPrismaRepository implements IUserRepository {
 					name: user.name.value,
 					password: user.passwordHash.value,
 					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
-					teamId: user.teamId?.value ?? null,
 				},
+				include: userTeamsInclude,
 			});
 			return this.toDomain(created);
 		} catch (error: unknown) {
-			this.rethrowPrismaUserErrors(error, user.email.value, user.teamId?.value);
+			this.rethrowPrismaUserErrors(error, user.email.value);
 			throw error;
 		}
 	}
@@ -79,13 +85,13 @@ class UserPrismaRepository implements IUserRepository {
 					name: user.name.value,
 					password: user.passwordHash.value,
 					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
-					teamId: user.teamId?.value ?? null,
 				},
 				where: { id: user.id.value },
+				include: userTeamsInclude,
 			});
 			return this.toDomain(updated);
 		} catch (error: unknown) {
-			this.rethrowPrismaUserErrors(error, user.email.value, user.teamId?.value);
+			this.rethrowPrismaUserErrors(error, user.email.value);
 			throw error;
 		}
 	}
@@ -97,7 +103,10 @@ class UserPrismaRepository implements IUserRepository {
 	async findById(
 		id: Parameters<IUserRepository['findById']>[0],
 	): Promise<User | null> {
-		const user = await this.client.user.findUnique({ where: { id: id.value } });
+		const user = await this.client.user.findUnique({
+			where: { id: id.value },
+			include: userTeamsInclude,
+		});
 		return user ? this.toDomain(user) : null;
 	}
 
@@ -105,6 +114,7 @@ class UserPrismaRepository implements IUserRepository {
 		const normalized = Email.create(email).value;
 		const user = await this.client.user.findUnique({
 			where: { email: normalized },
+			include: userTeamsInclude,
 		});
 		return user ? this.toDomain(user) : null;
 	}
@@ -119,6 +129,7 @@ class UserPrismaRepository implements IUserRepository {
 				orderBy: { createdAt: 'desc' },
 				skip,
 				take: query.limit,
+				include: userTeamsInclude,
 			}),
 			this.client.user.count(),
 		]);
@@ -135,7 +146,8 @@ class UserPrismaRepository implements IUserRepository {
 			Email.create(record.email),
 			PasswordHash.create(record.password),
 			parseUserRole(PRISMA_ROLE_TO_USER[record.role]),
-			record.teamId === null ? null : Uuid.parse(record.teamId),
+			record.memberTeams.map((t) => Uuid.parse(t.id)),
+			record.managedTeams.map((t) => Uuid.parse(t.id)),
 		);
 	}
 
@@ -146,11 +158,7 @@ class UserPrismaRepository implements IUserRepository {
 		);
 	}
 
-	private rethrowPrismaUserErrors(
-		error: unknown,
-		email: string,
-		teamId: string | undefined,
-	): void {
+	private rethrowPrismaUserErrors(error: unknown, email: string): void {
 		if (!isPrismaKnownRequest(error)) {
 			return;
 		}
@@ -164,10 +172,6 @@ class UserPrismaRepository implements IUserRepository {
 			if (targets.some((t) => String(t).toLowerCase().includes('email'))) {
 				throw new UserEmailAlreadyExistsError(email);
 			}
-		}
-		/* Última linha: corrida ou violação de FK não antecipada no caso de uso. */
-		if (error.code === 'P2003' && teamId !== undefined && teamId !== '') {
-			throw new UserInvalidTeamError(teamId);
 		}
 	}
 }

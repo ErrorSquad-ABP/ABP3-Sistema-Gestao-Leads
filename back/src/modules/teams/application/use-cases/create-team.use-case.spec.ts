@@ -10,6 +10,7 @@ import { User } from '../../../users/domain/entities/user.entity.js';
 import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
+import { TeamInvalidManagerError } from '../../domain/errors/team-invalid-manager.error.js';
 import { TeamInvalidStoreError } from '../../domain/errors/team-invalid-store.error.js';
 import { TeamFactory } from '../../domain/factories/team.factory.js';
 import type { ITeamRepository } from '../../domain/repositories/team.repository.js';
@@ -44,7 +45,20 @@ function buildManager(): User {
 		Email.create('gerente@example.com'),
 		PasswordHash.create(SAMPLE_HASH),
 		'MANAGER',
-		null,
+		[],
+		[],
+	);
+}
+
+function buildAttendant(): User {
+	return new User(
+		Uuid.parse('44444444-4444-4444-8444-444444444444'),
+		Name.create('Atendente'),
+		Email.create('atendente@example.com'),
+		PasswordHash.create(SAMPLE_HASH),
+		'ATTENDANT',
+		[],
+		[],
 	);
 }
 
@@ -92,6 +106,9 @@ describe('CreateTeamUseCase', () => {
 			async list() {
 				return [store];
 			},
+			async countBlockingReferences() {
+				return { leads: 0, teams: 0 };
+			},
 		};
 
 		const users: IUserRepository = {
@@ -128,9 +145,90 @@ describe('CreateTeamUseCase', () => {
 			storeId: store.id.value,
 		});
 
-		assert.equal(result.storeId?.value, store.id.value);
-		assert.equal(createdTeam?.storeId?.value, store.id.value);
+		assert.equal(result.storeId.value, store.id.value);
+		assert.equal(createdTeam?.storeId.value, store.id.value);
 		assert.equal(result.managerId?.value, manager.id.value);
+	});
+
+	it('rejeita gerente com papel ATTENDANT', async () => {
+		const store = buildStore();
+		const attendant = buildAttendant();
+
+		const useCase = new CreateTeamUseCase(
+			new TeamFactory(),
+			{
+				create: () =>
+					({
+						async create(team) {
+							return team;
+						},
+						async update(team) {
+							return team;
+						},
+						async delete() {},
+						async findById() {
+							return null;
+						},
+						async list() {
+							return [];
+						},
+					}) as ITeamRepository,
+			} as TeamRepositoryFactory,
+			{
+				create: () =>
+					({
+						async create(entity) {
+							return entity;
+						},
+						async update(entity) {
+							return entity;
+						},
+						async delete() {},
+						async findById(id) {
+							return id.equals(store.id) ? store : null;
+						},
+						async list() {
+							return [store];
+						},
+						async countBlockingReferences() {
+							return { leads: 0, teams: 0 };
+						},
+					}) as IStoreRepository,
+			} as StoreRepositoryFactory,
+			{
+				create: () =>
+					({
+						async create(user) {
+							return user;
+						},
+						async update(user) {
+							return user;
+						},
+						async delete() {},
+						async findById(id) {
+							return id.equals(attendant.id) ? attendant : null;
+						},
+						async findByEmail() {
+							return null;
+						},
+						async listPaged() {
+							return { users: [], total: 0 };
+						},
+					}) as IUserRepository,
+			} as UserRepositoryFactory,
+		);
+		(useCase as unknown as { unitOfWork: IUnitOfWork }).unitOfWork =
+			new FakeUnitOfWork();
+
+		await assert.rejects(
+			() =>
+				useCase.execute({
+					name: 'Equipe',
+					managerId: attendant.id.value,
+					storeId: store.id.value,
+				}),
+			(error: unknown) => error instanceof TeamInvalidManagerError,
+		);
 	});
 
 	it('rejeita criacao quando storeId nao existe', async () => {
@@ -171,6 +269,9 @@ describe('CreateTeamUseCase', () => {
 						},
 						async list() {
 							return [];
+						},
+						async countBlockingReferences() {
+							return { leads: 0, teams: 0 };
 						},
 					}) as IStoreRepository,
 			} as StoreRepositoryFactory,

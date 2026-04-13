@@ -4,26 +4,17 @@ import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { StoreRepositoryFactory } from '../../../stores/infrastructure/persistence/factories/store-repository.factory.js';
-// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
-import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
-import { canManageTeam } from '../services/team-manager-policy.js';
-import { TeamInvalidManagerError } from '../../domain/errors/team-invalid-manager.error.js';
 import { TeamInvalidStoreError } from '../../domain/errors/team-invalid-store.error.js';
 import { TeamNotFoundError } from '../../domain/errors/team-not-found.error.js';
-// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
-import { TeamFactory } from '../../domain/factories/team.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { TeamRepositoryFactory } from '../../infrastructure/persistence/factories/team-repository.factory.js';
 import type { UpdateTeamDto } from '../dto/update-team.dto.js';
 
 function hasTeamUpdatePayload(dto: UpdateTeamDto): boolean {
-	return (
-		dto.name !== undefined ||
-		dto.managerId !== undefined ||
-		dto.storeId !== undefined
-	);
+	return dto.name !== undefined || dto.storeId !== undefined;
 }
 
 @Injectable()
@@ -32,10 +23,8 @@ class UpdateTeamUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
-		private readonly teamFactory: TeamFactory,
 		private readonly teamRepositoryFactory: TeamRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
-		private readonly userRepositoryFactory: UserRepositoryFactory,
 	) {}
 
 	async execute(teamId: string, dto: UpdateTeamDto) {
@@ -50,29 +39,41 @@ class UpdateTeamUseCase {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const teams = this.teamRepositoryFactory.create(transactionContext);
 			const stores = this.storeRepositoryFactory.create(transactionContext);
-			const users = this.userRepositoryFactory.create(transactionContext);
 
 			const existing = await teams.findById(Uuid.parse(teamId));
 			if (!existing) {
 				throw new TeamNotFoundError(teamId);
 			}
 
-			if (dto.managerId) {
-				const manager = await users.findById(Uuid.parse(dto.managerId));
-				if (!manager || !canManageTeam(manager.role)) {
-					throw new TeamInvalidManagerError(dto.managerId);
-				}
-			}
-
-			if (dto.storeId) {
+			if (dto.storeId !== undefined) {
 				const store = await stores.findById(Uuid.parse(dto.storeId));
 				if (!store) {
 					throw new TeamInvalidStoreError(dto.storeId);
 				}
 			}
 
-			const updatedTeam = this.teamFactory.update(existing, dto);
-			return teams.update(updatedTeam);
+			let shouldPersist = false;
+
+			if (dto.name !== undefined) {
+				const next = Name.create(dto.name);
+				if (!next.equals(existing.name)) {
+					existing.rename(next);
+					shouldPersist = true;
+				}
+			}
+			if (dto.storeId !== undefined) {
+				const sid = Uuid.parse(dto.storeId);
+				if (!sid.equals(existing.storeId)) {
+					existing.changeStore(sid);
+					shouldPersist = true;
+				}
+			}
+
+			if (!shouldPersist) {
+				return existing;
+			}
+
+			return teams.update(existing);
 		});
 	}
 }
