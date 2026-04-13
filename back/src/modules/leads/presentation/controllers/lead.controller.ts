@@ -5,6 +5,7 @@ import {
 	Get,
 	HttpCode,
 	HttpStatus,
+	Inject,
 	Param,
 	ParseUUIDPipe,
 	Patch,
@@ -13,18 +14,24 @@ import {
 import {
 	ApiBadRequestResponse,
 	ApiBearerAuth,
+	ApiForbiddenResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
 } from '@nestjs/swagger';
-
+import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
+import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ConvertLeadUseCase } from '../../application/use-cases/convert-lead.use-case.js';
@@ -43,6 +50,10 @@ import { ReassignLeadUseCase } from '../../application/use-cases/reassign-lead.u
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { UpdateLeadUseCase } from '../../application/use-cases/update-lead.use-case.js';
 import { LeadPresenter } from '../presenters/lead.presenter.js';
+import {
+	requireListByOwnerAllowed,
+	requireListByTeamAllowed,
+} from '../utils/lead-list-access.util.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateLeadValidator } from '../validators/create-lead.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
@@ -60,6 +71,11 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
 };
 
+const FORBIDDEN = {
+	description:
+		'Utilizador autenticado sem permissão para o recurso ou parâmetro solicitado.',
+};
+
 @ApiBearerAuth()
 @ApiTags('leads')
 @Controller('leads')
@@ -73,6 +89,8 @@ class LeadController {
 		private readonly reassignLeadUseCase: ReassignLeadUseCase,
 		private readonly convertLeadUseCase: ConvertLeadUseCase,
 		private readonly deleteLeadUseCase: DeleteLeadUseCase,
+		@Inject(UserRepositoryFactory)
+		private readonly userRepositoryFactory: UserRepositoryFactory,
 	) {}
 
 	@Post()
@@ -93,8 +111,13 @@ class LeadController {
 		description: 'Identificador do usuário dono dos leads',
 	})
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listByOwner(@Param('ownerUserId', ParseUUIDPipe) ownerUserId: string) {
+	listByOwner(
+		@CurrentUser() current: JwtUser,
+		@Param('ownerUserId', ParseUUIDPipe) ownerUserId: string,
+	) {
+		requireListByOwnerAllowed(current.userId, ownerUserId);
 		return this.listOwnLeadsUseCase
 			.execute(ownerUserId)
 			.then((leads) => LeadPresenter.toResponseList(leads));
@@ -108,11 +131,18 @@ class LeadController {
 		description: 'Identificador do time',
 	})
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listByTeam(@Param('teamId', ParseUUIDPipe) teamId: string) {
-		return this.listTeamLeadsUseCase
-			.execute(teamId)
-			.then((leads) => LeadPresenter.toResponseList(leads));
+	async listByTeam(
+		@CurrentUser() current: JwtUser,
+		@Param('teamId', ParseUUIDPipe) teamId: string,
+	) {
+		const users = this.userRepositoryFactory.create();
+		const user = await users.findById(Uuid.parse(current.userId));
+		const teamIdValue = user?.teamId?.value ?? null;
+		requireListByTeamAllowed(current.role, teamIdValue, teamId);
+		const leads = await this.listTeamLeadsUseCase.execute(teamId);
+		return LeadPresenter.toResponseList(leads);
 	}
 
 	@Get(':id')
