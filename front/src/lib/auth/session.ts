@@ -71,7 +71,7 @@ async function requireAuthenticatedUser() {
 	const currentUser = await getCurrentUserFromRequest();
 
 	if (!currentUser) {
-		redirect(appRoutes.auth.login);
+		redirect(appRoutes.system.unauthorized);
 	}
 
 	return currentUser;

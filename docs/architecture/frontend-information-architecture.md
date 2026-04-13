@@ -178,6 +178,7 @@ As rotas abaixo são o alvo do `App Router`. Elas representam o mapa de implemen
 | `/app/users` | Gestão administrativa de utilizadores | Admin | `users`, `teams` | Alta |
 | `/app/stores` | Gestão de lojas | Admin | `stores` | Média |
 | `/app/logs` | Auditoria de acesso e operações | Admin | `audit-logs` | Alta |
+| `/401` | Sessão ausente, expirada ou inválida | Todos | N/A | Média |
 | `/403` | Permissão insuficiente | Todos autenticados | N/A | Média |
 
 ## Home por papel

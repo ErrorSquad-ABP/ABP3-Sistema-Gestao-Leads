@@ -1,46 +1,32 @@
-import Link from 'next/link';
+import type { Metadata } from 'next';
 
-import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorState } from '@/components/shared/ErrorState';
 import { appRoutes } from '@/lib/routes/app-routes';
-import { cn } from '@/lib/utils';
+
+const metadata: Metadata = {
+	title: 'Acesso negado | Sistema de Gestão de Leads',
+	description:
+		'Tratamento visual de permissão insuficiente para áreas protegidas do sistema.',
+};
 
 function ForbiddenPage() {
 	return (
-		<main className="flex min-h-screen items-center justify-center px-4 py-10">
-			<Card className="w-full max-w-xl bg-white">
-				<CardHeader className="space-y-3">
-					<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#D96C3F]">
-						Acesso negado
-					</p>
-					<CardTitle>Você não tem permissão para acessar esta área.</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
-					<p>
-						A área solicitada exige uma sessão válida e um papel compatível com
-						o destino acessado.
-					</p>
-					<div className="flex flex-wrap gap-3">
-						<Link
-							className={cn(buttonVariants(), 'h-10 rounded-md px-4')}
-							href={appRoutes.auth.login}
-						>
-							Ir para login
-						</Link>
-						<Link
-							className={cn(
-								buttonVariants({ variant: 'secondary' }),
-								'h-10 rounded-md px-4',
-							)}
-							href={appRoutes.app.root}
-						>
-							Voltar ao início autenticado
-						</Link>
-					</div>
-				</CardContent>
-			</Card>
-		</main>
+		<ErrorState
+			code={403}
+			description="A sessão foi reconhecida, mas o papel atual não cobre o destino acessado. O controle final continua no backend e a interface reflete esse bloqueio."
+			eyebrow="Acesso negado"
+			primaryAction={{
+				href: appRoutes.app.root,
+				label: 'Voltar ao início autenticado',
+			}}
+			secondaryAction={{
+				href: appRoutes.auth.login,
+				label: 'Trocar de conta',
+			}}
+			title="Você não tem permissão para acessar esta área."
+		/>
 	);
 }
 
+export { metadata };
 export default ForbiddenPage;
