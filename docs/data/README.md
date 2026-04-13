@@ -52,4 +52,4 @@ Essa direção existe para evitar um problema comum em times acadêmicos: cada m
 
 ## Bootstrap atual
 
-O bootstrap estrutural do banco agora fica centralizado em `back/prisma/schema.prisma`, `back/prisma/migrations/` e `back/prisma/seed.ts`.
+O bootstrap estrutural do banco fica centralizado em `back/prisma/schema.prisma`, `back/prisma/migrations/` e `back/prisma/seed.ts`. O seed padrão (`SEED_MODE=minimal`) carrega apenas autenticação e dados mestres (equipas e lojas); o modo `SEED_MODE=dashboard` repete o dataset fictício completo (clientes, leads, negociações) a partir do CSV versionado.

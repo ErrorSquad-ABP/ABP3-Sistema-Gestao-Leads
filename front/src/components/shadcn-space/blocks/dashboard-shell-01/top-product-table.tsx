@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import {
 	type LucideIcon,
 	AppWindowMac,
@@ -49,6 +50,7 @@ interface TableAction {
 }
 
 interface ProjectData {
+	id: string;
 	project: string;
 	date: string;
 	budget: string;
@@ -71,6 +73,7 @@ const TopProductTable = () => {
 
 	const checkboxTableData: ProjectData[] = [
 		{
+			id: 'row-1',
 			project: 'Web App Project',
 			date: '04 June 2026',
 			budget: '12,000',
@@ -84,6 +87,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-orange-400',
 		},
 		{
+			id: 'row-2',
 			project: 'MaterialM Admin',
 			date: '09 January 2026',
 			budget: '8000',
@@ -97,6 +101,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-blue-500',
 		},
 		{
+			id: 'row-3',
 			project: 'Digital Marketing',
 			date: '15 April 2026',
 			budget: '15,000',
@@ -110,6 +115,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-amber-300',
 		},
 		{
+			id: 'row-4',
 			project: 'Shadcn Space Design',
 			date: '30 March 2026',
 			budget: '1000',
@@ -123,6 +129,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-red-500',
 		},
 		{
+			id: 'row-5',
 			project: 'Graphic Design',
 			date: '23 October 2026',
 			budget: '7000',
@@ -136,6 +143,7 @@ const TopProductTable = () => {
 			progressColor: '**:data-[slot=progress-indicator]:bg-teal-400',
 		},
 		{
+			id: 'row-6',
 			project: 'Digital Marketing',
 			date: '15 April 2026',
 			budget: '15,000',
@@ -183,8 +191,8 @@ const TopProductTable = () => {
 						</TableHeader>
 
 						<TableBody className="divide-y divide-border dark:divide-darkborder">
-							{checkboxTableData.map((item, index) => (
-								<TableRow key={index}>
+							{checkboxTableData.map((item) => (
+								<TableRow key={item.id}>
 									{/* Checkbox */}
 									<TableCell className="whitespace-nowrap p-3 ps-6">
 										<Checkbox className="data-[state=checked]:bg-blue-500 dark:data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 dark:data-[state=checked]:border-blue-500 cursor-pointer" />
@@ -222,9 +230,9 @@ const TopProductTable = () => {
 									{/* Customer */}
 									<TableCell className="whitespace-nowrap">
 										<div className="flex gap-3 items-center">
-											<img
+											<Image
 												src={item.avatar}
-												alt="icon"
+												alt=""
 												className="h-9 w-9 rounded-full"
 												width={36}
 												height={36}
@@ -260,9 +268,9 @@ const TopProductTable = () => {
 												</DropdownMenuTrigger>
 
 												<DropdownMenuContent align="end">
-													{tableActionData.map((action, idx) => (
+													{tableActionData.map((action) => (
 														<DropdownMenuItem
-															key={idx}
+															key={action.listtitle}
 															className="group flex gap-3 hover:bg-accent! cursor-pointer"
 														>
 															<action.icon />

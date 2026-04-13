@@ -61,7 +61,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
 								</CollapsibleTrigger>
 								<CollapsibleContent>
 									<SidebarMenuSub className="me-0 pe-0">
-										{item.children!.map(renderItemSub)}
+										{item.children?.map(renderItemSub)}
 									</SidebarMenuSub>
 								</CollapsibleContent>
 							</SidebarMenuItem>
@@ -115,7 +115,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
 						</CollapsibleTrigger>
 						<CollapsibleContent>
 							<SidebarMenuSub className="me-0 pe-0">
-								{item.children!.map(renderItemSub)}
+								{item.children?.map(renderItemSub)}
 							</SidebarMenuSub>
 						</CollapsibleContent>
 					</Collapsible>
