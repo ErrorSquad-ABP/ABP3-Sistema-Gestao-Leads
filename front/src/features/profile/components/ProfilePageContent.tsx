@@ -5,7 +5,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
 	AlertCircle,
 	CheckCircle2,
-	CircleAlert,
 	KeyRound,
 	LoaderCircle,
 	Mail,
@@ -20,13 +19,12 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCurrentUserQuery } from '@/features/login/hooks/login.queries';
 import type {
 	AuthenticatedUser,
 	UserRole,
 } from '@/features/login/types/login.types';
 import { queryKeys } from '@/lib/constants/query-keys';
-import { ApiError, isApiError } from '@/lib/http/api-error';
+import { isApiError } from '@/lib/http/api-error';
 import { cn } from '@/lib/utils';
 
 import {
@@ -125,10 +123,15 @@ function FieldError({ message }: { message?: string }) {
 	);
 }
 
-function ProfilePageContent() {
+type ProfilePageContentProps = {
+	currentUser: AuthenticatedUser;
+};
+
+function ProfilePageContent({
+	currentUser: initialCurrentUser,
+}: ProfilePageContentProps) {
 	const queryClient = useQueryClient();
-	const currentUserQuery = useCurrentUserQuery();
-	const currentUser = currentUserQuery.data ?? null;
+	const [currentUser, setCurrentUser] = useState(initialCurrentUser);
 	const updateOwnEmailMutation = useUpdateOwnEmailMutation();
 	const updateOwnPasswordMutation = useUpdateOwnPasswordMutation();
 	const [emailSuccess, setEmailSuccess] = useState<SuccessFeedback | null>(
@@ -155,17 +158,18 @@ function ProfilePageContent() {
 	});
 
 	useEffect(() => {
-		if (!currentUser) {
-			return;
-		}
-
 		emailForm.reset({
 			currentPassword: '',
 			email: currentUser.email,
 		});
 	}, [currentUser, emailForm]);
 
+	useEffect(() => {
+		queryClient.setQueryData(queryKeys.auth.currentUser, currentUser);
+	}, [currentUser, queryClient]);
+
 	const syncCurrentUserCache = (user: AuthenticatedUser) => {
+		setCurrentUser(user);
 		queryClient.setQueryData(queryKeys.auth.currentUser, user);
 	};
 
@@ -297,287 +301,249 @@ function ProfilePageContent() {
 					</Card>
 				</section>
 
-				{currentUserQuery.isPending ? (
-					<Card className="border-[#e3e8ef] bg-white/92">
-						<CardContent className="flex min-h-52 items-center justify-center gap-3 pt-6 text-sm text-muted-foreground">
-							<LoaderCircle className="size-5 animate-spin text-[#2d3648]" />
-							Carregando seus dados de acesso...
+				<section className="grid gap-6 xl:grid-cols-2">
+					<Card className="border-[#e3e8ef] bg-white/94">
+						<CardHeader className="gap-2">
+							<div className="flex items-center gap-3">
+								<div className="flex size-10 items-center justify-center rounded-2xl bg-[#f1e2da] text-[#d96c3f]">
+									<Mail className="size-5" />
+								</div>
+								<div>
+									<CardTitle className="text-[1.2rem]">
+										Atualizar e-mail de acesso
+									</CardTitle>
+									<p className="mt-1 text-sm leading-6 text-muted-foreground">
+										Confirme sua senha atual para alterar o endereço usado no
+										login.
+									</p>
+								</div>
+							</div>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							{emailSuccess ? (
+								<Alert variant="success">
+									<AlertTitle className="flex items-center gap-2">
+										<CheckCircle2 className="size-4" />
+										{emailSuccess.title}
+									</AlertTitle>
+									<AlertDescription>
+										{emailSuccess.description}
+									</AlertDescription>
+								</Alert>
+							) : null}
+
+							{emailErrorMessage ? (
+								<Alert
+									className="border-[#f1c7c4] bg-[#fff7f7]"
+									variant="destructive"
+								>
+									<AlertTitle className="flex items-center gap-2 text-[#7a2f2a]">
+										<AlertCircle className="size-4" />
+										Falha ao atualizar e-mail
+									</AlertTitle>
+									<AlertDescription className="text-[#7a2f2a]">
+										{emailErrorMessage}
+									</AlertDescription>
+								</Alert>
+							) : null}
+
+							<form
+								className="space-y-4"
+								noValidate
+								onSubmit={handleEmailSubmit}
+							>
+								<div className="space-y-1.5">
+									<Label htmlFor="profile-email">Novo e-mail</Label>
+									<Input
+										autoComplete="email"
+										className={cn(
+											emailForm.formState.errors.email
+												? 'border-destructive focus-visible:border-destructive'
+												: null,
+										)}
+										id="profile-email"
+										inputMode="email"
+										placeholder="exemplo@leadcrm.com"
+										type="email"
+										{...emailForm.register('email')}
+									/>
+									<FieldError
+										message={emailForm.formState.errors.email?.message}
+									/>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label htmlFor="profile-email-current-password">
+										Senha atual
+									</Label>
+									<Input
+										autoComplete="current-password"
+										className={cn(
+											emailForm.formState.errors.currentPassword
+												? 'border-destructive focus-visible:border-destructive'
+												: null,
+										)}
+										id="profile-email-current-password"
+										placeholder="Digite sua senha atual"
+										type="password"
+										{...emailForm.register('currentPassword')}
+									/>
+									<FieldError
+										message={
+											emailForm.formState.errors.currentPassword?.message
+										}
+									/>
+								</div>
+
+								<Button
+									className="w-full rounded-xl bg-[#2d3648] text-white hover:bg-[#232b3b]"
+									disabled={updateOwnEmailMutation.isPending}
+									type="submit"
+								>
+									{updateOwnEmailMutation.isPending ? (
+										<>
+											<LoaderCircle className="size-4 animate-spin" />
+											Salvando e-mail...
+										</>
+									) : (
+										'Salvar novo e-mail'
+									)}
+								</Button>
+							</form>
 						</CardContent>
 					</Card>
-				) : null}
 
-				{currentUserQuery.isError ? (
-					<Alert
-						className="border-[#f1c7c4] bg-[#fff7f7]"
-						variant="destructive"
-					>
-						<AlertTitle className="flex items-center gap-2 text-[#7a2f2a]">
-							<CircleAlert className="size-4" />
-							Não foi possível carregar seu perfil
-						</AlertTitle>
-						<AlertDescription className="text-[#7a2f2a]">
-							{resolveCredentialErrorMessage(
-								currentUserQuery.error instanceof ApiError
-									? currentUserQuery.error
-									: new ApiError(
-											'Falha ao consultar os dados da sessão atual.',
-											500,
-										),
-								'email',
-							)}
-						</AlertDescription>
-					</Alert>
-				) : null}
-
-				{currentUser ? (
-					<section className="grid gap-6 xl:grid-cols-2">
-						<Card className="border-[#e3e8ef] bg-white/94">
-							<CardHeader className="gap-2">
-								<div className="flex items-center gap-3">
-									<div className="flex size-10 items-center justify-center rounded-2xl bg-[#f1e2da] text-[#d96c3f]">
-										<Mail className="size-5" />
-									</div>
-									<div>
-										<CardTitle className="text-[1.2rem]">
-											Atualizar e-mail de acesso
-										</CardTitle>
-										<p className="mt-1 text-sm leading-6 text-muted-foreground">
-											Confirme sua senha atual para alterar o endereço usado no
-											login.
-										</p>
-									</div>
+					<Card className="border-[#e3e8ef] bg-white/94">
+						<CardHeader className="gap-2">
+							<div className="flex items-center gap-3">
+								<div className="flex size-10 items-center justify-center rounded-2xl bg-[#edf2f8] text-[#2d3648]">
+									<KeyRound className="size-5" />
 								</div>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								{emailSuccess ? (
-									<Alert variant="success">
-										<AlertTitle className="flex items-center gap-2">
-											<CheckCircle2 className="size-4" />
-											{emailSuccess.title}
-										</AlertTitle>
-										<AlertDescription>
-											{emailSuccess.description}
-										</AlertDescription>
-									</Alert>
-								) : null}
-
-								{emailErrorMessage ? (
-									<Alert
-										className="border-[#f1c7c4] bg-[#fff7f7]"
-										variant="destructive"
-									>
-										<AlertTitle className="flex items-center gap-2 text-[#7a2f2a]">
-											<AlertCircle className="size-4" />
-											Falha ao atualizar e-mail
-										</AlertTitle>
-										<AlertDescription className="text-[#7a2f2a]">
-											{emailErrorMessage}
-										</AlertDescription>
-									</Alert>
-								) : null}
-
-								<form
-									className="space-y-4"
-									noValidate
-									onSubmit={handleEmailSubmit}
-								>
-									<div className="space-y-1.5">
-										<Label htmlFor="profile-email">Novo e-mail</Label>
-										<Input
-											autoComplete="email"
-											className={cn(
-												emailForm.formState.errors.email
-													? 'border-destructive focus-visible:border-destructive'
-													: null,
-											)}
-											id="profile-email"
-											inputMode="email"
-											placeholder="exemplo@leadcrm.com"
-											type="email"
-											{...emailForm.register('email')}
-										/>
-										<FieldError
-											message={emailForm.formState.errors.email?.message}
-										/>
-									</div>
-
-									<div className="space-y-1.5">
-										<Label htmlFor="profile-email-current-password">
-											Senha atual
-										</Label>
-										<Input
-											autoComplete="current-password"
-											className={cn(
-												emailForm.formState.errors.currentPassword
-													? 'border-destructive focus-visible:border-destructive'
-													: null,
-											)}
-											id="profile-email-current-password"
-											placeholder="Digite sua senha atual"
-											type="password"
-											{...emailForm.register('currentPassword')}
-										/>
-										<FieldError
-											message={
-												emailForm.formState.errors.currentPassword?.message
-											}
-										/>
-									</div>
-
-									<Button
-										className="w-full rounded-xl bg-[#2d3648] text-white hover:bg-[#232b3b]"
-										disabled={updateOwnEmailMutation.isPending}
-										type="submit"
-									>
-										{updateOwnEmailMutation.isPending ? (
-											<>
-												<LoaderCircle className="size-4 animate-spin" />
-												Salvando e-mail...
-											</>
-										) : (
-											'Salvar novo e-mail'
-										)}
-									</Button>
-								</form>
-							</CardContent>
-						</Card>
-
-						<Card className="border-[#e3e8ef] bg-white/94">
-							<CardHeader className="gap-2">
-								<div className="flex items-center gap-3">
-									<div className="flex size-10 items-center justify-center rounded-2xl bg-[#edf2f8] text-[#2d3648]">
-										<KeyRound className="size-5" />
-									</div>
-									<div>
-										<CardTitle className="text-[1.2rem]">
-											Atualizar senha
-										</CardTitle>
-										<p className="mt-1 text-sm leading-6 text-muted-foreground">
-											Escolha uma nova senha e confirme a alteração com a senha
-											atual.
-										</p>
-									</div>
+								<div>
+									<CardTitle className="text-[1.2rem]">
+										Atualizar senha
+									</CardTitle>
+									<p className="mt-1 text-sm leading-6 text-muted-foreground">
+										Escolha uma nova senha e confirme a alteração com a senha
+										atual.
+									</p>
 								</div>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								{passwordSuccess ? (
-									<Alert variant="success">
-										<AlertTitle className="flex items-center gap-2">
-											<CheckCircle2 className="size-4" />
-											{passwordSuccess.title}
-										</AlertTitle>
-										<AlertDescription>
-											{passwordSuccess.description}
-										</AlertDescription>
-									</Alert>
-								) : null}
+							</div>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							{passwordSuccess ? (
+								<Alert variant="success">
+									<AlertTitle className="flex items-center gap-2">
+										<CheckCircle2 className="size-4" />
+										{passwordSuccess.title}
+									</AlertTitle>
+									<AlertDescription>
+										{passwordSuccess.description}
+									</AlertDescription>
+								</Alert>
+							) : null}
 
-								{passwordErrorMessage ? (
-									<Alert
-										className="border-[#f1c7c4] bg-[#fff7f7]"
-										variant="destructive"
-									>
-										<AlertTitle className="flex items-center gap-2 text-[#7a2f2a]">
-											<AlertCircle className="size-4" />
-											Falha ao atualizar senha
-										</AlertTitle>
-										<AlertDescription className="text-[#7a2f2a]">
-											{passwordErrorMessage}
-										</AlertDescription>
-									</Alert>
-								) : null}
-
-								<form
-									className="space-y-4"
-									noValidate
-									onSubmit={handlePasswordSubmit}
+							{passwordErrorMessage ? (
+								<Alert
+									className="border-[#f1c7c4] bg-[#fff7f7]"
+									variant="destructive"
 								>
-									<div className="space-y-1.5">
-										<Label htmlFor="profile-current-password">
-											Senha atual
-										</Label>
-										<Input
-											autoComplete="current-password"
-											className={cn(
-												passwordForm.formState.errors.currentPassword
-													? 'border-destructive focus-visible:border-destructive'
-													: null,
-											)}
-											id="profile-current-password"
-											placeholder="Digite sua senha atual"
-											type="password"
-											{...passwordForm.register('currentPassword')}
-										/>
-										<FieldError
-											message={
-												passwordForm.formState.errors.currentPassword?.message
-											}
-										/>
-									</div>
+									<AlertTitle className="flex items-center gap-2 text-[#7a2f2a]">
+										<AlertCircle className="size-4" />
+										Falha ao atualizar senha
+									</AlertTitle>
+									<AlertDescription className="text-[#7a2f2a]">
+										{passwordErrorMessage}
+									</AlertDescription>
+								</Alert>
+							) : null}
 
-									<div className="space-y-1.5">
-										<Label htmlFor="profile-new-password">Nova senha</Label>
-										<Input
-											autoComplete="new-password"
-											className={cn(
-												passwordForm.formState.errors.newPassword
-													? 'border-destructive focus-visible:border-destructive'
-													: null,
-											)}
-											id="profile-new-password"
-											placeholder="Mínimo de 8 caracteres"
-											type="password"
-											{...passwordForm.register('newPassword')}
-										/>
-										<FieldError
-											message={
-												passwordForm.formState.errors.newPassword?.message
-											}
-										/>
-									</div>
-
-									<div className="space-y-1.5">
-										<Label htmlFor="profile-confirm-password">
-											Confirmar nova senha
-										</Label>
-										<Input
-											autoComplete="new-password"
-											className={cn(
-												passwordForm.formState.errors.confirmPassword
-													? 'border-destructive focus-visible:border-destructive'
-													: null,
-											)}
-											id="profile-confirm-password"
-											placeholder="Repita a nova senha"
-											type="password"
-											{...passwordForm.register('confirmPassword')}
-										/>
-										<FieldError
-											message={
-												passwordForm.formState.errors.confirmPassword?.message
-											}
-										/>
-									</div>
-
-									<Button
-										className="w-full rounded-xl bg-[#2d3648] text-white hover:bg-[#232b3b]"
-										disabled={updateOwnPasswordMutation.isPending}
-										type="submit"
-									>
-										{updateOwnPasswordMutation.isPending ? (
-											<>
-												<LoaderCircle className="size-4 animate-spin" />
-												Salvando senha...
-											</>
-										) : (
-											'Salvar nova senha'
+							<form
+								className="space-y-4"
+								noValidate
+								onSubmit={handlePasswordSubmit}
+							>
+								<div className="space-y-1.5">
+									<Label htmlFor="profile-current-password">Senha atual</Label>
+									<Input
+										autoComplete="current-password"
+										className={cn(
+											passwordForm.formState.errors.currentPassword
+												? 'border-destructive focus-visible:border-destructive'
+												: null,
 										)}
-									</Button>
-								</form>
-							</CardContent>
-						</Card>
-					</section>
-				) : null}
+										id="profile-current-password"
+										placeholder="Digite sua senha atual"
+										type="password"
+										{...passwordForm.register('currentPassword')}
+									/>
+									<FieldError
+										message={
+											passwordForm.formState.errors.currentPassword?.message
+										}
+									/>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label htmlFor="profile-new-password">Nova senha</Label>
+									<Input
+										autoComplete="new-password"
+										className={cn(
+											passwordForm.formState.errors.newPassword
+												? 'border-destructive focus-visible:border-destructive'
+												: null,
+										)}
+										id="profile-new-password"
+										placeholder="Mínimo de 8 caracteres"
+										type="password"
+										{...passwordForm.register('newPassword')}
+									/>
+									<FieldError
+										message={passwordForm.formState.errors.newPassword?.message}
+									/>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label htmlFor="profile-confirm-password">
+										Confirmar nova senha
+									</Label>
+									<Input
+										autoComplete="new-password"
+										className={cn(
+											passwordForm.formState.errors.confirmPassword
+												? 'border-destructive focus-visible:border-destructive'
+												: null,
+										)}
+										id="profile-confirm-password"
+										placeholder="Repita a nova senha"
+										type="password"
+										{...passwordForm.register('confirmPassword')}
+									/>
+									<FieldError
+										message={
+											passwordForm.formState.errors.confirmPassword?.message
+										}
+									/>
+								</div>
+
+								<Button
+									className="w-full rounded-xl bg-[#2d3648] text-white hover:bg-[#232b3b]"
+									disabled={updateOwnPasswordMutation.isPending}
+									type="submit"
+								>
+									{updateOwnPasswordMutation.isPending ? (
+										<>
+											<LoaderCircle className="size-4 animate-spin" />
+											Salvando senha...
+										</>
+									) : (
+										'Salvar nova senha'
+									)}
+								</Button>
+							</form>
+						</CardContent>
+					</Card>
+				</section>
 			</div>
 		</main>
 	);
