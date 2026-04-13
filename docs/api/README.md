@@ -72,6 +72,20 @@ flowchart TD
 ### Decisão atual do projeto
 
 - `auth`, `users`, `teams`, `stores`, `customers` e `leads` seguem desenho por recurso.
+
+#### Leads — listagem consumida pelo frontend (Sprint 1)
+
+Rotas já utilizadas pela UI em `/app/leads` (autenticação obrigatória, envelope de sucesso habitual):
+
+| Método | Caminho | Uso na UI |
+| --- | --- | --- |
+| `GET` | `/api/leads/owner/:ownerUserId` | Atendente: lista com `ownerUserId = id` do utilizador autenticado. |
+| `GET` | `/api/leads/team/:teamId` | Gestor / administrador: lista com `teamId` do utilizador quando existir vínculo de equipa. |
+
+Corpo de cada item: `id`, `customerId`, `storeId`, `ownerUserId`, `source`, `status` (ver Swagger / `LeadResponseDto`).
+
+Respostas `403`: listagem por `owner` exige `ownerUserId` igual ao utilizador do JWT; listagem por `team` exige papel `MANAGER`, `GENERAL_MANAGER` ou `ADMINISTRATOR` e `teamId` igual ao da conta persistida.
+
 - `dashboards` podem e devem ter endpoints agregadores por tela.
 - o detalhe de lead deve começar simples, com recurso principal e subrotas como histórico; só deve ganhar endpoint de composição se houver ganho real de desempenho e simplicidade.
 - a API não deve nascer acoplada à UI inteira; agregação é exceção consciente, não regra padrão.
