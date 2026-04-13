@@ -32,7 +32,7 @@ const getCurrentUserFromRequest = cache(
 		}
 
 		const response = await fetch(
-			`${env.apiInternalUrl.replace(/\/$/, '')}/api/auth/me`,
+			`${env.apiInternalUrl.replace(/\/$/, '')}/api/auth/session`,
 			{
 				cache: 'no-store',
 				headers: {
@@ -41,10 +41,6 @@ const getCurrentUserFromRequest = cache(
 				},
 			},
 		);
-
-		if (response.status === 401 || response.status === 403) {
-			return null;
-		}
 
 		if (!response.ok) {
 			throw new Error(
@@ -60,7 +56,11 @@ const getCurrentUserFromRequest = cache(
 			'success' in payload &&
 			'data' in payload
 		) {
-			return authenticatedUserSchema.parse((payload as { data: unknown }).data);
+			const data = (payload as { data: unknown }).data;
+			if (data === null) {
+				return null;
+			}
+			return authenticatedUserSchema.parse(data);
 		}
 
 		return authenticatedUserSchema.parse(payload);
