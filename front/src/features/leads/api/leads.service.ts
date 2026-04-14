@@ -16,8 +16,7 @@ async function fetchLeadsByOwner(ownerUserId: string, signal?: AbortSignal) {
 
 /**
  * Lista leads associados à equipa.
- * Regra de UI: `MANAGER` / `ADMINISTRATOR` com `user.teamId` definido.
- * O servidor exige papel adequado e `teamId` igual ao da conta (`403` caso contrário).
+ * O servidor aplica `LeadAccessPolicy` (equipas membro/gestor; papéis globais podem ler qualquer `teamId`).
  */
 async function fetchLeadsByTeam(teamId: string, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/leads/team/${teamId}`, {
@@ -27,7 +26,7 @@ async function fetchLeadsByTeam(teamId: string, signal?: AbortSignal) {
 }
 
 /**
- * Lista todos os leads (`GET /api/leads/all`). Reservado a `ADMINISTRATOR` no servidor.
+ * Lista todos os leads (`GET /api/leads/all`). Reservado a `ADMINISTRATOR` e `GENERAL_MANAGER` no servidor.
  */
 async function fetchLeadsAll(signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>('/api/leads/all', {
