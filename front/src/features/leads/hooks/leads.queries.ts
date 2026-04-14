@@ -40,6 +40,8 @@ type UseLeadsListQueryResult = {
 	isPending: boolean;
 	isError: boolean;
 	isSuccess: boolean;
+	/** Várias consultas por equipa: algumas falharam mas há dados das que responderam. */
+	hasPartialFailure: boolean;
 	error: unknown;
 	refetch: () => Promise<void>;
 };
@@ -84,17 +86,28 @@ function useLeadsListQuery(user: AuthenticatedUser): UseLeadsListQueryResult {
 
 	if (scope?.kind === 'teams') {
 		const isPending = teamQueries.some((q) => q.isPending);
-		const isError = teamQueries.some((q) => q.isError);
-		const err = teamQueries.find((q) => q.error)?.error;
-		const isSuccess =
-			teamQueries.length > 0 && teamQueries.every((q) => q.isSuccess);
-		const data = mergeLeadListsById(teamQueries.map((q) => q.data ?? []));
+		const successQueries = teamQueries.filter((q) => q.isSuccess);
+		const errorQueries = teamQueries.filter((q) => q.isError);
+		const allSettled =
+			teamQueries.length > 0 &&
+			teamQueries.every((q) => !q.isPending);
+		const mergedFromSuccess = mergeLeadListsById(
+			successQueries.map((q) => q.data ?? []),
+		);
+		const hasSuccessfulQuery = successQueries.length > 0;
+		const hasPartialFailure =
+			allSettled && errorQueries.length > 0 && hasSuccessfulQuery;
+		const isError =
+			allSettled && !hasSuccessfulQuery && errorQueries.length > 0;
+		const isSuccess = !isPending && hasSuccessfulQuery;
+		const err = errorQueries[0]?.error;
 		return {
 			scope,
-			data: isSuccess ? data : undefined,
+			data: hasSuccessfulQuery ? mergedFromSuccess : undefined,
 			isPending,
 			isError,
 			isSuccess,
+			hasPartialFailure,
 			error: err ?? null,
 			refetch: async () => {
 				await Promise.all(teamQueries.map((q) => q.refetch()));
@@ -108,6 +121,7 @@ function useLeadsListQuery(user: AuthenticatedUser): UseLeadsListQueryResult {
 		isPending: singleQuery.isPending,
 		isError: singleQuery.isError,
 		isSuccess: singleQuery.isSuccess,
+		hasPartialFailure: false,
 		error: singleQuery.error,
 		refetch: async () => {
 			await singleQuery.refetch();
