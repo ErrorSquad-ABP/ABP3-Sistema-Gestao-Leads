@@ -93,7 +93,7 @@ class AuthSessionPrismaRepository {
 			// Serialize criação/limpeza por utilizador para evitar race em burst de logins.
 			// Advisory lock evita depender do nome da tabela `User` no Postgres.
 			const keys = advisoryKeysFromUuid(input.userId);
-			await tx.$queryRaw`SELECT pg_advisory_xact_lock(${keys.k1}::int, ${keys.k2}::int)`;
+			await tx.$executeRaw`SELECT pg_advisory_xact_lock(${keys.k1}::int, ${keys.k2}::int)`;
 
 			await tx.authSession.create({
 				data: {

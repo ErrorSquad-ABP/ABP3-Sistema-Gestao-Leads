@@ -8,7 +8,6 @@ import { Email } from '../../../../shared/domain/value-objects/email.value-objec
 import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 import { User } from '../../../users/domain/entities/user.entity.js';
-import { UserFactory } from '../../../users/domain/factories/user.factory.js';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error.js';
 import { UpdateOwnPasswordUseCase } from './update-own-password.use-case.js';
 
@@ -35,12 +34,12 @@ describe('UpdateOwnPasswordUseCase', () => {
 		Email.create('t@example.com'),
 		PasswordHash.create(VALID_ARGON2_FIXTURE),
 		'ADMINISTRATOR',
-		null,
+		[],
+		[],
 	);
 
 	it('lança DomainValidationError quando a nova senha é igual à atual', async () => {
 		const uc = new UpdateOwnPasswordUseCase(
-			new UserFactory(),
 			{} as never,
 			{} as never,
 			{} as never,
@@ -72,7 +71,6 @@ describe('UpdateOwnPasswordUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnPasswordUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,
@@ -101,7 +99,10 @@ describe('UpdateOwnPasswordUseCase', () => {
 			self.email,
 			PasswordHash.create(NEW_HASH),
 			self.role,
-			self.teamId,
+			self.memberTeamIds,
+			self.managedTeamIds,
+			self.accessGroupId,
+			self.accessGroup,
 		);
 		const users = {
 			findById: mock.fn(async () => self),
@@ -116,7 +117,6 @@ describe('UpdateOwnPasswordUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnPasswordUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,

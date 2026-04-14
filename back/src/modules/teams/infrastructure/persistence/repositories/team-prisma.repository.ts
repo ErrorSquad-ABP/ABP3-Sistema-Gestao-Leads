@@ -1,16 +1,15 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
-import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
-import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
+import type { TeamId } from '../../../../../shared/domain/types/identifiers.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
-import { Team } from '../../../domain/entities/team.entity.js';
 import type { ITeamRepository } from '../../../domain/repositories/team.repository.js';
+import { TeamMapper } from '../mappers/team.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
-type TeamRecord = {
-	readonly id: string;
-	readonly name: string;
-};
+
+const teamInclude = {
+	members: { select: { id: true } },
+} as const;
 
 class TeamPrismaRepository implements ITeamRepository {
 	constructor(
@@ -18,46 +17,74 @@ class TeamPrismaRepository implements ITeamRepository {
 		private readonly transactionContext?: TransactionContext,
 	) {}
 
-	async create(team: Team): Promise<Team> {
+	async create(team: Parameters<ITeamRepository['create']>[0]) {
+		const record = TeamMapper.toRecord(team);
 		const created = await this.client.team.create({
 			data: {
-				id: team.id.value,
-				name: team.name.value,
+				id: record.id,
+				name: record.name,
+				storeId: record.storeId,
+				managerId: record.managerId,
+				...(record.memberUserIds.length > 0
+					? {
+							members: {
+								connect: record.memberUserIds.map((id) => ({ id })),
+							},
+						}
+					: {}),
 			},
+			include: teamInclude,
 		});
-		return this.toDomain(created);
+		return TeamMapper.toDomain(created);
 	}
 
-	async update(team: Team): Promise<Team> {
+	async update(team: Parameters<ITeamRepository['update']>[0]) {
+		const record = TeamMapper.toRecord(team);
 		const updated = await this.client.team.update({
-			data: { name: team.name.value },
-			where: { id: team.id.value },
+			data: {
+				name: record.name,
+				storeId: record.storeId,
+				managerId: record.managerId,
+				members: {
+					set: record.memberUserIds.map((id) => ({ id })),
+				},
+			},
+			where: { id: record.id },
+			include: teamInclude,
 		});
-		return this.toDomain(updated);
+		return TeamMapper.toDomain(updated);
 	}
 
 	async delete(id: Parameters<ITeamRepository['delete']>[0]): Promise<void> {
 		await this.client.team.delete({ where: { id: id.value } });
 	}
 
-	async findById(
-		id: Parameters<ITeamRepository['findById']>[0],
-	): Promise<Team | null> {
-		const row = await this.client.team.findUnique({
+	async findById(id: Parameters<ITeamRepository['findById']>[0]) {
+		const team = await this.client.team.findUnique({
 			where: { id: id.value },
+			include: teamInclude,
 		});
-		return row ? this.toDomain(row) : null;
+		return team ? TeamMapper.toDomain(team) : null;
 	}
 
-	async list(): Promise<Team[]> {
-		const rows = await this.client.team.findMany({
+	async listByIds(ids: readonly TeamId[]) {
+		if (ids.length === 0) {
+			return [];
+		}
+		const teams = await this.client.team.findMany({
+			where: { id: { in: ids.map((i) => i.value) } },
 			orderBy: { createdAt: 'desc' },
+			include: teamInclude,
 		});
-		return rows.map((row) => this.toDomain(row));
+		return teams.map((team) => TeamMapper.toDomain(team));
 	}
 
-	private toDomain(record: TeamRecord): Team {
-		return new Team(Uuid.parse(record.id), Name.create(record.name), null);
+	async list() {
+		const teams = await this.client.team.findMany({
+			orderBy: { createdAt: 'desc' },
+			include: teamInclude,
+		});
+		return teams.map((team) => TeamMapper.toDomain(team));
 	}
 
 	private get client(): PrismaClientLike {

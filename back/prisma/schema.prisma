@@ -22,6 +22,8 @@ enum LeadSource {
   INDICATION
   OTHER
   INSTAGRAM
+  FACEBOOK
+  MERCADO_LIVRE
 }
 
 enum LeadStatus {
@@ -33,40 +35,40 @@ enum LeadStatus {
   LOST
 }
 
-model Team {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Store {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  leads     Lead[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model AccessGroup {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String    @unique
+  description   String
+  baseRole      UserRole?
+  featureKeys   Json
+  isSystemGroup Boolean   @default(false)
+  users         User[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model User {
-  id           String        @id @default(uuid()) @db.Uuid
-  name         String
-  email        String        @unique
-  password     String
-  role         UserRole
-  teamId       String?       @db.Uuid
-  team         Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  ownedLeads   Lead[]        @relation("LeadOwner")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  auditLogs    AuditLog[]
-  authSessions AuthSession[]
+  id            String       @id @default(uuid()) @db.Uuid
+  name          String
+  email         String       @unique
+  password      String
+  role          UserRole
+  accessGroupId String?      @db.Uuid
+  accessGroup   AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
+
+  memberTeams   Team[]       @relation("TeamMembers")
+  managedTeams  Team[]       @relation("TeamManager")
+
+  ownedLeads    Lead[]       @relation("LeadOwner")
+  auditLogs     AuditLog[]
+  authSessions  AuthSession[]
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
-/// Sessão de refresh opaco (hash do segredo em disco; token `<id>.<secret>` só no cliente).
 model AuthSession {
-  id               String    @id @default(uuid()) @db.Uuid
+  id               String    @id @db.Uuid
   userId           String    @db.Uuid
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   refreshTokenHash String    @db.VarChar(64)
@@ -80,6 +82,30 @@ model AuthSession {
 
   @@index([userId])
   @@map("auth_sessions")
+}
+
+model Team {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+
+  storeId     String     @db.Uuid
+  store       Store      @relation(fields: [storeId], references: [id], onDelete: Restrict)
+
+  members     User[]     @relation("TeamMembers")
+  managerId   String?    @db.Uuid
+  manager     User?      @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Store {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  teams       Team[]
+  leads       Lead[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Customer {

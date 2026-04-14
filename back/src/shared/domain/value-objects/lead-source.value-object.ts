@@ -5,6 +5,9 @@ const ALLOWED_LEAD_SOURCES = [
 	'phone-call',
 	'whatsapp',
 	'instagram',
+	'facebook',
+	'mercado-livre',
+	'indication',
 	'digital-form',
 	'other',
 ] as const;

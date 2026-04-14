@@ -13,6 +13,10 @@ describe('AuthSessionPrismaRepository', () => {
 
 		const calls: Array<{ sql: string }> = [];
 		const tx = {
+			$executeRaw: mock.fn(async (strings: TemplateStringsArray) => {
+				calls.push({ sql: strings.join('') });
+				return 0;
+			}),
 			$queryRaw: mock.fn(async (strings: TemplateStringsArray) => {
 				calls.push({ sql: strings.join('') });
 				return [];

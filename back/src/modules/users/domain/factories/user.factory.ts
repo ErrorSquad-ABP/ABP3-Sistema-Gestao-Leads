@@ -10,7 +10,7 @@ type CreateUserParams = {
 	readonly email: string;
 	readonly passwordHash: string;
 	readonly role: string;
-	readonly teamId: string | null;
+	readonly accessGroupId: string | null;
 };
 
 type UpdateUserParams = {
@@ -18,7 +18,7 @@ type UpdateUserParams = {
 	readonly email?: string;
 	readonly passwordHash?: PasswordHash;
 	readonly role?: string;
-	readonly teamId?: string | null;
+	readonly accessGroupId?: string | null;
 };
 
 class UserFactory {
@@ -29,22 +29,39 @@ class UserFactory {
 			Email.create(params.email),
 			PasswordHash.create(params.passwordHash),
 			parseUserRole(params.role),
-			params.teamId === null ? null : Uuid.parse(params.teamId),
+			[],
+			[],
+			params.accessGroupId === null ? null : Uuid.parse(params.accessGroupId),
+			null,
 		);
 	}
 
 	update(existing: User, params: UpdateUserParams): User {
+		const nextAccessGroupId =
+			params.accessGroupId !== undefined
+				? params.accessGroupId === null
+					? null
+					: Uuid.parse(params.accessGroupId)
+				: existing.accessGroupId;
+		const nextAccessGroup =
+			params.accessGroupId === undefined
+				? existing.accessGroup
+				: nextAccessGroupId !== null &&
+						existing.accessGroup !== null &&
+						existing.accessGroup.id.equals(nextAccessGroupId)
+					? existing.accessGroup
+					: null;
+
 		return new User(
 			existing.id,
 			params.name !== undefined ? Name.create(params.name) : existing.name,
 			params.email !== undefined ? Email.create(params.email) : existing.email,
 			params.passwordHash ?? existing.passwordHash,
 			params.role !== undefined ? parseUserRole(params.role) : existing.role,
-			params.teamId !== undefined
-				? params.teamId === null
-					? null
-					: Uuid.parse(params.teamId)
-				: existing.teamId,
+			existing.memberTeamIds,
+			existing.managedTeamIds,
+			nextAccessGroupId,
+			nextAccessGroup,
 		);
 	}
 }
