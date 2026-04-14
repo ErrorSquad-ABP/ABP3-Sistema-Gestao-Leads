@@ -5,7 +5,8 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import type { UserRole as PrismaUserRole } from '../../../../generated/prisma/enums.js';
-import type { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { AccessGroupSummaryDto } from '../dto/access-group-summary.dto.js';
 
 type CanonicalUserRole =
