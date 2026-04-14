@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
+// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
