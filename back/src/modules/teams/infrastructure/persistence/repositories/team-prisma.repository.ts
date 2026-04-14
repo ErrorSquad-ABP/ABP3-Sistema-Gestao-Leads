@@ -1,5 +1,6 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
+import type { TeamId } from '../../../../../shared/domain/types/identifiers.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { ITeamRepository } from '../../../domain/repositories/team.repository.js';
 import { TeamMapper } from '../mappers/team.mapper.js';
@@ -64,6 +65,18 @@ class TeamPrismaRepository implements ITeamRepository {
 			include: teamInclude,
 		});
 		return team ? TeamMapper.toDomain(team) : null;
+	}
+
+	async listByIds(ids: readonly TeamId[]) {
+		if (ids.length === 0) {
+			return [];
+		}
+		const teams = await this.client.team.findMany({
+			where: { id: { in: ids.map((i) => i.value) } },
+			orderBy: { createdAt: 'desc' },
+			include: teamInclude,
+		});
+		return teams.map((team) => TeamMapper.toDomain(team));
 	}
 
 	async list() {

@@ -6,15 +6,23 @@ import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { TeamNotFoundError } from '../../domain/errors/team-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { TeamRepositoryFactory } from '../../infrastructure/persistence/factories/team-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
+import { TeamAccessPolicy } from '../services/team-access-policy.service.js';
+import type { TeamActor } from '../types/team-actor.js';
 
 @Injectable()
 class RemoveTeamMemberUseCase {
 	@Inject(UNIT_OF_WORK)
 	private readonly unitOfWork!: IUnitOfWork;
 
-	constructor(private readonly teamRepositoryFactory: TeamRepositoryFactory) {}
+	constructor(
+		private readonly teamAccessPolicy: TeamAccessPolicy,
+		private readonly teamRepositoryFactory: TeamRepositoryFactory,
+	) {}
 
-	async execute(teamId: string, userId: string) {
+	async execute(actor: TeamActor, teamId: string, userId: string) {
+		await this.teamAccessPolicy.assertCanMutateTeam(actor, teamId);
+
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const teams = this.teamRepositoryFactory.create(transactionContext);

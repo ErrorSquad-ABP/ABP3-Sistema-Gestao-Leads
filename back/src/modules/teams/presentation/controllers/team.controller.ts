@@ -9,6 +9,7 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	UseGuards,
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
@@ -24,6 +25,12 @@ import {
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/current-user.decorator.js';
+import { JwtAuthGuard } from '../../../auth/jwt-auth.guard.js';
+import { RolesGuard } from '../../../auth/roles.guard.js';
 import { Roles } from '../../../../shared/presentation/decorators/roles.decorator.js';
 import {
 	ApiCreatedResponseEnvelope,
@@ -78,13 +85,14 @@ const UNAUTHORIZED = {
 
 const FORBIDDEN = {
 	description:
-		'Papel insuficiente: exige MANAGER, GENERAL_MANAGER ou ADMINISTRATOR (estrutura comercial / equipes).',
+		'Papel insuficiente ou fora do escopo da loja/equipe (MANAGER so atua nas equipes que gerencia e nas lojas ja vinculadas).',
 };
 
 @ApiBearerAuth('access-token')
 @ApiTags('teams')
 @ApiUnauthorizedResponse(UNAUTHORIZED)
 @ApiForbiddenResponse(FORBIDDEN)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR')
 @Controller('teams')
 class TeamController {
@@ -112,13 +120,19 @@ class TeamController {
 			'Conflito de negocio relacionado ao contrato da equipe, quando aplicavel.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body() body: CreateTeamValidator) {
-		const team = await this.createTeamUseCase.execute({
-			name: body.name,
-			storeId: body.storeId,
-			managerId: body.managerId ?? null,
-			initialMemberUserIds: body.initialMemberUserIds,
-		});
+	async create(
+		@CurrentUser() user: JwtUser,
+		@Body() body: CreateTeamValidator,
+	) {
+		const team = await this.createTeamUseCase.execute(
+			{ userId: user.sub, role: user.role },
+			{
+				name: body.name,
+				storeId: body.storeId,
+				managerId: body.managerId ?? null,
+				initialMemberUserIds: body.initialMemberUserIds,
+			},
+		);
 		return TeamPresenter.toResponse(team);
 	}
 
@@ -130,9 +144,9 @@ class TeamController {
 	})
 	@ApiOkResponseEnvelopeArray(TeamResponseDto)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	list() {
+	list(@CurrentUser() user: JwtUser) {
 		return this.listTeamsUseCase
-			.execute()
+			.execute({ userId: user.sub, role: user.role })
 			.then((teams) => TeamPresenter.toResponseList(teams));
 	}
 
@@ -150,10 +164,12 @@ class TeamController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async assignManager(
+		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: AssignTeamManagerValidator,
 	) {
 		const team = await this.assignTeamManagerUseCase.execute(
+			{ userId: user.sub, role: user.role },
 			id,
 			body.managerId,
 		);
@@ -173,12 +189,17 @@ class TeamController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async addMember(
+		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: AddTeamMemberValidator,
 	) {
-		const team = await this.addTeamMemberUseCase.execute(id, {
-			userId: body.userId,
-		});
+		const team = await this.addTeamMemberUseCase.execute(
+			{ userId: user.sub, role: user.role },
+			id,
+			{
+				userId: body.userId,
+			},
+		);
 		return TeamPresenter.toResponse(team);
 	}
 
@@ -199,10 +220,15 @@ class TeamController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async removeMember(
+		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
-		@Param('userId', ParseUUIDPipe) userId: string,
+		@Param('userId', ParseUUIDPipe) memberUserId: string,
 	) {
-		const team = await this.removeTeamMemberUseCase.execute(id, userId);
+		const team = await this.removeTeamMemberUseCase.execute(
+			{ userId: user.sub, role: user.role },
+			id,
+			memberUserId,
+		);
 		return TeamPresenter.toResponse(team);
 	}
 
@@ -217,8 +243,14 @@ class TeamController {
 		description: 'Equipe nao encontrada.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async findById(@Param('id', ParseUUIDPipe) id: string) {
-		const team = await this.findTeamUseCase.execute(id);
+	async findById(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	) {
+		const team = await this.findTeamUseCase.execute(
+			{ userId: user.sub, role: user.role },
+			id,
+		);
 		return TeamPresenter.toResponse(team);
 	}
 
@@ -232,10 +264,15 @@ class TeamController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateTeamValidator,
 	) {
-		const team = await this.updateTeamUseCase.execute(id, body);
+		const team = await this.updateTeamUseCase.execute(
+			{ userId: user.sub, role: user.role },
+			id,
+			body,
+		);
 		return TeamPresenter.toResponse(team);
 	}
 
@@ -254,8 +291,14 @@ class TeamController {
 		description: 'Equipe nao encontrada.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-		await this.deleteTeamUseCase.execute(id);
+	async delete(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteTeamUseCase.execute(
+			{ userId: user.sub, role: user.role },
+			id,
+		);
 	}
 }
 

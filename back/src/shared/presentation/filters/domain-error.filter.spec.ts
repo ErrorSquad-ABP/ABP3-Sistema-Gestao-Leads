@@ -7,6 +7,7 @@ import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/s
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
 import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
 import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
+import { TeamAccessDeniedError } from '../../../modules/teams/domain/errors/team-access-denied.error.js';
 import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { DomainErrorFilter } from './domain-error.filter.js';
 
@@ -52,6 +53,16 @@ function createHttpHost(): {
 }
 
 describe('DomainErrorFilter', () => {
+	it('maps team access denied to 403', () => {
+		const filter = new DomainErrorFilter();
+		const mapped = mapDomainException(
+			filter,
+			new TeamAccessDeniedError('Fora do escopo.'),
+		);
+		assert.equal(mapped?.status, 403);
+		assert.equal(mapped?.body.errors?.[0]?.code, 'team.access.denied');
+	});
+
 	it('maps team and store not found errors to 404', () => {
 		const filter = new DomainErrorFilter();
 		const teamMapped = mapDomainException(

@@ -9,6 +9,9 @@ import { UserRepositoryFactory } from '../../../users/infrastructure/persistence
 import { TeamNotFoundError } from '../../domain/errors/team-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { TeamRepositoryFactory } from '../../infrastructure/persistence/factories/team-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
+import { TeamAccessPolicy } from '../services/team-access-policy.service.js';
+import type { TeamActor } from '../types/team-actor.js';
 
 @Injectable()
 class AssignTeamManagerUseCase {
@@ -16,17 +19,24 @@ class AssignTeamManagerUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
+		private readonly teamAccessPolicy: TeamAccessPolicy,
 		private readonly teamRepositoryFactory: TeamRepositoryFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 	) {}
 
-	async execute(teamId: string, managerId: string | null | undefined) {
+	async execute(
+		actor: TeamActor,
+		teamId: string,
+		managerId: string | null | undefined,
+	) {
 		if (managerId === undefined) {
 			throw new BadRequestException({
 				message: 'Informe managerId (uuid do gerente ou null para remover).',
 				code: 'team.manager_id.required',
 			});
 		}
+
+		await this.teamAccessPolicy.assertCanMutateTeam(actor, teamId);
 
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();

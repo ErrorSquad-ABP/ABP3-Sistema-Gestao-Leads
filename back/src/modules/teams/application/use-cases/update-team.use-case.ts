@@ -12,6 +12,9 @@ import { TeamNotFoundError } from '../../domain/errors/team-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { TeamRepositoryFactory } from '../../infrastructure/persistence/factories/team-repository.factory.js';
 import type { UpdateTeamDto } from '../dto/update-team.dto.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
+import { TeamAccessPolicy } from '../services/team-access-policy.service.js';
+import type { TeamActor } from '../types/team-actor.js';
 
 function hasTeamUpdatePayload(dto: UpdateTeamDto): boolean {
 	return dto.name !== undefined || dto.storeId !== undefined;
@@ -23,15 +26,24 @@ class UpdateTeamUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
+		private readonly teamAccessPolicy: TeamAccessPolicy,
 		private readonly teamRepositoryFactory: TeamRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
 	) {}
 
-	async execute(teamId: string, dto: UpdateTeamDto) {
+	async execute(actor: TeamActor, teamId: string, dto: UpdateTeamDto) {
 		if (!hasTeamUpdatePayload(dto)) {
 			throw new DomainValidationError(
 				'Informe ao menos um campo para atualizar a equipe.',
 				{ code: 'team.update.no_fields' },
+			);
+		}
+
+		await this.teamAccessPolicy.assertCanMutateTeam(actor, teamId);
+		if (dto.storeId !== undefined) {
+			await this.teamAccessPolicy.assertStoreAllowedForManager(
+				actor,
+				dto.storeId,
 			);
 		}
 

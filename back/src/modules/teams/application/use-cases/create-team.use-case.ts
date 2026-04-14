@@ -15,6 +15,9 @@ import { TeamFactory } from '../../domain/factories/team.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { TeamRepositoryFactory } from '../../infrastructure/persistence/factories/team-repository.factory.js';
 import type { CreateTeamDto } from '../dto/create-team.dto.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
+import { TeamAccessPolicy } from '../services/team-access-policy.service.js';
+import type { TeamActor } from '../types/team-actor.js';
 
 @Injectable()
 class CreateTeamUseCase {
@@ -22,13 +25,20 @@ class CreateTeamUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
+		private readonly teamAccessPolicy: TeamAccessPolicy,
 		private readonly teamFactory: TeamFactory,
 		private readonly teamRepositoryFactory: TeamRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 	) {}
 
-	async execute(dto: CreateTeamDto) {
+	async execute(actor: TeamActor, dto: CreateTeamDto) {
+		const dtoForPolicy: CreateTeamDto = {
+			...dto,
+			managerId: dto.managerId ?? null,
+		};
+		await this.teamAccessPolicy.assertCanCreateTeam(actor, dtoForPolicy);
+
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const teams = this.teamRepositoryFactory.create(transactionContext);

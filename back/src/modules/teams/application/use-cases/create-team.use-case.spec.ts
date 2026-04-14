@@ -17,7 +17,18 @@ import type { ITeamRepository } from '../../domain/repositories/team.repository.
 import type { TeamRepositoryFactory } from '../../infrastructure/persistence/factories/team-repository.factory.js';
 import type { StoreRepositoryFactory } from '../../../stores/infrastructure/persistence/factories/store-repository.factory.js';
 import type { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
+import type { TeamAccessPolicy } from '../services/team-access-policy.service.js';
+import type { TeamActor } from '../types/team-actor.js';
 import { CreateTeamUseCase } from './create-team.use-case.js';
+
+const stubTeamAccessPolicy = {
+	assertCanCreateTeam: async () => {},
+} as unknown as TeamAccessPolicy;
+
+const administratorActor: TeamActor = {
+	userId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+	role: 'ADMINISTRATOR',
+};
 
 class FakeUnitOfWork implements IUnitOfWork {
 	async run<T>(fn: () => Promise<T>): Promise<T> {
@@ -87,6 +98,9 @@ describe('CreateTeamUseCase', () => {
 			async findById() {
 				return null;
 			},
+			async listByIds() {
+				return [];
+			},
 			async list() {
 				return [];
 			},
@@ -131,6 +145,7 @@ describe('CreateTeamUseCase', () => {
 		};
 
 		const useCase = new CreateTeamUseCase(
+			stubTeamAccessPolicy,
 			new TeamFactory(),
 			{ create: () => teams } as TeamRepositoryFactory,
 			{ create: () => stores } as StoreRepositoryFactory,
@@ -139,7 +154,7 @@ describe('CreateTeamUseCase', () => {
 		(useCase as unknown as { unitOfWork: IUnitOfWork }).unitOfWork =
 			new FakeUnitOfWork();
 
-		const result = await useCase.execute({
+		const result = await useCase.execute(administratorActor, {
 			name: 'Equipe Loja Centro',
 			managerId: manager.id.value,
 			storeId: store.id.value,
@@ -155,6 +170,7 @@ describe('CreateTeamUseCase', () => {
 		const attendant = buildAttendant();
 
 		const useCase = new CreateTeamUseCase(
+			stubTeamAccessPolicy,
 			new TeamFactory(),
 			{
 				create: () =>
@@ -168,6 +184,9 @@ describe('CreateTeamUseCase', () => {
 						async delete() {},
 						async findById() {
 							return null;
+						},
+						async listByIds() {
+							return [];
 						},
 						async list() {
 							return [];
@@ -222,7 +241,7 @@ describe('CreateTeamUseCase', () => {
 
 		await assert.rejects(
 			() =>
-				useCase.execute({
+				useCase.execute(administratorActor, {
 					name: 'Equipe',
 					managerId: attendant.id.value,
 					storeId: store.id.value,
@@ -235,6 +254,7 @@ describe('CreateTeamUseCase', () => {
 		const manager = buildManager();
 
 		const useCase = new CreateTeamUseCase(
+			stubTeamAccessPolicy,
 			new TeamFactory(),
 			{
 				create: () =>
@@ -248,6 +268,9 @@ describe('CreateTeamUseCase', () => {
 						async delete() {},
 						async findById() {
 							return null;
+						},
+						async listByIds() {
+							return [];
 						},
 						async list() {
 							return [];
@@ -302,7 +325,7 @@ describe('CreateTeamUseCase', () => {
 
 		await assert.rejects(
 			() =>
-				useCase.execute({
+				useCase.execute(administratorActor, {
 					name: 'Equipe sem Loja',
 					managerId: manager.id.value,
 					storeId: '33333333-3333-4333-8333-333333333333',

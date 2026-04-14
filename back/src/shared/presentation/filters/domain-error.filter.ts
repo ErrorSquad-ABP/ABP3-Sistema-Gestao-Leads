@@ -16,6 +16,7 @@ import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not
 import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/store-delete-blocked.error.js';
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
 import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
+import { TeamAccessDeniedError } from '../../../modules/teams/domain/errors/team-access-denied.error.js';
 import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
 import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
@@ -41,6 +42,7 @@ import type {
  * | `StoreDeleteBlockedError` | 409 |
  * | `TeamNotFoundError` | 404 |
  * | `TeamInvalidManagerError`, `TeamInvalidStoreError` | 400 |
+ * | `TeamAccessDeniedError` | 403 |
  * | `UserNotFoundError` | 404 |
  * | `UserEmailAlreadyExistsError` | 409 |
  * | `DomainValidationError` | 400 |
@@ -195,6 +197,10 @@ class DomainErrorFilter implements ExceptionFilter {
 			exception instanceof TeamInvalidStoreError
 		) {
 			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
+		}
+
+		if (exception instanceof TeamAccessDeniedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.FORBIDDEN);
 		}
 
 		// --- Users ---
