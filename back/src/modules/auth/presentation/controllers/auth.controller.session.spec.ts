@@ -158,6 +158,8 @@ describe('AuthController.session', () => {
 			PasswordHash.create(VALID_ARGON2_FIXTURE),
 			'MANAGER',
 			null,
+			null,
+			null,
 		);
 		const controller = new AuthController(
 			authConfig as never,
@@ -186,6 +188,8 @@ describe('AuthController.session', () => {
 			makeRequest({ headers: { authorization: 'Bearer jwt' }, cookies: {} }),
 		);
 		assert.deepEqual(out, {
+			accessGroup: null,
+			accessGroupId: null,
 			id: uid,
 			name: 'Ana',
 			email: 'ana@example.com',
