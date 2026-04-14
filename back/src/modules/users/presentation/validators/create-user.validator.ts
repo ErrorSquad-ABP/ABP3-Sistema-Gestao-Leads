@@ -49,6 +49,16 @@ class CreateUserValidator {
 	@ValidateIf((_, value) => value !== null && value !== undefined)
 	@IsUUID()
 	teamId?: string | null;
+
+	@ApiPropertyOptional({
+		format: 'uuid',
+		nullable: true,
+		description: 'Grupo de acesso opcional; null remove o vínculo.',
+	})
+	@IsOptional()
+	@ValidateIf((_, value) => value !== null && value !== undefined)
+	@IsUUID()
+	accessGroupId?: string | null;
 }
 
 export { CreateUserValidator };

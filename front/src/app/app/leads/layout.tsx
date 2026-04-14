@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react';
 
-import { getAllowedRolesForRoute } from '@/lib/auth/permissions';
-import { requireUserWithRoles } from '@/lib/auth/session';
+import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
 type LeadsLayoutProps = {
 	children: ReactNode;
 };
 
 async function LeadsLayout({ children }: LeadsLayoutProps) {
-	await requireUserWithRoles(getAllowedRolesForRoute('leads'));
+	await requireUserWithRouteAccess('leads');
 
 	return children;
 }

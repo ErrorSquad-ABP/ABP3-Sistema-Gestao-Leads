@@ -49,6 +49,7 @@ class CreateUserUseCase {
 
 			const passwordHash = await this.passwordHasher.hash(dto.password);
 			const user = this.userFactory.create({
+				accessGroupId: dto.accessGroupId,
 				name: dto.name,
 				email: dto.email,
 				passwordHash,

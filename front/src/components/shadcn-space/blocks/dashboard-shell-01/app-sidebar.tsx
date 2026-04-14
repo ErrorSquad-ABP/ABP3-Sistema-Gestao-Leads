@@ -18,7 +18,7 @@ import {
 	SidebarProvider,
 } from '@/components/ui/sidebar';
 import {
-	getNavigationItemsForRole,
+	getNavigationItemsForUser,
 	type AppNavigationItem,
 } from '@/lib/auth/permissions';
 import { SiteHeader } from '@/components/shadcn-space/blocks/dashboard-shell-01/site-header';
@@ -50,7 +50,7 @@ const sectionByKey: Record<AppNavigationItem['key'], string> = {
 };
 
 function buildNavData(currentUser: AuthenticatedUser): NavItem[] {
-	const items = getNavigationItemsForRole(currentUser.role);
+	const items = getNavigationItemsForUser(currentUser);
 	const grouped = new Map<string, NavItem[]>();
 
 	for (const item of items) {

@@ -8,6 +8,15 @@ import type { Email } from '../../../../shared/domain/value-objects/email.value-
 import type { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 import type { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 
+type UserAccessGroupSummary = {
+	readonly id: UUID;
+	readonly name: string;
+	readonly description: string;
+	readonly baseRole: UserRole | null;
+	readonly featureKeys: readonly string[];
+	readonly isSystemGroup: boolean;
+};
+
 /**
  * User aggregate root (operational context: users).
  */
@@ -18,6 +27,8 @@ class User extends AggregateRoot {
 	readonly passwordHash: PasswordHash;
 	readonly role: UserRole;
 	readonly teamId: TeamId | null;
+	readonly accessGroupId: UUID | null;
+	readonly accessGroup: UserAccessGroupSummary | null;
 
 	constructor(
 		id: UUID,
@@ -26,6 +37,8 @@ class User extends AggregateRoot {
 		passwordHash: PasswordHash,
 		role: UserRole,
 		teamId: TeamId | null,
+		accessGroupId: UUID | null,
+		accessGroup: UserAccessGroupSummary | null,
 	) {
 		super();
 		this.id = id;
@@ -34,6 +47,8 @@ class User extends AggregateRoot {
 		this.passwordHash = passwordHash;
 		this.role = role;
 		this.teamId = teamId;
+		this.accessGroupId = accessGroupId;
+		this.accessGroup = accessGroup;
 	}
 
 	/** Compara estado persistível (evita `update` no banco quando não há mudança real). */
@@ -48,13 +63,29 @@ class User extends AggregateRoot {
 			return false;
 		}
 		if (a.teamId === null && b.teamId === null) {
-			return true;
+			if (a.accessGroupId === null && b.accessGroupId === null) {
+				return true;
+			}
+			if (a.accessGroupId === null || b.accessGroupId === null) {
+				return false;
+			}
+			return a.accessGroupId.equals(b.accessGroupId);
 		}
 		if (a.teamId === null || b.teamId === null) {
 			return false;
 		}
-		return a.teamId.equals(b.teamId);
+		if (!a.teamId.equals(b.teamId)) {
+			return false;
+		}
+		if (a.accessGroupId === null && b.accessGroupId === null) {
+			return true;
+		}
+		if (a.accessGroupId === null || b.accessGroupId === null) {
+			return false;
+		}
+		return a.accessGroupId.equals(b.accessGroupId);
 	}
 }
 
+export type { UserAccessGroupSummary };
 export { User };

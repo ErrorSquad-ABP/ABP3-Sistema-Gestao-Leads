@@ -36,6 +36,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 		PasswordHash.create(VALID_ARGON2_FIXTURE),
 		'ADMINISTRATOR',
 		null,
+		null,
+		null,
 	);
 
 	it('lança DomainValidationError quando a nova senha é igual à atual', async () => {
@@ -102,6 +104,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 			PasswordHash.create(NEW_HASH),
 			self.role,
 			self.teamId,
+			self.accessGroupId,
+			self.accessGroup,
 		);
 		const users = {
 			findById: mock.fn(async () => self),
