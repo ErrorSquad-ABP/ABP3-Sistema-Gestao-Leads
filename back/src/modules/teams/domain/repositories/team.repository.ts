@@ -10,6 +10,8 @@ interface ITeamRepository {
 	update(team: Team): Promise<Team>;
 	delete(id: TeamId): Promise<void>;
 	findById(id: TeamId): Promise<Team | null>;
+	/** Lista por ids (filtro de escopo); lista vazia se `ids` for vazio. */
+	listByIds(ids: readonly TeamId[]): Promise<Team[]>;
 	list(): Promise<Team[]>;
 }
 

@@ -157,7 +157,8 @@ describe('AuthController.session', () => {
 			Email.create('ana@example.com'),
 			PasswordHash.create(VALID_ARGON2_FIXTURE),
 			'MANAGER',
-			null,
+			[],
+			[],
 			null,
 			null,
 		);
@@ -195,6 +196,8 @@ describe('AuthController.session', () => {
 			email: 'ana@example.com',
 			role: 'MANAGER',
 			teamId: null,
+			memberTeamIds: [],
+			managedTeamIds: [],
 		});
 	});
 });

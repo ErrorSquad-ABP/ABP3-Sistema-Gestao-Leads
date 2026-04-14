@@ -29,11 +29,17 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const leads = data ?? [];
 
 	const title = user.role === 'ATTENDANT' ? 'Meus leads' : 'Leads';
-	let subtitle = 'Leads do contexto da sua equipa.';
+	let subtitle = 'Leads do contexto das suas equipas.';
 	if (user.role === 'ATTENDANT') {
 		subtitle = 'Leads em que é o responsável pela operação.';
 	} else if (scope?.kind === 'all') {
-		subtitle = 'Todos os leads do sistema (vista de administrador).';
+		subtitle =
+			user.role === 'GENERAL_MANAGER'
+				? 'Todos os leads do sistema (vista de gestão geral).'
+				: 'Todos os leads do sistema (vista de administrador).';
+	} else if (scope?.kind === 'teams') {
+		subtitle =
+			'Leads agregados das equipas em que é membro ou gestor (sem duplicados).';
 	}
 
 	return (
@@ -53,9 +59,8 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 
 			{scope?.kind === 'none' ? (
 				<div className="rounded-none border border-border/75 bg-muted/30 px-4 py-8 text-sm text-muted-foreground">
-					Para listar leads por equipa, o seu utilizador precisa de estar
-					vinculado a uma equipa. Contacte um administrador se precisar de
-					apoio.
+					Sem equipas com visibilidade para listagem (membro ou gestor).
+					Contacte um administrador se precisar de apoio.
 				</div>
 			) : null}
 

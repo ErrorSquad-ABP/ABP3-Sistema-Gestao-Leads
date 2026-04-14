@@ -26,6 +26,15 @@ const queryKeys = {
 				: (['leads', 'list', params.scope, params.id] as const),
 		inactive: (userId: string) =>
 			['leads', 'list', 'inactive', userId] as const,
+		/** Várias equipas (merge no cliente); `teamIds` ordenados para chave estável. */
+		listMultiTeam: (userId: string, teamIds: readonly string[]) =>
+			[
+				'leads',
+				'list',
+				'multi',
+				userId,
+				[...teamIds].sort().join('|'),
+			] as const,
 	},
 };
 

@@ -11,6 +11,11 @@ interface IStoreRepository {
 	delete(id: StoreId): Promise<void>;
 	findById(id: StoreId): Promise<Store | null>;
 	list(): Promise<Store[]>;
+	/** Contagens usadas para impedir delete com `onDelete: Restrict` (leads / teams). */
+	countBlockingReferences(id: StoreId): Promise<{
+		readonly leads: number;
+		readonly teams: number;
+	}>;
 }
 
 export type { IStoreRepository };

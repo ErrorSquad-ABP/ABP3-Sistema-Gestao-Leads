@@ -5,7 +5,6 @@ import {
 	Get,
 	HttpCode,
 	HttpStatus,
-	Inject,
 	Param,
 	ParseUUIDPipe,
 	Patch,
@@ -21,7 +20,8 @@ import {
 	ApiParam,
 	ApiTags,
 } from '@nestjs/swagger';
-import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
@@ -31,8 +31,8 @@ import {
 	CurrentUser,
 	type JwtUser,
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
-import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
+import type { LeadActor } from '../../application/types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ConvertLeadUseCase } from '../../application/use-cases/convert-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -52,11 +52,6 @@ import { ReassignLeadUseCase } from '../../application/use-cases/reassign-lead.u
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { UpdateLeadUseCase } from '../../application/use-cases/update-lead.use-case.js';
 import { LeadPresenter } from '../presenters/lead.presenter.js';
-import {
-	requireListAllLeadsAllowed,
-	requireListByOwnerAllowed,
-	requireListByTeamAllowed,
-} from '../utils/lead-list-access.util.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateLeadValidator } from '../validators/create-lead.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
@@ -79,6 +74,13 @@ const FORBIDDEN = {
 		'Utilizador autenticado sem permissão para o recurso ou parâmetro solicitado.',
 };
 
+function toLeadActor(user: JwtUser): LeadActor {
+	return {
+		userId: user.userId,
+		role: user.role as UserRole,
+	};
+}
+
 @ApiBearerAuth()
 @ApiTags('leads')
 @Controller('leads')
@@ -93,8 +95,6 @@ class LeadController {
 		private readonly reassignLeadUseCase: ReassignLeadUseCase,
 		private readonly convertLeadUseCase: ConvertLeadUseCase,
 		private readonly deleteLeadUseCase: DeleteLeadUseCase,
-		@Inject(UserRepositoryFactory)
-		private readonly userRepositoryFactory: UserRepositoryFactory,
 	) {}
 
 	@Post()
@@ -102,8 +102,11 @@ class LeadController {
 	@ApiCreatedResponseEnvelope(LeadResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body() body: CreateLeadValidator) {
-		const lead = await this.createLeadUseCase.execute(body);
+	async create(
+		@CurrentUser() user: JwtUser,
+		@Body() body: CreateLeadValidator,
+	) {
+		const lead = await this.createLeadUseCase.execute(toLeadActor(user), body);
 		return LeadPresenter.toResponse(lead);
 	}
 
@@ -118,12 +121,11 @@ class LeadController {
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	listByOwner(
-		@CurrentUser() current: JwtUser,
+		@CurrentUser() user: JwtUser,
 		@Param('ownerUserId', ParseUUIDPipe) ownerUserId: string,
 	) {
-		requireListByOwnerAllowed(current.userId, ownerUserId);
 		return this.listOwnLeadsUseCase
-			.execute(ownerUserId)
+			.execute(toLeadActor(user), ownerUserId)
 			.then((leads) => LeadPresenter.toResponseList(leads));
 	}
 
@@ -131,15 +133,14 @@ class LeadController {
 	@ApiOperation({
 		summary: 'Listar todos os leads (alcance global)',
 		description:
-			'Reservado a `ADMINISTRATOR`. Lista todos os leads do sistema, sem filtro por equipa ou owner.',
+			'Reservado a `ADMINISTRATOR` e `GENERAL_MANAGER`. Lista todos os leads do sistema.',
 	})
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listAll(@CurrentUser() current: JwtUser) {
-		requireListAllLeadsAllowed(current.role);
+	listAll(@CurrentUser() user: JwtUser) {
 		return this.listAllLeadsUseCase
-			.execute()
+			.execute(toLeadActor(user))
 			.then((leads) => LeadPresenter.toResponseList(leads));
 	}
 
@@ -153,16 +154,13 @@ class LeadController {
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async listByTeam(
-		@CurrentUser() current: JwtUser,
+	listByTeam(
+		@CurrentUser() user: JwtUser,
 		@Param('teamId', ParseUUIDPipe) teamId: string,
 	) {
-		const users = this.userRepositoryFactory.create();
-		const user = await users.findById(Uuid.parse(current.userId));
-		const teamIdValue = user?.teamId?.value ?? null;
-		requireListByTeamAllowed(current.role, teamIdValue, teamId);
-		const leads = await this.listTeamLeadsUseCase.execute(teamId);
-		return LeadPresenter.toResponseList(leads);
+		return this.listTeamLeadsUseCase
+			.execute(toLeadActor(user), teamId)
+			.then((leads) => LeadPresenter.toResponseList(leads));
 	}
 
 	@Get(':id')
@@ -173,8 +171,11 @@ class LeadController {
 		description: 'UUID inválido no parâmetro de rota.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async findById(@Param('id', ParseUUIDPipe) id: string) {
-		const lead = await this.findLeadUseCase.execute(id);
+	async findById(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	) {
+		const lead = await this.findLeadUseCase.execute(toLeadActor(user), id);
 		return LeadPresenter.toResponse(lead);
 	}
 
@@ -185,10 +186,15 @@ class LeadController {
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateLeadValidator,
 	) {
-		const lead = await this.updateLeadUseCase.execute(id, body);
+		const lead = await this.updateLeadUseCase.execute(
+			toLeadActor(user),
+			id,
+			body,
+		);
 		return LeadPresenter.toResponse(lead);
 	}
 
@@ -199,10 +205,15 @@ class LeadController {
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async reassign(
+		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: ReassignLeadValidator,
 	) {
-		const lead = await this.reassignLeadUseCase.execute(id, body);
+		const lead = await this.reassignLeadUseCase.execute(
+			toLeadActor(user),
+			id,
+			body,
+		);
 		return LeadPresenter.toResponse(lead);
 	}
 
@@ -218,8 +229,11 @@ class LeadController {
 		description: 'UUID inválido no parâmetro de rota.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async convert(@Param('id', ParseUUIDPipe) id: string) {
-		const lead = await this.convertLeadUseCase.execute(id);
+	async convert(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	) {
+		const lead = await this.convertLeadUseCase.execute(toLeadActor(user), id);
 		return LeadPresenter.toResponse(lead);
 	}
 
@@ -235,8 +249,11 @@ class LeadController {
 		description: 'UUID inválido no parâmetro de rota.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-		await this.deleteLeadUseCase.execute(id);
+	async delete(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteLeadUseCase.execute(toLeadActor(user), id);
 	}
 }
 

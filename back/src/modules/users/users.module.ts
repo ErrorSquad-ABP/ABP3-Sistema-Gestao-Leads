@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { Argon2PasswordHasherService } from '../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import { AccessGroupsService } from './application/services/access-groups.service.js';
-import { TeamRepositoryFactory } from '../teams/infrastructure/persistence/factories/team-repository.factory.js';
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case.js';
 import { DeleteUserUseCase } from './application/use-cases/delete-user.use-case.js';
 import { FindUserUseCase } from './application/use-cases/find-user.use-case.js';
@@ -18,7 +17,6 @@ import { UserController } from './presentation/controllers/user.controller.js';
 		AccessGroupsService,
 		UserFactory,
 		UserRepositoryFactory,
-		TeamRepositoryFactory,
 		Argon2PasswordHasherService,
 		CreateUserUseCase,
 		ListUsersUseCase,

@@ -386,6 +386,16 @@ async function main() {
 			assert(res.status === 401, 'GET leads/team sem auth → 401');
 		}
 	}
+	{
+		const { res, json } = await req('GET', '/leads/all', {
+			headers: adminAuthHeader,
+		});
+		if (adminAuthHeader) {
+			assert(res.status === 200, `GET leads/all esperado 200`);
+			assert(Array.isArray(json?.data), 'leads/all data array');
+			console.log('OK GET /leads/all');
+		}
+	}
 
 	if (!adminAuthHeader) {
 		console.log(

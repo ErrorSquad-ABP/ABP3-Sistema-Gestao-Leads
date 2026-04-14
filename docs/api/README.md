@@ -1,8 +1,8 @@
 # API REST
 
-## Direção inicial
+## Direcao inicial
 
-A API será uma aplicação `NestJS` separada, orientada a recursos, com versionamento por prefixo e contratos explícitos entre `front` e `back`.
+A API sera uma aplicacao `NestJS` separada, orientada a recursos, com versionamento por prefixo e contratos explicitos entre `front` e `back`.
 
 Prefixo inicial sugerido:
 
@@ -24,29 +24,31 @@ Prefixo inicial sugerido:
 
 ## Regras operacionais
 
-- JWT obrigatório para rotas protegidas.
-- RBAC aplicado no backend conforme papel do usuário.
+- JWT obrigatorio para rotas protegidas.
+- RBAC aplicado no backend conforme papel do usuario.
 - Filtros temporais validados no servidor.
-- Logs de acesso e operações com data, hora e usuário responsável.
-- Comunicação com o frontend exclusivamente por `HTTP/JSON`.
+- Logs de acesso e operacoes com data, hora e usuario responsavel.
+- Comunicacao com o frontend exclusivamente por `HTTP/JSON`.
 
-## Convenções propostas
+## Convencoes propostas
 
-- Respostas com payload consistente e códigos HTTP semânticos.
-- Erros de domínio desacoplados da tecnologia de transporte.
-- Paginação e filtros sempre explícitos em query params.
-- Recursos analíticos separados dos recursos transacionais quando necessário.
-- Controllers do Nest funcionando apenas como adaptação HTTP, sem concentrar regra de negócio.
-- Decorators do Nest usados para roteamento, documentação e composição dos contratos da API.
-- Swagger disponível para documentação técnica inicial da API.
+- Respostas com payload consistente e codigos HTTP semanticos.
+- Erros de dominio desacoplados da tecnologia de transporte.
+- Paginacao e filtros sempre explicitos em query params.
+- Recursos analiticos separados dos recursos transacionais quando necessario.
+- Controllers do Nest funcionando apenas como adaptacao HTTP, sem concentrar regra de negocio.
+- Decorators do Nest usados para roteamento, documentacao e composicao dos contratos da API.
+- Swagger disponivel para documentacao tecnica inicial da API.
 
-## Estratégia de desenho dos endpoints
+## Estado atual da Sprint 1
 
-A API deve seguir orientação por recurso como padrão. Isso significa:
+- `teams` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
+- `stores` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
+- Os endpoints de `PATCH` em `teams` e `stores` aceitam atualizacao parcial e retornam `400` quando nenhum campo e enviado.
+- `teams` valida previamente `managerId` e `storeId`, aceitando apenas usuarios com papel compativel com gerencia e lojas existentes para fechar o vinculo organizacional basico.
+- `stores` retorna conflito de negocio ao tentar excluir loja ainda vinculada a leads.
 
-- endpoints separados por domínio e responsabilidade;
-- subrotas quando a relação entre recurso principal e bloco derivado for clara;
-- endpoint agregador apenas para telas que sempre precisem de muitos blocos juntos.
+## Proximos passos
 
 ### Regra de decisão
 
@@ -75,22 +77,19 @@ flowchart TD
 
 #### Leads — listagem consumida pelo frontend (Sprint 1)
 
-Rotas já utilizadas pela UI em `/app/leads` (autenticação obrigatória, envelope de sucesso habitual):
+Rotas em `/app/leads` (autenticação obrigatória, envelope de sucesso habitual). O escopo efetivo segue `LeadAccessPolicy` no backend (equipas membro/gestor via `memberTeamIds` / `managedTeamIds`; `teamId` no DTO do utilizador é legado/compatibilidade).
 
 | Método | Caminho | Uso na UI |
 | --- | --- | --- |
-| `GET` | `/api/leads/owner/:ownerUserId` | Atendente: lista com `ownerUserId = id` do utilizador autenticado. |
-| `GET` | `/api/leads/team/:teamId` | Gestor / administrador: lista com `teamId` do utilizador quando existir vínculo de equipa. |
+| `GET` | `/api/leads/owner/:ownerUserId` | Atendente: próprio `id`. Gestores: owners no mesmo escopo de equipas. |
+| `GET` | `/api/leads/team/:teamId` | Gestor: `teamId` nas equipas legíveis (membro ∪ gestor conforme papel). |
+| `GET` | `/api/leads/all` | `ADMINISTRATOR` e `GENERAL_MANAGER`: listagem global. |
 
 Corpo de cada item: `id`, `customerId`, `storeId`, `ownerUserId`, `source`, `status` (ver Swagger / `LeadResponseDto`).
-
-Respostas `403`: listagem por `owner` exige `ownerUserId` igual ao utilizador do JWT; listagem por `team` exige papel `MANAGER`, `GENERAL_MANAGER` ou `ADMINISTRATOR` e `teamId` igual ao da conta persistida.
 
 - `dashboards` podem e devem ter endpoints agregadores por tela.
 - o detalhe de lead deve começar simples, com recurso principal e subrotas como histórico; só deve ganhar endpoint de composição se houver ganho real de desempenho e simplicidade.
 - a API não deve nascer acoplada à UI inteira; agregação é exceção consciente, não regra padrão.
-
-## Próximos passos
 
 1. Definir contratos mínimos da Sprint 1.
 2. Criar documentação de endpoints por módulo.

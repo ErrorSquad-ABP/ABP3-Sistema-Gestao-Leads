@@ -4,7 +4,9 @@ function buildListTeamLeadsWhere(teamId: string): Prisma.LeadWhereInput {
 	return {
 		owner: {
 			is: {
-				teamId,
+				memberTeams: {
+					some: { id: teamId },
+				},
 			},
 		},
 	};
