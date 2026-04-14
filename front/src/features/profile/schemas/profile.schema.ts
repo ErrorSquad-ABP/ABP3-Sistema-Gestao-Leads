@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { authenticatedUserSchema } from '@/features/login/schemas/login.schema';
+
 const updateOwnEmailSchema = z.object({
 	currentPassword: z
 		.string()
@@ -26,11 +28,7 @@ const updateOwnPasswordSchema = z
 	});
 
 const credentialUpdateResponseSchema = z.object({
-	id: z.uuid(),
-	name: z.string().min(1),
-	email: z.email(),
-	role: z.enum(['ATTENDANT', 'MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR']),
-	teamId: z.uuid().nullable(),
+	...authenticatedUserSchema.shape,
 	refreshSessionsRevoked: z.boolean(),
 });
 
