@@ -47,7 +47,7 @@ class AuthTokenService {
 		};
 		const token = await this.jwt.signAsync(payload, {
 			algorithm: 'RS256',
-			privateKey: this.authConfig.accessPrivateKey,
+			secret: this.authConfig.accessPrivateKey,
 			expiresIn: this.authConfig.accessTtlSeconds,
 			...this.jwtIssuerAudience(),
 		});
@@ -61,7 +61,7 @@ class AuthTokenService {
 			token,
 			{
 				algorithms: ['RS256'],
-				publicKey: this.authConfig.accessPublicKey,
+				secret: this.authConfig.accessPublicKey,
 				...this.jwtIssuerAudience(),
 			},
 		);
