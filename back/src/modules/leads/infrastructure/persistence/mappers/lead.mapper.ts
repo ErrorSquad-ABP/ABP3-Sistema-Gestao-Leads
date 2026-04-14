@@ -2,15 +2,18 @@ import type {
 	LeadSource as PrismaLeadSource,
 	LeadStatus as PrismaLeadStatus,
 } from '../../../../../generated/prisma/enums.js';
-import { Lead } from '../../../domain/entities/lead.entity.js';
 import { parseLeadStatus } from '../../../../../shared/domain/enums/lead-status.enum.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { LeadSource } from '../../../../../shared/domain/value-objects/lead-source.value-object.js';
+import { Lead } from '../../../domain/entities/lead.entity.js';
 import type { LeadRecord } from '../records/lead.record.js';
 
 const LEAD_SOURCE_TO_PRISMA: Record<string, PrismaLeadSource> = {
 	'digital-form': 'WEBSITE',
+	facebook: 'FACEBOOK',
+	indication: 'INDICATION',
 	instagram: 'INSTAGRAM',
+	'mercado-livre': 'MERCADO_LIVRE',
 	other: 'OTHER',
 	'phone-call': 'PHONE',
 	'store-visit': 'WALK_IN',
@@ -18,8 +21,10 @@ const LEAD_SOURCE_TO_PRISMA: Record<string, PrismaLeadSource> = {
 };
 
 const PRISMA_SOURCE_TO_LEAD: Record<PrismaLeadSource, string> = {
-	INDICATION: 'other',
+	FACEBOOK: 'facebook',
+	INDICATION: 'indication',
 	INSTAGRAM: 'instagram',
+	MERCADO_LIVRE: 'mercado-livre',
 	OTHER: 'other',
 	PHONE: 'phone-call',
 	WALK_IN: 'store-visit',

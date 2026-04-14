@@ -32,8 +32,11 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
+# Standalone emits traced deps in standalone/node_modules (sibling of standalone/front).
 COPY --from=build /app/front/.next/standalone/front ./front
+COPY --from=build /app/front/.next/standalone/node_modules ./node_modules
 COPY --from=build /app/front/.next/static ./front/.next/static
+COPY --from=build /app/front/public ./front/public
 
 EXPOSE 3000
 

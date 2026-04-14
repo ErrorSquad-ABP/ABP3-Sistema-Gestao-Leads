@@ -105,6 +105,9 @@ describe('shared value objects integration', () => {
 			'phone-call',
 			'whatsapp',
 			'instagram',
+			'facebook',
+			'mercado-livre',
+			'indication',
 			'digital-form',
 			'other',
 		]);

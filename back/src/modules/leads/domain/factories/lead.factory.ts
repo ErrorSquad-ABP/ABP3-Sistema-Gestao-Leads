@@ -1,3 +1,6 @@
+import { parseLeadStatus } from '../../../../shared/domain/enums/lead-status.enum.js';
+import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { LeadSource } from '../../../../shared/domain/value-objects/lead-source.value-object.js';
 import { Lead } from '../entities/lead.entity.js';
 import { LeadRegisteredEvent } from '../events/lead-registered.event.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';

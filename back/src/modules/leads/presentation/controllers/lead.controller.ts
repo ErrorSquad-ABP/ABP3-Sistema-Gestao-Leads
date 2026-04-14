@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
+	ApiBearerAuth,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
 	ApiOperation,
@@ -59,6 +60,7 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
 };
 
+@ApiBearerAuth()
 @ApiTags('leads')
 @Controller('leads')
 class LeadController {

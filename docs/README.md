@@ -2,7 +2,7 @@
 
 Este diretório concentra os artefatos de apoio técnico, analítico e de gestão do projeto. A proposta é manter tudo versionado junto com o código para reduzir dispersão de conhecimento e facilitar rastreabilidade entre requisito, arquitetura, backlog e entrega.
 
-A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A fonte primária continua sendo o repositório, e a Wiki funciona como camada adicional de navegação e consulta.
+A **Wiki do GitHub** ([repositório](https://github.com/ErrorSquad-ABP/ABP3-Sistema-Gestao-Leads/wiki)) deve manter espelhamento 1:1 destes artefatos versionados. A fonte primária continua sendo o repositório (`docs/`); **não** existe pasta `wiki/` local — a Wiki é só no remoto.
 
 ## Estrutura
 
@@ -12,6 +12,8 @@ A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A f
 - `data/`: modelo de dados, DER, dicionário e estratégia de persistência orientada a Prisma.
 - `agile/`: backlog, cerimônias, Definition of Done, retrospectivas e planejamento de sprints.
 - `quality/`: fluxo de validação, critérios de CI e convenções de revisão técnica.
+- `runbooks/`: setup local, bootstrap operacional e procedimentos de subida da stack.
+- `auth/`: estado atual de autenticação, sessão e autorização.
 - `templates/`: modelos de documentação para manter consistência entre novos arquivos Markdown.
 
 ## Entregáveis previstos
@@ -21,6 +23,7 @@ A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A f
 | Visão geral do produto | `../README.md` |
 | Descrição da arquitetura adotada | `architecture/README.md` |
 | Guia do frontend em Next.js | `architecture/next-frontend.md` |
+| Plano de implementação, IA e UX do frontend | `architecture/frontend-information-architecture.md` |
 | Guia do backend em NestJS | `architecture/nest-backend.md` |
 | DDD e Clean Architecture no backend | `architecture/ddd-clean-architecture.md` |
 | Estrutura modular do backend | `architecture/backend-module-structure.md` |
@@ -32,11 +35,15 @@ A Wiki do projeto deve manter espelhamento 1:1 destes artefatos versionados. A f
 | Modelo relacional e DER | `data/README.md` |
 | Definition of Done | `agile/definition-of-done.md` |
 | Product backlog inicial | `agile/product-backlog.md` |
+| Backlog operacional de implementação do frontend | `agile/frontend-implementation-backlog.md` |
 | Sprint 1 Goal | `agile/sprint-1-goal.md` |
 | Sprint 1 Backlog | `agile/sprint-1-backlog.md` |
+| Quebra detalhada das tarefas da Sprint 1 | `agile/sprint-1-task-breakdown.md` |
 | Sprint 1 Planning | `agile/sprint-1-planning.md` |
 | Sprints e cadência | `agile/sprints.md` |
 | Fluxo de qualidade e revisão | `quality/README.md` |
+| Runbooks operacionais | `runbooks/README.md` |
+| Estado atual de auth e RBAC | `auth/current-state.md` |
 
 ## Princípios de documentação
 

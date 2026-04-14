@@ -22,6 +22,8 @@ enum LeadSource {
   INDICATION
   OTHER
   INSTAGRAM
+  FACEBOOK
+  MERCADO_LIVRE
 }
 
 enum LeadStatus {

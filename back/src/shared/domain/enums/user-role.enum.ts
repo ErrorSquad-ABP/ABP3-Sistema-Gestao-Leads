@@ -23,13 +23,13 @@ const parseCanonicalUserRole = userRoleEnum.parseCanonical;
 const assertUserRole = userRoleEnum.assert;
 const assertCanonicalUserRole = userRoleEnum.assertCanonical;
 
+export type { UserRole };
 export {
-	USER_ROLES,
 	assertCanonicalUserRole,
 	assertUserRole,
 	isCanonicalUserRole,
 	isUserRole,
 	parseCanonicalUserRole,
 	parseUserRole,
+	USER_ROLES,
 };
-export type { UserRole };

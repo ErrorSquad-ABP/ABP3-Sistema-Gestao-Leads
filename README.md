@@ -185,15 +185,25 @@ Commits e branches fora desse padrão são recusados pelas regras do GitHub.
 - [`docs/README.md`](./docs/README.md)
 - [`docs/architecture/README.md`](./docs/architecture/README.md)
 - [`docs/architecture/next-frontend.md`](./docs/architecture/next-frontend.md)
+- [`docs/architecture/frontend-information-architecture.md`](./docs/architecture/frontend-information-architecture.md) (plano de IA/UX do frontend)
+- [Wiki do GitHub](https://github.com/ErrorSquad-ABP/ABP3-Sistema-Gestao-Leads/wiki) (espelho da documentação em `docs/`, hospedada no remoto)
 - [`docs/architecture/nest-backend.md`](./docs/architecture/nest-backend.md)
 - [`docs/api/README.md`](./docs/api/README.md)
 - [`docs/data/README.md`](./docs/data/README.md)
 - [`docs/agile/README.md`](./docs/agile/README.md)
 - [`docs/quality/README.md`](./docs/quality/README.md)
+- [`docs/runbooks/README.md`](./docs/runbooks/README.md)
+- [`docs/auth/current-state.md`](./docs/auth/current-state.md)
+- [`docs/frontend/app-shell.md`](./docs/frontend/app-shell.md)
 - [`front/README.md`](./front/README.md)
 - [`back/README.md`](./back/README.md)
 
 ## Como subir o esqueleto inicial
+
+Guia operacional recomendado:
+
+- [`docs/runbooks/local-setup.md`](./docs/runbooks/local-setup.md)
+- [`docs/runbooks/deploy.md`](./docs/runbooks/deploy.md)
 
 ### Desenvolvimento com hot reload
 

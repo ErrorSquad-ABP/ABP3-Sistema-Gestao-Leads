@@ -21,7 +21,12 @@ import { UserController } from './presentation/controllers/user.controller.js';
 		UpdateUserUseCase,
 		DeleteUserUseCase,
 	],
-	exports: [UserRepositoryFactory],
+	exports: [
+		UserFactory,
+		UserRepositoryFactory,
+		Argon2PasswordHasherService,
+		FindUserUseCase,
+	],
 })
 class UsersModule {}
 

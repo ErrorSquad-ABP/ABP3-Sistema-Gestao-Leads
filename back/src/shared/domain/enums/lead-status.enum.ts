@@ -24,13 +24,13 @@ const parseCanonicalLeadStatus = leadStatusEnum.parseCanonical;
 const assertLeadStatus = leadStatusEnum.assert;
 const assertCanonicalLeadStatus = leadStatusEnum.assertCanonical;
 
+export type { LeadStatus };
 export {
-	LEAD_STATUSES,
 	assertCanonicalLeadStatus,
 	assertLeadStatus,
 	isCanonicalLeadStatus,
 	isLeadStatus,
+	LEAD_STATUSES,
 	parseCanonicalLeadStatus,
 	parseLeadStatus,
 };
-export type { LeadStatus };

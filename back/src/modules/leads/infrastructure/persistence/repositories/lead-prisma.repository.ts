@@ -2,8 +2,8 @@ import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { ILeadRepository } from '../../../domain/repositories/lead.repository.js';
-import { LeadMapper } from '../mappers/lead.mapper.js';
 import { buildListTeamLeadsWhere } from '../../queries/list-team-leads.query.js';
+import { LeadMapper } from '../mappers/lead.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
 

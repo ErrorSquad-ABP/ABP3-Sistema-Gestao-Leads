@@ -14,6 +14,14 @@ class Argon2PasswordHasherService {
 			parallelism: 1,
 		});
 	}
+
+	async verify(plainPassword: string, passwordHash: string): Promise<boolean> {
+		try {
+			return await argon2.verify(passwordHash, plainPassword);
+		} catch {
+			return false;
+		}
+	}
 }
 
 export { Argon2PasswordHasherService };

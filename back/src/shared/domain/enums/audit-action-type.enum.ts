@@ -25,13 +25,13 @@ const parseCanonicalAuditActionType = auditActionTypeEnum.parseCanonical;
 const assertAuditActionType = auditActionTypeEnum.assert;
 const assertCanonicalAuditActionType = auditActionTypeEnum.assertCanonical;
 
+export type { AuditActionType };
 export {
 	AUDIT_ACTION_TYPES,
-	assertCanonicalAuditActionType,
 	assertAuditActionType,
-	isCanonicalAuditActionType,
+	assertCanonicalAuditActionType,
 	isAuditActionType,
-	parseCanonicalAuditActionType,
+	isCanonicalAuditActionType,
 	parseAuditActionType,
+	parseCanonicalAuditActionType,
 };
-export type { AuditActionType };

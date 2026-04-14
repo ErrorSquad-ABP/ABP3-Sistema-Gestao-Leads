@@ -52,6 +52,13 @@ services:
       APP_URL: http://localhost:3001
       DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
       JWT_SECRET: change-me
+      JWT_ACCESS_PRIVATE_KEY: ${JWT_ACCESS_PRIVATE_KEY}
+      JWT_ACCESS_PUBLIC_KEY: ${JWT_ACCESS_PUBLIC_KEY}
+      JWT_ISSUER: ${JWT_ISSUER:-abp3-leads-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-abp3-leads-api}
+      AUTH_RATE_LIMIT_LOGIN_MAX: ${AUTH_RATE_LIMIT_LOGIN_MAX:-}
+      AUTH_RATE_LIMIT_LOGIN_WINDOW_SEC: ${AUTH_RATE_LIMIT_LOGIN_WINDOW_SEC:-}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:3000}
     ports:
       - '3001:3001'
 
