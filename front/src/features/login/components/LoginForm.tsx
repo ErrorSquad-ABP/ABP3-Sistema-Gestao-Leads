@@ -67,11 +67,16 @@ function LoginForm() {
 		await queryClient.cancelQueries({
 			queryKey: queryKeys.auth.currentUser,
 		});
-		const result = await loginMutation.mutateAsync(values);
-		queryClient.setQueryData(queryKeys.auth.currentUser, result.user);
-		startTransition(() => {
-			router.replace(appRoutes.app.root);
-		});
+
+		try {
+			const result = await loginMutation.mutateAsync(values);
+			queryClient.setQueryData(queryKeys.auth.currentUser, result.user);
+			startTransition(() => {
+				router.replace(appRoutes.app.root);
+			});
+		} catch {
+			// The mutation state already stores the error for the inline feedback UI.
+		}
 	});
 
 	const loginErrorMessage = loginMutation.error

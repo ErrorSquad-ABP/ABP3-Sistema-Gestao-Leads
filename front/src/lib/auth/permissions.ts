@@ -1,4 +1,8 @@
-import type { UserRole } from '@/features/login/types/login.types';
+import type {
+	AccessFeatureKey,
+	AuthenticatedUser,
+	UserRole,
+} from '@/features/login/types/login.types';
 import { appRoutes } from '@/lib/routes/app-routes';
 
 type AppRouteAccessKey =
@@ -15,6 +19,7 @@ type AppNavigationItem = {
 	href: string;
 	description: string;
 	icon: AppNavigationIcon;
+	featureKey: AccessFeatureKey;
 	allowedRoles: readonly UserRole[];
 };
 
@@ -36,6 +41,7 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 	{
 		allowedRoles: routeAccessByKey.dashboardOperational,
 		description: 'Indicadores e acompanhamento diário da operação.',
+		featureKey: 'dashboardOperational',
 		href: appRoutes.app.dashboard.operational,
 		icon: 'activity',
 		key: 'dashboardOperational',
@@ -44,6 +50,7 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 	{
 		allowedRoles: routeAccessByKey.dashboardAnalytic,
 		description: 'Leitura consolidada de desempenho e conversão.',
+		featureKey: 'dashboardAnalytic',
 		href: appRoutes.app.dashboard.analytic,
 		icon: 'chart',
 		key: 'dashboardAnalytic',
@@ -52,6 +59,7 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 	{
 		allowedRoles: routeAccessByKey.leads,
 		description: 'Fluxo comercial, priorização e acompanhamento.',
+		featureKey: 'leads',
 		href: appRoutes.app.leads,
 		icon: 'users',
 		key: 'leads',
@@ -60,6 +68,7 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 	{
 		allowedRoles: routeAccessByKey.users,
 		description: 'Gestão administrativa de perfis e acessos.',
+		featureKey: 'users',
 		href: appRoutes.app.users,
 		icon: 'shield',
 		key: 'users',
@@ -80,14 +89,44 @@ function getAllowedRolesForRoute(key: AppRouteAccessKey) {
 	}
 }
 
-function getNavigationItemsForRole(role: UserRole) {
-	return appNavigationItems.filter((item) => item.allowedRoles.includes(role));
+function canRoleAccessRoute(role: UserRole, key: AppRouteAccessKey) {
+	return getAllowedRolesForRoute(key).includes(role);
+}
+
+function hasFeatureAccess(
+	user: Pick<AuthenticatedUser, 'role' | 'accessGroup'>,
+	key: AppRouteAccessKey,
+) {
+	if (!canRoleAccessRoute(user.role, key)) {
+		return false;
+	}
+
+	if (!user.accessGroup) {
+		return true;
+	}
+
+	return user.accessGroup.featureKeys.includes(
+		appNavigationItems.find((item) => item.key === key)?.featureKey ??
+			'profile',
+	);
+}
+
+function getNavigationItemsForUser(user: AuthenticatedUser) {
+	return appNavigationItems.filter((item) => hasFeatureAccess(user, item.key));
+}
+
+function resolveDefaultAppRoute(user: AuthenticatedUser) {
+	const firstAllowed = getNavigationItemsForUser(user)[0];
+	return firstAllowed?.href ?? appRoutes.system.forbidden;
 }
 
 export {
 	appNavigationItems,
+	canRoleAccessRoute,
 	getAllowedRolesForRoute,
-	getNavigationItemsForRole,
+	getNavigationItemsForUser,
+	hasFeatureAccess,
 	roleLabels,
+	resolveDefaultAppRoute,
 };
 export type { AppNavigationIcon, AppNavigationItem, AppRouteAccessKey };

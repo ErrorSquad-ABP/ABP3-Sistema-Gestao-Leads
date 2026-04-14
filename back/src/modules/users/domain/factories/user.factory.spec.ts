@@ -25,7 +25,7 @@ function buildUser(overrides?: {
 			: overrides.teamId === null
 				? null
 				: Uuid.parse(overrides.teamId);
-	return new User(id, name, email, hash, 'ATTENDANT', teamId);
+	return new User(id, name, email, hash, 'ATTENDANT', teamId, null, null);
 }
 
 describe('UserFactory', () => {
@@ -52,6 +52,8 @@ describe('UserFactory', () => {
 			PasswordHash.create(SAMPLE_HASH),
 			'MANAGER',
 			teamId,
+			null,
+			null,
 		);
 		const cleared = factory.update(existing, { teamId: null });
 

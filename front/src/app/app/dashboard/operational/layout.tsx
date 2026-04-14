@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { getAllowedRolesForRoute } from '@/lib/auth/permissions';
-import { requireUserWithRoles } from '@/lib/auth/session';
+import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
 type OperationalDashboardLayoutProps = {
 	children: ReactNode;
@@ -10,7 +9,7 @@ type OperationalDashboardLayoutProps = {
 async function OperationalDashboardLayout({
 	children,
 }: OperationalDashboardLayoutProps) {
-	await requireUserWithRoles(getAllowedRolesForRoute('dashboardOperational'));
+	await requireUserWithRouteAccess('dashboardOperational');
 
 	return children;
 }

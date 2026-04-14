@@ -11,6 +11,7 @@ type CreateUserParams = {
 	readonly passwordHash: string;
 	readonly role: string;
 	readonly teamId: string | null;
+	readonly accessGroupId: string | null;
 };
 
 type UpdateUserParams = {
@@ -19,6 +20,7 @@ type UpdateUserParams = {
 	readonly passwordHash?: PasswordHash;
 	readonly role?: string;
 	readonly teamId?: string | null;
+	readonly accessGroupId?: string | null;
 };
 
 class UserFactory {
@@ -30,6 +32,8 @@ class UserFactory {
 			PasswordHash.create(params.passwordHash),
 			parseUserRole(params.role),
 			params.teamId === null ? null : Uuid.parse(params.teamId),
+			params.accessGroupId === null ? null : Uuid.parse(params.accessGroupId),
+			null,
 		);
 	}
 
@@ -45,6 +49,12 @@ class UserFactory {
 					? null
 					: Uuid.parse(params.teamId)
 				: existing.teamId,
+			params.accessGroupId !== undefined
+				? params.accessGroupId === null
+					? null
+					: Uuid.parse(params.accessGroupId)
+				: existing.accessGroupId,
+			existing.accessGroup,
 		);
 	}
 }

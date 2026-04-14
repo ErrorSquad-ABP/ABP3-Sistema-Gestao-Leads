@@ -19,6 +19,7 @@ import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead
 import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead-invalid-store.error.js';
 import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not-found.error.js';
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
+import { UserInvalidAccessGroupError } from '../../../modules/users/domain/errors/user-invalid-access-group.error.js';
 import { UserInvalidTeamError } from '../../../modules/users/domain/errors/user-invalid-team.error.js';
 import { UserNotFoundError } from '../../../modules/users/domain/errors/user-not-found.error.js';
 import { DomainValidationError } from '../../domain/errors/domain-validation.error.js';
@@ -247,7 +248,10 @@ class DomainErrorFilter implements ExceptionFilter {
 			};
 		}
 
-		if (exception instanceof UserInvalidTeamError) {
+		if (
+			exception instanceof UserInvalidTeamError ||
+			exception instanceof UserInvalidAccessGroupError
+		) {
 			return {
 				status: HttpStatus.BAD_REQUEST,
 				body: this.toErrorEnvelope(exception.message, [

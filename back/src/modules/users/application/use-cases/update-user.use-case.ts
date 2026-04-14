@@ -22,6 +22,7 @@ import type { UpdateUserDto } from '../dto/update-user.dto.js';
 
 function hasUserUpdatePayload(dto: UpdateUserDto): boolean {
 	return (
+		dto.accessGroupId !== undefined ||
 		dto.name !== undefined ||
 		dto.email !== undefined ||
 		dto.password !== undefined ||
@@ -85,6 +86,7 @@ class UpdateUserUseCase {
 			}
 
 			const updated = this.userFactory.update(existing, {
+				accessGroupId: dto.accessGroupId,
 				name: dto.name,
 				email: dto.email,
 				passwordHash,

@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type {
+	AccessGroup,
 	Customer,
 	Deal,
 	Lead,
@@ -41,10 +42,24 @@ type DashboardCsvRow = {
 };
 
 type SeedDataset = {
+	accessGroups: Array<
+		Pick<
+			AccessGroup,
+			| 'id'
+			| 'name'
+			| 'description'
+			| 'baseRole'
+			| 'featureKeys'
+			| 'isSystemGroup'
+		>
+	>;
 	teams: Array<Pick<Team, 'id' | 'name'>>;
 	stores: Array<Pick<Store, 'id' | 'name'>>;
 	users: Array<
-		Pick<User, 'id' | 'name' | 'email' | 'password' | 'role' | 'teamId'>
+		Pick<
+			User,
+			'id' | 'name' | 'email' | 'password' | 'role' | 'teamId' | 'accessGroupId'
+		>
 	>;
 	customers: Array<Pick<Customer, 'id' | 'name' | 'email' | 'phone' | 'cpf'>>;
 	leads: Array<
@@ -82,18 +97,83 @@ const CSV_FILE_PATH = resolve(
 );
 
 const DEFAULT_PASSWORD = 'admin123';
+const accessGroups = [
+	{
+		id: deterministicUuid('access-group:administrator'),
+		name: 'Grupo administrativo',
+		description: 'Administração completa do sistema, usuários e governança.',
+		baseRole: UserRole.ADMIN,
+		featureKeys: [
+			'dashboardOperational',
+			'dashboardAnalytic',
+			'leads',
+			'users',
+			'profile',
+			'credentials',
+			'reports',
+			'exports',
+		],
+		isSystemGroup: true,
+	},
+	{
+		id: deterministicUuid('access-group:general-manager'),
+		name: 'Grupo executivo',
+		description: 'Visão consolidada de operação, indicadores e relatórios.',
+		baseRole: UserRole.GENERAL_MANAGER,
+		featureKeys: [
+			'dashboardOperational',
+			'dashboardAnalytic',
+			'profile',
+			'credentials',
+			'reports',
+			'exports',
+		],
+		isSystemGroup: true,
+	},
+	{
+		id: deterministicUuid('access-group:manager'),
+		name: 'Grupo de gestão',
+		description: 'Supervisão operacional e acompanhamento comercial da equipe.',
+		baseRole: UserRole.MANAGER,
+		featureKeys: [
+			'dashboardOperational',
+			'dashboardAnalytic',
+			'leads',
+			'profile',
+			'credentials',
+			'reports',
+		],
+		isSystemGroup: true,
+	},
+	{
+		id: deterministicUuid('access-group:attendant'),
+		name: 'Grupo operacional',
+		description: 'Execução comercial cotidiana e tratamento de leads.',
+		baseRole: UserRole.ATTENDANT,
+		featureKeys: ['leads', 'profile', 'credentials'],
+		isSystemGroup: true,
+	},
+] satisfies Array<
+	Pick<
+		AccessGroup,
+		'id' | 'name' | 'description' | 'baseRole' | 'featureKeys' | 'isSystemGroup'
+	>
+>;
+
 const SUPPORT_USERS = [
 	{
 		email: 'admin@crm.com',
 		name: 'Administrador',
 		role: UserRole.ADMIN,
 		teamId: null,
+		accessGroupId: deterministicUuid('access-group:administrator'),
 	},
 	{
 		email: 'geral@crm.com',
 		name: 'Gerente Geral',
 		role: UserRole.GENERAL_MANAGER,
 		teamId: null,
+		accessGroupId: deterministicUuid('access-group:general-manager'),
 	},
 ] as const;
 
@@ -275,6 +355,7 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 					password: passwordHash,
 					role: UserRole.ATTENDANT,
 					teamId: teamIdByName.get(row.team_name.trim()) ?? null,
+					accessGroupId: deterministicUuid('access-group:attendant'),
 				},
 			]),
 		).values(),
@@ -288,6 +369,7 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 			password: passwordHash,
 			role: user.role,
 			teamId: user.teamId,
+			accessGroupId: user.accessGroupId,
 		})),
 		...csvUsers,
 	];
@@ -363,6 +445,7 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 	});
 
 	return {
+		accessGroups,
 		teams,
 		stores,
 		users,

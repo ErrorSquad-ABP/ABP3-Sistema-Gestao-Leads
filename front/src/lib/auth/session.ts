@@ -8,19 +8,12 @@ import type {
 	UserRole,
 } from '@/features/login/types/login.types';
 import { env } from '@/lib/env';
+import {
+	hasFeatureAccess,
+	resolveDefaultAppRoute,
+	type AppRouteAccessKey,
+} from '@/lib/auth/permissions';
 import { appRoutes } from '@/lib/routes/app-routes';
-
-function resolveHomeRouteByRole(role: UserRole) {
-	switch (role) {
-		case 'ATTENDANT':
-			return appRoutes.app.leads;
-		case 'MANAGER':
-			return appRoutes.app.dashboard.operational;
-		case 'GENERAL_MANAGER':
-		case 'ADMINISTRATOR':
-			return appRoutes.app.dashboard.analytic;
-	}
-}
 
 const getCurrentUserFromRequest = cache(
 	async (): Promise<AuthenticatedUser | null> => {
@@ -87,16 +80,26 @@ async function requireUserWithRoles(allowedRoles: readonly UserRole[]) {
 	return currentUser;
 }
 
+async function requireUserWithRouteAccess(routeKey: AppRouteAccessKey) {
+	const currentUser = await requireAuthenticatedUser();
+
+	if (!hasFeatureAccess(currentUser, routeKey)) {
+		redirect(appRoutes.system.forbidden);
+	}
+
+	return currentUser;
+}
+
 async function redirectToHomeRouteForRequestUser() {
 	const currentUser = await requireAuthenticatedUser();
 
-	redirect(resolveHomeRouteByRole(currentUser.role));
+	redirect(resolveDefaultAppRoute(currentUser));
 }
 
 export {
 	getCurrentUserFromRequest,
 	redirectToHomeRouteForRequestUser,
 	requireAuthenticatedUser,
+	requireUserWithRouteAccess,
 	requireUserWithRoles,
-	resolveHomeRouteByRole,
 };
