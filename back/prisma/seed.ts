@@ -2,9 +2,10 @@ import 'dotenv/config';
 
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { PrismaClient } from '../src/generated/prisma/client.js';
+import { type Prisma, PrismaClient } from '../src/generated/prisma/client.js';
 import { buildDashboardCsvSeed } from './seeds/dashboard-csv.seed.js';
 import { buildMinimalSeed } from './seeds/minimal.seed.js';
+import type { SeedTeam } from './seeds/seed-definitions.js';
 
 const connectionString =
 	process.env.DATABASE_URL ??
@@ -17,28 +18,53 @@ const prisma = new PrismaClient({
 /** `minimal` (padrão): auth + dados mestres. `dashboard`: CSV fictício completo (leads, clientes, etc.). */
 const seedMode = (process.env.SEED_MODE ?? 'minimal').toLowerCase();
 
+async function truncateSeedData(tx: Prisma.TransactionClient) {
+	await tx.auditLog.deleteMany();
+	await tx.deal.deleteMany();
+	await tx.lead.deleteMany();
+	await tx.customer.deleteMany();
+	await tx.authSession.deleteMany();
+	await tx.team.deleteMany();
+	await tx.user.deleteMany();
+	await tx.accessGroup.deleteMany();
+	await tx.store.deleteMany();
+}
+
+async function createTeams(tx: Prisma.TransactionClient, teams: SeedTeam[]) {
+	for (const team of teams) {
+		await tx.team.create({
+			data: {
+				id: team.id,
+				name: team.name,
+				storeId: team.storeId,
+				managerId: team.managerId,
+				members:
+					team.memberIds.length > 0
+						? {
+								connect: team.memberIds.map((id) => ({ id })),
+							}
+						: undefined,
+			},
+		});
+	}
+}
+
 export async function runSeed() {
 	console.log(`Running seed (SEED_MODE=${seedMode})...`);
 
 	if (seedMode === 'dashboard') {
 		const dataset = await buildDashboardCsvSeed();
 
-		await prisma.auditLog.deleteMany();
-		await prisma.deal.deleteMany();
-		await prisma.lead.deleteMany();
-		await prisma.customer.deleteMany();
-		await prisma.user.deleteMany();
-		await prisma.accessGroup.deleteMany();
-		await prisma.store.deleteMany();
-		await prisma.team.deleteMany();
-
-		await prisma.accessGroup.createMany({ data: dataset.accessGroups });
-		await prisma.team.createMany({ data: dataset.teams });
-		await prisma.store.createMany({ data: dataset.stores });
-		await prisma.user.createMany({ data: dataset.users });
-		await prisma.customer.createMany({ data: dataset.customers });
-		await prisma.lead.createMany({ data: dataset.leads });
-		await prisma.deal.createMany({ data: dataset.deals });
+		await prisma.$transaction(async (tx) => {
+			await truncateSeedData(tx);
+			await tx.accessGroup.createMany({ data: dataset.accessGroups });
+			await tx.store.createMany({ data: dataset.stores });
+			await tx.user.createMany({ data: dataset.users });
+			await createTeams(tx, dataset.teams);
+			await tx.customer.createMany({ data: dataset.customers });
+			await tx.lead.createMany({ data: dataset.leads });
+			await tx.deal.createMany({ data: dataset.deals });
+		});
 
 		console.log(
 			`Seeded ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users, ${dataset.customers.length} customers, ${dataset.leads.length} leads and ${dataset.deals.length} deals from dashboard CSV.`,
@@ -46,19 +72,13 @@ export async function runSeed() {
 	} else if (seedMode === 'minimal') {
 		const dataset = await buildMinimalSeed();
 
-		await prisma.auditLog.deleteMany();
-		await prisma.deal.deleteMany();
-		await prisma.lead.deleteMany();
-		await prisma.customer.deleteMany();
-		await prisma.user.deleteMany();
-		await prisma.accessGroup.deleteMany();
-		await prisma.store.deleteMany();
-		await prisma.team.deleteMany();
-
-		await prisma.accessGroup.createMany({ data: dataset.accessGroups });
-		await prisma.team.createMany({ data: dataset.teams });
-		await prisma.store.createMany({ data: dataset.stores });
-		await prisma.user.createMany({ data: dataset.users });
+		await prisma.$transaction(async (tx) => {
+			await truncateSeedData(tx);
+			await tx.accessGroup.createMany({ data: dataset.accessGroups });
+			await tx.store.createMany({ data: dataset.stores });
+			await tx.user.createMany({ data: dataset.users });
+			await createTeams(tx, dataset.teams);
+		});
 
 		console.log(
 			`Seeded minimal dataset: ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users (SEED_DEFAULT_PASSWORD / admin123).`,
