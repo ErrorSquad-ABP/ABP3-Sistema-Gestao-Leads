@@ -40,9 +40,17 @@ function createHttpHost(): {
 			body = payload;
 		},
 	};
+	const mockRequest = {
+		path: '/api/test',
+		method: 'GET',
+		ip: '127.0.0.1',
+		socket: {},
+		url: '/api/test',
+	};
 	const host = {
 		switchToHttp: () => ({
 			getResponse: () => response,
+			getRequest: () => mockRequest,
 		}),
 	};
 	return {

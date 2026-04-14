@@ -152,6 +152,8 @@ class DomainErrorFilter implements ExceptionFilter {
 				{ code: exception.code, message: exception.message },
 			]),
 		};
+	}
+
 	private isAuthRelatedPath(request: Request): boolean {
 		const p = request.path ?? request.url?.split('?')[0] ?? '';
 		return p.includes('/auth');
@@ -288,13 +290,8 @@ class DomainErrorFilter implements ExceptionFilter {
 			};
 		}
 
-		if (exception instanceof UserInvalidTeamError) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+		if (exception instanceof TeamNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
 
 		if (
