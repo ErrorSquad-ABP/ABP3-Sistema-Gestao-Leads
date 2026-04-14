@@ -23,6 +23,8 @@ Hoje o projeto já possui:
 - `RBAC` real no backend;
 - redirecionamento inicial por papel;
 - `AppShell` autenticado como base da área interna.
+- escopo multi-team no backend para equipes e leads;
+- grupos de acesso administrativos persistidos como camada complementar.
 
 O que ainda não está completo como feature de produto:
 
@@ -30,6 +32,33 @@ O que ainda não está completo como feature de produto:
 - tela de perfil com atualização das próprias credenciais;
 - recuperação automática de senha;
 - cadastro público de conta.
+
+## Contrato atual de utilizador
+
+O contrato de utilizador entrou em fase de transição.
+
+Fonte canônica atual de vínculo organizacional:
+
+- `memberTeamIds`
+- `managedTeamIds`
+
+Campo legado ainda exposto por compatibilidade:
+
+- `teamId`
+
+Regra prática:
+
+- `teamId` não é mais fonte de verdade;
+- ele existe apenas para não quebrar consumidores antigos do frontend;
+- novos consumidores devem ler `memberTeamIds` e `managedTeamIds`.
+
+Camada administrativa adicional:
+
+- `accessGroupId`
+- `accessGroup`
+
+Esses campos não substituem o papel canônico nem os vínculos multi-team.
+Eles servem para gestão administrativa de grupos e feature toggles.
 
 ## Papéis existentes
 
@@ -53,6 +82,7 @@ Responsável por:
 - manter sessões de refresh;
 - aplicar RBAC real;
 - responder `401` e `403`.
+- resolver escopo real por múltiplas equipes quando a operação depender de vínculo organizacional.
 
 Base técnica:
 
@@ -99,6 +129,40 @@ Base técnica:
 - persistido em PostgreSQL
 - rotacionado no fluxo de refresh
 - revogado em logout
+
+## Estratégia atual de RBAC e escopo
+
+O controle de acesso hoje tem duas camadas:
+
+### Papel canônico
+
+Papéis:
+
+- `ATTENDANT`
+- `MANAGER`
+- `GENERAL_MANAGER`
+- `ADMINISTRATOR`
+
+Essa camada continua governando autorização estrutural por endpoint.
+
+### Escopo organizacional
+
+Quando a regra depende de equipes, o backend usa:
+
+- `memberTeamIds`
+- `managedTeamIds`
+
+Resumo do comportamento atual:
+
+- `ADMINISTRATOR`: acesso global
+- `GENERAL_MANAGER`: acesso global
+- `MANAGER`: leitura no escopo de equipes onde participa; mutação no escopo de equipes que gerencia
+- `ATTENDANT`: escopo próprio ou operacional restrito conforme o caso de uso
+
+Importante:
+
+- o frontend pode continuar recebendo `teamId`, mas o backend não usa mais esse campo como fonte de verdade para escopo;
+- `accessGroup` complementa navegação e feature toggles, mas não substitui o papel do domínio.
 
 ## Fluxo atual do frontend
 
@@ -168,6 +232,11 @@ Matriz atual:
 | Dashboard Operacional | `MANAGER`, `GENERAL_MANAGER`, `ADMINISTRATOR` |
 | Leads | `ATTENDANT`, `MANAGER`, `ADMINISTRATOR` |
 | Usuários | `ADMINISTRATOR` |
+
+Observação:
+
+- a navegação do frontend ainda pode usar projeções legadas durante a transição;
+- a autorização verdadeira continua no backend, já adaptada ao modelo multi-team.
 
 ## AppShell atual
 

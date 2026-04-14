@@ -234,6 +234,28 @@ Esta matriz é mais importante do que a simples visibilidade de telas, porque é
 | CRUD de lojas | Não | Não | Não | Sim |
 | Ver logs | Não | Não | Não | Sim |
 
+## Nota de transição de contrato
+
+O frontend ainda pode encontrar `teamId` em alguns contratos de utilizador, mas esse campo é legado.
+
+Fonte canônica atual para vínculo organizacional:
+
+- `memberTeamIds`
+- `managedTeamIds`
+
+Leitura correta para novos fluxos:
+
+- usar `memberTeamIds` para escopo de participação;
+- usar `managedTeamIds` para escopo gerencial;
+- tratar `teamId` apenas como compatibilidade temporária.
+
+Camada administrativa paralela:
+
+- `accessGroupId`
+- `accessGroup`
+
+Esses campos servem para grupos de acesso e feature toggles no frontend, sem substituir o papel do domínio nem os vínculos organizacionais.
+
 ## Matriz RF x telas x papéis
 
 | RF | Telas principais | Papéis | Observações de implementação |
