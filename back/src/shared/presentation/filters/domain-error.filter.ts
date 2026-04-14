@@ -14,6 +14,7 @@ import { CustomerCpfAlreadyExistsError } from '../../../modules/customers/domain
 import { CustomerEmailAlreadyExistsError } from '../../../modules/customers/domain/errors/customer-email-already-exists.error.js';
 import { CustomerNotFoundError } from '../../../modules/customers/domain/errors/customer-not-found.error.js';
 import { LeadAlreadyConvertedError } from '../../../modules/leads/domain/errors/lead-already-converted.error.js';
+import { LeadAccessDeniedError } from '../../../modules/leads/domain/errors/lead-access-denied.error.js';
 import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead-invalid-store.error.js';
@@ -43,6 +44,7 @@ import type {
  * | `LeadNotFoundError` | 404 |
  * | `LeadInvalidCustomerError`, `LeadInvalidStoreError`, `LeadInvalidOwnerError` | 400 |
  * | `LeadAlreadyConvertedError` | 409 |
+ * | `LeadAccessDeniedError` | 403 |
  * | `StoreNotFoundError` | 404 |
  * | `StoreDeleteBlockedError` | 409 |
  * | `TeamNotFoundError` | 404 |
@@ -246,6 +248,10 @@ class DomainErrorFilter implements ExceptionFilter {
 
 		if (exception instanceof LeadAlreadyConvertedError) {
 			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+
+		if (exception instanceof LeadAccessDeniedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.FORBIDDEN);
 		}
 
 		// --- Stores ---

@@ -14,6 +14,8 @@ import { LeadInvalidCustomerError } from '../../domain/errors/lead-invalid-custo
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../domain/errors/lead-invalid-store.error.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
+import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
+import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 import type { UpdateLeadDto } from '../dto/update-lead.dto.js';
@@ -28,9 +30,10 @@ class UpdateLeadUseCase {
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
+		private readonly leadAccessPolicy: LeadAccessPolicy,
 	) {}
 
-	async execute(leadId: string, dto: UpdateLeadDto) {
+	async execute(actor: LeadActor, leadId: string, dto: UpdateLeadDto) {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const users = this.userRepositoryFactory.create(transactionContext);
@@ -43,6 +46,7 @@ class UpdateLeadUseCase {
 			if (!existing) {
 				throw new LeadNotFoundError(leadId);
 			}
+			await this.leadAccessPolicy.assertCanMutateLead(actor, existing);
 
 			const customer = await customers.findById(Uuid.parse(dto.customerId));
 			if (!customer) {
@@ -60,6 +64,10 @@ class UpdateLeadUseCase {
 					throw new LeadInvalidOwnerError(dto.ownerUserId);
 				}
 			}
+			await this.leadAccessPolicy.assertCanCreateLead(actor, {
+				storeId: dto.storeId,
+				ownerUserId: dto.ownerUserId,
+			});
 
 			existing.changeCustomer(Uuid.parse(dto.customerId));
 			existing.changeStore(Uuid.parse(dto.storeId));
