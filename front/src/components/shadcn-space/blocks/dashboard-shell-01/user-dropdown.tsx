@@ -29,11 +29,16 @@ type Props = {
 type MenuItem = {
 	label: string;
 	icon: LucideIcon;
+	href?: string;
 };
 
 const MANAGE_ACCOUNT_ITEMS: MenuItem[] = [
-	{ label: 'Perfil', icon: ShieldCheck },
-	{ label: 'Credenciais', icon: Mail },
+	{ label: 'Perfil', icon: ShieldCheck, href: appRoutes.app.profile },
+	{
+		label: 'Credenciais',
+		icon: Mail,
+		href: `${appRoutes.app.profile}#credentials`,
+	},
 ];
 
 const LOGOUT_ITEM: MenuItem = {
@@ -63,8 +68,6 @@ const UserDropdown = ({
 	const queryClient = useQueryClient();
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 	const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
-
-	const canManageUsers = currentUser.role === 'ADMINISTRATOR';
 
 	async function handleLogout() {
 		setIsLoggingOut(true);
@@ -118,40 +121,38 @@ const UserDropdown = ({
 					<DropdownMenuSeparator />
 
 					{/* Main Links */}
-					{canManageUsers ? (
-						<DropdownMenuGroup>
-							{MANAGE_ACCOUNT_ITEMS.map(({ label, icon: Icon }) => (
-								<DropdownMenuItem
-									key={label}
-									className={itemClass}
-									onFocus={() => setHighlightedItem(label)}
-									onPointerMove={() => setHighlightedItem(label)}
-									onPointerLeave={() => setHighlightedItem(null)}
-									onSelect={() => router.push(appRoutes.app.users)}
+					<DropdownMenuGroup>
+						{MANAGE_ACCOUNT_ITEMS.map(({ label, icon: Icon, href }) => (
+							<DropdownMenuItem
+								key={label}
+								className={itemClass}
+								onFocus={() => setHighlightedItem(label)}
+								onPointerMove={() => setHighlightedItem(label)}
+								onPointerLeave={() => setHighlightedItem(null)}
+								onSelect={() => router.push(href)}
+								style={{
+									backgroundColor: 'transparent',
+									color: isHighlighted(label) ? '#D96C3F' : undefined,
+								}}
+							>
+								<Icon
 									style={{
-										backgroundColor: 'transparent',
+										color: isHighlighted(label) ? '#D96C3F' : undefined,
+									}}
+									size={20}
+								/>
+								<span
+									style={{
 										color: isHighlighted(label) ? '#D96C3F' : undefined,
 									}}
 								>
-									<Icon
-										style={{
-											color: isHighlighted(label) ? '#D96C3F' : undefined,
-										}}
-										size={20}
-									/>
-									<span
-										style={{
-											color: isHighlighted(label) ? '#D96C3F' : undefined,
-										}}
-									>
-										{label}
-									</span>
-								</DropdownMenuItem>
-							))}
-						</DropdownMenuGroup>
-					) : null}
+									{label}
+								</span>
+							</DropdownMenuItem>
+						))}
+					</DropdownMenuGroup>
 
-					{canManageUsers ? <DropdownMenuSeparator /> : null}
+					<DropdownMenuSeparator />
 
 					{/* Logout */}
 					<DropdownMenuItem

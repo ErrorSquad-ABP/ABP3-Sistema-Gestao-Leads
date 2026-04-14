@@ -302,7 +302,7 @@ function ProfilePageContent({
 				</section>
 
 				<section className="grid gap-6 xl:grid-cols-2">
-					<Card className="border-[#e3e8ef] bg-white/94">
+					<Card className="border-[#e3e8ef] bg-white/94" id="profile">
 						<CardHeader className="gap-2">
 							<div className="flex items-center gap-3">
 								<div className="flex size-10 items-center justify-center rounded-2xl bg-[#f1e2da] text-[#d96c3f]">
@@ -413,7 +413,7 @@ function ProfilePageContent({
 						</CardContent>
 					</Card>
 
-					<Card className="border-[#e3e8ef] bg-white/94">
+					<Card className="border-[#e3e8ef] bg-white/94" id="credentials">
 						<CardHeader className="gap-2">
 							<div className="flex items-center gap-3">
 								<div className="flex size-10 items-center justify-center rounded-2xl bg-[#edf2f8] text-[#2d3648]">
