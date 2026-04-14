@@ -1,5 +1,4 @@
 import { ArrowUpRight, LayoutPanelTop, Sparkles } from 'lucide-react';
-
 import {
 	Card,
 	CardContent,

@@ -170,6 +170,25 @@ O frontend:
 
 Mas a autoridade final continua sendo o backend.
 
+### Observação de contrato
+
+O modelo atual de utilizador não deve mais ser interpretado como `um utilizador = um time`.
+
+Fonte canônica:
+
+- `memberTeamIds`
+- `managedTeamIds`
+
+Compatibilidade temporária:
+
+- `teamId` ainda pode aparecer em respostas para não quebrar consumidores antigos
+
+Regra operacional:
+
+- se houver dúvida entre `teamId` e os arrays, os arrays vencem;
+- autorização por escopo deve usar o modelo multi-team;
+- `accessGroup` complementa navegação e toggles, mas não substitui `role` nem vínculo organizacional.
+
 ## Fluxos que ainda não são deploy-ready como feature completa
 
 - gestão completa de usuários em `/app/users`
