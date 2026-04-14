@@ -1,30 +1,13 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('ATTENDANT', 'MANAGER', 'GENERAL_MANAGER', 'ADMIN');
-
--- CreateEnum
-CREATE TYPE "LeadSource" AS ENUM ('WEBSITE', 'WHATSAPP', 'PHONE', 'WALK_IN', 'INDICATION', 'OTHER', 'INSTAGRAM');
-
--- CreateEnum
-CREATE TYPE "LeadStatus" AS ENUM ('NEW', 'CONTACTED', 'QUALIFIED', 'NEGOTIATING', 'CONVERTED', 'LOST');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'LeadStatus') THEN
+        CREATE TYPE "LeadStatus" AS ENUM ('NEW', 'CONTACTED', 'QUALIFIED', 'NEGOTIATING', 'CONVERTED', 'LOST');
+    END IF;
+END $$;
 
 -- CreateTable
-CREATE TABLE "User" (
-    "id" UUID NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "role" "UserRole" NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Team" (
+CREATE TABLE IF NOT EXISTS "Team" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "storeId" UUID NOT NULL,
@@ -36,7 +19,7 @@ CREATE TABLE "Team" (
 );
 
 -- CreateTable
-CREATE TABLE "Store" (
+CREATE TABLE IF NOT EXISTS "Store" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -46,7 +29,7 @@ CREATE TABLE "Store" (
 );
 
 -- CreateTable
-CREATE TABLE "Customer" (
+CREATE TABLE IF NOT EXISTS "Customer" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT,
@@ -59,7 +42,7 @@ CREATE TABLE "Customer" (
 );
 
 -- CreateTable
-CREATE TABLE "Lead" (
+CREATE TABLE IF NOT EXISTS "Lead" (
     "id" UUID NOT NULL,
     "customerId" UUID NOT NULL,
     "storeId" UUID NOT NULL,
@@ -73,7 +56,7 @@ CREATE TABLE "Lead" (
 );
 
 -- CreateTable
-CREATE TABLE "Deal" (
+CREATE TABLE IF NOT EXISTS "Deal" (
     "id" UUID NOT NULL,
     "leadId" UUID NOT NULL,
     "title" TEXT NOT NULL,
@@ -86,7 +69,7 @@ CREATE TABLE "Deal" (
 );
 
 -- CreateTable
-CREATE TABLE "AuditLog" (
+CREATE TABLE IF NOT EXISTS "AuditLog" (
     "id" UUID NOT NULL,
     "actorUserId" UUID,
     "action" TEXT NOT NULL,
@@ -99,7 +82,7 @@ CREATE TABLE "AuditLog" (
 );
 
 -- CreateTable
-CREATE TABLE "_TeamMembers" (
+CREATE TABLE IF NOT EXISTS "_TeamMembers" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL,
 
@@ -107,16 +90,13 @@ CREATE TABLE "_TeamMembers" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "Customer_email_key" ON "Customer"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Customer_email_key" ON "Customer"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "Customer_cpf_key" ON "Customer"("cpf");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Customer_cpf_key" ON "Customer"("cpf");
-
--- CreateIndex
-CREATE INDEX "_TeamMembers_B_index" ON "_TeamMembers"("B");
+CREATE INDEX IF NOT EXISTS "_TeamMembers_B_index" ON "_TeamMembers"("B");
 
 -- AddForeignKey
 ALTER TABLE "Team" ADD CONSTRAINT "Team_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "Store"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

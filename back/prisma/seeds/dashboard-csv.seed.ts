@@ -2,15 +2,6 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type {
-	AccessGroup,
-	Customer,
-	Deal,
-	Lead,
-	Store,
-	Team,
-	User,
-} from '../../src/generated/prisma/client.js';
 import {
 	LeadSource,
 	LeadStatus,
@@ -18,6 +9,10 @@ import {
 } from '../../src/generated/prisma/enums.js';
 
 import { deterministicUuid, hashPassword } from './seed-utils.js';
+import {
+	SYSTEM_ACCESS_GROUPS,
+	type DashboardSeedDataset,
+} from './seed-definitions.js';
 
 type DashboardCsvRow = {
 	lead_id: string;
@@ -41,54 +36,6 @@ type DashboardCsvRow = {
 	finalization_reason: string;
 };
 
-type SeedDataset = {
-	accessGroups: Array<
-		Pick<
-			AccessGroup,
-			| 'id'
-			| 'name'
-			| 'description'
-			| 'baseRole'
-			| 'featureKeys'
-			| 'isSystemGroup'
-		>
-	>;
-	teams: Array<Pick<Team, 'id' | 'name'>>;
-	stores: Array<Pick<Store, 'id' | 'name'>>;
-	users: Array<
-		Pick<
-			User,
-			'id' | 'name' | 'email' | 'password' | 'role' | 'teamId' | 'accessGroupId'
-		>
-	>;
-	customers: Array<Pick<Customer, 'id' | 'name' | 'email' | 'phone' | 'cpf'>>;
-	leads: Array<
-		Pick<
-			Lead,
-			| 'id'
-			| 'customerId'
-			| 'storeId'
-			| 'ownerUserId'
-			| 'source'
-			| 'status'
-			| 'createdAt'
-			| 'updatedAt'
-		>
-	>;
-	deals: Array<
-		Pick<
-			Deal,
-			| 'id'
-			| 'leadId'
-			| 'title'
-			| 'value'
-			| 'closedAt'
-			| 'createdAt'
-			| 'updatedAt'
-		>
-	>;
-};
-
 const CSV_FILE_PATH = resolve(
 	dirname(fileURLToPath(import.meta.url)),
 	'..',
@@ -97,82 +44,18 @@ const CSV_FILE_PATH = resolve(
 );
 
 const DEFAULT_PASSWORD = 'admin123';
-const accessGroups = [
-	{
-		id: deterministicUuid('access-group:administrator'),
-		name: 'Grupo administrativo',
-		description: 'Administração completa do sistema, usuários e governança.',
-		baseRole: UserRole.ADMIN,
-		featureKeys: [
-			'dashboardOperational',
-			'dashboardAnalytic',
-			'leads',
-			'users',
-			'profile',
-			'credentials',
-			'reports',
-			'exports',
-		],
-		isSystemGroup: true,
-	},
-	{
-		id: deterministicUuid('access-group:general-manager'),
-		name: 'Grupo executivo',
-		description: 'Visão consolidada de operação, indicadores e relatórios.',
-		baseRole: UserRole.GENERAL_MANAGER,
-		featureKeys: [
-			'dashboardOperational',
-			'dashboardAnalytic',
-			'profile',
-			'credentials',
-			'reports',
-			'exports',
-		],
-		isSystemGroup: true,
-	},
-	{
-		id: deterministicUuid('access-group:manager'),
-		name: 'Grupo de gestão',
-		description: 'Supervisão operacional e acompanhamento comercial da equipe.',
-		baseRole: UserRole.MANAGER,
-		featureKeys: [
-			'dashboardOperational',
-			'dashboardAnalytic',
-			'leads',
-			'profile',
-			'credentials',
-			'reports',
-		],
-		isSystemGroup: true,
-	},
-	{
-		id: deterministicUuid('access-group:attendant'),
-		name: 'Grupo operacional',
-		description: 'Execução comercial cotidiana e tratamento de leads.',
-		baseRole: UserRole.ATTENDANT,
-		featureKeys: ['leads', 'profile', 'credentials'],
-		isSystemGroup: true,
-	},
-] satisfies Array<
-	Pick<
-		AccessGroup,
-		'id' | 'name' | 'description' | 'baseRole' | 'featureKeys' | 'isSystemGroup'
-	>
->;
 
 const SUPPORT_USERS = [
 	{
 		email: 'admin@crm.com',
 		name: 'Administrador',
 		role: UserRole.ADMIN,
-		teamId: null,
 		accessGroupId: deterministicUuid('access-group:administrator'),
 	},
 	{
 		email: 'geral@crm.com',
 		name: 'Gerente Geral',
 		role: UserRole.GENERAL_MANAGER,
-		teamId: null,
 		accessGroupId: deterministicUuid('access-group:general-manager'),
 	},
 ] as const;
@@ -322,26 +205,22 @@ function mapLeadStatus(row: DashboardCsvRow) {
 	}
 }
 
-export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
+export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const csvContent = await readFile(CSV_FILE_PATH, 'utf-8');
 	const rows = parseCsv(csvContent);
 	const passwordHash = await hashPassword(DEFAULT_PASSWORD);
 
-	const teams = Array.from(
+	const stores = Array.from(
 		new Set(rows.map((row) => row.team_name.trim())),
 	).map((teamName) => ({
-		id: deterministicUuid(`team:${teamName}`),
-		name: teamName,
+		id: deterministicUuid(`store:${teamName}`),
+		name: buildStoreName(teamName),
 	}));
 
-	const stores = teams.map((team) => ({
-		id: deterministicUuid(`store:${team.name}`),
-		name: buildStoreName(team.name),
-	}));
-
-	const teamIdByName = new Map(teams.map((team) => [team.name, team.id]));
-	const storeIdByTeamName = new Map(
-		teams.map((team, index) => [team.name, stores[index]?.id ?? '']),
+	const storeIdByOriginalTeamName = new Map(
+		Array.from(new Set(rows.map((row) => row.team_name.trim()))).map(
+			(teamName) => [teamName, deterministicUuid(`store:${teamName}`)],
+		),
 	);
 
 	const csvUsers = Array.from(
@@ -354,7 +233,6 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 					email: row.user_email.trim().toLowerCase(),
 					password: passwordHash,
 					role: UserRole.ATTENDANT,
-					teamId: teamIdByName.get(row.team_name.trim()) ?? null,
 					accessGroupId: deterministicUuid('access-group:attendant'),
 				},
 			]),
@@ -368,13 +246,45 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 			email: user.email,
 			password: passwordHash,
 			role: user.role,
-			teamId: user.teamId,
 			accessGroupId: user.accessGroupId,
 		})),
 		...csvUsers,
 	];
 
 	const userIdByEmail = new Map(users.map((user) => [user.email, user.id]));
+	const teamsByName = new Map<
+		string,
+		{
+			id: string;
+			name: string;
+			storeId: string;
+			managerId: string | null;
+			memberIds: string[];
+		}
+	>();
+
+	for (const row of rows) {
+		const teamName = row.team_name.trim();
+		const ownerId =
+			userIdByEmail.get(row.user_email.trim().toLowerCase()) ?? null;
+		const existing = teamsByName.get(teamName) ?? {
+			id: deterministicUuid(`team:${teamName}`),
+			name: teamName,
+			storeId:
+				storeIdByOriginalTeamName.get(teamName) ??
+				deterministicUuid(`store:${teamName}`),
+			managerId: null,
+			memberIds: [],
+		};
+
+		if (ownerId !== null && !existing.memberIds.includes(ownerId)) {
+			existing.memberIds.push(ownerId);
+		}
+
+		teamsByName.set(teamName, existing);
+	}
+
+	const teams = Array.from(teamsByName.values());
 
 	const customersByKey = new Map(
 		rows.map((row) => {
@@ -416,7 +326,7 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 				customerIdByKey.get(customerKey) ??
 				deterministicUuid(`customer:${customerKey}`),
 			storeId:
-				storeIdByTeamName.get(row.team_name.trim()) ??
+				storeIdByOriginalTeamName.get(row.team_name.trim()) ??
 				deterministicUuid(`store:${row.team_name.trim()}`),
 			ownerUserId:
 				userIdByEmail.get(row.user_email.trim().toLowerCase()) ?? null,
@@ -445,7 +355,7 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 	});
 
 	return {
-		accessGroups,
+		accessGroups: SYSTEM_ACCESS_GROUPS,
 		teams,
 		stores,
 		users,
