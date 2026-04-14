@@ -45,6 +45,8 @@ const CSV_FILE_PATH = resolve(
 
 const DEFAULT_PASSWORD = 'admin123';
 
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 const SUPPORT_USERS = [
 	{
 		email: 'admin@crm.com',
@@ -145,6 +147,30 @@ function trimNullable(value: string) {
 	return normalized.length > 0 ? normalized : null;
 }
 
+function numberToLetters(value: number) {
+	if (!Number.isInteger(value) || value <= 0) {
+		return String(value);
+	}
+
+	let remaining = value;
+	let result = '';
+
+	while (remaining > 0) {
+		remaining -= 1;
+		result = ALPHABET[remaining % 26] + result;
+		remaining = Math.floor(remaining / 26);
+	}
+
+	return result;
+}
+
+function sanitizeSeedName(value: string) {
+	return value
+		.trim()
+		.replace(/\s+/g, ' ')
+		.replace(/\b\d+\b/g, (match) => numberToLetters(Number(match)));
+}
+
 function buildCustomerKey(row: DashboardCsvRow) {
 	return (
 		trimNullable(row.customer_cpf) ??
@@ -229,7 +255,7 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 				row.user_email.trim().toLowerCase(),
 				{
 					id: deterministicUuid(`user:${row.user_email.trim().toLowerCase()}`),
-					name: row.user_name.trim(),
+					name: sanitizeSeedName(row.user_name),
 					email: row.user_email.trim().toLowerCase(),
 					password: passwordHash,
 					role: UserRole.ATTENDANT,
@@ -294,7 +320,7 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 				customerKey,
 				{
 					id: deterministicUuid(`customer:${customerKey}`),
-					name: row.customer_name.trim(),
+					name: sanitizeSeedName(row.customer_name),
 					email: trimNullable(row.customer_email)?.toLowerCase() ?? null,
 					phone: trimNullable(row.customer_phone),
 					cpf: trimNullable(row.customer_cpf),

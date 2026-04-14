@@ -17,6 +17,10 @@ const prisma = new PrismaClient({
 
 /** `minimal` (padrão): auth + dados mestres. `dashboard`: CSV fictício completo (leads, clientes, etc.). */
 const seedMode = (process.env.SEED_MODE ?? 'minimal').toLowerCase();
+const SEED_TRANSACTION_OPTIONS = {
+	maxWait: 10_000,
+	timeout: 30_000,
+} as const;
 
 async function truncateSeedData(tx: Prisma.TransactionClient) {
 	await tx.auditLog.deleteMany();
@@ -64,7 +68,7 @@ export async function runSeed() {
 			await tx.customer.createMany({ data: dataset.customers });
 			await tx.lead.createMany({ data: dataset.leads });
 			await tx.deal.createMany({ data: dataset.deals });
-		});
+		}, SEED_TRANSACTION_OPTIONS);
 
 		console.log(
 			`Seeded ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users, ${dataset.customers.length} customers, ${dataset.leads.length} leads and ${dataset.deals.length} deals from dashboard CSV.`,
@@ -78,7 +82,7 @@ export async function runSeed() {
 			await tx.store.createMany({ data: dataset.stores });
 			await tx.user.createMany({ data: dataset.users });
 			await createTeams(tx, dataset.teams);
-		});
+		}, SEED_TRANSACTION_OPTIONS);
 
 		console.log(
 			`Seeded minimal dataset: ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users (SEED_DEFAULT_PASSWORD / admin123).`,
