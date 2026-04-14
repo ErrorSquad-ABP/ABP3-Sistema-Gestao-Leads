@@ -214,7 +214,9 @@ class UserPrismaRepository implements IUserRepository {
 				: target !== undefined && target !== null
 					? [String(target)]
 					: [];
-			if (targets.some((value) => String(value).toLowerCase().includes('email'))) {
+			if (
+				targets.some((value) => String(value).toLowerCase().includes('email'))
+			) {
 				throw new UserEmailAlreadyExistsError(email);
 			}
 		}

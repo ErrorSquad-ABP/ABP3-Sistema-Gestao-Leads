@@ -136,8 +136,8 @@ class User extends AggregateRoot {
 			this._accessGroupId === null && accessGroupId === null
 				? true
 				: this._accessGroupId !== null &&
-					  accessGroupId !== null &&
-					  this._accessGroupId.equals(accessGroupId);
+					accessGroupId !== null &&
+					this._accessGroupId.equals(accessGroupId);
 		if (sameAccessGroup) {
 			this._accessGroup = accessGroup;
 			return;
@@ -160,8 +160,8 @@ class User extends AggregateRoot {
 			a._accessGroupId === null && b._accessGroupId === null
 				? true
 				: a._accessGroupId !== null &&
-					  b._accessGroupId !== null &&
-					  a._accessGroupId.equals(b._accessGroupId);
+					b._accessGroupId !== null &&
+					a._accessGroupId.equals(b._accessGroupId);
 		return (
 			sameAccessGroup &&
 			sameUuidIdSets(a._memberTeamIds, b._memberTeamIds) &&

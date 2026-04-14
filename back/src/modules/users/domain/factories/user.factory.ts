@@ -47,8 +47,8 @@ class UserFactory {
 			params.accessGroupId === undefined
 				? existing.accessGroup
 				: nextAccessGroupId !== null &&
-					  existing.accessGroup !== null &&
-					  existing.accessGroup.id.equals(nextAccessGroupId)
+						existing.accessGroup !== null &&
+						existing.accessGroup.id.equals(nextAccessGroupId)
 					? existing.accessGroup
 					: null;
 

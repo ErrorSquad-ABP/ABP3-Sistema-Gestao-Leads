@@ -102,8 +102,8 @@ class UpdateUserUseCase {
 					existing.accessGroupId === null && nextAccessGroupId === null
 						? true
 						: existing.accessGroupId !== null &&
-							  nextAccessGroupId !== null &&
-							  existing.accessGroupId.equals(nextAccessGroupId);
+							nextAccessGroupId !== null &&
+							existing.accessGroupId.equals(nextAccessGroupId);
 				if (!sameAccessGroup) {
 					const nextAccessGroup =
 						nextAccessGroupId !== null &&

@@ -164,7 +164,11 @@ class LeadController {
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateLeadValidator,
 	) {
-		const lead = await this.updateLeadUseCase.execute(toLeadActor(user), id, body);
+		const lead = await this.updateLeadUseCase.execute(
+			toLeadActor(user),
+			id,
+			body,
+		);
 		return LeadPresenter.toResponse(lead);
 	}
 

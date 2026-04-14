@@ -25,7 +25,17 @@ function buildUser(overrides?: {
 			: overrides.accessGroupId === null
 				? null
 				: Uuid.parse(overrides.accessGroupId);
-	return new User(id, name, email, hash, 'ATTENDANT', [], [], accessGroupId, null);
+	return new User(
+		id,
+		name,
+		email,
+		hash,
+		'ATTENDANT',
+		[],
+		[],
+		accessGroupId,
+		null,
+	);
 }
 
 describe('UserFactory', () => {
@@ -71,7 +81,10 @@ describe('UserFactory', () => {
 		assert.equal(next.role, existing.role);
 		assert.equal(next.memberTeamIds.length, 1);
 		assert.equal(next.managedTeamIds.length, 1);
-		assert.equal(next.accessGroupId?.value, '44444444-4444-4444-8444-444444444444');
+		assert.equal(
+			next.accessGroupId?.value,
+			'44444444-4444-4444-8444-444444444444',
+		);
 		assert.ok(next.id.equals(existing.id));
 	});
 });

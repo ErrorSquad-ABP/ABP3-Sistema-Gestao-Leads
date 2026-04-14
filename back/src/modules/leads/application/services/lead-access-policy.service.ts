@@ -88,10 +88,17 @@ class LeadAccessPolicy {
 		if (!user) {
 			return [];
 		}
-		return [...new Set([...unionTeamIds(user.memberTeamIds), ...unionTeamIds(user.managedTeamIds)])];
+		return [
+			...new Set([
+				...unionTeamIds(user.memberTeamIds),
+				...unionTeamIds(user.managedTeamIds),
+			]),
+		];
 	}
 
-	private async targetUserStoreIds(userId: string): Promise<ReadonlySet<string>> {
+	private async targetUserStoreIds(
+		userId: string,
+	): Promise<ReadonlySet<string>> {
 		const teamIds = await this.targetUserTeamIds(userId);
 		if (teamIds.length === 0) {
 			return new Set();
@@ -109,7 +116,10 @@ class LeadAccessPolicy {
 		return teamIds.some((teamId) => allowedTeamIds.has(teamId));
 	}
 
-	async assertCanListOwner(actor: LeadActor, ownerUserId: string): Promise<void> {
+	async assertCanListOwner(
+		actor: LeadActor,
+		ownerUserId: string,
+	): Promise<void> {
 		const scope = await this.resolveScope(actor);
 		if (scope.kind === 'full') {
 			return;
@@ -122,7 +132,9 @@ class LeadAccessPolicy {
 				'Atendentes podem consultar apenas os proprios leads.',
 			);
 		}
-		if (!(await this.targetUserIntersectsTeams(ownerUserId, scope.readTeamIds))) {
+		if (
+			!(await this.targetUserIntersectsTeams(ownerUserId, scope.readTeamIds))
+		) {
 			throw new LeadAccessDeniedError(
 				'Consulta permitida apenas para proprietarios dentro do seu escopo de equipes.',
 			);
@@ -263,7 +275,9 @@ class LeadAccessPolicy {
 				'Atendentes nao podem reatribuir leads para outros usuarios.',
 			);
 		}
-		if (!(await this.targetUserIntersectsTeams(ownerUserId, scope.readTeamIds))) {
+		if (
+			!(await this.targetUserIntersectsTeams(ownerUserId, scope.readTeamIds))
+		) {
 			throw new LeadAccessDeniedError(
 				'Atribuicao permitida apenas para usuarios dentro do seu escopo.',
 			);
