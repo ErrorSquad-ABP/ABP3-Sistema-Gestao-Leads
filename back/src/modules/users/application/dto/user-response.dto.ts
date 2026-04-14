@@ -20,6 +20,15 @@ class UserResponseDto {
 	role!: string;
 
 	@ApiProperty({
+		format: 'uuid',
+		nullable: true,
+		deprecated: true,
+		description:
+			'Legado (compatibilidade): identificador estável derivado dos vínculos atuais — primeiro time como membro (ordenado por UUID); se não houver, primeiro time gerenciado; senão null. Clientes novos devem usar memberTeamIds e managedTeamIds.',
+	})
+	teamId!: string | null;
+
+	@ApiProperty({
 		type: [String],
 		format: 'uuid',
 		description: 'Equipes das quais o usuário é membro.',
