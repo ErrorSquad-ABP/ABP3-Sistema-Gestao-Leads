@@ -14,7 +14,7 @@ O objetivo destes runbooks é reduzir dependência de contexto oral. Um novo dev
 ## Arquivos
 
 - `local-setup.md`: bootstrap local ponta a ponta para desenvolvimento.
-- `deploy.md`: checklist operacional para subir a stack com Compose e validar o resultado.
+- `deploy.md`: checklist operacional para subir a stack local com Compose e operar a produção atual em Vercel + Neon.
 
 ## Escopo
 

@@ -2,11 +2,13 @@
 
 ## Objetivo
 
-Este documento descreve o procedimento operacional mínimo para subir a stack do projeto no estado atual, com foco em ambientes controlados por Docker Compose.
+Este documento descreve o procedimento operacional mínimo para subir a stack do projeto no estado atual, tanto em ambiente local via Docker Compose quanto em produção na Vercel com banco Neon.
 
-Ele não substitui uma estratégia formal de produção com reverse proxy, observabilidade, TLS e gestão de segredos. O objetivo aqui é registrar o procedimento real que a equipe já usa para colocar `front`, `back` e `postgres` de pé sem depender de memória individual.
+Ele não substitui uma estratégia formal de produção com observabilidade, rollback e gestão avançada de segredos. O objetivo aqui é registrar o procedimento real que a equipe já usa para colocar `front`, `back` e `postgres` de pé sem depender de memória individual.
 
 ## Estado atual do projeto
+
+### Local com Docker Compose
 
 A stack atual é composta por:
 
@@ -19,6 +21,20 @@ Definições principais:
 
 - [docker-compose.yml](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/docker-compose.yml)
 - [docker-compose.dev.yml](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/docker-compose.dev.yml)
+
+### Produção atual
+
+Produção publicada:
+
+- `front`: `https://abp3-sistema-gestao-leads-front.vercel.app`
+- `back`: `https://abp3-sistema-gestao-leads-back.vercel.app`
+- `database`: Neon PostgreSQL
+
+Topologia:
+
+- o `front` publica um rewrite de `/api/*` para o projeto `back`
+- autenticação e RBAC continuam no backend
+- o banco produtivo usa migrations Prisma e seed explícito
 
 ## Variáveis obrigatórias
 
@@ -80,6 +96,12 @@ O Compose atual não dispara seed automático. Então, após subir:
 npm run db:seed
 ```
 
+Para massa analítica maior:
+
+```bash
+SEED_MODE=dashboard npm run db:seed
+```
+
 ## Verificações mínimas pós-deploy
 
 ### Frontend
@@ -91,6 +113,12 @@ npm run db:seed
 
 - `http://localhost:3001/api/health`
 - `http://localhost:3001/api/health/ready`
+
+### Produção
+
+- `https://abp3-sistema-gestao-leads-front.vercel.app`
+- `https://abp3-sistema-gestao-leads-front.vercel.app/api/health`
+- `https://abp3-sistema-gestao-leads-back.vercel.app/api/health`
 
 ### Banco
 
@@ -125,6 +153,17 @@ Resultado esperado:
 ```bash
 npm run smoke:http -w back
 ```
+
+### Smoke mínimo de produção
+
+1. Abrir `https://abp3-sistema-gestao-leads-front.vercel.app/login`
+2. Autenticar com `admin@crm.com / admin123`
+3. Confirmar acesso a:
+   - `/app/leads`
+   - `/app/users`
+   - `/app/profile`
+4. Confirmar `403` para utilizador de perfil restrito em rota administrativa
+5. Confirmar listagem de leads e utilizadores com dados seedados
 
 ## Estratégia atual de rotas autenticadas
 
@@ -191,9 +230,13 @@ Regra operacional:
 
 ## Fluxos que ainda não são deploy-ready como feature completa
 
-- gestão completa de usuários em `/app/users`
-- perfil e atualização de credenciais na área autenticada
 - recuperação automática de senha por e-mail
+
+Os fluxos abaixo já existem e estão operacionais no estado atual:
+
+- gestão administrativa de utilizadores em `/app/users`
+- perfil e atualização de credenciais em `/app/profile`
+- CRUD operacional de leads com catálogo escopado por RBAC em `/app/leads`
 
 ## Falhas operacionais comuns
 
@@ -213,6 +256,24 @@ Verifique:
 - `NEXT_PUBLIC_API_URL`
 - `API_INTERNAL_URL`
 - `FRONTEND_ORIGINS`
+
+### Produção sobe, mas listagens administrativas respondem `400`
+
+Verifique:
+
+- se o seed usado foi o dataset atualizado da `main`
+- se não há dados antigos incompatíveis com o domínio atual de `Name`
+- se a Neon recebeu `migrate deploy` antes do `db:seed`
+
+### CRUD de leads abre, mas selects de loja ou responsável ficam vazios
+
+Verifique:
+
+- se o utilizador autenticado realmente tem escopo de leitura/mutação em equipes ou lojas
+- se o catálogo do backend responde:
+  - `/api/leads/catalog/stores`
+  - `/api/leads/catalog/owners`
+- se o utilizador possui vínculos canônicos em `memberTeamIds` ou `managedTeamIds`
 
 ### Banco sobe, mas frontend ou backend continuam com estado antigo
 
