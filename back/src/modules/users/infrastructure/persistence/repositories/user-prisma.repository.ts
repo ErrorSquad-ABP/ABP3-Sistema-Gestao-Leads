@@ -9,6 +9,7 @@ import { PasswordHash } from '../../../../../shared/domain/value-objects/passwor
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import { User } from '../../../domain/entities/user.entity.js';
 import { UserEmailAlreadyExistsError } from '../../../domain/errors/user-email-already-exists.error.js';
+import { UserInvalidAccessGroupError } from '../../../domain/errors/user-invalid-access-group.error.js';
 import type { IUserRepository } from '../../../domain/repositories/user.repository.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
@@ -21,6 +22,15 @@ type UserRecord = {
 	readonly role: PrismaUserRole;
 	readonly memberTeams: readonly { readonly id: string }[];
 	readonly managedTeams: readonly { readonly id: string }[];
+	readonly accessGroupId: string | null;
+	readonly accessGroup?: {
+		readonly id: string;
+		readonly name: string;
+		readonly description: string;
+		readonly baseRole: PrismaUserRole | null;
+		readonly featureKeys: Prisma.JsonValue;
+		readonly isSystemGroup: boolean;
+	} | null;
 };
 
 const USER_ROLE_TO_PRISMA: Record<string, PrismaUserRole> = {
@@ -37,9 +47,10 @@ const PRISMA_ROLE_TO_USER: Record<PrismaUserRole, string> = {
 	MANAGER: 'MANAGER',
 };
 
-const userTeamsInclude = {
+const userRelationsInclude = {
 	memberTeams: { select: { id: true } },
 	managedTeams: { select: { id: true } },
+	accessGroup: true,
 } as const;
 
 function isPrismaKnownRequest(
@@ -63,16 +74,21 @@ class UserPrismaRepository implements IUserRepository {
 		try {
 			const created = await this.client.user.create({
 				data: {
+					accessGroupId: user.accessGroupId?.value ?? null,
 					email: user.email.value,
 					name: user.name.value,
 					password: user.passwordHash.value,
 					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
 				},
-				include: userTeamsInclude,
+				include: userRelationsInclude,
 			});
 			return this.toDomain(created);
 		} catch (error: unknown) {
-			this.rethrowPrismaUserErrors(error, user.email.value);
+			this.rethrowPrismaUserErrors(
+				error,
+				user.email.value,
+				user.accessGroupId?.value,
+			);
 			throw error;
 		}
 	}
@@ -81,17 +97,22 @@ class UserPrismaRepository implements IUserRepository {
 		try {
 			const updated = await this.client.user.update({
 				data: {
+					accessGroupId: user.accessGroupId?.value ?? null,
 					email: user.email.value,
 					name: user.name.value,
 					password: user.passwordHash.value,
 					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
 				},
 				where: { id: user.id.value },
-				include: userTeamsInclude,
+				include: userRelationsInclude,
 			});
 			return this.toDomain(updated);
 		} catch (error: unknown) {
-			this.rethrowPrismaUserErrors(error, user.email.value);
+			this.rethrowPrismaUserErrors(
+				error,
+				user.email.value,
+				user.accessGroupId?.value,
+			);
 			throw error;
 		}
 	}
@@ -105,7 +126,7 @@ class UserPrismaRepository implements IUserRepository {
 	): Promise<User | null> {
 		const user = await this.client.user.findUnique({
 			where: { id: id.value },
-			include: userTeamsInclude,
+			include: userRelationsInclude,
 		});
 		return user ? this.toDomain(user) : null;
 	}
@@ -114,7 +135,7 @@ class UserPrismaRepository implements IUserRepository {
 		const normalized = Email.create(email).value;
 		const user = await this.client.user.findUnique({
 			where: { email: normalized },
-			include: userTeamsInclude,
+			include: userRelationsInclude,
 		});
 		return user ? this.toDomain(user) : null;
 	}
@@ -129,7 +150,7 @@ class UserPrismaRepository implements IUserRepository {
 				orderBy: { createdAt: 'desc' },
 				skip,
 				take: query.limit,
-				include: userTeamsInclude,
+				include: userRelationsInclude,
 			}),
 			this.client.user.count(),
 		]);
@@ -146,8 +167,28 @@ class UserPrismaRepository implements IUserRepository {
 			Email.create(record.email),
 			PasswordHash.create(record.password),
 			parseUserRole(PRISMA_ROLE_TO_USER[record.role]),
-			record.memberTeams.map((t) => Uuid.parse(t.id)),
-			record.managedTeams.map((t) => Uuid.parse(t.id)),
+			record.memberTeams.map((team) => Uuid.parse(team.id)),
+			record.managedTeams.map((team) => Uuid.parse(team.id)),
+			record.accessGroupId === null ? null : Uuid.parse(record.accessGroupId),
+			record.accessGroup === null || record.accessGroup === undefined
+				? null
+				: {
+						id: Uuid.parse(record.accessGroup.id),
+						name: record.accessGroup.name,
+						description: record.accessGroup.description,
+						baseRole:
+							record.accessGroup.baseRole === null
+								? null
+								: parseUserRole(
+										PRISMA_ROLE_TO_USER[record.accessGroup.baseRole],
+									),
+						featureKeys: Array.isArray(record.accessGroup.featureKeys)
+							? record.accessGroup.featureKeys.filter(
+									(value): value is string => typeof value === 'string',
+								)
+							: [],
+						isSystemGroup: record.accessGroup.isSystemGroup,
+					},
 		);
 	}
 
@@ -158,7 +199,11 @@ class UserPrismaRepository implements IUserRepository {
 		);
 	}
 
-	private rethrowPrismaUserErrors(error: unknown, email: string): void {
+	private rethrowPrismaUserErrors(
+		error: unknown,
+		email: string,
+		accessGroupId: string | undefined,
+	): void {
 		if (!isPrismaKnownRequest(error)) {
 			return;
 		}
@@ -169,8 +214,23 @@ class UserPrismaRepository implements IUserRepository {
 				: target !== undefined && target !== null
 					? [String(target)]
 					: [];
-			if (targets.some((t) => String(t).toLowerCase().includes('email'))) {
+			if (targets.some((value) => String(value).toLowerCase().includes('email'))) {
 				throw new UserEmailAlreadyExistsError(email);
+			}
+		}
+		if (error.code === 'P2003') {
+			const fieldName =
+				typeof error.meta?.target === 'string'
+					? error.meta.target
+					: Array.isArray(error.meta?.target)
+						? error.meta.target.join(',')
+						: '';
+			if (
+				accessGroupId !== undefined &&
+				accessGroupId !== '' &&
+				fieldName.toLowerCase().includes('accessgroup')
+			) {
+				throw new UserInvalidAccessGroupError(accessGroupId);
 			}
 		}
 	}

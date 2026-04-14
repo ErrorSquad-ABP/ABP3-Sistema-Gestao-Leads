@@ -35,22 +35,36 @@ enum LeadStatus {
   LOST
 }
 
+model AccessGroup {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String    @unique
+  description   String
+  baseRole      UserRole?
+  featureKeys   Json
+  isSystemGroup Boolean   @default(false)
+  users         User[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  name         String
-  email        String   @unique
-  password     String
-  role         UserRole
+  id            String       @id @default(uuid()) @db.Uuid
+  name          String
+  email         String       @unique
+  password      String
+  role          UserRole
+  accessGroupId String?      @db.Uuid
+  accessGroup   AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
 
-  memberTeams  Team[]   @relation("TeamMembers")
-  managedTeams Team[]   @relation("TeamManager")
+  memberTeams   Team[]       @relation("TeamMembers")
+  managedTeams  Team[]       @relation("TeamManager")
 
-  ownedLeads   Lead[]   @relation("LeadOwner")
-  auditLogs    AuditLog[]
-  authSessions AuthSession[]
+  ownedLeads    Lead[]       @relation("LeadOwner")
+  auditLogs     AuditLog[]
+  authSessions  AuthSession[]
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model AuthSession {
@@ -84,7 +98,6 @@ model Team {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
-
 
 model Store {
   id          String     @id @default(uuid()) @db.Uuid

@@ -21,11 +21,12 @@ import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead
 import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not-found.error.js';
 import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/store-delete-blocked.error.js';
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
-import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
 import { TeamAccessDeniedError } from '../../../modules/teams/domain/errors/team-access-denied.error.js';
+import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
 import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
 import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
+import { UserInvalidAccessGroupError } from '../../../modules/users/domain/errors/user-invalid-access-group.error.js';
 import { UserNotFoundError } from '../../../modules/users/domain/errors/user-not-found.error.js';
 import { DomainValidationError } from '../../domain/errors/domain-validation.error.js';
 import type {
@@ -33,27 +34,6 @@ import type {
 	ApiErrorItem,
 } from '../types/api-response.types.js';
 
-/**
- * Mapeia erros de domínio e `HttpException` para o envelope `{ success, message, data, errors }`.
- * Registrado globalmente em `main.ts` via `useGlobalFilters`.
- *
- * Contrato HTTP (domínio → status) — manter alinhado aos casos de uso:
- *
- * | Classe | Status |
- * | --- | --- |
- * | `LeadNotFoundError` | 404 |
- * | `LeadInvalidCustomerError`, `LeadInvalidStoreError`, `LeadInvalidOwnerError` | 400 |
- * | `LeadAlreadyConvertedError` | 409 |
- * | `LeadAccessDeniedError` | 403 |
- * | `StoreNotFoundError` | 404 |
- * | `StoreDeleteBlockedError` | 409 |
- * | `TeamNotFoundError` | 404 |
- * | `TeamInvalidManagerError`, `TeamInvalidStoreError` | 400 |
- * | `TeamAccessDeniedError` | 403 |
- * | `UserNotFoundError` | 404 |
- * | `UserEmailAlreadyExistsError` | 409 |
- * | `DomainValidationError` | 400 |
- */
 @Catch()
 class DomainErrorFilter implements ExceptionFilter {
 	private readonly logger = new Logger(DomainErrorFilter.name);
@@ -161,7 +141,6 @@ class DomainErrorFilter implements ExceptionFilter {
 		return p.includes('/auth');
 	}
 
-	/** Auditoria leve: sem corpo, tokens ou credenciais — só método, path, IP e código. */
 	private logSecurityAudit(
 		request: Request,
 		status: number,
@@ -217,27 +196,14 @@ class DomainErrorFilter implements ExceptionFilter {
 		exception: unknown,
 	): { status: number; body: ApiErrorEnvelope } | undefined {
 		if (exception instanceof InvalidCredentialsError) {
-			return {
-				status: HttpStatus.UNAUTHORIZED,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.UNAUTHORIZED);
 		}
-
 		if (exception instanceof RefreshTokenInvalidError) {
-			return {
-				status: HttpStatus.UNAUTHORIZED,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.UNAUTHORIZED);
 		}
-
 		if (exception instanceof LeadNotFoundError) {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
-
 		if (
 			exception instanceof LeadInvalidCustomerError ||
 			exception instanceof LeadInvalidStoreError ||
@@ -245,20 +211,15 @@ class DomainErrorFilter implements ExceptionFilter {
 		) {
 			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
 		}
-
 		if (exception instanceof LeadAlreadyConvertedError) {
 			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
 		}
-
 		if (exception instanceof LeadAccessDeniedError) {
 			return this.envelopeForCodedError(exception, HttpStatus.FORBIDDEN);
 		}
-
-		// --- Stores ---
 		if (exception instanceof StoreNotFoundError) {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
-
 		if (exception instanceof StoreDeleteBlockedError) {
 			return {
 				status: HttpStatus.CONFLICT,
@@ -274,52 +235,34 @@ class DomainErrorFilter implements ExceptionFilter {
 				]),
 			};
 		}
-
 		if (exception instanceof CustomerNotFoundError) {
-			return {
-				status: HttpStatus.NOT_FOUND,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
-
 		if (
 			exception instanceof CustomerEmailAlreadyExistsError ||
 			exception instanceof CustomerCpfAlreadyExistsError
 		) {
-			return {
-				status: HttpStatus.CONFLICT,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
 		}
-
 		if (exception instanceof TeamNotFoundError) {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
-
 		if (
 			exception instanceof TeamInvalidManagerError ||
-			exception instanceof TeamInvalidStoreError
+			exception instanceof TeamInvalidStoreError ||
+			exception instanceof UserInvalidAccessGroupError
 		) {
 			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
 		}
-
 		if (exception instanceof TeamAccessDeniedError) {
 			return this.envelopeForCodedError(exception, HttpStatus.FORBIDDEN);
 		}
-
-		// --- Users ---
 		if (exception instanceof UserNotFoundError) {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
-
 		if (exception instanceof UserEmailAlreadyExistsError) {
 			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
 		}
-
 		if (exception instanceof DomainValidationError) {
 			const item: ApiErrorItem = {
 				code: exception.code,
@@ -337,7 +280,6 @@ class DomainErrorFilter implements ExceptionFilter {
 				body: this.toErrorEnvelope(exception.message, [item]),
 			};
 		}
-
 		return undefined;
 	}
 

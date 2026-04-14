@@ -101,6 +101,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 			self.role,
 			self.memberTeamIds,
 			self.managedTeamIds,
+			self.accessGroupId,
+			self.accessGroup,
 		);
 		const users = {
 			findById: mock.fn(async () => self),

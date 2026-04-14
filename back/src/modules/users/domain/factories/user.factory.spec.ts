@@ -11,18 +11,28 @@ import { UserFactory } from './user.factory.js';
 const SAMPLE_HASH =
 	'$argon2id$v=19$m=65536,t=3,p=1$c29tZXNhbHQ$9q4FC2S7w6zV8nQ8PjM4Ww';
 
-function buildUser(overrides?: { name?: string }): User {
+function buildUser(overrides?: {
+	name?: string;
+	accessGroupId?: string | null;
+}): User {
 	const id = Uuid.parse('11111111-1111-4111-8111-111111111111');
 	const name = Name.create(overrides?.name ?? 'Maria Silva');
 	const email = Email.create('maria@example.com');
 	const hash = PasswordHash.create(SAMPLE_HASH);
-	return new User(id, name, email, hash, 'ATTENDANT', [], []);
+	const accessGroupId =
+		overrides?.accessGroupId === undefined
+			? null
+			: overrides.accessGroupId === null
+				? null
+				: Uuid.parse(overrides.accessGroupId);
+	return new User(id, name, email, hash, 'ATTENDANT', [], [], accessGroupId, null);
 }
 
 describe('UserFactory', () => {
 	it('create preenche estado inicial sem equipes', () => {
 		const factory = new UserFactory();
 		const created = factory.create({
+			accessGroupId: null,
 			name: 'João',
 			email: 'joao@example.com',
 			passwordHash: SAMPLE_HASH,
@@ -34,6 +44,35 @@ describe('UserFactory', () => {
 		assert.equal(created.role, 'ATTENDANT');
 		assert.equal(created.memberTeamIds.length, 0);
 		assert.equal(created.managedTeamIds.length, 0);
+		assert.equal(created.accessGroupId, null);
+	});
+
+	it('update preserva vínculos de equipe e altera accessGroupId quando informado', () => {
+		const factory = new UserFactory();
+		const existing = new User(
+			Uuid.parse('11111111-1111-4111-8111-111111111111'),
+			Name.create('Ana'),
+			Email.create('a@example.com'),
+			PasswordHash.create(SAMPLE_HASH),
+			'MANAGER',
+			[Uuid.parse('22222222-2222-4222-8222-222222222222')],
+			[Uuid.parse('33333333-3333-4333-8333-333333333333')],
+			null,
+			null,
+		);
+		const next = factory.update(existing, {
+			accessGroupId: '44444444-4444-4444-8444-444444444444',
+			name: 'Novo Nome',
+		});
+
+		assert.equal(next.name.value, 'Novo Nome');
+		assert.ok(next.email.equals(existing.email));
+		assert.ok(next.passwordHash.equals(existing.passwordHash));
+		assert.equal(next.role, existing.role);
+		assert.equal(next.memberTeamIds.length, 1);
+		assert.equal(next.managedTeamIds.length, 1);
+		assert.equal(next.accessGroupId?.value, '44444444-4444-4444-8444-444444444444');
+		assert.ok(next.id.equals(existing.id));
 	});
 });
 

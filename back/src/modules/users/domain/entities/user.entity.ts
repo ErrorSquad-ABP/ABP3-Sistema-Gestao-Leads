@@ -18,15 +18,18 @@ function sameUuidIdSets(a: readonly TeamId[], b: readonly TeamId[]): boolean {
 	if (as.length !== bs.length) {
 		return false;
 	}
-	/** Comparação lexicográfica estável sem indexação dinâmica (evita falso positivo do ESLint security). */
 	return as.join('\u0000') === bs.join('\u0000');
 }
 
-/**
- * User aggregate root (operational context: users).
- * Vínculos com equipes vêm das relações `memberTeams` e `managedTeams` no banco;
- * os ids são carregados no agregado apenas para projeção / consistência de leitura.
- */
+type UserAccessGroupSummary = {
+	readonly id: UUID;
+	readonly name: string;
+	readonly description: string;
+	readonly baseRole: UserRole | null;
+	readonly featureKeys: readonly string[];
+	readonly isSystemGroup: boolean;
+};
+
 class User extends AggregateRoot {
 	private _id: UUID;
 	private _name: Name;
@@ -35,6 +38,8 @@ class User extends AggregateRoot {
 	private _role: UserRole;
 	private _memberTeamIds: TeamId[];
 	private _managedTeamIds: TeamId[];
+	private _accessGroupId: UUID | null;
+	private _accessGroup: UserAccessGroupSummary | null;
 
 	constructor(
 		id: UUID,
@@ -44,6 +49,8 @@ class User extends AggregateRoot {
 		role: UserRole,
 		memberTeamIds: readonly TeamId[],
 		managedTeamIds: readonly TeamId[],
+		accessGroupId: UUID | null = null,
+		accessGroup: UserAccessGroupSummary | null = null,
 	) {
 		super();
 		this._id = id;
@@ -53,6 +60,8 @@ class User extends AggregateRoot {
 		this._role = role;
 		this._memberTeamIds = [...memberTeamIds];
 		this._managedTeamIds = [...managedTeamIds];
+		this._accessGroupId = accessGroupId;
+		this._accessGroup = accessGroup;
 	}
 
 	get id(): UUID {
@@ -75,12 +84,18 @@ class User extends AggregateRoot {
 		return this._role;
 	}
 
-	/** Equipes das quais o usuário é membro (relação TeamMembers). */
+	get accessGroupId(): UUID | null {
+		return this._accessGroupId;
+	}
+
+	get accessGroup(): UserAccessGroupSummary | null {
+		return this._accessGroup;
+	}
+
 	get memberTeamIds(): readonly TeamId[] {
 		return this._memberTeamIds;
 	}
 
-	/** Equipes que o usuário gerencia (relação TeamManager). */
 	get managedTeamIds(): readonly TeamId[] {
 		return this._managedTeamIds;
 	}
@@ -113,7 +128,24 @@ class User extends AggregateRoot {
 		this._role = role;
 	}
 
-	/** Compara estado persistível (evita `update` no banco quando não há mudança real). */
+	changeAccessGroup(
+		accessGroupId: UUID | null,
+		accessGroup: UserAccessGroupSummary | null,
+	): void {
+		const sameAccessGroup =
+			this._accessGroupId === null && accessGroupId === null
+				? true
+				: this._accessGroupId !== null &&
+					  accessGroupId !== null &&
+					  this._accessGroupId.equals(accessGroupId);
+		if (sameAccessGroup) {
+			this._accessGroup = accessGroup;
+			return;
+		}
+		this._accessGroupId = accessGroupId;
+		this._accessGroup = accessGroup;
+	}
+
 	static sameState(a: User, b: User): boolean {
 		if (!a._id.equals(b._id)) {
 			return false;
@@ -124,11 +156,19 @@ class User extends AggregateRoot {
 		if (!a._passwordHash.equals(b._passwordHash) || a._role !== b._role) {
 			return false;
 		}
+		const sameAccessGroup =
+			a._accessGroupId === null && b._accessGroupId === null
+				? true
+				: a._accessGroupId !== null &&
+					  b._accessGroupId !== null &&
+					  a._accessGroupId.equals(b._accessGroupId);
 		return (
+			sameAccessGroup &&
 			sameUuidIdSets(a._memberTeamIds, b._memberTeamIds) &&
 			sameUuidIdSets(a._managedTeamIds, b._managedTeamIds)
 		);
 	}
 }
 
+export type { UserAccessGroupSummary };
 export { User };

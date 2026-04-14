@@ -18,6 +18,7 @@ import type { UpdateUserDto } from '../dto/update-user.dto.js';
 
 function hasUserUpdatePayload(dto: UpdateUserDto): boolean {
 	return (
+		dto.accessGroupId !== undefined ||
 		dto.name !== undefined ||
 		dto.email !== undefined ||
 		dto.password !== undefined ||
@@ -91,6 +92,26 @@ class UpdateUserUseCase {
 				const next = parseUserRole(dto.role);
 				if (next !== existing.role) {
 					existing.changeRole(next);
+					shouldPersist = true;
+				}
+			}
+			if (dto.accessGroupId !== undefined) {
+				const nextAccessGroupId =
+					dto.accessGroupId === null ? null : Uuid.parse(dto.accessGroupId);
+				const sameAccessGroup =
+					existing.accessGroupId === null && nextAccessGroupId === null
+						? true
+						: existing.accessGroupId !== null &&
+							  nextAccessGroupId !== null &&
+							  existing.accessGroupId.equals(nextAccessGroupId);
+				if (!sameAccessGroup) {
+					const nextAccessGroup =
+						nextAccessGroupId !== null &&
+						existing.accessGroup !== null &&
+						existing.accessGroup.id.equals(nextAccessGroupId)
+							? existing.accessGroup
+							: null;
+					existing.changeAccessGroup(nextAccessGroupId, nextAccessGroup);
 					shouldPersist = true;
 				}
 			}

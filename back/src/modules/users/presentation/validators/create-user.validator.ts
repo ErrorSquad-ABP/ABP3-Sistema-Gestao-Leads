@@ -1,10 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
 	IsEmail,
 	IsIn,
 	IsNotEmpty,
+	IsOptional,
 	IsString,
+	IsUUID,
 	MinLength,
+	ValidateIf,
 } from 'class-validator';
 
 import { USER_ROLES } from '../../../../shared/domain/enums/user-role.enum.js';
@@ -36,6 +39,16 @@ class CreateUserValidator {
 	@IsString()
 	@IsIn(USER_ROLE_VALUES)
 	role!: string;
+
+	@ApiPropertyOptional({
+		format: 'uuid',
+		nullable: true,
+		description: 'Grupo de acesso opcional; null remove o vínculo.',
+	})
+	@IsOptional()
+	@ValidateIf((_, value) => value !== null && value !== undefined)
+	@IsUUID()
+	accessGroupId?: string | null;
 }
 
 export { CreateUserValidator };
