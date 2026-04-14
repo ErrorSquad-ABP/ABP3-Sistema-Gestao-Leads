@@ -20,12 +20,28 @@ class UserResponseDto {
 	})
 	role!: string;
 
-	@ApiPropertyOptional({
+	@ApiProperty({
 		format: 'uuid',
 		nullable: true,
-		description: 'Equipe opcional; null se o usuário não pertence a time.',
+		deprecated: true,
+		description:
+			'Legado (compatibilidade): identificador estável derivado dos vínculos atuais — primeiro time como membro (ordenado por UUID); se não houver, primeiro time gerenciado; senão null. Clientes novos devem usar memberTeamIds e managedTeamIds.',
 	})
 	teamId!: string | null;
+
+	@ApiProperty({
+		type: [String],
+		format: 'uuid',
+		description: 'Equipes das quais o usuário é membro.',
+	})
+	memberTeamIds!: string[];
+
+	@ApiProperty({
+		type: [String],
+		format: 'uuid',
+		description: 'Equipes que o usuário gerencia.',
+	})
+	managedTeamIds!: string[];
 
 	@ApiPropertyOptional({
 		format: 'uuid',
