@@ -13,6 +13,7 @@ import {
 import {
 	ApiBadRequestResponse,
 	ApiBearerAuth,
+	ApiForbiddenResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
 	ApiOperation,
@@ -20,12 +21,12 @@ import {
 	ApiTags,
 } from '@nestjs/swagger';
 
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
-import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import {
 	CurrentUser,
 	type JwtUser,
@@ -40,6 +41,8 @@ import { CreateLeadUseCase } from '../../application/use-cases/create-lead.use-c
 import { DeleteLeadUseCase } from '../../application/use-cases/delete-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { FindLeadUseCase } from '../../application/use-cases/find-lead.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListAllLeadsUseCase } from '../../application/use-cases/list-all-leads.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListOwnLeadsUseCase } from '../../application/use-cases/list-own-leads.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -66,6 +69,11 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
 };
 
+const FORBIDDEN = {
+	description:
+		'Utilizador autenticado sem permissão para o recurso ou parâmetro solicitado.',
+};
+
 function toLeadActor(user: JwtUser): LeadActor {
 	return {
 		userId: user.userId,
@@ -83,6 +91,7 @@ class LeadController {
 		private readonly findLeadUseCase: FindLeadUseCase,
 		private readonly listOwnLeadsUseCase: ListOwnLeadsUseCase,
 		private readonly listTeamLeadsUseCase: ListTeamLeadsUseCase,
+		private readonly listAllLeadsUseCase: ListAllLeadsUseCase,
 		private readonly reassignLeadUseCase: ReassignLeadUseCase,
 		private readonly convertLeadUseCase: ConvertLeadUseCase,
 		private readonly deleteLeadUseCase: DeleteLeadUseCase,
@@ -109,6 +118,7 @@ class LeadController {
 		description: 'Identificador do usuário dono dos leads',
 	})
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	listByOwner(
 		@CurrentUser() user: JwtUser,
@@ -116,6 +126,21 @@ class LeadController {
 	) {
 		return this.listOwnLeadsUseCase
 			.execute(toLeadActor(user), ownerUserId)
+			.then((leads) => LeadPresenter.toResponseList(leads));
+	}
+
+	@Get('all')
+	@ApiOperation({
+		summary: 'Listar todos os leads (alcance global)',
+		description:
+			'Reservado a `ADMINISTRATOR` e `GENERAL_MANAGER`. Lista todos os leads do sistema.',
+	})
+	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listAll(@CurrentUser() user: JwtUser) {
+		return this.listAllLeadsUseCase
+			.execute(toLeadActor(user))
 			.then((leads) => LeadPresenter.toResponseList(leads));
 	}
 
@@ -127,6 +152,7 @@ class LeadController {
 		description: 'Identificador do time',
 	})
 	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	listByTeam(
 		@CurrentUser() user: JwtUser,

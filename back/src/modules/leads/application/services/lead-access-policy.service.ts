@@ -158,6 +158,16 @@ class LeadAccessPolicy {
 		}
 	}
 
+	/** Listagem sem filtro por owner/equipa: alinhado a `resolveScope` com `kind: 'full'`. */
+	async assertCanListAllLeads(actor: LeadActor): Promise<void> {
+		if (actor.role === 'ADMINISTRATOR' || actor.role === 'GENERAL_MANAGER') {
+			return;
+		}
+		throw new LeadAccessDeniedError(
+			'Listagem global permitida apenas para administrador ou gestor geral.',
+		);
+	}
+
 	async assertCanReadLead(actor: LeadActor, lead: Lead): Promise<void> {
 		const scope = await this.resolveScope(actor);
 		if (scope.kind === 'full') {

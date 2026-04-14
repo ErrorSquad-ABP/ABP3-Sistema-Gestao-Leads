@@ -68,6 +68,13 @@ class LeadPrismaRepository implements ILeadRepository {
 		return leads.map((lead) => LeadMapper.toDomain(lead));
 	}
 
+	async listAll() {
+		const leads = await this.client.lead.findMany({
+			orderBy: { createdAt: 'desc' },
+		});
+		return leads.map((lead) => LeadMapper.toDomain(lead));
+	}
+
 	private get client(): PrismaClientLike {
 		return (
 			(this.transactionContext?.client as Prisma.TransactionClient) ??

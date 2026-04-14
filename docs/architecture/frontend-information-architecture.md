@@ -382,7 +382,7 @@ Os nomes abaixo são contratos-alvo para guiar frontend e backend em paralelo. A
 
 | Domínio | Contratos mínimos esperados |
 | --- | --- |
-| `auth` | `POST /auth/login`, `PATCH /auth/me`, `PATCH /auth/me/password`, `GET /auth/me` |
+| `auth` | `POST /auth/login`, `GET /auth/session` (bootstrap opcional), `GET /auth/me` (estrito), `PATCH /auth/me`, `PATCH /auth/me/password` |
 | `leads` | `GET /leads`, `POST /leads`, `GET /leads/:id`, `PATCH /leads/:id` |
 | `customers` | `GET /customers`, `POST /customers`, `GET /customers/:id`, `PATCH /customers/:id` |
 | `negotiations` | `POST /leads/:id/negotiation`, `PATCH /negotiations/:id`, `GET /leads/:id/history` |

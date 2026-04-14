@@ -187,7 +187,8 @@ export SMOKE_ADMIN_PASSWORD=admin123
 - `POST /api/auth/login`: funcional
 - `POST /api/auth/logout`: funcional
 - `POST /api/auth/refresh`: funcional
-- `GET /api/auth/me`: funcional
+- `GET /api/auth/session`: funcional (público; `data: null` sem sessão)
+- `GET /api/auth/me`: funcional (401 sem JWT)
 - `/login`: funcional
 - `/forgot-password`: informativo, sem recuperação automática
 - `/register`: fora do fluxo público; criação pública não é suportada

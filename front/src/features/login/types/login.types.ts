@@ -31,7 +31,10 @@ type AuthenticatedUser = {
 	name: string;
 	email: string;
 	role: UserRole;
+	/** Legado: primeiro membro / primeiro gerido; clientes novos devem usar memberTeamIds/managedTeamIds. */
 	teamId: string | null;
+	memberTeamIds: readonly string[];
+	managedTeamIds: readonly string[];
 	accessGroupId: string | null;
 	accessGroup: AccessGroupSummary | null;
 };
