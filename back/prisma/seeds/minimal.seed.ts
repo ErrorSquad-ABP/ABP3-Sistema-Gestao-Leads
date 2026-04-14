@@ -1,15 +1,97 @@
-import type { Store, Team, User } from '../../src/generated/prisma/client.js';
+import type {
+	AccessGroup,
+	Store,
+	Team,
+	User,
+} from '../../src/generated/prisma/client.js';
 import { UserRole } from '../../src/generated/prisma/enums.js';
 
 import { deterministicUuid, hashPassword } from './seed-utils.js';
 
 const DEFAULT_PASSWORD = process.env.SEED_DEFAULT_PASSWORD ?? 'admin123';
 
+const accessGroups = [
+	{
+		id: deterministicUuid('access-group:administrator'),
+		name: 'Grupo administrativo',
+		description: 'Administração completa do sistema, usuários e governança.',
+		baseRole: UserRole.ADMIN,
+		featureKeys: [
+			'dashboardOperational',
+			'dashboardAnalytic',
+			'leads',
+			'users',
+			'profile',
+			'credentials',
+			'reports',
+			'exports',
+		],
+		isSystemGroup: true,
+	},
+	{
+		id: deterministicUuid('access-group:general-manager'),
+		name: 'Grupo executivo',
+		description: 'Visão consolidada de operação, indicadores e relatórios.',
+		baseRole: UserRole.GENERAL_MANAGER,
+		featureKeys: [
+			'dashboardOperational',
+			'dashboardAnalytic',
+			'profile',
+			'credentials',
+			'reports',
+			'exports',
+		],
+		isSystemGroup: true,
+	},
+	{
+		id: deterministicUuid('access-group:manager'),
+		name: 'Grupo de gestão',
+		description: 'Supervisão operacional e acompanhamento comercial da equipe.',
+		baseRole: UserRole.MANAGER,
+		featureKeys: [
+			'dashboardOperational',
+			'dashboardAnalytic',
+			'leads',
+			'profile',
+			'credentials',
+			'reports',
+		],
+		isSystemGroup: true,
+	},
+	{
+		id: deterministicUuid('access-group:attendant'),
+		name: 'Grupo operacional',
+		description: 'Execução comercial cotidiana e tratamento de leads.',
+		baseRole: UserRole.ATTENDANT,
+		featureKeys: ['leads', 'profile', 'credentials'],
+		isSystemGroup: true,
+	},
+] satisfies Array<
+	Pick<
+		AccessGroup,
+		'id' | 'name' | 'description' | 'baseRole' | 'featureKeys' | 'isSystemGroup'
+	>
+>;
+
 export type MinimalSeedDataset = {
+	accessGroups: Array<
+		Pick<
+			AccessGroup,
+			| 'id'
+			| 'name'
+			| 'description'
+			| 'baseRole'
+			| 'featureKeys'
+			| 'isSystemGroup'
+		>
+	>;
 	teams: Array<Pick<Team, 'id' | 'name'>>;
 	stores: Array<Pick<Store, 'id' | 'name'>>;
 	users: Array<
-		Pick<User, 'id' | 'name' | 'email' | 'password' | 'role' | 'teamId'>
+		Pick<
+			User,
+			'id' | 'name' | 'email' | 'password' | 'role' | 'teamId' | 'accessGroupId'
+		>
 	>;
 };
 
@@ -41,6 +123,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			password: passwordHash,
 			role: UserRole.ADMIN,
 			teamId: null,
+			accessGroupId: deterministicUuid('access-group:administrator'),
 		},
 		{
 			id: deterministicUuid('user:geral@crm.com'),
@@ -49,6 +132,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			password: passwordHash,
 			role: UserRole.GENERAL_MANAGER,
 			teamId: null,
+			accessGroupId: deterministicUuid('access-group:general-manager'),
 		},
 		{
 			id: deterministicUuid('user:gerente@crm.com'),
@@ -57,6 +141,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			password: passwordHash,
 			role: UserRole.MANAGER,
 			teamId: teamDemoId,
+			accessGroupId: deterministicUuid('access-group:manager'),
 		},
 		{
 			id: deterministicUuid('user:atendente@crm.com'),
@@ -65,6 +150,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			password: passwordHash,
 			role: UserRole.ATTENDANT,
 			teamId: teamDemoId,
+			accessGroupId: deterministicUuid('access-group:attendant'),
 		},
 		{
 			id: deterministicUuid('user:atendente2@crm.com'),
@@ -73,8 +159,9 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			password: passwordHash,
 			role: UserRole.ATTENDANT,
 			teamId: teamBetaId,
+			accessGroupId: deterministicUuid('access-group:attendant'),
 		},
 	];
 
-	return { teams, stores, users };
+	return { accessGroups, teams, stores, users };
 }

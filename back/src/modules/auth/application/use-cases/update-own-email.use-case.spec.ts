@@ -33,6 +33,8 @@ describe('UpdateOwnEmailUseCase', () => {
 		PasswordHash.create(VALID_ARGON2_FIXTURE),
 		'ADMINISTRATOR',
 		null,
+		null,
+		null,
 	);
 
 	it('lança InvalidCredentialsError quando a senha atual está errada', async () => {
@@ -82,6 +84,8 @@ describe('UpdateOwnEmailUseCase', () => {
 			PasswordHash.create(VALID_ARGON2_FIXTURE),
 			'ATTENDANT',
 			null,
+			null,
+			null,
 		);
 		const users = {
 			findById: mock.fn(async () => self),
@@ -127,6 +131,8 @@ describe('UpdateOwnEmailUseCase', () => {
 			self.passwordHash,
 			self.role,
 			self.teamId,
+			self.accessGroupId,
+			self.accessGroup,
 		);
 		const users = {
 			findById: mock.fn(async () => self),

@@ -4,6 +4,19 @@ import type { User } from '../../domain/entities/user.entity.js';
 class UserPresenter {
 	static toResponse(user: User): UserResponseDto {
 		return {
+			accessGroup:
+				user.accessGroup === null
+					? null
+					: {
+							id: user.accessGroup.id.value,
+							name: user.accessGroup.name,
+							description: user.accessGroup.description,
+							baseRole: user.accessGroup.baseRole,
+							featureKeys: [...user.accessGroup.featureKeys],
+							isSystemGroup: user.accessGroup.isSystemGroup,
+						},
+			accessGroupId:
+				user.accessGroupId === null ? null : user.accessGroupId.value,
 			id: user.id.value,
 			name: user.name.value,
 			email: user.email.value,

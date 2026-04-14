@@ -28,9 +28,11 @@ export async function runSeed() {
 		await prisma.lead.deleteMany();
 		await prisma.customer.deleteMany();
 		await prisma.user.deleteMany();
+		await prisma.accessGroup.deleteMany();
 		await prisma.store.deleteMany();
 		await prisma.team.deleteMany();
 
+		await prisma.accessGroup.createMany({ data: dataset.accessGroups });
 		await prisma.team.createMany({ data: dataset.teams });
 		await prisma.store.createMany({ data: dataset.stores });
 		await prisma.user.createMany({ data: dataset.users });
@@ -39,7 +41,7 @@ export async function runSeed() {
 		await prisma.deal.createMany({ data: dataset.deals });
 
 		console.log(
-			`Seeded ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users, ${dataset.customers.length} customers, ${dataset.leads.length} leads and ${dataset.deals.length} deals from dashboard CSV.`,
+			`Seeded ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users, ${dataset.customers.length} customers, ${dataset.leads.length} leads and ${dataset.deals.length} deals from dashboard CSV.`,
 		);
 	} else if (seedMode === 'minimal') {
 		const dataset = await buildMinimalSeed();
@@ -49,15 +51,17 @@ export async function runSeed() {
 		await prisma.lead.deleteMany();
 		await prisma.customer.deleteMany();
 		await prisma.user.deleteMany();
+		await prisma.accessGroup.deleteMany();
 		await prisma.store.deleteMany();
 		await prisma.team.deleteMany();
 
+		await prisma.accessGroup.createMany({ data: dataset.accessGroups });
 		await prisma.team.createMany({ data: dataset.teams });
 		await prisma.store.createMany({ data: dataset.stores });
 		await prisma.user.createMany({ data: dataset.users });
 
 		console.log(
-			`Seeded minimal dataset: ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users (SEED_DEFAULT_PASSWORD / admin123).`,
+			`Seeded minimal dataset: ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users (SEED_DEFAULT_PASSWORD / admin123).`,
 		);
 	} else {
 		throw new Error(

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { getAllowedRolesForRoute } from '@/lib/auth/permissions';
-import { requireUserWithRoles } from '@/lib/auth/session';
+import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
 type AnalyticDashboardLayoutProps = {
 	children: ReactNode;
@@ -10,7 +9,7 @@ type AnalyticDashboardLayoutProps = {
 async function AnalyticDashboardLayout({
 	children,
 }: AnalyticDashboardLayoutProps) {
-	await requireUserWithRoles(getAllowedRolesForRoute('dashboardAnalytic'));
+	await requireUserWithRouteAccess('dashboardAnalytic');
 
 	return children;
 }

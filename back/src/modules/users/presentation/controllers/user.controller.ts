@@ -89,6 +89,7 @@ class UserController {
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async create(@Body() body: CreateUserValidator) {
 		const user = await this.createUserUseCase.execute({
+			accessGroupId: body.accessGroupId ?? null,
 			name: body.name,
 			email: body.email,
 			password: body.password,
