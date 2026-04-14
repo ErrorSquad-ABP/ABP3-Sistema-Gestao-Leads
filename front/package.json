@@ -9,7 +9,8 @@
 		"start": "next start",
 		"lint": "eslint",
 		"format": "prettier --write \"**/*.{ts,tsx}\"",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"test": "tsx --test \"src/**/*.spec.ts\""
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",
@@ -45,6 +46,7 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
 		"tailwindcss": "^4.2.1",
+		"tsx": "4.21.0",
 		"typescript": "^5.9.3"
 	}
 }

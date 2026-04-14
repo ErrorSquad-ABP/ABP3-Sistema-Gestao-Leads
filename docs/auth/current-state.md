@@ -18,7 +18,8 @@ Hoje o projeto já possui:
 - `JWT` de access;
 - refresh token opaco persistido em PostgreSQL;
 - `logout`;
-- endpoint `me`;
+- endpoint `GET /api/auth/session` (bootstrap opcional, HTTP 200 + `data` ou `null`);
+- endpoint `GET /api/auth/me` (exige JWT; 401 se anónimo);
 - gate server-side no frontend para `/app/*`;
 - `RBAC` real no backend;
 - redirecionamento inicial por papel;
@@ -81,7 +82,8 @@ Base técnica:
 | `POST` | `/api/auth/login` | Funcional |
 | `POST` | `/api/auth/refresh` | Funcional |
 | `POST` | `/api/auth/logout` | Funcional |
-| `GET` | `/api/auth/me` | Funcional |
+| `GET` | `/api/auth/session` | Funcional (público; `data: null` sem sessão) |
+| `GET` | `/api/auth/me` | Funcional (protegido; 401 sem JWT) |
 | `PATCH` | `/api/auth/me/email` | Funcional no backend |
 | `PATCH` | `/api/auth/me/password` | Funcional no backend |
 
@@ -92,6 +94,17 @@ Base técnica:
 - JWT assinado com `RS256`
 - usado nas rotas protegidas
 - pode chegar por cookie HttpOnly e/ou `Authorization`
+
+### Bootstrap no cliente: `GET /api/auth/session`
+
+- Rota **pública** no backend: não passa pelo `GlobalAuthGuard` na entrada HTTP.
+- Com access JWT válido (cookie ou `Authorization: Bearer`), o corpo segue o envelope habitual e `data` contém o mesmo utilizador que `GET /api/auth/me` devolveria.
+- Sem cookie/Bearer, Bearer inválido ou utilizador já inexistente: **`data: null`** e **HTTP 200** — evita 401 no DevTools ao abrir `/login` ou ao refrescar a página antes de autenticar.
+- O SSR (`getCurrentUserFromRequest` em [`session.ts`](../../front/src/lib/auth/session.ts)) e o cliente (`fetchCurrentUser` em [`login.service.ts`](../../front/src/features/login/api/login.service.ts)) usam este endpoint para resolver a sessão.
+
+### `GET /api/auth/me` (estrito)
+
+- Exige JWT válido; responde **401** se não houver sessão. Útil quando o contrato deve ser explicitamente “autenticado ou erro”.
 
 ### Refresh token
 

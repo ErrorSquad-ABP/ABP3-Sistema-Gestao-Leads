@@ -15,6 +15,7 @@ interface ILeadRepository {
 	findById(id: UUID): Promise<Lead | null>;
 	listByOwner(userId: UUID): Promise<Lead[]>;
 	listByTeam(teamId: TeamId): Promise<Lead[]>;
+	listAll(): Promise<Lead[]>;
 }
 
 export type { ILeadRepository };

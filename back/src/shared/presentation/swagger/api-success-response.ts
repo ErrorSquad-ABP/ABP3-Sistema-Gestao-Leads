@@ -51,6 +51,28 @@ function ApiOkResponseEnvelope<T extends Type<unknown>>(
 	);
 }
 
+/**
+ * `200` — envelope com `data` tipado como `model` **ou** `null` (sessão opcional).
+ * OpenAPI 3.0: `nullable` + `allOf` + `$ref` (padrão suportado pelo Swagger UI).
+ */
+function ApiOkResponseEnvelopeNullable<T extends Type<unknown>>(
+	model: T,
+	options?: EnvelopeDocOptions,
+) {
+	return applyDecorators(
+		ApiExtraModels(model),
+		ApiOkResponse({
+			...(options?.description !== undefined && {
+				description: options.description,
+			}),
+			schema: buildSuccessEnvelopeSchema({
+				nullable: true,
+				allOf: [{ $ref: getSchemaPath(model) }],
+			}),
+		}),
+	);
+}
+
 /** `200` — envelope + `data` como array de `model`. */
 function ApiOkResponseEnvelopeArray<T extends Type<unknown>>(
 	model: T,
@@ -127,5 +149,6 @@ export {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
+	ApiOkResponseEnvelopeNullable,
 	ApiOkResponseEnvelopePaged,
 };
