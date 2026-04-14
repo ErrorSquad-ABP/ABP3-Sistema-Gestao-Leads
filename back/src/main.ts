@@ -17,6 +17,7 @@ import { ApiResponseInterceptor } from './shared/presentation/interceptors/api-r
 import { redactAuthRefreshBodyMiddleware } from './shared/presentation/middleware/redact-auth-refresh-body.middleware.js';
 
 const JSON_BODY_LIMIT = '512kb';
+const helmetMiddleware = helmet as unknown as typeof import('helmet').default;
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -29,7 +30,7 @@ async function bootstrap() {
 		expressApp.use(redactAuthRefreshBodyMiddleware);
 		expressApp.set('trust proxy', env.trustProxy);
 		expressApp.use(
-			helmet({
+			helmetMiddleware({
 				contentSecurityPolicy: false,
 				crossOriginEmbedderPolicy: false,
 				...(env.nodeEnv === 'production' ? {} : { hsts: false }),
