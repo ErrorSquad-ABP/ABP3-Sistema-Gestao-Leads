@@ -1,0 +1,10 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"installCommand": "npm install --workspaces=false",
+	"buildCommand": "npm run build",
+	"functions": {
+		"src/main.ts": {
+			"includeFiles": "node_modules/{@{nestjs,prisma,scalar,phc}/**,argon2/**,{buffer*,class*,cookie*,d*,express,fast*,file*,h*,i*,j*,load*,lodash.*,m*,node-gyp-build,passport*,path*,pause,pg*,postgres-*,reflect*,rxjs,s*,tslib,u*,xtend,ecdsa-sig-formatter}/**}"
+		}
+	}
+}
