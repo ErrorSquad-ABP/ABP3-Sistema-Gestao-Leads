@@ -62,8 +62,7 @@ function teamRepoListingStore(storeId: string): ITeamRepository {
 			throw new Error('not used');
 		},
 		findById: async () => null,
-		listByIds: async (ids) =>
-			ids.map((id) => teamFixture(id.value, storeId)),
+		listByIds: async (ids) => ids.map((id) => teamFixture(id.value, storeId)),
 		list: async () => [],
 	};
 }
@@ -179,10 +178,7 @@ describe('LeadAccessPolicy.assertCanListTeam', () => {
 		const policy = policyFor(actor);
 		await assert.rejects(
 			() =>
-				policy.assertCanListTeam(
-					{ userId: ACTOR_ID, role: 'MANAGER' },
-					TEAM_B,
-				),
+				policy.assertCanListTeam({ userId: ACTOR_ID, role: 'MANAGER' }, TEAM_B),
 			LeadAccessDeniedError,
 		);
 	});

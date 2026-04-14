@@ -16,7 +16,10 @@ const baseUser = {
 	teamId: null,
 	accessGroupId: null,
 	accessGroup: null,
-} satisfies Omit<AuthenticatedUser, 'role' | 'memberTeamIds' | 'managedTeamIds'>;
+} satisfies Omit<
+	AuthenticatedUser,
+	'role' | 'memberTeamIds' | 'managedTeamIds'
+>;
 
 describe('readableTeamIdsForLeadsList', () => {
 	it('MANAGER: união membro e geridos', () => {

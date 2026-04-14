@@ -50,9 +50,7 @@ function useLeadsListQuery(user: AuthenticatedUser): UseLeadsListQueryResult {
 	const scope = useMemo(() => resolveLeadsListScope(user), [user]);
 
 	const singleEnabled =
-		scope !== null &&
-		scope.kind !== 'none' &&
-		scope.kind !== 'teams';
+		scope !== null && scope.kind !== 'none' && scope.kind !== 'teams';
 
 	const singleQuery = useQuery({
 		queryKey:
@@ -89,8 +87,7 @@ function useLeadsListQuery(user: AuthenticatedUser): UseLeadsListQueryResult {
 		const successQueries = teamQueries.filter((q) => q.isSuccess);
 		const errorQueries = teamQueries.filter((q) => q.isError);
 		const allSettled =
-			teamQueries.length > 0 &&
-			teamQueries.every((q) => !q.isPending);
+			teamQueries.length > 0 && teamQueries.every((q) => !q.isPending);
 		const mergedFromSuccess = mergeLeadListsById(
 			successQueries.map((q) => q.data ?? []),
 		);

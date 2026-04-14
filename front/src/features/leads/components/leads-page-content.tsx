@@ -1,10 +1,6 @@
 'use client';
 
-import {
-	Alert,
-	AlertDescription,
-	AlertTitle,
-} from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { ApiError } from '@/lib/http/api-error';
