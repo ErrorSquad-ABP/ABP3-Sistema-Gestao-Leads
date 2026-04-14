@@ -26,4 +26,14 @@ async function fetchLeadsByTeam(teamId: string, signal?: AbortSignal) {
 	return parseLeadListResponse(raw);
 }
 
-export { fetchLeadsByOwner, fetchLeadsByTeam };
+/**
+ * Lista todos os leads (`GET /api/leads/all`). Reservado a `ADMINISTRATOR` no servidor.
+ */
+async function fetchLeadsAll(signal?: AbortSignal) {
+	const raw = await apiFetch<unknown>('/api/leads/all', {
+		signal,
+	});
+	return parseLeadListResponse(raw);
+}
+
+export { fetchLeadsAll, fetchLeadsByOwner, fetchLeadsByTeam };

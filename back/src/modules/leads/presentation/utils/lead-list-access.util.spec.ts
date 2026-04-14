@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import { ForbiddenException } from '@nestjs/common';
 
 import {
+	requireListAllLeadsAllowed,
 	requireListByOwnerAllowed,
 	requireListByTeamAllowed,
 } from './lead-list-access.util.js';
@@ -63,6 +64,35 @@ describe('lead-list-access.util', () => {
 						null,
 						'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
 					),
+				ForbiddenException,
+			);
+		});
+
+		it('permite administrador sem equipa na conta a listar qualquer equipa', () => {
+			requireListByTeamAllowed(
+				'ADMINISTRATOR',
+				null,
+				'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+			);
+		});
+
+		it('permite administrador com equipa diferente da pedida (alcance global)', () => {
+			requireListByTeamAllowed(
+				'ADMINISTRATOR',
+				'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+				'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+			);
+		});
+	});
+
+	describe('requireListAllLeadsAllowed', () => {
+		it('permite administrador', () => {
+			requireListAllLeadsAllowed('ADMINISTRATOR');
+		});
+
+		it('rejeita gestor', () => {
+			assert.throws(
+				() => requireListAllLeadsAllowed('MANAGER'),
 				ForbiddenException,
 			);
 		});

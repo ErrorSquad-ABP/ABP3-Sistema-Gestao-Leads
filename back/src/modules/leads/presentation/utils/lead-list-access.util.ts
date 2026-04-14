@@ -27,6 +27,10 @@ function requireListByTeamAllowed(
 			'Perfil sem permissão para listagem por equipa.',
 		);
 	}
+	/** Administrador: alcance global; não exige `teamId` na conta nem igualdade à equipa pedida. */
+	if (currentRole === 'ADMINISTRATOR') {
+		return;
+	}
 	if (currentUserTeamId === null) {
 		throw new ForbiddenException('Utilizador sem equipa atribuída.');
 	}
@@ -35,4 +39,18 @@ function requireListByTeamAllowed(
 	}
 }
 
-export { requireListByOwnerAllowed, requireListByTeamAllowed };
+const GLOBAL_LIST_LEADS_ROLES = new Set<string>(['ADMINISTRATOR']);
+
+function requireListAllLeadsAllowed(currentRole: string): void {
+	if (!GLOBAL_LIST_LEADS_ROLES.has(currentRole)) {
+		throw new ForbiddenException(
+			'Perfil sem permissão para listagem global de leads.',
+		);
+	}
+}
+
+export {
+	requireListAllLeadsAllowed,
+	requireListByOwnerAllowed,
+	requireListByTeamAllowed,
+};

@@ -29,10 +29,12 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const leads = data ?? [];
 
 	const title = user.role === 'ATTENDANT' ? 'Meus leads' : 'Leads';
-	const subtitle =
-		user.role === 'ATTENDANT'
-			? 'Leads em que é o responsável pela operação.'
-			: 'Leads do contexto da sua equipa.';
+	let subtitle = 'Leads do contexto da sua equipa.';
+	if (user.role === 'ATTENDANT') {
+		subtitle = 'Leads em que é o responsável pela operação.';
+	} else if (scope?.kind === 'all') {
+		subtitle = 'Todos os leads do sistema (vista de administrador).';
+	}
 
 	return (
 		<div className="space-y-6" aria-busy={isPending ? 'true' : 'false'}>

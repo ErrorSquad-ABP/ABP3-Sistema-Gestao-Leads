@@ -7,6 +7,7 @@ import { ConvertLeadUseCase } from './application/use-cases/convert-lead.use-cas
 import { CreateLeadUseCase } from './application/use-cases/create-lead.use-case.js';
 import { DeleteLeadUseCase } from './application/use-cases/delete-lead.use-case.js';
 import { FindLeadUseCase } from './application/use-cases/find-lead.use-case.js';
+import { ListAllLeadsUseCase } from './application/use-cases/list-all-leads.use-case.js';
 import { ListOwnLeadsUseCase } from './application/use-cases/list-own-leads.use-case.js';
 import { ListTeamLeadsUseCase } from './application/use-cases/list-team-leads.use-case.js';
 import { ReassignLeadUseCase } from './application/use-cases/reassign-lead.use-case.js';
@@ -28,6 +29,7 @@ import { LeadController } from './presentation/controllers/lead.controller.js';
 		FindLeadUseCase,
 		ListOwnLeadsUseCase,
 		ListTeamLeadsUseCase,
+		ListAllLeadsUseCase,
 		ReassignLeadUseCase,
 		ConvertLeadUseCase,
 		DeleteLeadUseCase,

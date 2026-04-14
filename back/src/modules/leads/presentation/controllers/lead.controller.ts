@@ -42,6 +42,8 @@ import { DeleteLeadUseCase } from '../../application/use-cases/delete-lead.use-c
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { FindLeadUseCase } from '../../application/use-cases/find-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListAllLeadsUseCase } from '../../application/use-cases/list-all-leads.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListOwnLeadsUseCase } from '../../application/use-cases/list-own-leads.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListTeamLeadsUseCase } from '../../application/use-cases/list-team-leads.use-case.js';
@@ -51,6 +53,7 @@ import { ReassignLeadUseCase } from '../../application/use-cases/reassign-lead.u
 import { UpdateLeadUseCase } from '../../application/use-cases/update-lead.use-case.js';
 import { LeadPresenter } from '../presenters/lead.presenter.js';
 import {
+	requireListAllLeadsAllowed,
 	requireListByOwnerAllowed,
 	requireListByTeamAllowed,
 } from '../utils/lead-list-access.util.js';
@@ -86,6 +89,7 @@ class LeadController {
 		private readonly findLeadUseCase: FindLeadUseCase,
 		private readonly listOwnLeadsUseCase: ListOwnLeadsUseCase,
 		private readonly listTeamLeadsUseCase: ListTeamLeadsUseCase,
+		private readonly listAllLeadsUseCase: ListAllLeadsUseCase,
 		private readonly reassignLeadUseCase: ReassignLeadUseCase,
 		private readonly convertLeadUseCase: ConvertLeadUseCase,
 		private readonly deleteLeadUseCase: DeleteLeadUseCase,
@@ -120,6 +124,22 @@ class LeadController {
 		requireListByOwnerAllowed(current.userId, ownerUserId);
 		return this.listOwnLeadsUseCase
 			.execute(ownerUserId)
+			.then((leads) => LeadPresenter.toResponseList(leads));
+	}
+
+	@Get('all')
+	@ApiOperation({
+		summary: 'Listar todos os leads (alcance global)',
+		description:
+			'Reservado a `ADMINISTRATOR`. Lista todos os leads do sistema, sem filtro por equipa ou owner.',
+	})
+	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listAll(@CurrentUser() current: JwtUser) {
+		requireListAllLeadsAllowed(current.role);
+		return this.listAllLeadsUseCase
+			.execute()
 			.then((leads) => LeadPresenter.toResponseList(leads));
 	}
 
