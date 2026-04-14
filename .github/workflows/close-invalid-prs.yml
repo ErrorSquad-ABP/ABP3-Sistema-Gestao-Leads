@@ -23,6 +23,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          pr_state="$(gh pr view "$PR_NUMBER" --json state,mergedAt --jq '.state + "|" + (.mergedAt // "")')"
+          if [[ "$pr_state" != OPEN\| ]]; then
+            echo "PR $PR_NUMBER já não está aberto; encerrando workflow sem erro."
+            exit 0
+          fi
+
           gh pr comment "$PR_NUMBER" --body-file - <<'EOF'
           🚨 **PR recusado automaticamente!** 🚨
 
