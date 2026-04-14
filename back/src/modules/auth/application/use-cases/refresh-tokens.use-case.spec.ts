@@ -20,7 +20,8 @@ describe('RefreshTokensUseCase', () => {
 			Email.create('t@example.com'),
 			PasswordHash.create(VALID_ARGON2_FIXTURE),
 			'ADMINISTRATOR',
-			null,
+			[],
+			[],
 		);
 		const authSessions = {
 			getUserIdByValidRefreshToken: mock.fn(async () => user.id.value),

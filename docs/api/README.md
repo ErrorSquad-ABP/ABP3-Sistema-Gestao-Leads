@@ -1,8 +1,8 @@
 # API REST
 
-## Direção inicial
+## Direcao inicial
 
-A API será uma aplicação `NestJS` separada, orientada a recursos, com versionamento por prefixo e contratos explícitos entre `front` e `back`.
+A API sera uma aplicacao `NestJS` separada, orientada a recursos, com versionamento por prefixo e contratos explicitos entre `front` e `back`.
 
 Prefixo inicial sugerido:
 
@@ -24,60 +24,63 @@ Prefixo inicial sugerido:
 
 ## Regras operacionais
 
-- JWT obrigatório para rotas protegidas.
-- RBAC aplicado no backend conforme papel do usuário.
+- JWT obrigatorio para rotas protegidas.
+- RBAC aplicado no backend conforme papel do usuario.
+- Escopo organizacional resolvido no backend com base nos vinculos multi-team do utilizador.
 - Filtros temporais validados no servidor.
-- Logs de acesso e operações com data, hora e usuário responsável.
-- Comunicação com o frontend exclusivamente por `HTTP/JSON`.
+- Logs de acesso e operacoes com data, hora e usuario responsavel.
+- Comunicacao com o frontend exclusivamente por `HTTP/JSON`.
 
-## Convenções propostas
+## Convencoes propostas
 
-- Respostas com payload consistente e códigos HTTP semânticos.
-- Erros de domínio desacoplados da tecnologia de transporte.
-- Paginação e filtros sempre explícitos em query params.
-- Recursos analíticos separados dos recursos transacionais quando necessário.
-- Controllers do Nest funcionando apenas como adaptação HTTP, sem concentrar regra de negócio.
-- Decorators do Nest usados para roteamento, documentação e composição dos contratos da API.
-- Swagger disponível para documentação técnica inicial da API.
+- Respostas com payload consistente e codigos HTTP semanticos.
+- Erros de dominio desacoplados da tecnologia de transporte.
+- Paginacao e filtros sempre explicitos em query params.
+- Recursos analiticos separados dos recursos transacionais quando necessario.
+- Controllers do Nest funcionando apenas como adaptacao HTTP, sem concentrar regra de negocio.
+- Decorators do Nest usados para roteamento, documentacao e composicao dos contratos da API.
+- Swagger disponivel para documentacao tecnica inicial da API.
 
-## Estratégia de desenho dos endpoints
+## Contrato atual de usuario
 
-A API deve seguir orientação por recurso como padrão. Isso significa:
+O recurso `users` esta em transicao de contrato.
 
-- endpoints separados por domínio e responsabilidade;
-- subrotas quando a relação entre recurso principal e bloco derivado for clara;
-- endpoint agregador apenas para telas que sempre precisem de muitos blocos juntos.
+Campos canonicos de organizacao:
 
-### Regra de decisão
+- `memberTeamIds`
+- `managedTeamIds`
 
-| Cenário | Estratégia |
-| --- | --- |
-| CRUD e telas simples | Endpoints por recurso |
-| Recurso principal com dados auxiliares independentes | Recurso principal + subrotas |
-| Dashboard e visão consolidada | Endpoint agregador por tela |
-| Detalhe muito complexo e sempre carregado em bloco | Endpoint de composição específico, se justificado |
+Campo legado ainda exposto:
 
-```mermaid
-flowchart TD
-  A[Tela ou caso de uso] --> B{Dados pertencem a um recurso\nprincipal bem definido?}
-  B -->|Sim| C[Modelar endpoint por recurso]
-  C --> D{Existe bloco relacionado\nque merece autonomia?}
-  D -->|Sim| E[Criar subrota especifica]
-  D -->|Nao| F[Manter no endpoint principal]
-  B -->|Nao| G{Tela sempre exige carga\nconsolidada de muitos blocos?}
-  G -->|Sim| H[Criar endpoint agregador da tela]
-  G -->|Nao| I[Compor no frontend com endpoints separados]
-```
+- `teamId`
 
-### Decisão atual do projeto
+Regra de compatibilidade:
 
-- `auth`, `users`, `teams`, `stores`, `customers` e `leads` seguem desenho por recurso.
-- `dashboards` podem e devem ter endpoints agregadores por tela.
-- o detalhe de lead deve começar simples, com recurso principal e subrotas como histórico; só deve ganhar endpoint de composição se houver ganho real de desempenho e simplicidade.
-- a API não deve nascer acoplada à UI inteira; agregação é exceção consciente, não regra padrão.
+- `teamId` continua no payload para nao quebrar consumidores antigos;
+- ele deve ser tratado como `deprecated`;
+- novos consumidores devem usar os arrays multi-team;
+- o backend nao deve voltar a depender de `teamId` como fonte de verdade para autorizacao.
 
-## Próximos passos
+Camada administrativa adicional do contrato:
 
-1. Definir contratos mínimos da Sprint 1.
-2. Criar documentação de endpoints por módulo.
-3. Padronizar formato de erro e metadados de paginação.
+- `accessGroupId`
+- `accessGroup`
+
+Esses campos representam grupos administrativos e feature toggles, sem substituir `role`.
+
+## Estado atual da Sprint 1
+
+- `teams` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
+- `stores` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
+- Os endpoints de `PATCH` em `teams` e `stores` aceitam atualizacao parcial e retornam `400` quando nenhum campo e enviado.
+- `teams` valida previamente `managerId` e `storeId`, aceitando apenas usuarios com papel compativel com gerencia e lojas existentes para fechar o vinculo organizacional basico.
+- `stores` retorna conflito de negocio ao tentar excluir loja ainda vinculada a leads.
+- `users` ja devolve `memberTeamIds`, `managedTeamIds`, `accessGroupId` e `accessGroup`.
+- `users.teamId` permanece apenas como compatibilidade de transicao.
+- `leads` e `teams` ja operam com RBAC baseado em escopo multi-team no backend.
+
+## Proximos passos
+
+1. Definir contratos minimos da Sprint 1.
+2. Criar documentacao de endpoints por modulo.
+3. Padronizar formato de erro e metadados de paginacao.

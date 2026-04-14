@@ -11,6 +11,8 @@ import { UserRepositoryFactory } from '../../../users/infrastructure/persistence
 import { LeadInvalidCustomerError } from '../../domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../domain/errors/lead-invalid-store.error.js';
+import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
+import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadFactory } from '../../domain/factories/lead.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
@@ -28,9 +30,10 @@ class CreateLeadUseCase {
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
+		private readonly leadAccessPolicy: LeadAccessPolicy,
 	) {}
 
-	async execute(dto: CreateLeadDto) {
+	async execute(actor: LeadActor, dto: CreateLeadDto) {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const users = this.userRepositoryFactory.create(transactionContext);
@@ -55,6 +58,10 @@ class CreateLeadUseCase {
 					throw new LeadInvalidOwnerError(dto.ownerUserId);
 				}
 			}
+			await this.leadAccessPolicy.assertCanCreateLead(actor, {
+				storeId: dto.storeId,
+				ownerUserId: dto.ownerUserId,
+			});
 
 			const lead = this.leadFactory.create(dto);
 			return leads.create(lead);

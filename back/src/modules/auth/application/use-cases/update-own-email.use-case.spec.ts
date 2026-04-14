@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it, mock } from 'node:test';
+import { beforeEach, describe, it, mock } from 'node:test';
 
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
@@ -8,7 +8,6 @@ import { Name } from '../../../../shared/domain/value-objects/name.value-object.
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 import { User } from '../../../users/domain/entities/user.entity.js';
 import { UserEmailAlreadyExistsError } from '../../../users/domain/errors/user-email-already-exists.error.js';
-import { UserFactory } from '../../../users/domain/factories/user.factory.js';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error.js';
 import { UpdateOwnEmailUseCase } from './update-own-email.use-case.js';
 
@@ -26,14 +25,19 @@ function uowThatRunsCallback(): IUnitOfWork {
 }
 
 describe('UpdateOwnEmailUseCase', () => {
-	const self = new User(
-		Uuid.parse('00000000-0000-4000-8000-000000000042'),
-		Name.create('Test'),
-		Email.create('old@example.com'),
-		PasswordHash.create(VALID_ARGON2_FIXTURE),
-		'ADMINISTRATOR',
-		null,
-	);
+	let self: User;
+
+	beforeEach(() => {
+		self = new User(
+			Uuid.parse('00000000-0000-4000-8000-000000000042'),
+			Name.create('Test'),
+			Email.create('old@example.com'),
+			PasswordHash.create(VALID_ARGON2_FIXTURE),
+			'ADMINISTRATOR',
+			[],
+			[],
+		);
+	});
 
 	it('lança InvalidCredentialsError quando a senha atual está errada', async () => {
 		const users = {
@@ -52,7 +56,6 @@ describe('UpdateOwnEmailUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnEmailUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,
@@ -81,7 +84,8 @@ describe('UpdateOwnEmailUseCase', () => {
 			Email.create('taken@example.com'),
 			PasswordHash.create(VALID_ARGON2_FIXTURE),
 			'ATTENDANT',
-			null,
+			[],
+			[],
 		);
 		const users = {
 			findById: mock.fn(async () => self),
@@ -97,7 +101,6 @@ describe('UpdateOwnEmailUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnEmailUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,
@@ -126,7 +129,10 @@ describe('UpdateOwnEmailUseCase', () => {
 			Email.create('new@example.com'),
 			self.passwordHash,
 			self.role,
-			self.teamId,
+			self.memberTeamIds,
+			self.managedTeamIds,
+			self.accessGroupId,
+			self.accessGroup,
 		);
 		const users = {
 			findById: mock.fn(async () => self),
@@ -142,7 +148,6 @@ describe('UpdateOwnEmailUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnEmailUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,
@@ -187,7 +192,6 @@ describe('UpdateOwnEmailUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnEmailUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,
@@ -197,7 +201,7 @@ describe('UpdateOwnEmailUseCase', () => {
 		});
 		const out = await uc.execute(self.id.value, {
 			currentPassword: 'okpassword',
-			email: 'old@example.com',
+			email: self.email.value,
 		});
 		assert.equal(out.user.email.value, 'old@example.com');
 		assert.equal(out.refreshSessionsRevoked, false);

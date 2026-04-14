@@ -192,10 +192,18 @@ Commits e branches fora desse padrão são recusados pelas regras do GitHub.
 - [`docs/data/README.md`](./docs/data/README.md)
 - [`docs/agile/README.md`](./docs/agile/README.md)
 - [`docs/quality/README.md`](./docs/quality/README.md)
+- [`docs/runbooks/README.md`](./docs/runbooks/README.md)
+- [`docs/auth/current-state.md`](./docs/auth/current-state.md)
+- [`docs/frontend/app-shell.md`](./docs/frontend/app-shell.md)
 - [`front/README.md`](./front/README.md)
 - [`back/README.md`](./back/README.md)
 
 ## Como subir o esqueleto inicial
+
+Guia operacional recomendado:
+
+- [`docs/runbooks/local-setup.md`](./docs/runbooks/local-setup.md)
+- [`docs/runbooks/deploy.md`](./docs/runbooks/deploy.md)
 
 ### Desenvolvimento com hot reload
 

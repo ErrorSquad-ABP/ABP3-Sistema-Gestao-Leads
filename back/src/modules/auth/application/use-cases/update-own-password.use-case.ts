@@ -8,8 +8,6 @@ import { PasswordHash } from '../../../../shared/domain/value-objects/password-h
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import type { User } from '../../../users/domain/entities/user.entity.js';
 // biome-ignore lint/style/useImportType: Nest DI
-import { UserFactory } from '../../../users/domain/factories/user.factory.js';
-// biome-ignore lint/style/useImportType: Nest DI
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { AuthSessionPrismaRepository } from '../../infrastructure/auth-session.prisma-repository.js';
@@ -21,7 +19,6 @@ class UpdateOwnPasswordUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
-		private readonly userFactory: UserFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly passwordHasher: Argon2PasswordHasherService,
 		private readonly authSessions: AuthSessionPrismaRepository,
@@ -50,8 +47,8 @@ class UpdateOwnPasswordUseCase {
 
 			const hashed = await this.passwordHasher.hash(dto.newPassword);
 			const passwordHash = PasswordHash.create(hashed);
-			const next = this.userFactory.update(existing, { passwordHash });
-			const saved = await users.update(next);
+			existing.changePasswordHash(passwordHash);
+			const saved = await users.update(existing);
 			await this.authSessions.revokeAllActiveSessionsForUser(
 				actorUserId,
 				transactionContext,

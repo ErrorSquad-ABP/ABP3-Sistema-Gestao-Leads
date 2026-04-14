@@ -6,13 +6,29 @@ import type { Name } from '../../../../shared/domain/value-objects/name.value-ob
  * Store aggregate root (operational context: stores).
  */
 class Store extends AggregateRoot {
-	readonly id: StoreId;
-	readonly name: Name;
+	private _id: StoreId;
+	private _name: Name;
 
 	constructor(id: StoreId, name: Name) {
 		super();
-		this.id = id;
-		this.name = name;
+		this._id = id;
+		this._name = name;
+	}
+
+	get id(): StoreId {
+		return this._id;
+	}
+
+	get name(): Name {
+		return this._name;
+	}
+
+	/** Renomeia a loja; ignora quando o nome é equivalente. */
+	rename(name: Name): void {
+		if (this._name.equals(name)) {
+			return;
+		}
+		this._name = name;
 	}
 }
 
