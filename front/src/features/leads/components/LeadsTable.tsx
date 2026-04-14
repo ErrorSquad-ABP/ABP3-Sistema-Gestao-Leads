@@ -1,6 +1,12 @@
 'use client';
 
-import { MoreHorizontal } from 'lucide-react';
+import {
+	CheckCheck,
+	MoreHorizontal,
+	PencilLine,
+	Shuffle,
+	Trash2,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,7 +33,14 @@ import {
 import type { LeadListItem } from '../types/leads.types';
 
 type LeadsTableProps = {
+	customerLabelById?: Readonly<Record<string, string>>;
 	leads: LeadListItem[];
+	onConvert?: (lead: LeadListItem) => void;
+	onDelete?: (lead: LeadListItem) => void;
+	onEdit?: (lead: LeadListItem) => void;
+	onReassign?: (lead: LeadListItem) => void;
+	ownerLabelById?: Readonly<Record<string, string>>;
+	storeLabelById?: Readonly<Record<string, string>>;
 };
 
 function statusBadgeVariant(
@@ -45,7 +58,16 @@ function statusBadgeVariant(
 	}
 }
 
-function LeadsTable({ leads }: LeadsTableProps) {
+function LeadsTable({
+	customerLabelById,
+	leads,
+	onConvert,
+	onDelete,
+	onEdit,
+	onReassign,
+	ownerLabelById,
+	storeLabelById,
+}: LeadsTableProps) {
 	if (leads.length === 0) {
 		return (
 			<div className="rounded-2xl border border-border/80 bg-card px-4 py-10 text-center text-sm text-[#6b7687]">
@@ -101,14 +123,17 @@ function LeadsTable({ leads }: LeadsTableProps) {
 								</Badge>
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
-								Cliente {formatShortId(lead.customerId)}
+								{customerLabelById?.[lead.customerId] ??
+									`Cliente ${formatShortId(lead.customerId)}`}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
-								Loja {formatShortId(lead.storeId)}
+								{storeLabelById?.[lead.storeId] ??
+									`Loja ${formatShortId(lead.storeId)}`}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
 								{lead.ownerUserId
-									? `Usuário ${formatShortId(lead.ownerUserId)}`
+									? (ownerLabelById?.[lead.ownerUserId] ??
+										`Usuário ${formatShortId(lead.ownerUserId)}`)
 									: 'Sem responsável'}
 							</TableCell>
 							<TableCell className="text-right">
@@ -127,9 +152,43 @@ function LeadsTable({ leads }: LeadsTableProps) {
 										align="end"
 										className="w-44 rounded-xl bg-white"
 									>
-										<DropdownMenuItem className="cursor-default rounded-lg px-3 py-2 text-[#6b7687]">
-											Detalhamento em breve
-										</DropdownMenuItem>
+										{onEdit ? (
+											<DropdownMenuItem
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
+												onSelect={() => onEdit(lead)}
+											>
+												<PencilLine className="size-4" />
+												Editar
+											</DropdownMenuItem>
+										) : null}
+										{onReassign ? (
+											<DropdownMenuItem
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
+												onSelect={() => onReassign(lead)}
+											>
+												<Shuffle className="size-4" />
+												Reatribuir
+											</DropdownMenuItem>
+										) : null}
+										{onConvert && lead.status !== 'CONVERTED' ? (
+											<DropdownMenuItem
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
+												onSelect={() => onConvert(lead)}
+											>
+												<CheckCheck className="size-4" />
+												Converter
+											</DropdownMenuItem>
+										) : null}
+										{onDelete ? (
+											<DropdownMenuItem
+												className="cursor-pointer rounded-lg px-3 py-2"
+												onSelect={() => onDelete(lead)}
+												variant="destructive"
+											>
+												<Trash2 className="size-4" />
+												Excluir
+											</DropdownMenuItem>
+										) : null}
 									</DropdownMenuContent>
 								</DropdownMenu>
 							</TableCell>

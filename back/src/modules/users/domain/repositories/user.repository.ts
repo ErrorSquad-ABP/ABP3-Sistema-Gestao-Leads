@@ -11,6 +11,7 @@ interface IUserRepository {
 	delete(id: UUID): Promise<void>;
 	findById(id: UUID): Promise<User | null>;
 	findByEmail(email: string): Promise<User | null>;
+	listByIds(ids: readonly UUID[]): Promise<readonly User[]>;
 	listPaged(query: {
 		readonly page: number;
 		readonly limit: number;

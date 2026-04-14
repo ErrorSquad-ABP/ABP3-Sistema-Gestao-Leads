@@ -129,7 +129,11 @@ const UserDropdown = ({
 								onFocus={() => setHighlightedItem(label)}
 								onPointerMove={() => setHighlightedItem(label)}
 								onPointerLeave={() => setHighlightedItem(null)}
-								onSelect={() => router.push(href)}
+								onSelect={() => {
+									if (href) {
+										router.push(href);
+									}
+								}}
 								style={{
 									backgroundColor: 'transparent',
 									color: isHighlighted(label) ? '#D96C3F' : undefined,

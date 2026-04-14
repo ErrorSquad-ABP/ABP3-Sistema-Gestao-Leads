@@ -15,6 +15,7 @@ const queryKeys = {
 	leads: {
 		/** Prefixo comum a todas as queries de listagem; adequado a `invalidateQueries`. */
 		listRoot: ['leads', 'list'] as const,
+		catalogRoot: ['leads', 'catalog'] as const,
 		list: (
 			params:
 				| { scope: 'owner'; id: string }
@@ -35,6 +36,10 @@ const queryKeys = {
 				userId,
 				[...teamIds].sort().join('|'),
 			] as const,
+		customers: ['leads', 'catalog', 'customers'] as const,
+		stores: ['leads', 'catalog', 'stores'] as const,
+		teams: ['leads', 'catalog', 'teams'] as const,
+		owners: ['leads', 'catalog', 'owners'] as const,
 	},
 };
 

@@ -1,6 +1,20 @@
 import { apiFetch } from '@/lib/http/api-client';
 
 import { parseLeadListResponse } from '../schemas/lead-list.schema';
+import {
+	parseLeadCustomersResponse,
+	parseLeadOwnersResponse,
+	parseLeadStoresResponse,
+} from '../schemas/lead-support.schema';
+import type {
+	CreateLeadInput,
+	LeadCustomer,
+	LeadListItem,
+	LeadOwnerRecord,
+	LeadStore,
+	ReassignLeadInput,
+	UpdateLeadInput,
+} from '../types/leads.types';
 
 /**
  * Lista leads cujo `ownerUserId` corresponde ao utilizador indicado.
@@ -35,4 +49,84 @@ async function fetchLeadsAll(signal?: AbortSignal) {
 	return parseLeadListResponse(raw);
 }
 
-export { fetchLeadsAll, fetchLeadsByOwner, fetchLeadsByTeam };
+async function createLead(input: CreateLeadInput): Promise<LeadListItem> {
+	const raw = await apiFetch<unknown>('/api/leads', {
+		method: 'POST',
+		body: input,
+	});
+	return parseLeadListResponse([raw])[0];
+}
+
+async function updateLead(
+	leadId: string,
+	input: UpdateLeadInput,
+): Promise<LeadListItem> {
+	const raw = await apiFetch<unknown>(`/api/leads/${leadId}`, {
+		method: 'PATCH',
+		body: input,
+	});
+	return parseLeadListResponse([raw])[0];
+}
+
+async function reassignLead(
+	leadId: string,
+	input: ReassignLeadInput,
+): Promise<LeadListItem> {
+	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/reassign`, {
+		method: 'PATCH',
+		body: input,
+	});
+	return parseLeadListResponse([raw])[0];
+}
+
+async function convertLead(leadId: string): Promise<LeadListItem> {
+	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/convert`, {
+		method: 'PATCH',
+	});
+	return parseLeadListResponse([raw])[0];
+}
+
+async function deleteLead(leadId: string): Promise<void> {
+	await apiFetch(`/api/leads/${leadId}`, {
+		method: 'DELETE',
+	});
+}
+
+async function listLeadCustomers(
+	signal?: AbortSignal,
+): Promise<LeadCustomer[]> {
+	const raw = await apiFetch<unknown>('/api/customers', {
+		signal,
+	});
+	return parseLeadCustomersResponse(raw);
+}
+
+async function listLeadStores(signal?: AbortSignal): Promise<LeadStore[]> {
+	const raw = await apiFetch<unknown>('/api/leads/catalog/stores', {
+		signal,
+	});
+	return parseLeadStoresResponse(raw);
+}
+
+async function listLeadOwners(
+	signal?: AbortSignal,
+): Promise<LeadOwnerRecord[]> {
+	const raw = await apiFetch<unknown>('/api/leads/catalog/owners', {
+		signal,
+	});
+	return parseLeadOwnersResponse(raw);
+}
+
+export {
+	convertLead,
+	createLead,
+	deleteLead,
+	fetchLeadsAll,
+	fetchLeadsByOwner,
+	fetchLeadsByTeam,
+	listLeadCustomers,
+	listLeadOwners,
+	listLeadStores,
+	reassignLead,
+	updateLead,
+};

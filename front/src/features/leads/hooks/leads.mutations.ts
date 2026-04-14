@@ -1,0 +1,91 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { queryKeys } from '@/lib/constants/query-keys';
+
+import {
+	convertLead,
+	createLead,
+	deleteLead,
+	reassignLead,
+	updateLead,
+} from '../api/leads.service';
+import type {
+	CreateLeadInput,
+	ReassignLeadInput,
+	UpdateLeadInput,
+} from '../types/leads.types';
+
+function useCreateLeadMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (input: CreateLeadInput) => createLead(input),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+		},
+	});
+}
+
+function useUpdateLeadMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (input: { leadId: string; payload: UpdateLeadInput }) =>
+			updateLead(input.leadId, input.payload),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+		},
+	});
+}
+
+function useReassignLeadMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (input: { leadId: string; payload: ReassignLeadInput }) =>
+			reassignLead(input.leadId, input.payload),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+		},
+	});
+}
+
+function useConvertLeadMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (leadId: string) => convertLead(leadId),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+		},
+	});
+}
+
+function useDeleteLeadMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (leadId: string) => deleteLead(leadId),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+		},
+	});
+}
+
+export {
+	useConvertLeadMutation,
+	useCreateLeadMutation,
+	useDeleteLeadMutation,
+	useReassignLeadMutation,
+	useUpdateLeadMutation,
+};

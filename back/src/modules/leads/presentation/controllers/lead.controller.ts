@@ -31,6 +31,9 @@ import {
 	CurrentUser,
 	type JwtUser,
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
+import { StoreResponseDto } from '../../../stores/application/dto/store-response.dto.js';
+import { StorePresenter } from '../../../stores/presentation/presenters/store.presenter.js';
+import { LeadCatalogOwnerDto } from '../../application/dto/lead-catalog-owner.dto.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
 import type { LeadActor } from '../../application/types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -41,6 +44,10 @@ import { CreateLeadUseCase } from '../../application/use-cases/create-lead.use-c
 import { DeleteLeadUseCase } from '../../application/use-cases/delete-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { FindLeadUseCase } from '../../application/use-cases/find-lead.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListLeadCatalogOwnersUseCase } from '../../application/use-cases/list-lead-catalog-owners.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListLeadCatalogStoresUseCase } from '../../application/use-cases/list-lead-catalog-stores.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListAllLeadsUseCase } from '../../application/use-cases/list-all-leads.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -89,6 +96,8 @@ class LeadController {
 		private readonly createLeadUseCase: CreateLeadUseCase,
 		private readonly updateLeadUseCase: UpdateLeadUseCase,
 		private readonly findLeadUseCase: FindLeadUseCase,
+		private readonly listLeadCatalogStoresUseCase: ListLeadCatalogStoresUseCase,
+		private readonly listLeadCatalogOwnersUseCase: ListLeadCatalogOwnersUseCase,
 		private readonly listOwnLeadsUseCase: ListOwnLeadsUseCase,
 		private readonly listTeamLeadsUseCase: ListTeamLeadsUseCase,
 		private readonly listAllLeadsUseCase: ListAllLeadsUseCase,
@@ -142,6 +151,36 @@ class LeadController {
 		return this.listAllLeadsUseCase
 			.execute(toLeadActor(user))
 			.then((leads) => LeadPresenter.toResponseList(leads));
+	}
+
+	@Get('catalog/stores')
+	@ApiOperation({
+		summary: 'Listar lojas disponíveis para operação de leads',
+		description:
+			'Retorna apenas as lojas que o utilizador autenticado pode usar no fluxo de leads.',
+	})
+	@ApiOkResponseEnvelopeArray(StoreResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listCatalogStores(@CurrentUser() user: JwtUser) {
+		return this.listLeadCatalogStoresUseCase
+			.execute(toLeadActor(user))
+			.then((stores) =>
+				stores.map((store) => StorePresenter.toResponse(store)),
+			);
+	}
+
+	@Get('catalog/owners')
+	@ApiOperation({
+		summary: 'Listar responsáveis disponíveis para operação de leads',
+		description:
+			'Retorna os utilizadores atribuíveis dentro do escopo do utilizador autenticado, com as lojas em que cada um pode operar.',
+	})
+	@ApiOkResponseEnvelopeArray(LeadCatalogOwnerDto)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listCatalogOwners(@CurrentUser() user: JwtUser) {
+		return this.listLeadCatalogOwnersUseCase.execute(toLeadActor(user));
 	}
 
 	@Get('team/:teamId')
