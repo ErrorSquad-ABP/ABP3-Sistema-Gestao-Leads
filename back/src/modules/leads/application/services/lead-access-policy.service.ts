@@ -14,6 +14,7 @@ type LeadScope =
 	| {
 			kind: 'attendant';
 			readonly actorUserId: string;
+			readonly readTeamIds: ReadonlySet<string>;
 			readonly readStoreIds: ReadonlySet<string>;
 	  }
 	| {
@@ -78,8 +79,13 @@ class LeadAccessPolicy {
 		return {
 			kind: 'attendant',
 			actorUserId: actor.userId,
+			readTeamIds: new Set(readableTeamIds),
 			readStoreIds: new Set(readTeams.map((team) => team.storeId.value)),
 		};
+	}
+
+	async resolveCatalogScope(actor: LeadActor): Promise<LeadScope> {
+		return this.resolveScope(actor);
 	}
 
 	private async targetUserTeamIds(userId: string): Promise<readonly string[]> {

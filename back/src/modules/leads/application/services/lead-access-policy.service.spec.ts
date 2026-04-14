@@ -81,6 +81,10 @@ function userRepoWithUsers(users: readonly User[]): IUserRepository {
 		},
 		findById: async (id) => byId.get(id.value) ?? null,
 		findByEmail: async () => null,
+		listByIds: async (ids) =>
+			ids
+				.map((id) => byId.get(id.value) ?? null)
+				.filter((user): user is User => user !== null),
 		listPaged: async () => ({ users: [], total: 0 }),
 	};
 }
