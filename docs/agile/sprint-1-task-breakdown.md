@@ -1,5 +1,7 @@
 # Sprint 1 Task Breakdown
 
+> Documento histórico de detalhamento operacional. A sprint já foi encerrada. Para o fechamento consolidado, consulte [`sprint-1-review.md`](./sprint-1-review.md).
+
 ## Objetivo
 
 Quebrar o backlog da Sprint 1 em tarefas operacionais menores, atribuíveis e fáceis de acompanhar no fluxo diário do time. Este documento existe para transformar o backlog da sprint em trabalho real de execução, com dependências explícitas, critérios mínimos e granularidade suficiente para Trello ou outro quadro `scrumban`.

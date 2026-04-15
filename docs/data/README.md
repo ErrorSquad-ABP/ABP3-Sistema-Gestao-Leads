@@ -2,54 +2,57 @@
 
 ## Objetivo
 
-Esta área será usada para consolidar o modelo relacional, o DER, o dicionário de dados e as decisões de integridade da base PostgreSQL, com a evolução estrutural centralizada em `Prisma ORM`.
+Consolidar o estado atual da modelagem relacional, da persistência e dos artefatos ligados ao banco.
 
-## Núcleos de dados previstos
+## Núcleos de dados já representados no schema atual
 
-- Usuários e papéis
-- Equipes
-- Lojas
-- Clientes
-- Leads
-- Negociações
-- Histórico de status e estágio
-- Logs de acesso e operações
+- utilizadores e papéis;
+- grupos de acesso administrativos;
+- equipas;
+- lojas;
+- clientes;
+- leads;
+- sessões de autenticação;
+- deals usados no seed analítico.
 
-## Diretrizes de modelagem
+## Núcleos ainda não fechados como produto
 
-- Chaves estrangeiras explícitas e integridade referencial obrigatória.
-- Histórico de mudanças para negociação e trilhas de auditoria.
-- Índices orientados a consultas analíticas e filtros temporais.
-- Estratégia de schema, migrations e seeds versionada no repositório por meio do Prisma.
+- negociações como módulo funcional completo;
+- histórico formal de estágio e status;
+- logs administrativos completos.
 
 ## Estratégia de persistência adotada
 
-Prisma é a tecnologia oficial para evolução do banco no projeto. Isso significa:
+Prisma continua sendo a tecnologia oficial de evolução do banco. Isso implica:
 
-- o schema da aplicação deve ser descrito no ORM;
-- mudanças estruturais devem nascer de models, relações, enums e constraints modeladas no Prisma;
-- migrations devem ser geradas e aplicadas pelo fluxo do Prisma;
-- seeds devem ser tratadas como parte do fluxo da aplicação, mantendo reprodutibilidade e versionamento.
+- schema como fonte primária da estrutura relacional;
+- migrations versionadas em `back/prisma/migrations`;
+- seed versionado em `back/prisma/seed.ts`;
+- sem evolução oficial baseada em SQL manual isolado.
 
-Essa direção existe para evitar um problema comum em times acadêmicos: cada máquina ficar com um banco diferente depois de algumas semanas de desenvolvimento, além de reduzir acoplamento prematuro com SQL manual.
+## Regras de evolução
 
-## Regras de evolução do banco
+- mudanças estruturais entram por models + migrations Prisma;
+- migrations já compartilhadas não devem ser reescritas;
+- seeds precisam ser reproduzíveis;
+- integridade referencial deve continuar explícita no schema;
+- o modelo lógico e os diagramas devem acompanhar o banco real.
 
-- mudanças estruturais entram por models e novas migrations geradas pelo Prisma;
-- migrations antigas não devem ser reescritas depois de compartilhadas;
-- seeds devem ser reprodutíveis e voltados a dados estáveis;
-- o Docker Compose deve continuar sendo capaz de subir um ambiente consistente do zero;
-- o modelo lógico e o DER devem acompanhar a evolução das migrations;
-- scripts SQL manuais não devem ser introduzidos como caminho oficial de evolução.
+## Estado atual do bootstrap
 
-## Artefatos planejados
+Bootstrap estrutural:
 
-- DER oficial
-- Dicionário de dados
-- Schema, migrations e seeds versionados por ORM
-- Estratégia de migração
-- Política de dados de referência
+- `back/prisma/schema.prisma`
+- `back/prisma/migrations/`
+- `back/prisma/seed.ts`
 
-## Bootstrap atual
+Modos de seed:
 
-O bootstrap estrutural do banco fica centralizado em `back/prisma/schema.prisma`, `back/prisma/migrations/` e `back/prisma/seed.ts`. O seed padrão (`SEED_MODE=minimal`) carrega apenas autenticação e dados mestres (equipas e lojas); o modo `SEED_MODE=dashboard` repete o dataset fictício completo (clientes, leads, negociações) a partir do CSV versionado.
+- `minimal`: autenticação e dados mestres mínimos
+- `dashboard`: dataset fictício completo para demonstração analítica
+
+## Diagramas e artefatos relacionados
+
+- DER e diagramas correlatos devem ser lidos em conjunto com [docs/diagrams/README.md](../diagrams/README.md)
+- o modelo atual já contempla relações relevantes de `users`, `teams`, `stores`, `customers` e `leads`
+- o vínculo organizacional do utilizador já segue o modelo multi-team, sem depender de `teamId` único como fonte de verdade

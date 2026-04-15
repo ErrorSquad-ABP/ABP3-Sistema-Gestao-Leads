@@ -10,14 +10,13 @@
 | Responsável Técnico | João Victor Lopes Rosa |
 | Time de Desenvolvimento | Demais membros da organização `ErrorSquad-ABP` |
 
-## Cadência base
+## Estado atual
 
-- Planejamento por sprint
-- Daily alinhada ao ritmo do time
-- Review ao final de cada sprint
-- Retrospectiva com ações objetivas para a sprint seguinte
+- Sprint 1 encerrada
+- Sprint 2 aguardando refinamento atualizado
+- Sprint 3 não iniciada
 
-## Artefatos já iniciados
+## Artefatos ativos
 
 - [`definition-of-done.md`](./definition-of-done.md)
 - [`product-backlog.md`](./product-backlog.md)
@@ -26,11 +25,11 @@
 - [`sprint-1-backlog.md`](./sprint-1-backlog.md)
 - [`sprint-1-task-breakdown.md`](./sprint-1-task-breakdown.md)
 - [`sprint-1-planning.md`](./sprint-1-planning.md)
+- [`sprint-1-review.md`](./sprint-1-review.md)
 - [`sprints.md`](./sprints.md)
 
-## Direção de trabalho
+## Leitura correta desses artefatos
 
-- Entregas incrementais e demonstráveis ao final de cada sprint.
-- Decisões técnicas com registro mínimo no repositório.
-- Priorização orientada a risco técnico e valor de negócio.
-- Commits pequenos, frequentes e descritivos.
+- `sprint-1-goal`, `sprint-1-planning`, `sprint-1-backlog` e `sprint-1-task-breakdown` são artefatos históricos de planejamento e execução;
+- `sprint-1-review` é a consolidação do que realmente ficou na `main`;
+- a Sprint 2 deve nascer de um backlog novo, não de carry-over automático da Sprint 1.

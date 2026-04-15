@@ -2,28 +2,25 @@
 
 ## Sprint 1
 
-- Período: 24/03/2026 a 14/04/2026
-- Foco sugerido: fundação técnica, autenticação, RBAC e primeiras entidades de negócio.
+- Período: `24/03/2026` a `14/04/2026`
+- Estado: encerrada
 - Goal: [`sprint-1-goal.md`](./sprint-1-goal.md)
+- Planning: [`sprint-1-planning.md`](./sprint-1-planning.md)
 - Backlog: [`sprint-1-backlog.md`](./sprint-1-backlog.md)
-- Planejamento detalhado: [`sprint-1-planning.md`](./sprint-1-planning.md)
+- Breakdown: [`sprint-1-task-breakdown.md`](./sprint-1-task-breakdown.md)
+- Resultado consolidado: [`sprint-1-review.md`](./sprint-1-review.md)
 
 ## Sprint 2
 
-- Período: 15/04/2026 a 21/05/2026
-- Foco sugerido: negociação, dashboards operacionais e amadurecimento do modelo de dados.
+- Período: `15/04/2026` a `21/05/2026`
+- Estado: em definição
+- Observação: o planejamento da Sprint 2 deve partir do estado atual da `main`, sem reaproveitar automaticamente backlog não concluído da Sprint 1.
 
 ## Sprint 3
 
-- Período: 22/05/2026 a 11/06/2026
-- Foco sugerido: dashboards analíticos, logs, hardening técnico e documentação final.
+- Período: `22/05/2026` a `11/06/2026`
+- Estado: não iniciada
 
 ## Entrega final
 
-- Janela informada: semana de 22/07/2026
-
-## Recomendação de governança
-
-- Fechar cada sprint com demonstração funcional.
-- Registrar retrospectiva e aprendizados diretamente no repositório.
-- Atualizar backlog e riscos ao fim de cada review.
+- Janela informada: semana de `22/07/2026`
