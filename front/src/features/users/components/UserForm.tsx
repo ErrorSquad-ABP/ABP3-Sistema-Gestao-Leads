@@ -29,7 +29,7 @@ import {
 	roleOptions,
 	type AccessGroup,
 	type UserRecord,
-} from '../types/users.types';
+} from '../model/users.model';
 
 type UsersFormDialogProps = {
 	accessGroups: AccessGroup[];

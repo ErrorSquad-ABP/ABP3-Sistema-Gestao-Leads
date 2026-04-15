@@ -29,7 +29,7 @@ import {
 	type AccessFeatureKey,
 	type AccessGroup,
 	type UserRecord,
-} from '../types/users.types';
+} from '../model/users.model';
 import { getUsersErrorMessage } from './UserForm';
 
 type AccessGroupDialogProps = {

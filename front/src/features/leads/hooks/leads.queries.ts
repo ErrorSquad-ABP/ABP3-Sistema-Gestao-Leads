@@ -10,7 +10,7 @@ import {
 	fetchLeadsManager,
 } from '../api/leads.service';
 import { type LeadsListScope, resolveLeadsListScope } from '../lib/leads-scope';
-import type { LeadListItem } from '../types/leads.types';
+import type { LeadListItem } from '../model/leads.model';
 
 function isLeadsListQueryEnabled(scope: LeadsListScope | null) {
 	return scope !== null && scope.kind !== 'none';

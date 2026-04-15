@@ -8,7 +8,7 @@ import {
 	deleteTeam,
 	updateTeam,
 } from '../api/teams.service';
-import type { TeamMutationInput, TeamUpdateInput } from '../types/teams.types';
+import type { TeamMutationInput, TeamUpdateInput } from '../model/teams.model';
 
 function useCreateTeamMutation() {
 	const queryClient = useQueryClient();

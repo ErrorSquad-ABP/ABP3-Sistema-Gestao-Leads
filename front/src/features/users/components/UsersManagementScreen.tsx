@@ -25,7 +25,7 @@ import type {
 	CreateUserFormValues,
 	UpdateUserFormValues,
 } from '../schemas/user-management.schema';
-import type { AccessGroup, UserRecord } from '../types/users.types';
+import type { AccessGroup, UserRecord } from '../model/users.model';
 import { AccessGroupDialog } from './AccessGroupForm';
 import {
 	ConfirmDialog,

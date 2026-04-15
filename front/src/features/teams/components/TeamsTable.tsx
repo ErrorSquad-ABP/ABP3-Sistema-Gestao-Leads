@@ -10,7 +10,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 
-import type { TeamRecord } from '../types/teams.types';
+import type { TeamRecord } from '../model/teams.model';
 
 type TeamsTableProps = {
 	onDelete: (team: TeamRecord) => void;

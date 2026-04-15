@@ -6,7 +6,7 @@ import type {
 	ListUsersResponse,
 	UpdateUserInput,
 	UserRecord,
-} from '../types/users.types';
+} from '../model/users.model';
 
 async function listUsers(options: {
 	page: number;

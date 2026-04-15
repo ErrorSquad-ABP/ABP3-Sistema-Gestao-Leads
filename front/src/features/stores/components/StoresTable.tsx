@@ -10,7 +10,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 
-import type { StoreRecord } from '../types/stores.types';
+import type { StoreRecord } from '../model/stores.model';
 
 type StoresTableProps = {
 	canManageStores: boolean;

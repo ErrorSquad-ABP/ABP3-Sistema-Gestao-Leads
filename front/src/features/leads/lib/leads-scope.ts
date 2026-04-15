@@ -1,6 +1,6 @@
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 
-import type { LeadListItem } from '../types/leads.types';
+import type { LeadListItem } from '../model/leads.model';
 
 type LeadsListScope =
 	| { kind: 'owner'; id: string }

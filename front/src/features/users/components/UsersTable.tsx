@@ -41,7 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
-import type { AccessGroup, UserRecord } from '../types/users.types';
+import type { AccessGroup, UserRecord } from '../model/users.model';
 import {
 	getBaseRoleLabel,
 	getFeatureLabels,

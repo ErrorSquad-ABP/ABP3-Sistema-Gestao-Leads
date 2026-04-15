@@ -15,7 +15,7 @@ import {
 	useUpdateTeamMutation,
 } from '@/features/teams/hooks/teams.mutations';
 import { useTeamsQuery } from '@/features/teams/hooks/teams.queries';
-import type { TeamRecord } from '@/features/teams/types/teams.types';
+import type { TeamRecord } from '@/features/teams/model/teams.model';
 import { isApiError } from '@/lib/http/api-error';
 import {
 	emptyTeamForm,

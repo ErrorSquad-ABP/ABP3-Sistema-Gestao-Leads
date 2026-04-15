@@ -34,7 +34,7 @@ import type {
 	ReassignLeadFormValues,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from '../types/leads.types';
+} from '../model/leads.model';
 
 type LeadFormDialogProps = {
 	customers: { id: string; name: string }[];
@@ -273,7 +273,7 @@ function LeadFormDialog({
 			}}
 			open={open}
 		>
-			<DialogContent className="flex min-h-[34rem] max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-[38rem]">
+			<DialogContent className="flex min-h-136 max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-152">
 				<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 					<div className="flex items-center gap-4">
 						<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">

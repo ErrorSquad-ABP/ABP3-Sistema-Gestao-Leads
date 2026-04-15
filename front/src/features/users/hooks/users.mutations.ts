@@ -14,7 +14,7 @@ import type {
 	AccessGroup,
 	CreateUserInput,
 	UpdateUserInput,
-} from '../types/users.types';
+} from '../model/users.model';
 
 function useCreateUserMutation() {
 	const queryClient = useQueryClient();
