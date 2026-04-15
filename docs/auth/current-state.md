@@ -1,76 +1,34 @@
 # Estado Atual de Auth, Sessão e RBAC
 
-## Objetivo
-
-Este documento registra o estado real atual do sistema de autenticação e autorização, com foco em:
-
-- fluxos que já estão funcionais;
-- responsabilidades entre frontend e backend;
-- papéis existentes;
-- rotas públicas e protegidas;
-- gaps conhecidos.
-
 ## Resumo executivo
 
-Hoje o projeto já possui:
+Hoje o sistema possui:
 
 - login real com backend;
-- `JWT` de access;
-- refresh token opaco persistido em PostgreSQL;
-- `logout`;
-- endpoint `GET /api/auth/session` (bootstrap opcional, HTTP 200 + `data` ou `null`);
-- endpoint `GET /api/auth/me` (exige JWT; 401 se anónimo);
+- `access token` JWT `RS256`;
+- refresh token opaco persistido;
+- logout;
+- `GET /api/auth/session` como leitura opcional de sessão;
+- `GET /api/auth/me` como leitura estrita autenticada;
 - gate server-side no frontend para `/app/*`;
 - `RBAC` real no backend;
-- redirecionamento inicial por papel;
-- `AppShell` autenticado como base da área interna.
-- escopo multi-team no backend para equipes e leads;
-- grupos de acesso administrativos persistidos como camada complementar.
+- escopo multi-team no backend;
+- perfil com atualização do próprio e-mail e senha.
 
-O que ainda não está completo como feature de produto:
+## O que já está funcional
 
-- gestão de usuários funcional em `/app/users`;
-- tela de perfil com atualização das próprias credenciais;
-- recuperação automática de senha;
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+- `GET /api/auth/session`
+- `GET /api/auth/me`
+- `PATCH /api/auth/me/email`
+- `PATCH /api/auth/me/password`
+
+## O que ainda não está fechado
+
+- recuperação automática de senha por e-mail;
 - cadastro público de conta.
-
-## Contrato atual de utilizador
-
-O contrato de utilizador entrou em fase de transição.
-
-Fonte canônica atual de vínculo organizacional:
-
-- `memberTeamIds`
-- `managedTeamIds`
-
-Campo legado ainda exposto por compatibilidade:
-
-- `teamId`
-
-Regra prática:
-
-- `teamId` não é mais fonte de verdade;
-- ele existe apenas para não quebrar consumidores antigos do frontend;
-- novos consumidores devem ler `memberTeamIds` e `managedTeamIds`.
-
-Camada administrativa adicional:
-
-- `accessGroupId`
-- `accessGroup`
-
-Esses campos não substituem o papel canônico nem os vínculos multi-team.
-Eles servem para gestão administrativa de grupos e feature toggles.
-
-## Papéis existentes
-
-Os papéis em uso no frontend hoje são:
-
-- `ATTENDANT`
-- `MANAGER`
-- `GENERAL_MANAGER`
-- `ADMINISTRATOR`
-
-No banco/Prisma existe mapeamento entre domínio e persistência para o papel administrativo.
 
 ## Responsabilidade por camada
 
@@ -80,128 +38,75 @@ Responsável por:
 
 - autenticar;
 - emitir e validar tokens;
-- manter sessões de refresh;
-- aplicar RBAC real;
+- manter refresh token;
+- aplicar `RBAC`;
+- resolver escopo por equipa;
 - responder `401` e `403`.
-- resolver escopo real por múltiplas equipes quando a operação depender de vínculo organizacional.
-
-Base técnica:
-
-- [auth.controller.ts](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/back/src/modules/auth/presentation/controllers/auth.controller.ts)
-- [global-auth.guard.ts](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/back/src/shared/presentation/guards/global-auth.guard.ts)
 
 ### Frontend
 
 Responsável por:
 
-- apresentar o login;
-- bootstrapar a sessão na requisição;
+- apresentar login;
+- armazenar `access token` para chamadas autenticadas;
+- bootstrapar sessão por requisição;
 - redirecionar por papel;
-- renderizar ou esconder navegação conforme papel;
-- organizar a experiência do usuário autenticado.
-
-Base técnica:
-
-- [session.ts](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/lib/auth/session.ts)
-- [permissions.ts](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/lib/auth/permissions.ts)
-
-## Endpoints de auth já funcionais
-
-| Método | Endpoint | Estado |
-| --- | --- | --- |
-| `POST` | `/api/auth/login` | Funcional |
-| `POST` | `/api/auth/refresh` | Funcional |
-| `POST` | `/api/auth/logout` | Funcional |
-| `GET` | `/api/auth/session` | Funcional (público; `data: null` sem sessão) |
-| `GET` | `/api/auth/me` | Funcional (protegido; 401 sem JWT) |
-| `PATCH` | `/api/auth/me/email` | Funcional no backend |
-| `PATCH` | `/api/auth/me/password` | Funcional no backend |
+- esconder navegação fora do escopo visual.
 
 ## Estratégia atual de sessão
 
-### Access token
+### Cookies
 
-- JWT assinado com `RS256`
-- usado nas rotas protegidas
-- pode chegar por cookie HttpOnly e/ou `Authorization`
+O backend emite cookies HttpOnly de auth.
 
-### Bootstrap no cliente: `GET /api/auth/session`
+### Bearer token
 
-- Rota **pública** no backend: não passa pelo `GlobalAuthGuard` na entrada HTTP.
-- Com access JWT válido (cookie ou `Authorization: Bearer`), o corpo segue o envelope habitual e `data` contém o mesmo utilizador que `GET /api/auth/me` devolveria.
-- Sem cookie/Bearer, Bearer inválido ou utilizador já inexistente: **`data: null`** e **HTTP 200** — evita 401 no DevTools ao abrir `/login` ou ao refrescar a página antes de autenticar.
-- O SSR (`getCurrentUserFromRequest` em [`session.ts`](../../front/src/lib/auth/session.ts)) e o cliente (`fetchCurrentUser` em [`login.service.ts`](../../front/src/features/login/api/login.service.ts)) usam este endpoint para resolver a sessão.
+O frontend também persiste o `access token` em `localStorage` e o envia em `Authorization: Bearer` via `apiFetch`.
 
-### `GET /api/auth/me` (estrito)
+Na prática atual:
 
-- Exige JWT válido; responde **401** se não houver sessão. Útil quando o contrato deve ser explicitamente “autenticado ou erro”.
+- SSR usa cookies;
+- cliente autenticado usa `Bearer`, com cookies ainda presentes.
 
-### Refresh token
+## Bootstrap de sessão
 
-- opaco
-- persistido em PostgreSQL
-- rotacionado no fluxo de refresh
-- revogado em logout
+### SSR
 
-## Estratégia atual de RBAC e escopo
+O SSR atual consulta `GET /api/auth/me` com o cabeçalho `Cookie` da requisição.
 
-O controle de acesso hoje tem duas camadas:
+### Cliente
 
-### Papel canônico
+O cliente autenticado também consulta `GET /api/auth/me`.
 
-Papéis:
+### Endpoint opcional
+
+`GET /api/auth/session` continua disponível quando o contrato desejado é “sem 401, com `data: null` sem sessão”.
+
+## Papéis
 
 - `ATTENDANT`
 - `MANAGER`
 - `GENERAL_MANAGER`
 - `ADMINISTRATOR`
 
-Essa camada continua governando autorização estrutural por endpoint.
+## Escopo organizacional
 
-### Escopo organizacional
-
-Quando a regra depende de equipes, o backend usa:
+Campos canônicos:
 
 - `memberTeamIds`
 - `managedTeamIds`
 
-Resumo do comportamento atual:
+Campo legado:
 
-- `ADMINISTRATOR`: acesso global
-- `GENERAL_MANAGER`: acesso global
-- `MANAGER`: leitura no escopo de equipes onde participa; mutação no escopo de equipes que gerencia
-- `ATTENDANT`: escopo próprio ou operacional restrito conforme o caso de uso
+- `teamId`
 
-Importante:
+Regra prática:
 
-- o frontend pode continuar recebendo `teamId`, mas o backend não usa mais esse campo como fonte de verdade para escopo;
-- `accessGroup` complementa navegação e feature toggles, mas não substitui o papel do domínio.
+- `teamId` não é mais fonte de verdade para autorização;
+- o backend já usa modelo multi-team;
+- `accessGroup` complementa feature gating e navegação, sem substituir `role`.
 
-## Fluxo atual do frontend
-
-### Raiz `/`
-
-Comportamento:
-
-- se não houver sessão válida, redireciona para `/login`
-- se houver sessão válida, redireciona para `/app`
-
-Base:
-
-- [front/src/app/page.tsx](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/app/page.tsx)
-
-### Entrada `/app`
-
-Comportamento:
-
-- resolve o usuário autenticado
-- redireciona para a home por papel
-
-Base:
-
-- [front/src/app/app/page.tsx](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/app/app/page.tsx)
-
-### Homes por papel
+## Homes por papel
 
 | Papel | Destino |
 | --- | --- |
@@ -212,97 +117,26 @@ Base:
 
 ## Rotas públicas
 
-| Rota | Estado |
-| --- | --- |
-| `/login` | Funcional |
-| `/forgot-password` | Informativa |
-| `/register` | Fora do fluxo público efetivo |
+- `/`
+- `/login`
+- `/forgot-password`
+- `/register`
 
-### Observações
+Observações:
 
-- `/forgot-password` não envia e-mail nem executa reset automático.
-- `/register` foi removida do fluxo público de criação de conta e hoje não deve ser tratada como auto cadastro.
+- `/` redireciona para `/login` sem sessão;
+- `/register` está fora do fluxo público efetivo.
 
 ## Rotas protegidas
 
-Todas as rotas sob `/app/*` exigem sessão válida.
+Todas as rotas sob `/app/*`.
 
-Base:
+## Estado do frontend autenticado
 
-- [front/src/app/app/layout.tsx](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/app/app/layout.tsx)
-
-## Permissões atuais do frontend
-
-Navegação e whitelists centrais:
-
-- [permissions.ts](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/lib/auth/permissions.ts)
-
-Matriz atual:
-
-| Área | Papéis |
-| --- | --- |
-| Dashboard Analítico | `MANAGER`, `GENERAL_MANAGER`, `ADMINISTRATOR` |
-| Dashboard Operacional | `MANAGER`, `GENERAL_MANAGER`, `ADMINISTRATOR` |
-| Leads | `ATTENDANT`, `MANAGER`, `ADMINISTRATOR` |
-| Usuários | `ADMINISTRATOR` |
-
-Observação:
-
-- a navegação do frontend ainda pode usar projeções legadas durante a transição;
-- a autorização verdadeira continua no backend, já adaptada ao modelo multi-team.
-
-## AppShell atual
-
-Depois do login, o usuário entra em um shell autenticado com:
+O shell autenticado hoje possui:
 
 - sidebar;
-- topbar;
-- busca;
-- menu do usuário;
-- área central de conteúdo.
-
-Base:
-
-- [front/src/app/app/layout.tsx](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/app/app/layout.tsx)
-- [front/src/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar.tsx](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/front/src/components/shadcn-space/blocks/dashboard-shell-01/app-sidebar.tsx)
-
-## Bootstrap de usuários de suporte
-
-O seed atual cria usuários de apoio para validação do fluxo inicial:
-
-| Papel | E-mail | Senha |
-| --- | --- | --- |
-| Administrador | `admin@crm.com` | `admin123` |
-| Gerente Geral | `geral@crm.com` | `admin123` |
-
-Base:
-
-- [dashboard-csv.seed.ts](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/back/prisma/seeds/dashboard-csv.seed.ts)
-
-## Comportamentos deliberadamente fora de escopo
-
-### Cadastro público
-
-Não existe suporte a auto cadastro público no produto atual.
-
-Motivo:
-
-- o sistema é interno;
-- o papel do usuário não deve ser definido por auto cadastro;
-- o provisionamento de contas será responsabilidade da gestão administrativa de usuários.
-
-### Recuperação automática de senha
-
-Não existe fluxo automático por e-mail.
-
-Motivo:
-
-- a infraestrutura de recuperação ainda não foi implementada;
-- manter uma UI que insinuasse envio automático seria falso affordance.
-
-## Gaps conhecidos
-
-- tela de perfil ainda não está pronta como produto final;
-- `/app/users` ainda é placeholder;
-- o dropdown do usuário hoje direciona perfil/credenciais para a área de usuários apenas como ponte temporária para admin;
-- gestão administrativa real de usuários continua como próxima feature.
+- topbar sem search global;
+- dropdown do utilizador;
+- páginas reais para `profile`, `leads`, `customers`, `stores`, `teams` e `users`;
+- dashboards ainda em placeholder.
