@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 type AuthScreenLayoutProps = {
 	asideTitle: string;
 	children: ReactNode;
+	contentClassName?: string;
 	overlay?: ReactNode;
 	subtitle: string;
 	title: string;
@@ -11,6 +12,7 @@ type AuthScreenLayoutProps = {
 function AuthScreenLayout({
 	asideTitle,
 	children,
+	contentClassName,
 	overlay,
 	subtitle,
 	title,
@@ -42,8 +44,8 @@ function AuthScreenLayout({
 				</section>
 
 				<section className="flex min-h-screen items-center justify-center border-l border-[#D6DCE5] bg-[#FFFFFF] p-7 md:p-11">
-					<div className="flex w-full max-w-[25.5rem] flex-col items-center gap-4.5">
-						<div className="flex w-full max-w-[25.5rem] flex-col items-center gap-4.5 text-center">
+					<div className="flex w-full max-w-102 flex-col items-center gap-4.5">
+						<div className="flex w-full max-w-102 flex-col items-center gap-4.5 text-center">
 							<div className="flex h-[2.85rem] w-[2.85rem] items-center justify-center rounded-full border border-[#D96C3F]/20 bg-[#2d3648] text-[1.16rem] font-semibold tracking-tight text-[#fff7f3] shadow-[0_0_0_4px_rgba(217,108,63,0.08)]">
 								lc
 							</div>
@@ -55,7 +57,9 @@ function AuthScreenLayout({
 							</div>
 						</div>
 
-						<div className="w-full max-w-[23rem]">{children}</div>
+						<div className={contentClassName ?? 'w-full max-w-92'}>
+							{children}
+						</div>
 					</div>
 				</section>
 			</div>

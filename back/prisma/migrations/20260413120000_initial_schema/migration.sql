@@ -6,6 +6,16 @@ BEGIN
     END IF;
 END $$;
 
+-- CreateTable (Store antes de Team: FK lógica e backfill de storeId em Team legada)
+CREATE TABLE IF NOT EXISTS "Store" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Store_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "Team" (
     "id" UUID NOT NULL,
@@ -18,15 +28,28 @@ CREATE TABLE IF NOT EXISTS "Team" (
     CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE IF NOT EXISTS "Store" (
-    "id" UUID NOT NULL,
-    "name" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+-- IF NOT EXISTS acima não altera "Team" já existente sem storeId (volume legado / esquema antigo)
+ALTER TABLE "Team" ADD COLUMN IF NOT EXISTS "storeId" UUID;
+ALTER TABLE "Team" ADD COLUMN IF NOT EXISTS "managerId" UUID;
+ALTER TABLE "Team" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3);
+ALTER TABLE "Team" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3);
 
-    CONSTRAINT "Store_pkey" PRIMARY KEY ("id")
-);
+UPDATE "Team" SET "createdAt" = CURRENT_TIMESTAMP WHERE "createdAt" IS NULL;
+UPDATE "Team" SET "updatedAt" = CURRENT_TIMESTAMP WHERE "updatedAt" IS NULL;
+
+INSERT INTO "Store" ("id", "name", "createdAt", "updatedAt")
+SELECT gen_random_uuid(), 'Default', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+WHERE EXISTS (SELECT 1 FROM "Team" WHERE "storeId" IS NULL)
+  AND NOT EXISTS (SELECT 1 FROM "Store");
+
+UPDATE "Team" t
+SET "storeId" = (SELECT s."id" FROM "Store" s ORDER BY s."createdAt" ASC NULLS LAST, s."id" ASC LIMIT 1)
+WHERE t."storeId" IS NULL;
+
+ALTER TABLE "Team" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Team" ALTER COLUMN "createdAt" SET NOT NULL;
+ALTER TABLE "Team" ALTER COLUMN "updatedAt" SET NOT NULL;
+ALTER TABLE "Team" ALTER COLUMN "storeId" SET NOT NULL;
 
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "Customer" (

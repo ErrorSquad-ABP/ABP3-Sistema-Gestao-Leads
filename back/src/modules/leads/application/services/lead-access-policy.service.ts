@@ -174,6 +174,21 @@ class LeadAccessPolicy {
 		);
 	}
 
+	/**
+	 * Listagem paginada unificada das equipas visíveis ao gestor (`memberTeams` ∪ `managedTeams`).
+	 */
+	async resolveManagerListTeamIds(
+		actor: LeadActor,
+	): Promise<readonly string[]> {
+		const scope = await this.resolveScope(actor);
+		if (scope.kind !== 'manager') {
+			throw new LeadAccessDeniedError(
+				'Listagem unificada por equipas disponivel apenas para gestores de equipa.',
+			);
+		}
+		return [...scope.readTeamIds];
+	}
+
 	async assertCanReadLead(actor: LeadActor, lead: Lead): Promise<void> {
 		const scope = await this.resolveScope(actor);
 		if (scope.kind === 'full') {

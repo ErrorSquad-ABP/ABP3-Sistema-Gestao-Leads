@@ -71,7 +71,7 @@ Esses campos representam grupos administrativos e feature toggles, sem substitui
 ## Estado atual da Sprint 1
 
 - `teams` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
-- `stores` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id`.
+- `stores` possui CRUD inicial administrativo com `POST`, `GET`, `GET :id`, `PATCH :id` e `DELETE :id` (JWT; papeis `ADMINISTRATOR` e `GENERAL_MANAGER`).
 - Os endpoints de `PATCH` em `teams` e `stores` aceitam atualizacao parcial e retornam `400` quando nenhum campo e enviado.
 - `teams` valida previamente `managerId` e `storeId`, aceitando apenas usuarios com papel compativel com gerencia e lojas existentes para fechar o vinculo organizacional basico.
 - `stores` retorna conflito de negocio ao tentar excluir loja ainda vinculada a leads.
@@ -112,11 +112,12 @@ Rotas em `/app/leads` (autenticação obrigatória, envelope de sucesso habitual
 
 | Método | Caminho | Uso na UI |
 | --- | --- | --- |
-| `GET` | `/api/leads/owner/:ownerUserId` | Atendente: próprio `id`. Gestores: owners no mesmo escopo de equipas. |
-| `GET` | `/api/leads/team/:teamId` | Gestor: `teamId` nas equipas legíveis (membro ∪ gestor conforme papel). |
-| `GET` | `/api/leads/all` | `ADMINISTRATOR` e `GENERAL_MANAGER`: listagem global. |
+| `GET` | `/api/leads/owner/:ownerUserId?page=&limit=` | Atendente: próprio `id`. Gestores: owners no mesmo escopo de equipas. Resposta paginada (`data.items`, `total`, até 10 por página). |
+| `GET` | `/api/leads/manager?page=&limit=` | `MANAGER`: listagem unificada do escopo (membro ∪ equipas geridas). |
+| `GET` | `/api/leads/team/:teamId?page=&limit=` | `teamId` nas equipas legíveis; resposta paginada. |
+| `GET` | `/api/leads/all?page=&limit=` | `ADMINISTRATOR` e `GENERAL_MANAGER`: listagem global paginada. |
 
-Corpo de cada item: `id`, `customerId`, `storeId`, `ownerUserId`, `source`, `status` (ver Swagger / `LeadResponseDto`).
+Corpo de `data`: objeto com `items` (cada lead: `id`, `customerId`, `storeId`, `ownerUserId`, `source`, `status`), `page`, `limit`, `total`, `totalPages` (ver Swagger / `LeadResponseDto` para cada item).
 
 - `dashboards` podem e devem ter endpoints agregadores por tela.
 - o detalhe de lead deve começar simples, com recurso principal e subrotas como histórico; só deve ganhar endpoint de composição se houver ganho real de desempenho e simplicidade.

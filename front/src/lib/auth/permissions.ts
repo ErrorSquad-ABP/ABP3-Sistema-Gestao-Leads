@@ -6,12 +6,22 @@ import type {
 import { appRoutes } from '@/lib/routes/app-routes';
 
 type AppRouteAccessKey =
+	| 'customers'
 	| 'dashboardAnalytic'
 	| 'dashboardOperational'
 	| 'leads'
+	| 'stores'
+	| 'teams'
 	| 'users';
 
-type AppNavigationIcon = 'activity' | 'chart' | 'shield' | 'users';
+type AppNavigationIcon =
+	| 'activity'
+	| 'chart'
+	| 'customers'
+	| 'stores'
+	| 'teams'
+	| 'shield'
+	| 'users';
 
 type AppNavigationItem = {
 	key: AppRouteAccessKey;
@@ -31,9 +41,12 @@ const roleLabels: Record<UserRole, string> = {
 };
 
 const routeAccessByKey: Record<AppRouteAccessKey, readonly UserRole[]> = {
+	customers: ['ATTENDANT', 'MANAGER', 'ADMINISTRATOR'],
 	dashboardAnalytic: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	dashboardOperational: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	leads: ['ATTENDANT', 'MANAGER', 'ADMINISTRATOR'],
+	stores: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
+	teams: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	users: ['ADMINISTRATOR'],
 };
 
@@ -57,6 +70,15 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 		label: 'Dashboard Analítico',
 	},
 	{
+		allowedRoles: routeAccessByKey.customers,
+		description: 'Cadastro comercial de clientes vinculados aos leads.',
+		featureKey: 'leads',
+		href: appRoutes.app.customers,
+		icon: 'customers',
+		key: 'customers',
+		label: 'Clientes',
+	},
+	{
 		allowedRoles: routeAccessByKey.leads,
 		description: 'Fluxo comercial, priorização e acompanhamento.',
 		featureKey: 'leads',
@@ -64,6 +86,24 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 		icon: 'users',
 		key: 'leads',
 		label: 'Leads',
+	},
+	{
+		allowedRoles: routeAccessByKey.stores,
+		description: 'Estrutura física disponível para distribuição operacional.',
+		featureKey: 'leads',
+		href: appRoutes.app.stores,
+		icon: 'stores',
+		key: 'stores',
+		label: 'Lojas',
+	},
+	{
+		allowedRoles: routeAccessByKey.teams,
+		description: 'Estrutura humana por loja, gerente e composição operacional.',
+		featureKey: 'leads',
+		href: appRoutes.app.teams,
+		icon: 'teams',
+		key: 'teams',
+		label: 'Equipes',
 	},
 	{
 		allowedRoles: routeAccessByKey.users,
@@ -78,12 +118,18 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 
 function getAllowedRolesForRoute(key: AppRouteAccessKey) {
 	switch (key) {
+		case 'customers':
+			return routeAccessByKey.customers;
 		case 'dashboardAnalytic':
 			return routeAccessByKey.dashboardAnalytic;
 		case 'dashboardOperational':
 			return routeAccessByKey.dashboardOperational;
 		case 'leads':
 			return routeAccessByKey.leads;
+		case 'stores':
+			return routeAccessByKey.stores;
+		case 'teams':
+			return routeAccessByKey.teams;
 		case 'users':
 			return routeAccessByKey.users;
 	}

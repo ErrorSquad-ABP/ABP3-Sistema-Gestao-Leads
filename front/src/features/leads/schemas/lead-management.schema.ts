@@ -1,23 +1,24 @@
 import { z } from 'zod';
 
 const leadSourceValues = [
-	'store-visit',
-	'phone-call',
-	'whatsapp',
-	'instagram',
-	'facebook',
-	'mercado-livre',
-	'indication',
-	'digital-form',
-	'other',
+	'WEBSITE',
+	'WHATSAPP',
+	'PHONE',
+	'WALK_IN',
+	'INDICATION',
+	'OTHER',
+	'INSTAGRAM',
+	'FACEBOOK',
+	'MERCADO_LIVRE',
 ] as const;
 
 const leadStatusValues = [
 	'NEW',
 	'CONTACTED',
 	'QUALIFIED',
-	'DISQUALIFIED',
+	'NEGOTIATING',
 	'CONVERTED',
+	'LOST',
 ] as const;
 
 const uuidPattern =
