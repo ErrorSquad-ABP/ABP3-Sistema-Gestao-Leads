@@ -7,6 +7,7 @@ import {
 	LeadStatus,
 	UserRole,
 } from '../../src/generated/prisma/enums.js';
+import { Cpf } from '../../src/shared/domain/value-objects/cpf.value-object.js';
 
 import { deterministicUuid, hashPassword } from './seed-utils.js';
 import {
@@ -171,6 +172,38 @@ function sanitizeSeedName(value: string) {
 		.replace(/\b\d+\b/g, (match) => numberToLetters(Number(match)));
 }
 
+function generateValidCpf(seed: number) {
+	const base = String(100000000 + seed).padStart(9, '0');
+	const digits = base.split('').map(Number);
+
+	const calculateDigit = (weightsStart: number, sourceDigits: number[]) => {
+		const sum = sourceDigits.reduce(
+			(total, digit, index) => total + digit * (weightsStart - index),
+			0,
+		);
+		const result = (sum * 10) % 11;
+		return result === 10 ? 0 : result;
+	};
+
+	const firstDigit = calculateDigit(10, digits);
+	const secondDigit = calculateDigit(11, [...digits, firstDigit]);
+	return `${base}${firstDigit}${secondDigit}`;
+}
+
+function normalizeCustomerCpf(rawValue: string, seed: number) {
+	const digits = rawValue.replace(/\D/g, '');
+
+	if (digits.length === 11) {
+		try {
+			return Cpf.create(digits).value;
+		} catch {
+			// fall through to deterministic replacement
+		}
+	}
+
+	return generateValidCpf(seed);
+}
+
 function buildCustomerKey(row: DashboardCsvRow) {
 	return (
 		trimNullable(row.customer_cpf) ??
@@ -313,7 +346,7 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const teams = Array.from(teamsByName.values());
 
 	const customersByKey = new Map(
-		rows.map((row) => {
+		rows.map((row, index) => {
 			const customerKey = buildCustomerKey(row);
 
 			return [
@@ -323,7 +356,7 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 					name: sanitizeSeedName(row.customer_name),
 					email: trimNullable(row.customer_email)?.toLowerCase() ?? null,
 					phone: trimNullable(row.customer_phone),
-					cpf: trimNullable(row.customer_cpf),
+					cpf: normalizeCustomerCpf(row.customer_cpf, index + 1),
 				},
 			];
 		}),

@@ -32,7 +32,7 @@ function TabsTrigger({
 	return (
 		<TabsPrimitive.Trigger
 			className={cn(
-				'inline-flex min-w-[10rem] items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-[#6b7687] transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#d96c3f]/35 data-[state=active]:bg-white data-[state=active]:text-[#1b2430] data-[state=active]:shadow-sm',
+				'inline-flex min-w-40 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-[#6b7687] transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#d96c3f]/35 data-[state=active]:bg-white data-[state=active]:text-[#1b2430] data-[state=active]:shadow-sm',
 				className,
 			)}
 			data-slot="tabs-trigger"

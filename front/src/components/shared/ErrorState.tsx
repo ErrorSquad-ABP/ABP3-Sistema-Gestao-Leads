@@ -8,7 +8,6 @@ import {
 	ShieldX,
 } from 'lucide-react';
 
-import { buttonVariants } from '@/components/ui/button';
 import {
 	Card,
 	CardContent,
@@ -55,10 +54,10 @@ function ErrorState({
 
 	function renderAction(action: ErrorStateAction, key: string) {
 		const className = cn(
-			buttonVariants({
-				variant: action.variant ?? 'default',
-			}),
-			'h-10 rounded-md px-4',
+			'inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#d96c3f]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf7] disabled:pointer-events-none disabled:opacity-60',
+			action.variant === 'secondary'
+				? 'border border-[#ddd4ca] bg-[#fffaf7] text-[#1b2430] hover:border-[#cdbfb0] hover:bg-[#fdf4ee]'
+				: 'border border-[#ddd4ca] bg-[#fffaf7] text-[#1b2430] hover:border-[#d96c3f]/30 hover:bg-[#fdf4ee]',
 		);
 
 		if (action.href) {
@@ -83,13 +82,13 @@ function ErrorState({
 
 	return (
 		<main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
-			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,108,63,0.10),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(45,54,72,0.10),transparent_30%)]" />
-			<div className="pointer-events-none absolute left-[-8rem] top-[5rem] size-56 rounded-full bg-[#d96c3f]/8 blur-3xl" />
-			<div className="pointer-events-none absolute bottom-[-6rem] right-[-4rem] size-72 rounded-full bg-[#2d3648]/10 blur-3xl" />
+			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,108,63,0.12),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(191,168,139,0.14),transparent_28%)]" />
+			<div className="pointer-events-none absolute -left-32 top-20 size-56 rounded-full bg-[#d96c3f]/10 blur-3xl" />
+			<div className="pointer-events-none absolute -bottom-24 -right-16 size-72 rounded-full bg-[#d4b48c]/18 blur-3xl" />
 
-			<Card className="relative w-full max-w-3xl overflow-hidden border-border/90 bg-white/95 backdrop-blur">
-				<div className="h-1.5 w-full bg-[linear-gradient(90deg,#2D3648_0%,#D96C3F_100%)]" />
-				<CardHeader className="gap-5 border-b border-border/75 pb-6">
+			<Card className="relative w-full max-w-3xl overflow-hidden border-[#e5ddd4] bg-[#fffaf7]/95 backdrop-blur">
+				<div className="h-1.5 w-full bg-[linear-gradient(90deg,#D96C3F_0%,#E8B36A_100%)]" />
+				<CardHeader className="gap-5 border-b border-[#ece3da] pb-6">
 					<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#F4E6DE] text-[#D96C3F] shadow-[0_16px_34px_-22px_rgba(217,108,63,0.75)]">
 						<Icon className="size-6" />
 					</div>
@@ -100,14 +99,14 @@ function ErrorState({
 						<CardTitle className="text-balance text-[2rem] font-semibold tracking-[-0.04em] text-[#1B2430]">
 							{title}
 						</CardTitle>
-						<CardDescription className="max-w-xl text-sm leading-6 text-[#6B7687]">
+						<CardDescription className="max-w-xl text-[0.95rem] leading-7 text-[#667085]">
 							{description}
 						</CardDescription>
 					</div>
 				</CardHeader>
 				<CardContent className="grid gap-5 pt-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.75fr)]">
 					<div className="space-y-5">
-						<div className="rounded-2xl border border-[#D6DCE5] bg-[#F8FAFB] p-5 text-sm leading-6 text-[#4D5868]">
+						<div className="rounded-2xl border border-[#e7ddd3] bg-white p-5 text-sm leading-6 text-[#4d5868]">
 							<p className="font-medium text-[#1B2430]">Cód. {code}</p>
 							<p className="mt-1">
 								{code === 401
@@ -119,7 +118,7 @@ function ErrorState({
 											: 'A aplicação encontrou uma falha inesperada ao montar ou responder esta tela.'}
 							</p>
 							{technicalDetails ? (
-								<div className="mt-3 rounded-xl border border-border/80 bg-white px-3 py-2.5 text-xs leading-5 text-[#6B7687]">
+								<div className="mt-3 rounded-xl border border-[#ece3da] bg-[#fcf7f2] px-3 py-2.5 text-xs leading-5 text-[#6B7687]">
 									<span className="font-medium text-[#1B2430]">
 										Detalhe técnico:
 									</span>{' '}
@@ -137,8 +136,8 @@ function ErrorState({
 					</div>
 
 					<div className="grid gap-3">
-						<div className="rounded-2xl border border-border/80 bg-white p-4">
-							<div className="inline-flex items-center gap-2 text-sm font-medium text-[#2D3648]">
+						<div className="rounded-2xl border border-[#ece3da] bg-white p-4">
+							<div className="inline-flex items-center gap-2 text-sm font-medium text-[#7a4b2e]">
 								<RefreshCcw className="size-4 text-[#D96C3F]" />
 								Próximo passo sugerido
 							</div>
@@ -153,7 +152,7 @@ function ErrorState({
 							</p>
 						</div>
 
-						<div className="inline-flex items-center gap-2 text-sm font-medium text-[#2D3648]">
+						<div className="inline-flex items-center gap-2 text-sm font-medium text-[#7a4b2e]">
 							<ArrowLeft className="size-4" />
 							Estados de erro preparados para o App Router e para as rotas
 							protegidas do produto.

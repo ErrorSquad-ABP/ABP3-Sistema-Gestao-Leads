@@ -1,64 +1,17 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: abp3-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: lead_management
-      POSTGRES_USER: abp
-      POSTGRES_PASSWORD: abp
-    ports:
-      - '5433:5432'
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 5s
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-  prisma-migrate:
-    build:
-      context: .
-      dockerfile: back/Dockerfile
-      target: dev
-    container_name: abp3-prisma-migrate
-    restart: 'no'
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      NODE_ENV: development
-      POSTGRES_DB: lead_management
-      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
-      JWT_SECRET: change-me
-    command: ['npm', 'run', 'prisma:migrate:deploy', '--workspace', 'back']
-
   back:
     build:
       context: .
       dockerfile: back/Dockerfile
       target: runner
     container_name: abp3-back
-    depends_on:
-      postgres:
-        condition: service_healthy
-      prisma-migrate:
-        condition: service_completed_successfully
+    env_file:
+      - ./back/.env
     environment:
       NODE_ENV: production
       PORT: 3001
       APP_URL: http://localhost:3001
-      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
-      JWT_SECRET: change-me
-      JWT_ACCESS_PRIVATE_KEY: ${JWT_ACCESS_PRIVATE_KEY}
-      JWT_ACCESS_PUBLIC_KEY: ${JWT_ACCESS_PUBLIC_KEY}
-      JWT_ISSUER: ${JWT_ISSUER:-abp3-leads-api}
-      JWT_AUDIENCE: ${JWT_AUDIENCE:-abp3-leads-api}
-      AUTH_RATE_LIMIT_LOGIN_MAX: ${AUTH_RATE_LIMIT_LOGIN_MAX:-}
-      AUTH_RATE_LIMIT_LOGIN_WINDOW_SEC: ${AUTH_RATE_LIMIT_LOGIN_WINDOW_SEC:-}
-      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:3000}
+      FRONTEND_ORIGINS: http://localhost:3000
     ports:
       - '3001:3001'
 
@@ -79,6 +32,3 @@ services:
       API_INTERNAL_URL: http://back:3001
     ports:
       - '3000:3000'
-
-volumes:
-  postgres-data:

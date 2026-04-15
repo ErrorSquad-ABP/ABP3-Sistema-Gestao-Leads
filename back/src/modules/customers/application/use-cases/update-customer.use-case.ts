@@ -5,8 +5,6 @@ import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-w
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
-// biome-ignore lint/style/useImportType: Nest DI
-import { CustomerFactory } from '../../domain/factories/customer.factory.js';
 import { CustomerNotFoundError } from '../../domain/errors/customer-not-found.error.js';
 import { CustomerEmailAlreadyExistsError } from '../../domain/errors/customer-email-already-exists.error.js';
 import { CustomerCpfAlreadyExistsError } from '../../domain/errors/customer-cpf-already-exists.error.js';
@@ -30,7 +28,6 @@ class UpdateCustomerUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
-		private readonly customerFactory: CustomerFactory,
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 	) {}
 
@@ -70,7 +67,7 @@ class UpdateCustomerUseCase {
 				}
 			}
 
-			const updated = this.customerFactory.update(existing, {
+			const updated = existing.withUpdates({
 				name: dto.name,
 				email: dto.email,
 				phone: dto.phone,

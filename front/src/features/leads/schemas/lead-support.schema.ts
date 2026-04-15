@@ -45,6 +45,16 @@ function parseLeadCustomersResponse(data: unknown) {
 	return parsed.data;
 }
 
+function parseLeadCustomerResponse(data: unknown) {
+	const parsed = leadCustomerSchema.safeParse(data);
+	if (!parsed.success) {
+		throw new ApiError('Resposta de cliente em formato inesperado.', 502, {
+			code: 'leads.customer.invalid_response_shape',
+		});
+	}
+	return parsed.data;
+}
+
 function parseLeadStoresResponse(data: unknown) {
 	const parsed = leadStoresResponseSchema.safeParse(data);
 	if (!parsed.success) {
@@ -55,11 +65,31 @@ function parseLeadStoresResponse(data: unknown) {
 	return parsed.data;
 }
 
+function parseLeadStoreResponse(data: unknown) {
+	const parsed = leadStoreSchema.safeParse(data);
+	if (!parsed.success) {
+		throw new ApiError('Resposta de loja em formato inesperado.', 502, {
+			code: 'leads.store.invalid_response_shape',
+		});
+	}
+	return parsed.data;
+}
+
 function parseLeadTeamsResponse(data: unknown) {
 	const parsed = leadTeamsResponseSchema.safeParse(data);
 	if (!parsed.success) {
 		throw new ApiError('Resposta de equipes em formato inesperado.', 502, {
 			code: 'leads.teams.invalid_response_shape',
+		});
+	}
+	return parsed.data;
+}
+
+function parseLeadTeamResponse(data: unknown) {
+	const parsed = leadTeamSchema.safeParse(data);
+	if (!parsed.success) {
+		throw new ApiError('Resposta de equipe em formato inesperado.', 502, {
+			code: 'leads.team.invalid_response_shape',
 		});
 	}
 	return parsed.data;
@@ -84,8 +114,11 @@ export {
 	leadStoresResponseSchema,
 	leadTeamSchema,
 	leadTeamsResponseSchema,
+	parseLeadCustomerResponse,
 	parseLeadCustomersResponse,
 	parseLeadOwnersResponse,
+	parseLeadStoreResponse,
+	parseLeadTeamResponse,
 	parseLeadStoresResponse,
 	parseLeadTeamsResponse,
 };

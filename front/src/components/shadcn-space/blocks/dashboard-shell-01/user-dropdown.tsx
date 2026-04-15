@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { type LucideIcon, LogOut, Mail, ShieldCheck } from 'lucide-react';
 import { queryKeys } from '@/lib/constants/query-keys';
+import { clearAccessToken } from '@/lib/auth/access-token';
 import { appRoutes } from '@/lib/routes/app-routes';
 import { logout } from '@/features/login/api/login.service';
 
@@ -75,6 +76,7 @@ const UserDropdown = ({
 		try {
 			await logout();
 		} finally {
+			clearAccessToken();
 			queryClient.setQueryData(queryKeys.auth.currentUser, null);
 			await queryClient.cancelQueries({ queryKey: queryKeys.auth.currentUser });
 			router.replace(appRoutes.auth.login);
@@ -93,7 +95,7 @@ const UserDropdown = ({
 				<DropdownMenuTrigger>{trigger}</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align={align}
-					className="w-3xs rounded-2xl data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:!bg-transparent"
+					className="w-3xs rounded-2xl data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:bg-transparent!"
 				>
 					{/* User Info */}
 					<DropdownMenuGroup>

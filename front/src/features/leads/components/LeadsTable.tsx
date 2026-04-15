@@ -28,7 +28,8 @@ import {
 import {
 	formatLeadSourceLabel,
 	formatLeadStatusLabel,
-	formatShortId,
+	getLeadSourceBadgeClass,
+	normalizeLeadStatusKey,
 } from '../lib/lead-list-labels';
 import type { LeadListItem } from '../types/leads.types';
 
@@ -46,10 +47,12 @@ type LeadsTableProps = {
 function statusBadgeVariant(
 	status: string,
 ): 'default' | 'secondary' | 'destructive' | 'outline' {
-	switch (status) {
+	switch (normalizeLeadStatusKey(status)) {
 		case 'CONVERTED':
 			return 'default';
+		case 'LOST':
 		case 'DISQUALIFIED':
+		case 'DESQUALIFIED':
 			return 'destructive';
 		case 'NEW':
 			return 'secondary';
@@ -81,13 +84,12 @@ function LeadsTable({
 			<Table>
 				<TableHeader className="[&_tr]:border-[#e6ecf3]">
 					<TableRow className="bg-[#f8fafc] hover:bg-[#f8fafc]">
-						<TableHead className="px-4">Lead</TableHead>
 						<TableHead>Origem</TableHead>
 						<TableHead>Estado</TableHead>
 						<TableHead>Cliente</TableHead>
 						<TableHead>Loja</TableHead>
 						<TableHead>Responsável</TableHead>
-						<TableHead className="w-[4.5rem] text-right">Ações</TableHead>
+						<TableHead className="w-18 text-right">Ações</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody className="[&_tr]:border-[#e6ecf3]">
@@ -96,19 +98,9 @@ function LeadsTable({
 							className="odd:bg-[#f8fafc]/40 hover:bg-[#f8fafc]/80"
 							key={lead.id}
 						>
-							<TableCell className="px-4">
-								<div className="space-y-1">
-									<p className="font-medium text-[#1b2430]">
-										Lead {formatShortId(lead.id)}
-									</p>
-									<p className="text-xs text-[#6b7687]">
-										Identificador completo: {lead.id}
-									</p>
-								</div>
-							</TableCell>
 							<TableCell>
 								<Badge
-									className="rounded-md border px-2.5 py-1 text-[0.72rem] font-medium"
+									className={`rounded-md border px-2.5 py-1 text-[0.72rem] font-medium ${getLeadSourceBadgeClass(lead.source)}`}
 									variant="outline"
 								>
 									{formatLeadSourceLabel(lead.source)}
@@ -124,16 +116,15 @@ function LeadsTable({
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
 								{customerLabelById?.[lead.customerId] ??
-									`Cliente ${formatShortId(lead.customerId)}`}
+									'Cliente não encontrado'}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
-								{storeLabelById?.[lead.storeId] ??
-									`Loja ${formatShortId(lead.storeId)}`}
+								{storeLabelById?.[lead.storeId] ?? 'Loja não encontrada'}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
 								{lead.ownerUserId
 									? (ownerLabelById?.[lead.ownerUserId] ??
-										`Usuário ${formatShortId(lead.ownerUserId)}`)
+										'Responsável não encontrado')
 									: 'Sem responsável'}
 							</TableCell>
 							<TableCell className="text-right">
@@ -154,7 +145,7 @@ function LeadsTable({
 									>
 										{onEdit ? (
 											<DropdownMenuItem
-												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
 												onSelect={() => onEdit(lead)}
 											>
 												<PencilLine className="size-4" />
@@ -163,7 +154,7 @@ function LeadsTable({
 										) : null}
 										{onReassign ? (
 											<DropdownMenuItem
-												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
 												onSelect={() => onReassign(lead)}
 											>
 												<Shuffle className="size-4" />
@@ -172,7 +163,7 @@ function LeadsTable({
 										) : null}
 										{onConvert && lead.status !== 'CONVERTED' ? (
 											<DropdownMenuItem
-												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
 												onSelect={() => onConvert(lead)}
 											>
 												<CheckCheck className="size-4" />

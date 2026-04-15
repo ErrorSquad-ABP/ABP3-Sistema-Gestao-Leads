@@ -1,9 +1,16 @@
 import { AggregateRoot } from '../../../../shared/domain/core/aggregate-root.js';
 import type { UUID } from '../../../../shared/domain/types/identifiers.js';
-import type { Cpf } from '../../../../shared/domain/value-objects/cpf.value-object.js';
-import type { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
-import type { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
-import type { Phone } from '../../../../shared/domain/value-objects/phone.value-object.js';
+import { Cpf } from '../../../../shared/domain/value-objects/cpf.value-object.js';
+import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
+import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
+import { Phone } from '../../../../shared/domain/value-objects/phone.value-object.js';
+
+type CustomerUpdatePatch = {
+	readonly name?: string;
+	readonly email?: string | null;
+	readonly phone?: string | null;
+	readonly cpf?: string | null;
+};
 
 /**
  * Customer aggregate root (operational context: customers).
@@ -28,6 +35,32 @@ class Customer extends AggregateRoot {
 		this.email = email;
 		this.phone = phone;
 		this.cpf = cpf;
+	}
+
+	/**
+	 * Nova instância com campos opcionais substituídos (imutável).
+	 * Valores `undefined` em {@link patch} mantêm o campo atual.
+	 */
+	withUpdates(patch: CustomerUpdatePatch): Customer {
+		return new Customer(
+			this.id,
+			patch.name !== undefined ? Name.create(patch.name) : this.name,
+			patch.email !== undefined
+				? patch.email
+					? Email.create(patch.email)
+					: null
+				: this.email,
+			patch.phone !== undefined
+				? patch.phone
+					? Phone.create(patch.phone)
+					: null
+				: this.phone,
+			patch.cpf !== undefined
+				? patch.cpf
+					? Cpf.create(patch.cpf)
+					: null
+				: this.cpf,
+		);
 	}
 
 	/** Compara estado persistível (evita `update` no banco quando não há mudança real). */
@@ -68,4 +101,5 @@ class Customer extends AggregateRoot {
 	}
 }
 
+export type { CustomerUpdatePatch };
 export { Customer };

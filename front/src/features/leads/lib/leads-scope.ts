@@ -4,13 +4,13 @@ import type { LeadListItem } from '../types/leads.types';
 
 type LeadsListScope =
 	| { kind: 'owner'; id: string }
-	| { kind: 'teams'; ids: readonly string[] }
+	| { kind: 'manager' }
 	| { kind: 'all' }
 	| { kind: 'none'; reason: 'no_teams' };
 
 /**
- * IDs de equipa para `GET /api/leads/team/:id` (gestor: membro ∪ geridos).
- * `GENERAL_MANAGER` e `ADMINISTRATOR` usam `listAll` no cliente (`kind: 'all'`).
+ * IDs de equipa visíveis ao gestor (membro ∪ geridos). Usado em testes e documentação.
+ * A listagem na UI usa `GET /api/leads/manager` (paginado no servidor).
  */
 function readableTeamIdsForLeadsList(user: AuthenticatedUser): string[] {
 	if (user.role === 'MANAGER') {
@@ -31,7 +31,7 @@ function resolveLeadsListScope(user: AuthenticatedUser): LeadsListScope | null {
 		if (ids.length === 0) {
 			return { kind: 'none', reason: 'no_teams' };
 		}
-		return { kind: 'teams', ids };
+		return { kind: 'manager' };
 	}
 	if (user.role === 'GENERAL_MANAGER' || user.role === 'ADMINISTRATOR') {
 		return { kind: 'all' };
@@ -39,7 +39,7 @@ function resolveLeadsListScope(user: AuthenticatedUser): LeadsListScope | null {
 	return null;
 }
 
-/** Junta listas por equipa sem duplicar `id` (mesmo lead em várias consultas). */
+/** Junta listas por equipa sem duplicar `id` (útil em testes / cenários ad hoc). */
 function mergeLeadListsById(lists: readonly LeadListItem[][]): LeadListItem[] {
 	const map = new Map<string, LeadListItem>();
 	for (const list of lists) {
