@@ -19,6 +19,22 @@ O repositório já parte de uma base técnica pronta para evolução incremental
 
 Isso significa que o backlog abaixo foca principalmente o que ainda precisa ser implementado como produto e como capacidade real de negócio.
 
+## Estado do produto após a Sprint 1
+
+Leitura executiva da `main` no início da Sprint 2:
+
+- `EP-01` Identidade e Acesso: fechado no núcleo funcional;
+- `EP-02` Estrutura Organizacional: fechado no núcleo funcional;
+- `EP-03` Clientes e Leads: fechado no núcleo transacional;
+- `EP-04` Negociações: não iniciado como módulo de produto;
+- `EP-05` Dashboards e Filtros: não iniciado como produto; telas atuais ainda são placeholder;
+- `EP-06` Auditoria e Entrega Final: parcial, com base documental e arquitetural, mas sem logs operacionais de produto e com pendência de aderência total do Compose ao edital.
+
+Implicação prática:
+
+- a Sprint 2 deve priorizar negociações, dashboards, filtros temporais e auditoria;
+- o valor percebido pelo parceiro precisa crescer no frontend, não só na fundação do backend.
+
 ## Requisitos funcionais de referência
 
 | Código | Resumo executivo |
@@ -88,6 +104,16 @@ Os pontos abaixo já estão parcialmente ou totalmente cobertos pela fundação 
 | `EP-04` | Negociações | Controlar evolução comercial e histórico do funil | Alta | Sprint 2 |
 | `EP-05` | Dashboards e Filtros | Expor indicadores operacionais e analíticos com recorte temporal | Alta | Sprint 2 e Sprint 3 |
 | `EP-06` | Auditoria e Entrega Final | Garantir logs, documentação final, segurança, desempenho e estabilidade | Alta | Sprint 3 e contínuo |
+
+## Foco confirmado para Sprint 2
+
+Os cards da Sprint 2 deixam de ser tarefas por camada e passam a ser épicos fullstack `end-to-end`, com responsável único por feature. O recorte confirmado é:
+
+- negociações;
+- dashboard operacional;
+- dashboard analítico com filtros temporais;
+- logs de auditoria;
+- conformidade de execução local com PostgreSQL em Docker Compose e fechamento arquitetural impactado.
 
 ## Visão priorizada dos épicos e stories
 
