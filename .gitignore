@@ -12,3 +12,4 @@ coverage
 postgres-data
 .vscode/settings.json
 back/src/generated/prisma
+.vercel
