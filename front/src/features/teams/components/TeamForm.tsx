@@ -16,9 +16,9 @@ import { Label } from '@/components/ui/label';
 import type {
 	LeadOwnerRecord,
 	LeadStore,
-} from '@/features/leads/types/leads.types';
+} from '@/features/leads/model/leads.model';
 
-import type { TeamDialogMode, TeamRecord } from '../types/teams.types';
+import type { TeamDialogMode, TeamRecord } from '../model/teams.model';
 
 type TeamDialogState = {
 	mode: TeamDialogMode;

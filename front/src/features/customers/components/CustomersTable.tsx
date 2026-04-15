@@ -12,7 +12,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 
-import type { CustomerRecord } from '../types/customers.types';
+import type { CustomerRecord } from '../model/customers.model';
 
 type CustomersTableProps = {
 	currentPage: number;

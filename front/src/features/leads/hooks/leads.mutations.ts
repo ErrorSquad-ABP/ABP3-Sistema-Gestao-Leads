@@ -13,7 +13,7 @@ import type {
 	CreateLeadInput,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from '../types/leads.types';
+} from '../model/leads.model';
 
 function useCreateLeadMutation() {
 	const queryClient = useQueryClient();

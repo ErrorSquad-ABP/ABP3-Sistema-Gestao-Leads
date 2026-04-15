@@ -25,7 +25,7 @@ import { useDeleteStoreMutation } from '@/features/stores/hooks/stores.mutations
 
 import { useDeleteCustomerMutation } from '../hooks/leads.catalog.mutations';
 import { getCatalogCrudErrorMessage } from '../lib/catalog-crud-errors';
-import type { LeadCustomer, LeadStore } from '../types/leads.types';
+import type { LeadCustomer, LeadStore } from '../model/leads.model';
 import {
 	CatalogDeleteConfirmDialog,
 	CustomerCatalogFormDialog,
@@ -130,7 +130,7 @@ function CustomerManagerDialog({
 				}}
 				open={open}
 			>
-				<DialogContent className="flex min-h-[32rem] max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-[36rem]">
+				<DialogContent className="flex min-h-128 max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-144">
 					<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 						<div className="flex items-center gap-4">
 							<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">
@@ -377,7 +377,7 @@ function StoreManagerDialog({
 				}}
 				open={open}
 			>
-				<DialogContent className="flex min-h-[30rem] max-h-[82vh] max-w-3xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-[34rem]">
+				<DialogContent className="flex min-h-120 max-h-[82vh] max-w-3xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-136">
 					<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 						<div className="flex items-center gap-4">
 							<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">

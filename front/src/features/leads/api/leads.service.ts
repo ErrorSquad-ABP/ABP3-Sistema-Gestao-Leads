@@ -20,7 +20,7 @@ import type {
 	LeadStore,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from '../types/leads.types';
+} from '../model/leads.model';
 
 function leadsListQuery(page: number): string {
 	const params = new URLSearchParams({

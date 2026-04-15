@@ -30,7 +30,7 @@ import {
 	type StoreCatalogFormValues,
 	storeCatalogFormSchema,
 } from '../schemas/catalog-entity.schema';
-import type { LeadCustomer, LeadStore } from '../types/leads.types';
+import type { LeadCustomer, LeadStore } from '../model/leads.model';
 
 const fieldInputClass =
 	'flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45';

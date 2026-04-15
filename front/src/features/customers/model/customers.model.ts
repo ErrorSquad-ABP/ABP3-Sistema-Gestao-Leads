@@ -1,4 +1,4 @@
-import type { LeadCustomer } from '@/features/leads/types/leads.types';
+import type { LeadCustomer } from '@/features/leads/model/leads.model';
 
 type CustomerRecord = LeadCustomer;
 

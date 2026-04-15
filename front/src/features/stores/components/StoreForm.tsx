@@ -18,7 +18,7 @@ import type {
 	StoreDialogMode,
 	StoreMutationInput,
 	StoreRecord,
-} from '../types/stores.types';
+} from '../model/stores.model';
 
 type StoreDialogState = {
 	mode: StoreDialogMode;

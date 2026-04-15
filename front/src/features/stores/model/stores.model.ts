@@ -1,4 +1,4 @@
-import type { LeadStore } from '@/features/leads/types/leads.types';
+import type { LeadStore } from '@/features/leads/model/leads.model';
 
 type StoreRecord = LeadStore;
 

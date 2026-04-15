@@ -12,7 +12,7 @@ import {
 	useUpdateStoreMutation,
 } from '@/features/stores/hooks/stores.mutations';
 import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
-import type { StoreRecord } from '@/features/stores/types/stores.types';
+import type { StoreRecord } from '@/features/stores/model/stores.model';
 import { isApiError } from '@/lib/http/api-error';
 import {
 	emptyStoreName,

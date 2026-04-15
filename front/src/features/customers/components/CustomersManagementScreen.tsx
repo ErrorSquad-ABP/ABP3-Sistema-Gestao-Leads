@@ -20,7 +20,7 @@ import {
 	useUpdateCustomerMutation,
 } from '../hooks/customers.mutations';
 import { useCustomersQuery } from '../hooks/customers.queries';
-import type { CustomerRecord } from '../types/customers.types';
+import type { CustomerRecord } from '../model/customers.model';
 import {
 	CustomerDeleteDialog,
 	CustomerFormDialog,

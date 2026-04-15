@@ -1,4 +1,4 @@
-import type { LeadTeam } from '@/features/leads/types/leads.types';
+import type { LeadTeam } from '@/features/leads/model/leads.model';
 
 type TeamRecord = LeadTeam;
 

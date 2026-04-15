@@ -39,6 +39,7 @@ type UpdateUserInput = {
 	teamId?: string | null;
 	accessGroupId?: string | null;
 };
+
 type AccessGroup = AccessGroupSummary;
 
 const roleLabels: Record<UserRole, string> = {

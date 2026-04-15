@@ -23,15 +23,18 @@ type LeadFormValues = z.infer<typeof leadFormSchema>;
 type ReassignLeadFormValues = z.infer<typeof reassignLeadSchema>;
 type LeadSource = (typeof leadSourceValues)[number];
 type LeadStatus = (typeof leadStatusValues)[number];
+
 type CreateLeadInput = {
 	customerId: string;
 	storeId: string;
 	ownerUserId: string | null;
 	source: LeadSource;
 };
+
 type UpdateLeadInput = CreateLeadInput & {
 	status: LeadStatus;
 };
+
 type ReassignLeadInput = {
 	ownerUserId: string | null;
 };

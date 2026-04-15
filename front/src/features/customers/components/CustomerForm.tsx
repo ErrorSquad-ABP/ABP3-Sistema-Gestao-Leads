@@ -18,7 +18,7 @@ import type {
 	CustomerDialogMode,
 	CustomerMutationInput,
 	CustomerRecord,
-} from '../types/customers.types';
+} from '../model/customers.model';
 
 type CustomerDialogState = {
 	mode: CustomerDialogMode;

@@ -8,7 +8,7 @@ import type {
 	TeamMutationInput,
 	TeamRecord,
 	TeamUpdateInput,
-} from '@/features/teams/types/teams.types';
+} from '@/features/teams/model/teams.model';
 
 async function listTeams(signal?: AbortSignal): Promise<TeamRecord[]> {
 	const raw = await apiFetch<unknown>('/api/teams', { signal });

@@ -31,7 +31,7 @@ import {
 	getLeadSourceBadgeClass,
 	normalizeLeadStatusKey,
 } from '../lib/lead-list-labels';
-import type { LeadListItem } from '../types/leads.types';
+import type { LeadListItem } from '../model/leads.model';
 
 type LeadsTableProps = {
 	customerLabelById?: Readonly<Record<string, string>>;

@@ -40,6 +40,7 @@ import {
 	formatLeadStatusLabel,
 	leadSourceOptions,
 	leadStatusOptions,
+	normalizeLeadSourceKey,
 } from '../lib/lead-list-labels';
 import { LEADS_PAGE_LIMIT } from '../lib/leads-pagination';
 import type {
@@ -48,7 +49,7 @@ import type {
 	LeadListItem,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from '../types/leads.types';
+} from '../model/leads.model';
 import {
 	buildOwnerOptions,
 	getLeadsErrorMessage,
@@ -156,7 +157,11 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 				if (statusFilter !== 'ALL' && lead.status !== statusFilter) {
 					return false;
 				}
-				if (sourceFilter !== 'ALL' && lead.source !== sourceFilter) {
+				if (
+					sourceFilter !== 'ALL' &&
+					normalizeLeadSourceKey(lead.source) !==
+						normalizeLeadSourceKey(sourceFilter)
+				) {
 					return false;
 				}
 				if (!normalizedSearch) {
