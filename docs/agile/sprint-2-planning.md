@@ -15,6 +15,8 @@ A Sprint 2 acontece de `15/04/2026` a `21/05/2026`. O projeto já possui fundaç
 - auditoria;
 - conformidade local de execução via Docker com PostgreSQL.
 
+No estado atual da `main`, a sprint já absorveu backend real de `vehicles` e `deals`. O restante do ciclo ainda precisa fechar frontend, dashboards, auditoria e conformidade local.
+
 Ao mesmo tempo, a retrospective da Sprint 1 mostrou que o parceiro percebeu pouco volume de entrega visual no frontend, apesar da base de backend já estar madura. Isso influencia diretamente a priorização desta sprint.
 
 ## Direção adotada

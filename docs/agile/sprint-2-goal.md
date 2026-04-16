@@ -18,8 +18,8 @@ A Sprint 1 deixou pronto o núcleo transacional do sistema:
 
 O principal gap do produto agora está em:
 
-- veículos;
-- negociações;
+- frontend de veículos;
+- frontend de negociações;
 - dashboards;
 - detalhe operacional do lead;
 - filtros temporais;

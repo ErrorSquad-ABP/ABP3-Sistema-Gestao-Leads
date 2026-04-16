@@ -82,11 +82,14 @@ Já estão operacionais em produção:
 - gestão de lojas
 - gestão de equipas
 - CRUD de leads
+- API de negociações
+- API de veículos
 
 Ainda não estão fechados como feature de produto:
 
 - dashboards reais
 - módulo de negociações no frontend
+- módulo de veículos no frontend
 - logs administrativos
 
 ## Operação de banco
