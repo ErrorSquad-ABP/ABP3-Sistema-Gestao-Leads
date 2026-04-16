@@ -78,6 +78,8 @@ npm run compose:local:up
 Nesse modo:
 
 - o PostgreSQL sobe em `localhost:5433`;
+- um bootstrap local aplica `migrations` automaticamente;
+- o seed roda automaticamente apenas se a base estiver vazia;
 - o container `back` passa a usar `postgresql://abp:abp@postgres:5432/lead_management`;
 - o `back/.env` continua existindo, mas `DATABASE_URL` é sobrescrita pelo override local.
 
@@ -96,6 +98,11 @@ Como o banco não é parte do Compose, esse passo é explícito e consciente.
 ```bash
 npm run db:migrate:local
 ```
+
+Observação:
+
+- no `compose.local`, esse passo já é executado automaticamente pelo serviço `local-bootstrap` antes do `back` subir;
+- o comando manual continua útil para reaplicar ou validar a base sem subir a stack inteira.
 
 ## 5. Seed
 
@@ -116,6 +123,11 @@ SEED_MODE=dashboard npm run db:seed
 ```bash
 SEED_MODE=dashboard npm run db:seed:local
 ```
+
+Observação:
+
+- no `compose.local`, o seed só roda automaticamente quando a base local está vazia;
+- se já existir utilizador na tabela `User`, o bootstrap local pula o seed para não sobrescrever a base.
 
 ## 6. Credenciais bootstrap
 
@@ -178,8 +190,11 @@ Use o modo secundário:
 
 ```bash
 npm run compose:local:up
+```
+
+Depois disso, o fluxo local fica totalmente independente do banco remoto. Se quiser forçar ciclo manual, ainda existem:
+
+```bash
 npm run db:migrate:local
 SEED_MODE=dashboard npm run db:seed:local
 ```
-
-Depois disso, o fluxo local fica totalmente independente do banco remoto.

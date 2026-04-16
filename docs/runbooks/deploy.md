@@ -23,7 +23,7 @@ Registrar o procedimento real de deploy e os checks operacionais do projeto no e
 O projeto mantém dois modos locais:
 
 - padrão do time: `front` e `back`, usando o banco definido em `back/.env`;
-- secundário de conformidade: `front`, `back` e `postgres` via `docker-compose.local.yml`.
+- secundário de conformidade: `front`, `back`, `postgres` e `local-bootstrap` via `docker-compose.local.yml`.
 
 O modo secundário existe para validação isolada e aderência explícita ao requisito da ABP de execução com PostgreSQL em `Docker Compose`.
 
