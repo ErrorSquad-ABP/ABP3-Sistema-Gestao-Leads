@@ -20,6 +20,7 @@ O principal gap do produto agora está em:
 
 - negociações;
 - dashboards;
+- detalhe operacional do lead;
 - filtros temporais;
 - logs de auditoria;
 - conformidade local do `Docker Compose` com PostgreSQL.
@@ -41,6 +42,7 @@ Entregar a evolução comercial do CRM com negociações, dashboards gerenciais,
 Ao final da sprint, a equipe deve conseguir demonstrar que:
 
 - o lead já pode evoluir para negociação com regras explícitas;
+- o lead passa a ter uma tela de detalhe/timeline que concentra operação e contexto;
 - gestores e administração conseguem acompanhar indicadores reais em dashboard;
 - os recortes temporais funcionam com validação por perfil;
 - operações críticas passam a gerar trilha de auditoria consultável;
@@ -49,6 +51,7 @@ Ao final da sprint, a equipe deve conseguir demonstrar que:
 ## Escopo que sustenta o goal
 
 - gestão de negociações `end-to-end`;
+- detalhe do lead e timeline operacional `end-to-end`;
 - dashboard operacional `end-to-end`;
 - dashboard analítico com filtros temporais `end-to-end`;
 - logs de auditoria `end-to-end`;

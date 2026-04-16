@@ -30,6 +30,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 - implementar casos de uso e API de negociação;
 - implementar histórico mínimo de alterações;
 - integrar a negociação na UX de leads;
+- integrar abertura/criação de negociação a partir do detalhe do lead;
 - aplicar `RBAC` por perfil e escopo;
 - documentar contratos e decisões;
 - validar fluxo ponta a ponta.
@@ -40,6 +41,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 - implementar consultas agregadas no backend;
 - garantir filtros mínimos e recorte por papel;
 - construir dashboard operacional no frontend;
+- transformar o destino inicial pós-login em dashboard inicial por perfil com cards-resumo e atalhos;
 - validar estados de carregamento, vazio e erro;
 - documentar consultas e decisões;
 - validar leitura dos dados em ambiente real.
@@ -50,6 +52,8 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 - implementar filtros temporais e validação por papel no backend;
 - implementar consultas analíticas e agregações;
 - construir visualização analítica no frontend;
+- adicionar funil de conversão;
+- adicionar ranking de atendentes e equipas;
 - garantir recortes coerentes por papel;
 - documentar contrato e regra de limitação temporal;
 - validar consistência dos indicadores.
@@ -61,6 +65,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 - instrumentar login e operações críticas;
 - expor consulta administrativa no backend;
 - construir tela de auditoria no frontend;
+- permitir filtro de logs por utilizador, ação, entidade e período;
 - restringir acesso a administrador;
 - documentar trilha auditável e decisões;
 - validar leitura dos logs em ambiente local.
@@ -73,6 +78,16 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 - atualizar diagramas arquiteturais impactados;
 - registrar `trade-offs` e ajustes estruturais da sprint;
 - validar fluxo local completo com `frontend + backend + PostgreSQL`.
+
+## `S2-EPIC-06` - Detalhe do lead e timeline operacional end-to-end
+
+- definir contrato mínimo do detalhe do lead;
+- decidir se a tela usa composição por recurso ou endpoint agregador;
+- construir tela dedicada de detalhe do lead no frontend;
+- exibir timeline unificada de eventos do lead;
+- integrar atalhos para cliente, reatribuição e negociação;
+- documentar decisões e contrato da tela;
+- validar fluxo ponta a ponta.
 
 ## Critério mínimo de encerramento por card
 

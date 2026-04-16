@@ -37,6 +37,7 @@ Fechar o bloco de evolução comercial e visibilidade gerencial do CRM, adiciona
 - `S2-EPIC-03` Dashboard analítico e filtros temporais `end-to-end`
 - `S2-EPIC-04` Logs de auditoria `end-to-end`
 - `S2-EPIC-05` Conformidade Docker/PostgreSQL e fechamento arquitetural
+- `S2-EPIC-06` Detalhe do lead e timeline operacional `end-to-end`
 
 ## Fora de escopo nesta sprint
 
@@ -44,6 +45,22 @@ Fechar o bloco de evolução comercial e visibilidade gerencial do CRM, adiciona
 - cadastro público de conta;
 - polimento final de apresentação;
 - expansões não pedidas pelo edital fora do bloco de negociação, analytics e auditoria.
+
+## Ajustes após avaliação do levantamento de telas
+
+O levantamento de telas foi revisado contra o estado atual da `main` e contra o foco da Sprint 2. A decisão não foi abrir um card por tela.
+
+### Entrou como épico próprio
+
+- detalhe do lead com timeline operacional, por ser lacuna real do produto e forte gerador de valor percebido no frontend.
+
+### Foi absorvido em épicos já existentes
+
+- dashboard inicial por perfil: incorporado ao épico de dashboard operacional;
+- funil de conversão: incorporado ao épico de dashboard analítico;
+- ranking de atendentes e equipas: incorporado ao épico de dashboard analítico;
+- filtros mais ricos da tela de logs: incorporados ao épico de auditoria;
+- abertura da negociação a partir do detalhe do lead: incorporada ao épico de negociações.
 
 ## Modelo de execução da sprint
 
@@ -72,17 +89,20 @@ Cada épico deve considerar, no mínimo:
 2. Dashboards e filtros temporais dependem de consultas e agregações consistentes.
 3. Logs de auditoria dependem de definição clara dos eventos que entram nesta sprint.
 4. O ajuste de `Docker Compose` com PostgreSQL impacta documentação, setup local e validação final da sprint.
+5. O detalhe do lead depende parcialmente do desenho final de negociação e auditoria, então o contrato dessa tela precisa ser fechado cedo.
 
 ## Riscos e atenção
 
 - o épico de dashboard analítico pode crescer demais se não tiver contrato e escopo fechados cedo;
 - auditoria pode espalhar alteração transversal em vários módulos;
+- o detalhe do lead pode crescer demais se tentar absorver tudo o que ainda não existe de negociação e logs sem recorte claro;
 - se a sprint perder foco e tentar reabrir escopo da Sprint 1, o ganho de produto visível volta a cair;
 - a conformidade de execução local não deve ser tratada como “detalhe de infraestrutura”, porque é requisito explícito do edital.
 
 ## Critérios de sucesso da sprint
 
 - pelo menos um fluxo completo de negociação demonstrável;
+- tela de detalhe do lead funcionando como hub operacional do CRM;
 - dashboards deixando de ser placeholder e consumindo dados reais;
 - filtros temporais funcionando com limitação por papel no backend;
 - trilha de auditoria visível para administrador;
