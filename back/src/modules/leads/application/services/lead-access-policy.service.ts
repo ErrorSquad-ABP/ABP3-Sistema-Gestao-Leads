@@ -24,6 +24,12 @@ type LeadScope =
 			readonly mutateTeamIds: ReadonlySet<string>;
 			readonly readStoreIds: ReadonlySet<string>;
 			readonly mutateStoreIds: ReadonlySet<string>;
+	  }
+	| {
+			kind: 'general_manager';
+			readonly actorUserId: string;
+			readonly readTeamIds: ReadonlySet<string>;
+			readonly readStoreIds: ReadonlySet<string>;
 	  };
 
 function unionTeamIds(ids: readonly { value: string }[]): string[] {
@@ -38,7 +44,7 @@ class LeadAccessPolicy {
 	) {}
 
 	private async resolveScope(actor: LeadActor): Promise<LeadScope> {
-		if (actor.role === 'ADMINISTRATOR' || actor.role === 'GENERAL_MANAGER') {
+		if (actor.role === 'ADMINISTRATOR') {
 			return { kind: 'full' };
 		}
 
@@ -51,7 +57,7 @@ class LeadAccessPolicy {
 		const memberTeamIds = unionTeamIds(user.memberTeamIds);
 		const managedTeamIds = unionTeamIds(user.managedTeamIds);
 		const readableTeamIds =
-			actor.role === 'MANAGER'
+			actor.role === 'MANAGER' || actor.role === 'GENERAL_MANAGER'
 				? [...new Set([...memberTeamIds, ...managedTeamIds])]
 				: memberTeamIds;
 
@@ -73,6 +79,15 @@ class LeadAccessPolicy {
 				mutateTeamIds: new Set(managedTeamIds),
 				readStoreIds: new Set(readTeams.map((team) => team.storeId.value)),
 				mutateStoreIds: new Set(managedTeams.map((team) => team.storeId.value)),
+			};
+		}
+
+		if (actor.role === 'GENERAL_MANAGER') {
+			return {
+				kind: 'general_manager',
+				actorUserId: actor.userId,
+				readTeamIds: new Set(readableTeamIds),
+				readStoreIds: new Set(readTeams.map((team) => team.storeId.value)),
 			};
 		}
 
@@ -166,11 +181,11 @@ class LeadAccessPolicy {
 
 	/** Listagem sem filtro por owner/equipa: alinhado a `resolveScope` com `kind: 'full'`. */
 	async assertCanListAllLeads(actor: LeadActor): Promise<void> {
-		if (actor.role === 'ADMINISTRATOR' || actor.role === 'GENERAL_MANAGER') {
+		if (actor.role === 'ADMINISTRATOR') {
 			return;
 		}
 		throw new LeadAccessDeniedError(
-			'Listagem global permitida apenas para administrador ou gestor geral.',
+			'Listagem global permitida apenas para administrador.',
 		);
 	}
 
@@ -229,6 +244,11 @@ class LeadAccessPolicy {
 		if (scope.kind === 'attendant') {
 			throw new LeadAccessDeniedError(
 				'Atendentes podem alterar apenas os proprios leads.',
+			);
+		}
+		if (scope.kind === 'general_manager') {
+			throw new LeadAccessDeniedError(
+				'Gestores gerais nao podem alterar leads fora do proprio ownership.',
 			);
 		}
 		if (lead.ownerUserId === null) {

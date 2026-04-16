@@ -4,8 +4,13 @@ import type { PrismaService } from '../../../../../shared/infrastructure/databas
 // biome-ignore lint/style/useImportType: Uuid é classe em runtime
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { ActiveDealAlreadyExistsError } from '../../../domain/errors/active-deal-already-exists.error.js';
+import { ActiveDealForVehicleAlreadyExistsError } from '../../../domain/errors/active-deal-for-vehicle-already-exists.error.js';
 import type { Deal } from '../../../domain/entities/deal.entity.js';
-import type { IDealRepository } from '../../../domain/repositories/deal.repository.js';
+import type {
+	DealListScopedFilters,
+	IDealRepository,
+} from '../../../domain/repositories/deal.repository.js';
+import { computeTotalPages } from '../../../domain/types/deal-list-page.js';
 import { DealMapper } from '../mappers/deal.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
@@ -23,6 +28,7 @@ class DealPrismaRepository implements IDealRepository {
 				data: {
 					id: row.id,
 					leadId: row.leadId,
+					vehicleId: row.vehicleId,
 					title: row.title,
 					value: row.value,
 					importance: row.importance,
@@ -37,6 +43,10 @@ class DealPrismaRepository implements IDealRepository {
 				error instanceof Prisma.PrismaClientKnownRequestError &&
 				error.code === 'P2002'
 			) {
+				const target = (error.meta as { target?: unknown } | undefined)?.target;
+				if (Array.isArray(target) && target.includes('vehicleId')) {
+					throw new ActiveDealForVehicleAlreadyExistsError(row.vehicleId);
+				}
 				throw new ActiveDealAlreadyExistsError(row.leadId);
 			}
 			throw error;
@@ -47,6 +57,7 @@ class DealPrismaRepository implements IDealRepository {
 		const row = DealMapper.toPersistence(deal);
 		const updated = await this.client.deal.update({
 			data: {
+				vehicleId: row.vehicleId,
 				title: row.title,
 				value: row.value,
 				importance: row.importance,
@@ -75,12 +86,57 @@ class DealPrismaRepository implements IDealRepository {
 		return row ? DealMapper.toDomain(row) : null;
 	}
 
+	async findOpenByVehicleId(vehicleId: Uuid): Promise<Deal | null> {
+		const row = await this.client.deal.findFirst({
+			where: { vehicleId: vehicleId.value, status: 'OPEN' },
+		});
+		return row ? DealMapper.toDomain(row) : null;
+	}
+
 	async listByLeadId(leadId: Uuid): Promise<readonly Deal[]> {
 		const rows = await this.client.deal.findMany({
 			where: { leadId: leadId.value },
 			orderBy: { createdAt: 'desc' },
 		});
 		return rows.map((r) => DealMapper.toDomain(r));
+	}
+
+	async listScoped(
+		filters: DealListScopedFilters,
+		pagination: { readonly page: number; readonly limit: number },
+	) {
+		const skip = (pagination.page - 1) * pagination.limit;
+
+		const where: Prisma.DealWhereInput = {
+			status: filters.status,
+			lead: {
+				is: {
+					storeId:
+						filters.storeIds && filters.storeIds.length > 0
+							? { in: [...filters.storeIds] }
+							: undefined,
+					ownerUserId: filters.ownerUserId,
+				},
+			},
+		};
+
+		const [rows, total] = await Promise.all([
+			this.client.deal.findMany({
+				where,
+				orderBy: { createdAt: 'desc' },
+				skip,
+				take: pagination.limit,
+			}),
+			this.client.deal.count({ where }),
+		]);
+
+		return {
+			items: rows.map((r) => DealMapper.toDomain(r)),
+			page: pagination.page,
+			limit: pagination.limit,
+			total,
+			totalPages: computeTotalPages(total, pagination.limit),
+		};
 	}
 
 	private get client(): PrismaClientLike {

@@ -9,6 +9,7 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
@@ -26,6 +27,7 @@ import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
+	ApiOkResponseEnvelopePaged,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import {
 	CurrentUser,
@@ -43,12 +45,16 @@ import { FindDealUseCase } from '../../application/use-cases/find-deal.use-case.
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListDealHistoryUseCase } from '../../application/use-cases/list-deal-history.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListDealsUseCase } from '../../application/use-cases/list-deals.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListDealsByLeadUseCase } from '../../application/use-cases/list-deals-by-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { UpdateDealUseCase } from '../../application/use-cases/update-deal.use-case.js';
 import { DealPresenter } from '../presenters/deal.presenter.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
 import { CreateDealValidator } from '../validators/create-deal.validator.js';
+// biome-ignore lint/style/useImportType: validators usados em runtime
+import { ListDealsQueryValidator } from '../validators/list-deals-query.validator.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
 import { UpdateDealValidator } from '../validators/update-deal.validator.js';
 
@@ -82,6 +88,7 @@ class DealController {
 		private readonly createDealUseCase: CreateDealUseCase,
 		private readonly updateDealUseCase: UpdateDealUseCase,
 		private readonly findDealUseCase: FindDealUseCase,
+		private readonly listDealsUseCase: ListDealsUseCase,
 		private readonly listDealsByLeadUseCase: ListDealsByLeadUseCase,
 		private readonly listDealHistoryUseCase: ListDealHistoryUseCase,
 		private readonly deleteDealUseCase: DeleteDealUseCase,
@@ -103,6 +110,7 @@ class DealController {
 			toLeadActor(user),
 			leadId,
 			{
+				vehicleId: body.vehicleId,
 				title: body.title,
 				value: body.value ?? null,
 				importance: body.importance,
@@ -128,6 +136,37 @@ class DealController {
 			leadId,
 		);
 		return DealPresenter.toResponseList([...deals]);
+	}
+
+	@Get('deals')
+	@ApiOperation({
+		summary: 'Listar negociações (escopo automático por papel)',
+		description:
+			'ATTENDANT: próprias negociações. MANAGER: negociações das stores do escopo do gestor. GENERAL_MANAGER: negociações por stores do escopo. ADMINISTRATOR: global.',
+	})
+	@ApiOkResponseEnvelopePaged(DealResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async list(
+		@CurrentUser() user: JwtUser,
+		@Query() query: ListDealsQueryValidator,
+	) {
+		const page = await this.listDealsUseCase.execute(toLeadActor(user), {
+			storeId: query.storeId,
+			ownerUserId: query.ownerUserId,
+			status: query.status as 'OPEN' | 'WON' | 'LOST' | undefined,
+			page: query.page,
+			limit: query.limit,
+		});
+
+		return {
+			items: DealPresenter.toResponseList([...page.items]),
+			page: page.page,
+			limit: page.limit,
+			total: page.total,
+			totalPages: page.totalPages,
+		};
 	}
 
 	@Get('deals/:id/history')
@@ -176,6 +215,7 @@ class DealController {
 		@Body() body: UpdateDealValidator,
 	) {
 		const deal = await this.updateDealUseCase.execute(toLeadActor(user), id, {
+			vehicleId: body.vehicleId,
 			title: body.title,
 			value: body.value,
 			importance: body.importance,
