@@ -12,13 +12,15 @@ Consolidar o estado atual da modelagem relacional, da persistência e dos artefa
 - lojas;
 - clientes;
 - leads;
+- veículos;
+- negociações com histórico mínimo no backend;
 - sessões de autenticação;
 - deals usados no seed analítico.
 
 ## Núcleos ainda não fechados como produto
 
-- negociações como módulo funcional completo;
-- histórico formal de estágio e status;
+- negociações como módulo funcional completo no frontend;
+- veículos como módulo funcional completo no frontend;
 - logs administrativos completos.
 
 ## Estratégia de persistência adotada
@@ -54,5 +56,5 @@ Modos de seed:
 ## Diagramas e artefatos relacionados
 
 - DER e diagramas correlatos devem ser lidos em conjunto com [docs/diagrams/README.md](../diagrams/README.md)
-- o modelo atual já contempla relações relevantes de `users`, `teams`, `stores`, `customers` e `leads`
+- o modelo atual já contempla relações relevantes de `users`, `teams`, `stores`, `customers`, `leads`, `vehicles` e `deals`
 - o vínculo organizacional do utilizador já segue o modelo multi-team, sem depender de `teamId` único como fonte de verdade

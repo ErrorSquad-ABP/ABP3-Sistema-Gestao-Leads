@@ -27,11 +27,14 @@ O produto já entrega um incremento funcional do núcleo transacional:
 - gestão de equipas;
 - gestão de clientes;
 - CRUD operacional de leads com catálogos auxiliares;
+- API de negociações com histórico mínimo e vínculo a veículo;
+- catálogo operacional de veículos no backend;
 - deploy de `front` e `back` na Vercel com banco Neon.
 
 O que ainda não está fechado como produto:
 
 - módulo funcional de negociações no frontend;
+- módulo funcional de veículos no frontend;
 - dashboards operacionais e analíticos reais;
 - logs administrativos como feature de produto;
 - filtros temporais completos de analytics.
@@ -95,6 +98,8 @@ O que ainda não está fechado como produto:
 - `/api/stores`
 - `/api/customers`
 - `/api/leads`
+- `/api/deals`
+- `/api/vehicles`
 
 ## Organização ágil
 
@@ -161,6 +166,6 @@ npm run dev
 
 ## Próximas frentes naturais
 
-1. Fechar Sprint 2 com recorte realista de negociações, dashboards e gaps restantes.
+1. Fechar Sprint 2 com recorte realista de frontend para negociações, veículos, dashboards e gaps restantes.
 2. Consolidar dashboards como produto, não placeholder.
 3. Fechar documentação final de cobertura ABP, incluindo DER/UML e matriz requisito x entrega.

@@ -16,6 +16,12 @@ Na Sprint 2, os cards do board representam features inteiras, não subtarefas po
 
 Introduzir o veículo como objeto comercial do CRM, para que leads e negociações operem sobre uma oferta real da revenda.
 
+### Estado atual da `main`
+
+- backend de `vehicles` já entregue;
+- vínculo de `vehicle` com o fluxo de negociação já disponível no backend;
+- fechamento pendente concentrado em frontend e integração operacional.
+
 ### Requisitos relacionados
 
 - `RF03`
@@ -36,6 +42,12 @@ Introduzir o veículo como objeto comercial do CRM, para que leads e negociaçõ
 ### Objetivo
 
 Fechar o requisito `RF03`, permitindo que leads evoluam para negociações reais dentro do CRM sobre um veículo ofertado.
+
+### Estado atual da `main`
+
+- backend de `deals` já entregue;
+- histórico mínimo e regras centrais de domínio já estão na API;
+- fechamento pendente concentrado em frontend e UX integrada ao lead.
 
 ### Requisitos relacionados
 

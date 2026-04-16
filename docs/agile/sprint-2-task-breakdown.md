@@ -25,6 +25,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 
 ## `S2-EPIC-07` - Gestão de veículos end-to-end
 
+- backend já entregue na `main`; foco restante em frontend e integração operacional;
 - fechar o recorte do módulo de veículos como catálogo comercial, não como gestão completa de estoque;
 - definir modelo de persistência e campos mínimos do veículo;
 - implementar casos de uso e API de veículos;
@@ -36,6 +37,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 
 ## `S2-EPIC-01` - Gestão de negociações end-to-end
 
+- backend já entregue na `main`; foco restante em frontend e integração com detalhe do lead;
 - fechar regra de domínio da negociação e da relação com `lead` e `vehicle`;
 - definir modelo de persistência e restrição de uma negociação ativa por lead;
 - implementar casos de uso e API de negociação;

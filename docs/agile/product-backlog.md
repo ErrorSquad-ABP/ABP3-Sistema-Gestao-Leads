@@ -396,8 +396,8 @@ Representar o veículo como objeto comercial negociado, permitindo que o CRM tra
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-17` | Implementar catálogo operacional de veículos | Alta | Sprint 2 | Não iniciado |
-| `US-18` | Vincular veículo ao fluxo de lead e negociação | Alta | Sprint 2 | Não iniciado |
+| `US-17` | Implementar catálogo operacional de veículos | Alta | Sprint 2 | Backend concluído / frontend pendente |
+| `US-18` | Vincular veículo ao fluxo de lead e negociação | Alta | Sprint 2 | Backend concluído / frontend pendente |
 
 ### US-17 - Implementar catálogo operacional de veículos
 
@@ -423,6 +423,12 @@ O módulo de negociação perde aderência ao domínio da revenda se não houver
 - campos mínimos para identificação comercial do veículo;
 - API pronta para seleção e vínculo no fluxo operacional.
 
+**Estado atual da `main`**
+
+- modelagem, migrations e regras de domínio de `vehicles` já estão no backend;
+- a API de veículos já está publicada com `RBAC` administrativo;
+- o trabalho restante desta story está no frontend operacional e na integração de UX.
+
 ### US-18 - Vincular veículo ao fluxo de lead e negociação
 
 **Como** atendente ou gestor autorizado  
@@ -446,6 +452,12 @@ Não basta ter o catálogo disponível. O valor do módulo aparece quando o veí
 - proteção de regra para evitar vínculos inválidos;
 - base pronta para leituras analíticas futuras envolvendo portfólio comercial.
 
+**Estado atual da `main`**
+
+- o backend já vincula `vehicle`, `lead` e `deal`;
+- a negociação já valida disponibilidade do veículo, consistência de loja e reserva/fecho;
+- o trabalho restante desta story está na visualização e operação de frontend.
+
 ## EP-04 - Negociações
 
 ### Objetivo do épico
@@ -463,8 +475,8 @@ Controlar a evolução comercial do lead até a conclusão da negociação, com 
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-09` | Implementar gestão de negociações por lead | Alta | Sprint 2 | Não iniciado |
-| `US-10` | Registrar histórico de estágio e status das negociações | Alta | Sprint 2 | Não iniciado |
+| `US-09` | Implementar gestão de negociações por lead | Alta | Sprint 2 | Backend concluído / frontend pendente |
+| `US-10` | Registrar histórico de estágio e status das negociações | Alta | Sprint 2 | Backend concluído / frontend pendente |
 
 ### US-09 - Implementar gestão de negociações por lead
 
@@ -490,6 +502,13 @@ A negociação transforma o lead em fluxo comercial real. Ela é o ponto de liga
 - validação de estados da negociação no backend;
 - garantia de que cada lead possua no máximo uma negociação ativa.
 
+**Estado atual da `main`**
+
+- o módulo `deals` já existe no backend com criação, listagem, leitura, atualização e exclusão;
+- a regra de uma negociação ativa por lead já está aplicada;
+- a negociação já nasce vinculada a veículo e já atualiza estado comercial associado;
+- o trabalho restante desta story está no frontend do fluxo de negociação.
+
 ### US-10 - Registrar histórico de estágio e status das negociações
 
 **Como** gestor ou administrador  
@@ -511,6 +530,11 @@ O histórico é essencial para auditoria, análise de desempenho e explicação 
 - registro de cada mudança relevante;
 - vínculo com usuário responsável e data/hora;
 - base pronta para logs e analytics.
+
+**Estado atual da `main`**
+
+- o backend já registra histórico mínimo de mudanças relevantes da negociação;
+- a timeline e a leitura operacional desse histórico ainda dependem de frontend dedicado.
 
 ## EP-05 - Dashboards e Filtros
 
