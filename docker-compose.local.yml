@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: abp3-postgres-local
+    environment:
+      POSTGRES_DB: lead_management
+      POSTGRES_USER: abp
+      POSTGRES_PASSWORD: abp
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres-data-local:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U abp -d lead_management']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  back:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
+
+volumes:
+  postgres-data-local:

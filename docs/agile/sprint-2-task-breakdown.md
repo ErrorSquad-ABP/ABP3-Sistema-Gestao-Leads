@@ -86,6 +86,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 
 ## `S2-EPIC-05` - Conformidade Docker/PostgreSQL e fechamento arquitetural
 
+- Compose local secundário com PostgreSQL já entregue na `main`;
 - restaurar PostgreSQL no `Docker Compose`;
 - alinhar `migrations`, `seed` e setup local;
 - revisar runbooks e instruções de execução;

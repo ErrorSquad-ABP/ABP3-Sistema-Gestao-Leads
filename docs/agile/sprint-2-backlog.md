@@ -145,6 +145,12 @@ Fechar `RF07` com gravação e consulta administrativa de logs de acesso e opera
 
 Restaurar aderência ao edital em execução local e atualizar os artefatos arquiteturais impactados pela Sprint 2.
 
+### Estado atual da `main`
+
+- modo secundário de Compose com PostgreSQL local entregue;
+- migrations e seeds validadas no banco local secundário;
+- ainda restam atualização arquitetural mais ampla e eventual refinamento de setup.
+
 ### Requisitos relacionados
 
 - `RNF06`

@@ -40,5 +40,6 @@ No estado atual da `main`, a documentação precisa refletir:
 - deploy real em `Vercel + Neon`;
 - autenticação híbrida com cookie HttpOnly e `Bearer`;
 - módulo transacional ativo em `users`, `stores`, `teams`, `customers` e `leads`;
+- opção secundária de Compose local com PostgreSQL;
 - dashboards ainda como placeholder;
 - Sprint 1 encerrada e Sprint 2 ainda em definição.

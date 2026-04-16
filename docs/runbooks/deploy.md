@@ -20,7 +20,12 @@ Registrar o procedimento real de deploy e os checks operacionais do projeto no e
 
 ## Compose local
 
-O Compose atual não descreve produção. Ele sobe apenas `front` e `back` para desenvolvimento local, usando o banco definido em `back/.env`.
+O projeto mantém dois modos locais:
+
+- padrão do time: `front` e `back`, usando o banco definido em `back/.env`;
+- secundário de conformidade: `front`, `back` e `postgres` via `docker-compose.local.yml`.
+
+O modo secundário existe para validação isolada e aderência explícita ao requisito da ABP de execução com PostgreSQL em `Docker Compose`.
 
 ## Variáveis críticas
 
