@@ -23,13 +23,25 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 
 ## Checklists por card
 
+## `S2-EPIC-07` - Gestão de veículos end-to-end
+
+- fechar o recorte do módulo de veículos como catálogo comercial, não como gestão completa de estoque;
+- definir modelo de persistência e campos mínimos do veículo;
+- implementar casos de uso e API de veículos;
+- construir interface de cadastro, listagem e seleção operacional;
+- definir como o veículo se liga ao lead e à negociação;
+- aplicar `RBAC` por perfil e escopo;
+- documentar contratos e decisões;
+- validar fluxo ponta a ponta.
+
 ## `S2-EPIC-01` - Gestão de negociações end-to-end
 
-- fechar regra de domínio da negociação e da relação com `lead`;
+- fechar regra de domínio da negociação e da relação com `lead` e `vehicle`;
 - definir modelo de persistência e restrição de uma negociação ativa por lead;
 - implementar casos de uso e API de negociação;
 - implementar histórico mínimo de alterações;
 - integrar a negociação na UX de leads;
+- integrar seleção ou exibição do veículo no fluxo de negociação;
 - integrar abertura/criação de negociação a partir do detalhe do lead;
 - aplicar `RBAC` por perfil e escopo;
 - documentar contratos e decisões;

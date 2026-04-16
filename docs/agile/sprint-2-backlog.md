@@ -10,11 +10,32 @@ Na Sprint 2, os cards do board representam features inteiras, não subtarefas po
 
 ## Backlog da sprint
 
+## `S2-EPIC-07` - Gestão de veículos end-to-end
+
+### Objetivo
+
+Introduzir o veículo como objeto comercial do CRM, para que leads e negociações operem sobre uma oferta real da revenda.
+
+### Requisitos relacionados
+
+- `RF03`
+- `RF04`
+- `RNF05`
+- `RNF13`
+
+### Saída esperada
+
+- módulo de veículos no backend;
+- catálogo operacional ou CRUD de veículos;
+- dados mínimos de identificação comercial do veículo;
+- vínculo do veículo ao fluxo de lead e negociação;
+- interface real no frontend para cadastro, consulta e seleção operacional.
+
 ## `S2-EPIC-01` - Gestão de negociações end-to-end
 
 ### Objetivo
 
-Fechar o requisito `RF03`, permitindo que leads evoluam para negociações reais dentro do CRM.
+Fechar o requisito `RF03`, permitindo que leads evoluam para negociações reais dentro do CRM sobre um veículo ofertado.
 
 ### Requisitos relacionados
 
@@ -26,7 +47,7 @@ Fechar o requisito `RF03`, permitindo que leads evoluam para negociações reais
 ### Saída esperada
 
 - módulo de negociações no backend;
-- criação de negociação vinculada ao lead;
+- criação de negociação vinculada ao lead e ao veículo;
 - controle de importância, estágio e status;
 - regra de no máximo uma negociação ativa por lead;
 - histórico mínimo de mudanças;
@@ -150,16 +171,18 @@ Transformar o lead em um hub operacional completo do CRM, com visão consolidada
 
 ## Ordem sugerida de execução
 
-1. `S2-EPIC-01`
-2. `S2-EPIC-02`
-3. `S2-EPIC-03`
-4. `S2-EPIC-04`
-5. `S2-EPIC-05`
-6. `S2-EPIC-06`
+1. `S2-EPIC-07`
+2. `S2-EPIC-01`
+3. `S2-EPIC-02`
+4. `S2-EPIC-03`
+5. `S2-EPIC-04`
+6. `S2-EPIC-05`
+7. `S2-EPIC-06`
 
 ## Leitura de prioridade
 
-- `S2-EPIC-01` e `S2-EPIC-02` têm o melhor equilíbrio entre aderência ao edital e valor demonstrável;
+- `S2-EPIC-07` e `S2-EPIC-01` formam a base de domínio mais importante da sprint;
+- `S2-EPIC-02` mantém o melhor equilíbrio entre aderência ao edital e valor demonstrável;
 - `S2-EPIC-03` depende parcialmente da estabilização analítica dos dados;
 - `S2-EPIC-04` fecha governança e banca;
 - `S2-EPIC-05` evita não conformidade técnica e documental no fechamento do ciclo.

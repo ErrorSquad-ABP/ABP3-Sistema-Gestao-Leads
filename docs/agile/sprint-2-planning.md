@@ -8,6 +8,7 @@ Documentar o planejamento da Sprint 2 com base no enunciado oficial da ABP e no 
 
 A Sprint 2 acontece de `15/04/2026` a `21/05/2026`. O projeto já possui fundação técnica suficiente para sair do núcleo transacional e atacar o bloco funcional que ainda falta para aderência mais forte ao edital:
 
+- veículos;
 - negociações;
 - dashboards;
 - filtros temporais;
@@ -26,12 +27,13 @@ Ao mesmo tempo, a retrospective da Sprint 1 mostrou que o parceiro percebeu pouc
 
 ## Meta da sprint
 
-Fechar o bloco de evolução comercial e visibilidade gerencial do CRM, adicionando negociações, dashboards, filtros temporais, auditoria e conformidade local de execução.
+Fechar o bloco de evolução comercial e visibilidade gerencial do CRM, adicionando veículos, negociações, dashboards, filtros temporais, auditoria e conformidade local de execução.
 
 ## Escopo comprometido
 
 ### Épicos priorizados
 
+- `S2-EPIC-07` Gestão de veículos `end-to-end`
 - `S2-EPIC-01` Gestão de negociações `end-to-end`
 - `S2-EPIC-02` Dashboard operacional `end-to-end`
 - `S2-EPIC-03` Dashboard analítico e filtros temporais `end-to-end`
@@ -49,6 +51,12 @@ Fechar o bloco de evolução comercial e visibilidade gerencial do CRM, adiciona
 ## Ajustes após avaliação do levantamento de telas
 
 O levantamento de telas foi revisado contra o estado atual da `main` e contra o foco da Sprint 2. A decisão não foi abrir um card por tela.
+
+## Ajuste após refinamento de domínio
+
+Durante o refinamento da Sprint 2, surgiu uma dependência de domínio que não estava explicitada no backlog anterior: a negociação precisa acontecer sobre um veículo, não sobre um objeto abstrato.
+
+Por isso, a sprint passa a carregar também um épico específico de veículos, com recorte de catálogo operacional e vínculo ao fluxo de lead e negociação, sem expandir o escopo para gestão completa de estoque.
 
 ### Entrou como épico próprio
 
@@ -85,15 +93,17 @@ Cada épico deve considerar, no mínimo:
 
 ## Dependências críticas
 
-1. Negociações destravam parte importante dos dashboards.
-2. Dashboards e filtros temporais dependem de consultas e agregações consistentes.
-3. Logs de auditoria dependem de definição clara dos eventos que entram nesta sprint.
-4. O ajuste de `Docker Compose` com PostgreSQL impacta documentação, setup local e validação final da sprint.
-5. O detalhe do lead depende parcialmente do desenho final de negociação e auditoria, então o contrato dessa tela precisa ser fechado cedo.
+1. Veículos destravam a modelagem correta de negociações.
+2. Negociações destravam parte importante dos dashboards.
+3. Dashboards e filtros temporais dependem de consultas e agregações consistentes.
+4. Logs de auditoria dependem de definição clara dos eventos que entram nesta sprint.
+5. O ajuste de `Docker Compose` com PostgreSQL impacta documentação, setup local e validação final da sprint.
+6. O detalhe do lead depende parcialmente do desenho final de negociação, veículo e auditoria, então o contrato dessa tela precisa ser fechado cedo.
 
 ## Riscos e atenção
 
 - o épico de dashboard analítico pode crescer demais se não tiver contrato e escopo fechados cedo;
+- o módulo de veículos pode crescer demais se a sprint tentar transformá-lo em gestão completa de estoque;
 - auditoria pode espalhar alteração transversal em vários módulos;
 - o detalhe do lead pode crescer demais se tentar absorver tudo o que ainda não existe de negociação e logs sem recorte claro;
 - se a sprint perder foco e tentar reabrir escopo da Sprint 1, o ganho de produto visível volta a cair;
@@ -101,7 +111,7 @@ Cada épico deve considerar, no mínimo:
 
 ## Critérios de sucesso da sprint
 
-- pelo menos um fluxo completo de negociação demonstrável;
+- pelo menos um fluxo completo de veículo + negociação demonstrável;
 - tela de detalhe do lead funcionando como hub operacional do CRM;
 - dashboards deixando de ser placeholder e consumindo dados reais;
 - filtros temporais funcionando com limitação por papel no backend;
