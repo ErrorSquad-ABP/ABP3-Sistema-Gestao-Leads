@@ -40,4 +40,4 @@ Consolidar o resultado real da Sprint 1 no estado atual da `main`.
 
 ## Leitura executiva
 
-O goal da Sprint 1 foi atingido no que importava para o núcleo transacional do produto. O backlog remanescente não deve ser tratado como carry-over automático; ele deve ser replanejado dentro da Sprint 2 com base no estado atual da `main`.
+O goal da Sprint 1 foi atingido no que importava para o núcleo transacional do produto. O backlog remanescente não foi tratado como carry-over automático; ele foi replanejado dentro da Sprint 2 com base no estado atual da `main`.
