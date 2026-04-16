@@ -12,6 +12,7 @@ describe('DealFactory', () => {
 			() =>
 				factory.create({
 					leadId: Uuid.generate().value,
+					vehicleId: Uuid.generate().value,
 					title: 'Teste',
 					value: null,
 					stage: 'NEGOTIATION',
@@ -24,6 +25,7 @@ describe('DealFactory', () => {
 		const factory = new DealFactory();
 		const deal = factory.create({
 			leadId: Uuid.generate().value,
+			vehicleId: Uuid.generate().value,
 			title: 'Teste',
 			value: null,
 		});

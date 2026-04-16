@@ -77,6 +77,9 @@ class UpdateLeadUseCase {
 			existing.reassign(
 				dto.ownerUserId === null ? null : Uuid.parse(dto.ownerUserId),
 			);
+			if (dto.vehicleInterestText !== undefined) {
+				existing.changeVehicleInterestText(dto.vehicleInterestText ?? null);
+			}
 
 			return leads.update(existing);
 		});

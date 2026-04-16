@@ -4,6 +4,7 @@ import {
 	IsNotEmpty,
 	IsOptional,
 	IsString,
+	IsUUID,
 	ValidateIf,
 } from 'class-validator';
 
@@ -11,6 +12,13 @@ import { DEAL_IMPORTANCES } from '../../../../shared/domain/enums/deal-importanc
 import { DEAL_STAGES } from '../../../../shared/domain/enums/deal-stage.enum.js';
 
 class CreateDealValidator {
+	@ApiProperty({
+		format: 'uuid',
+		description: 'Veículo vinculado à negociação',
+	})
+	@IsUUID()
+	vehicleId!: string;
+
 	@ApiProperty({ example: 'Proposta veículo X' })
 	@IsString()
 	@IsNotEmpty()

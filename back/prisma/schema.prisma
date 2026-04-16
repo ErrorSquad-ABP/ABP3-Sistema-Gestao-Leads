@@ -60,6 +60,25 @@ enum DealHistoryField {
   STATUS
   TITLE
   VALUE
+  VEHICLE
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  INACTIVE
+}
+
+enum SupportedFuelType {
+  GASOLINE
+  ETHANOL
+  FLEX
+  DIESEL
+  ELECTRIC
+  HYBRID
+  PLUG_IN_HYBRID
+  CNG
 }
 
 model AccessGroup {
@@ -131,6 +150,7 @@ model Store {
   name        String
   teams       Team[]
   leads       Lead[]
+  vehicles    Vehicle[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -153,6 +173,7 @@ model Lead {
   ownerUserId String?     @db.Uuid
   source      LeadSource
   status      LeadStatus  @default(NEW)
+  vehicleInterestText String?
   customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   store       Store       @relation(fields: [storeId], references: [id], onDelete: Restrict)
   owner       User?       @relation("LeadOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
@@ -161,9 +182,33 @@ model Lead {
   updatedAt   DateTime    @updatedAt
 }
 
+model Vehicle {
+  id                String            @id @default(uuid()) @db.Uuid
+  storeId            String            @db.Uuid
+  brand              String
+  model              String
+  version            String?
+  modelYear          Int
+  manufactureYear    Int?
+  color              String?
+  mileage            Int
+  supportedFuelType  SupportedFuelType
+  price              Decimal           @db.Decimal(12, 2)
+  status             VehicleStatus
+  plate              String?
+  vin                String?
+  store              Store             @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  deals              Deal[]
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([storeId])
+}
+
 model Deal {
   id          String          @id @default(uuid()) @db.Uuid
   leadId      String          @db.Uuid
+  vehicleId   String          @db.Uuid
   title       String
   value       Decimal?        @db.Decimal(12, 2)
   importance  DealImportance
@@ -171,11 +216,13 @@ model Deal {
   status      DealStatus
   closedAt    DateTime?
   lead        Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
   history     DealHistory[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
   @@index([leadId])
+  @@index([vehicleId])
 }
 
 model DealHistory {

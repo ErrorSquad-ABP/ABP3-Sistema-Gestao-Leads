@@ -4,6 +4,7 @@ import {
 	IsNotEmpty,
 	IsOptional,
 	IsString,
+	IsUUID,
 	ValidateIf,
 } from 'class-validator';
 
@@ -12,6 +13,14 @@ import { DEAL_STAGES } from '../../../../shared/domain/enums/deal-stage.enum.js'
 import { DEAL_STATUSES } from '../../../../shared/domain/enums/deal-status.enum.js';
 
 class UpdateDealValidator {
+	@ApiPropertyOptional({
+		format: 'uuid',
+		description: 'Troca de veículo (apenas se deal estiver OPEN)',
+	})
+	@IsOptional()
+	@IsUUID()
+	vehicleId?: string;
+
 	@ApiPropertyOptional()
 	@IsOptional()
 	@IsString()

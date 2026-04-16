@@ -13,6 +13,8 @@ import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import { DealNotFoundError } from '../../domain/errors/deal-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { DealRepositoryFactory } from '../../infrastructure/persistence/factories/deal-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { VehicleRepositoryFactory } from '../../../vehicles/infrastructure/persistence/factories/vehicle-repository.factory.js';
 
 @Injectable()
 class DeleteDealUseCase {
@@ -23,6 +25,7 @@ class DeleteDealUseCase {
 		private readonly dealRepositoryFactory: DealRepositoryFactory,
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
 		private readonly leadAccessPolicy: LeadAccessPolicy,
+		private readonly vehicleRepositoryFactory: VehicleRepositoryFactory,
 	) {}
 
 	async execute(actor: LeadActor, dealId: string): Promise<void> {
@@ -31,6 +34,7 @@ class DeleteDealUseCase {
 			const tx = transactionContext.client as Prisma.TransactionClient;
 			const deals = this.dealRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
+			const vehicles = this.vehicleRepositoryFactory.create(transactionContext);
 
 			const deal = await deals.findById(Uuid.parse(dealId));
 			if (!deal) {
@@ -49,6 +53,18 @@ class DeleteDealUseCase {
 				entityId: deal.id.value,
 				metadata: { leadId: deal.leadId.value },
 			});
+
+			if (deal.status === 'OPEN') {
+				const vehicle = await vehicles.findById(deal.vehicleId);
+				if (
+					vehicle &&
+					vehicle.status !== 'INACTIVE' &&
+					vehicle.status !== 'SOLD'
+				) {
+					vehicle.changeStatus('AVAILABLE');
+					await vehicles.update(vehicle);
+				}
+			}
 
 			await deals.delete(Uuid.parse(dealId));
 		});

@@ -27,6 +27,12 @@ class LeadResponseDto {
 		example: 'NEW',
 	})
 	status!: string;
+
+	@ApiPropertyOptional({
+		nullable: true,
+		description: 'Interesse inicial em veículo (texto livre).',
+	})
+	vehicleInterestText!: string | null;
 }
 
 export { LeadResponseDto };

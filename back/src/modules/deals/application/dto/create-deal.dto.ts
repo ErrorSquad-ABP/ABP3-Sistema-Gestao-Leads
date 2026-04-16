@@ -1,4 +1,5 @@
 class CreateDealDto {
+	vehicleId!: string;
 	title!: string;
 	value!: string | null;
 	importance?: string;

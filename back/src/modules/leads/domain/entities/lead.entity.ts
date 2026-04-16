@@ -20,6 +20,7 @@ class Lead extends AggregateRoot {
 	private _ownerUserId: Uuid | null;
 	private _source: LeadSource;
 	private _status: LeadStatus;
+	private _vehicleInterestText: string | null;
 
 	constructor(
 		id: Uuid,
@@ -28,6 +29,7 @@ class Lead extends AggregateRoot {
 		ownerUserId: Uuid | null,
 		source: LeadSource,
 		status: LeadStatus,
+		vehicleInterestText: string | null = null,
 	) {
 		super();
 		this._id = id;
@@ -36,6 +38,7 @@ class Lead extends AggregateRoot {
 		this._ownerUserId = ownerUserId;
 		this._source = source;
 		this._status = status;
+		this._vehicleInterestText = vehicleInterestText;
 	}
 
 	get id(): Uuid {
@@ -60,6 +63,10 @@ class Lead extends AggregateRoot {
 
 	get status(): LeadStatus {
 		return this._status;
+	}
+
+	get vehicleInterestText(): string | null {
+		return this._vehicleInterestText;
 	}
 
 	/**
@@ -99,6 +106,17 @@ class Lead extends AggregateRoot {
 			return;
 		}
 		this._status = status;
+	}
+
+	changeVehicleInterestText(text: string | null): void {
+		const normalized = text === null ? null : text.trim();
+		const unchanged =
+			(this._vehicleInterestText === null && normalized === null) ||
+			this._vehicleInterestText === normalized;
+		if (unchanged) {
+			return;
+		}
+		this._vehicleInterestText = normalized;
 	}
 
 	reassign(ownerUserId: Uuid | null): void {

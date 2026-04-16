@@ -6,6 +6,7 @@ import type {
 	Store,
 	Team,
 	User,
+	Vehicle,
 } from '../../src/generated/prisma/client.js';
 import { UserRole } from '../../src/generated/prisma/enums.js';
 
@@ -45,12 +46,33 @@ type SeedDeal = Pick<
 	Deal,
 	| 'id'
 	| 'leadId'
+	| 'vehicleId'
 	| 'title'
 	| 'value'
 	| 'importance'
 	| 'stage'
 	| 'status'
 	| 'closedAt'
+	| 'createdAt'
+	| 'updatedAt'
+>;
+
+type SeedVehicle = Pick<
+	Vehicle,
+	| 'id'
+	| 'storeId'
+	| 'brand'
+	| 'model'
+	| 'version'
+	| 'modelYear'
+	| 'manufactureYear'
+	| 'color'
+	| 'mileage'
+	| 'supportedFuelType'
+	| 'price'
+	| 'status'
+	| 'plate'
+	| 'vin'
 	| 'createdAt'
 	| 'updatedAt'
 >;
@@ -67,6 +89,7 @@ type MinimalSeedDataset = BaseSeedDataset;
 type DashboardSeedDataset = BaseSeedDataset & {
 	customers: SeedCustomer[];
 	leads: SeedLead[];
+	vehicles: SeedVehicle[];
 	deals: SeedDeal[];
 };
 

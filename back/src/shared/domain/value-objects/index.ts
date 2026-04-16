@@ -7,5 +7,6 @@ export {
 	LeadSource,
 } from './lead-source.value-object.js';
 export { Name } from './name.value-object.js';
+export { Money } from './money.value-object.js';
 export { PasswordHash } from './password-hash.value-object.js';
 export { Phone } from './phone.value-object.js';

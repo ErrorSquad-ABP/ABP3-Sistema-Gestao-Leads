@@ -8,8 +8,9 @@ class DealPresenter {
 		return {
 			id: deal.id.value,
 			leadId: deal.leadId.value,
+			vehicleId: deal.vehicleId.value,
 			title: deal.title,
-			value: deal.value,
+			value: deal.value === null ? null : deal.value.toDecimalString(),
 			importance: deal.importance,
 			stage: deal.stage,
 			status: deal.status,

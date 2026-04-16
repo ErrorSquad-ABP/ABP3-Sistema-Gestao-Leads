@@ -48,6 +48,16 @@ export {
 	parseCanonicalLeadStatus,
 	parseLeadStatus,
 } from './lead-status.enum.js';
+export type { SupportedFuelType } from './supported-fuel-type.enum.js';
+export {
+	assertCanonicalSupportedFuelType,
+	assertSupportedFuelType,
+	isCanonicalSupportedFuelType,
+	isSupportedFuelType,
+	parseCanonicalSupportedFuelType,
+	parseSupportedFuelType,
+	SUPPORTED_FUEL_TYPES,
+} from './supported-fuel-type.enum.js';
 export type { UserRole } from './user-role.enum.js';
 export {
 	assertCanonicalUserRole,
@@ -58,3 +68,13 @@ export {
 	parseUserRole,
 	USER_ROLES,
 } from './user-role.enum.js';
+export type { VehicleStatus } from './vehicle-status.enum.js';
+export {
+	assertCanonicalVehicleStatus,
+	assertVehicleStatus,
+	isCanonicalVehicleStatus,
+	isVehicleStatus,
+	parseCanonicalVehicleStatus,
+	parseVehicleStatus,
+	VEHICLE_STATUSES,
+} from './vehicle-status.enum.js';

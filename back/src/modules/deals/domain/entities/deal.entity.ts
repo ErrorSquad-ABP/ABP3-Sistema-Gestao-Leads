@@ -2,6 +2,7 @@ import { AggregateRoot } from '../../../../shared/domain/core/aggregate-root.js'
 import type { DealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
 import type { DealStage } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import type { DealStatus } from '../../../../shared/domain/enums/deal-status.enum.js';
+import type { Money } from '../../../../shared/domain/value-objects/money.value-object.js';
 // biome-ignore lint/style/useImportType: Uuid é classe em runtime (parse/generate)
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { DealAlreadyClosedError } from '../errors/deal-already-closed.error.js';
@@ -13,8 +14,9 @@ import { assertAdjacentDealStageTransition } from '../policies/deal-stage-transi
 class Deal extends AggregateRoot {
 	private _id: Uuid;
 	private _leadId: Uuid;
+	private _vehicleId: Uuid;
 	private _title: string;
-	private _value: string | null;
+	private _value: Money | null;
 	private _importance: DealImportance;
 	private _stage: DealStage;
 	private _status: DealStatus;
@@ -25,8 +27,9 @@ class Deal extends AggregateRoot {
 	constructor(
 		id: Uuid,
 		leadId: Uuid,
+		vehicleId: Uuid,
 		title: string,
-		value: string | null,
+		value: Money | null,
 		importance: DealImportance,
 		stage: DealStage,
 		status: DealStatus,
@@ -37,6 +40,7 @@ class Deal extends AggregateRoot {
 		super();
 		this._id = id;
 		this._leadId = leadId;
+		this._vehicleId = vehicleId;
 		this._title = title;
 		this._value = value;
 		this._importance = importance;
@@ -55,11 +59,15 @@ class Deal extends AggregateRoot {
 		return this._leadId;
 	}
 
+	get vehicleId(): Uuid {
+		return this._vehicleId;
+	}
+
 	get title(): string {
 		return this._title;
 	}
 
-	get value(): string | null {
+	get value(): Money | null {
 		return this._value;
 	}
 
@@ -105,14 +113,23 @@ class Deal extends AggregateRoot {
 		this._title = title;
 	}
 
-	changeValue(value: string | null): void {
+	changeValue(value: Money | null): void {
 		this.assertOpenForFieldChanges();
 		const unchanged =
-			(this._value === null && value === null) || this._value === value;
+			(this._value === null && value === null) ||
+			(this._value !== null && value !== null && this._value.equals(value));
 		if (unchanged) {
 			return;
 		}
 		this._value = value;
+	}
+
+	changeVehicle(vehicleId: Uuid): void {
+		this.assertOpenForFieldChanges();
+		if (this._vehicleId.equals(vehicleId)) {
+			return;
+		}
+		this._vehicleId = vehicleId;
 	}
 
 	changeImportance(importance: DealImportance): void {

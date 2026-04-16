@@ -1,4 +1,5 @@
 class UpdateDealDto {
+	vehicleId?: string;
 	title?: string;
 	value?: string | null;
 	importance?: string;

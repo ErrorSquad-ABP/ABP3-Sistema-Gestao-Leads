@@ -11,6 +11,9 @@ class DealResponseDto {
 	@ApiProperty({ format: 'uuid' })
 	leadId!: string;
 
+	@ApiProperty({ format: 'uuid' })
+	vehicleId!: string;
+
 	@ApiProperty()
 	title!: string;
 

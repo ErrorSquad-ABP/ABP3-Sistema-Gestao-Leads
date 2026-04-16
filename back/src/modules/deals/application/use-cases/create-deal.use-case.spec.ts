@@ -12,6 +12,7 @@ import { DealFactory } from '../../domain/factories/deal.factory.js';
 import type { IDealRepository } from '../../domain/repositories/deal.repository.js';
 import type { IDealHistoryRepository } from '../../domain/repositories/deal-history.repository.js';
 import { CreateDealUseCase } from './create-deal.use-case.js';
+import type { IVehicleRepository } from '../../../vehicles/domain/repositories/vehicle.repository.js';
 
 const actor: LeadActor = {
 	userId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
@@ -37,6 +38,7 @@ class FakeUnitOfWork implements IUnitOfWork {
 describe('CreateDealUseCase', () => {
 	it('throws when an open deal already exists for the lead', async () => {
 		const leadId = Uuid.generate();
+		const vehicleId = Uuid.generate();
 		const lead = new Lead(
 			leadId,
 			Uuid.generate(),
@@ -54,6 +56,7 @@ describe('CreateDealUseCase', () => {
 
 		const existingDeal = new DealFactory().create({
 			leadId: leadId.value,
+			vehicleId: vehicleId.value,
 			title: 'X',
 			value: null,
 		});
@@ -72,7 +75,28 @@ describe('CreateDealUseCase', () => {
 			async findOpenByLeadId() {
 				return existingDeal;
 			},
+			async findOpenByVehicleId() {
+				return null;
+			},
 			async listByLeadId() {
+				return [];
+			},
+			async listScoped() {
+				return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
+			},
+		};
+
+		const vehicles: IVehicleRepository = {
+			async create(v) {
+				return v;
+			},
+			async update(v) {
+				return v;
+			},
+			async findById() {
+				return null;
+			},
+			async list() {
 				return [];
 			},
 		};
@@ -96,6 +120,10 @@ describe('CreateDealUseCase', () => {
 			create: () => history,
 		};
 
+		const vehicleRepoFactory = {
+			create: () => vehicles,
+		};
+
 		const policy = {
 			async assertCanMutateLead() {},
 			async assertCanReadLead() {},
@@ -107,6 +135,7 @@ describe('CreateDealUseCase', () => {
 			historyRepoFactory as never,
 			leadRepoFactory as never,
 			policy,
+			vehicleRepoFactory as never,
 		);
 
 		(uc as unknown as { unitOfWork: IUnitOfWork }).unitOfWork =
@@ -115,6 +144,7 @@ describe('CreateDealUseCase', () => {
 		await assert.rejects(
 			() =>
 				uc.execute(actor, leadId.value, {
+					vehicleId: vehicleId.value,
 					title: 'Nova',
 					value: null,
 				}),

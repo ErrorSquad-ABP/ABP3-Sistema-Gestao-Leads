@@ -12,6 +12,7 @@ describe('Deal entity', () => {
 		const deal = new Deal(
 			Uuid.generate(),
 			Uuid.generate(),
+			Uuid.generate(),
 			'Título',
 			null,
 			'WARM',
@@ -29,6 +30,7 @@ describe('Deal entity', () => {
 	it('rejects stage change when not open', () => {
 		const now = new Date('2026-01-01T12:00:00.000Z');
 		const deal = new Deal(
+			Uuid.generate(),
 			Uuid.generate(),
 			Uuid.generate(),
 			'Título',
@@ -51,6 +53,7 @@ describe('Deal entity', () => {
 		const deal = new Deal(
 			Uuid.generate(),
 			Uuid.generate(),
+			Uuid.generate(),
 			'Título',
 			null,
 			'WARM',
@@ -67,6 +70,7 @@ describe('Deal entity', () => {
 	it('rejects skipping stages forward', () => {
 		const now = new Date('2026-01-01T12:00:00.000Z');
 		const deal = new Deal(
+			Uuid.generate(),
 			Uuid.generate(),
 			Uuid.generate(),
 			'Título',
@@ -87,6 +91,7 @@ describe('Deal entity', () => {
 	it('allows moving back one stage', () => {
 		const now = new Date('2026-01-01T12:00:00.000Z');
 		const deal = new Deal(
+			Uuid.generate(),
 			Uuid.generate(),
 			Uuid.generate(),
 			'Título',

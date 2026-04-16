@@ -9,7 +9,9 @@ import {
 	PrismaClient,
 	LeadSource,
 	LeadStatus,
+	SupportedFuelType,
 	UserRole,
+	VehicleStatus,
 } from '../src/generated/prisma/client.js';
 import { deterministicUuid } from '../prisma/seeds/seed-utils.js';
 
@@ -95,6 +97,50 @@ const VEHICLES = [
 	'Tracker LTZ',
 	'Renegade Sport',
 ] as const;
+
+const VEHICLE_COLORS = [
+	'Prata',
+	'Preto',
+	'Branco',
+	'Cinza',
+	'Vermelho',
+	'Azul',
+] as const;
+
+function stableHash(value: string): number {
+	let hash = 2166136261;
+	for (let i = 0; i < value.length; i += 1) {
+		hash ^= value.charCodeAt(i);
+		hash = Math.imul(hash, 16777619);
+	}
+	return hash >>> 0;
+}
+
+function pickFrom<T>(arr: readonly T[], seed: string): T {
+	return arr[stableHash(seed) % arr.length] as T;
+}
+
+function randomInt(min: number, max: number, seed: string): number {
+	const span = Math.max(1, max - min + 1);
+	return min + (stableHash(seed) % span);
+}
+
+function buildPlate(seed: string): string {
+	const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	const digits = '0123456789';
+	const h = stableHash(seed);
+	return `${alphabet[(h >>> 0) % 26]}${alphabet[(h >>> 5) % 26]}${alphabet[(h >>> 10) % 26]}${digits[(h >>> 15) % 10]}${alphabet[(h >>> 20) % 26]}${digits[(h >>> 25) % 10]}${digits[(h >>> 28) % 10]}`;
+}
+
+function buildVin(seed: string): string {
+	const alphabet = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
+	const h = stableHash(seed);
+	let out = '';
+	for (let i = 0; i < 17; i += 1) {
+		out += alphabet[(h + i * 31) % alphabet.length];
+	}
+	return out;
+}
 
 const LEAD_SOURCES = [
 	LeadSource.WHATSAPP,
@@ -361,6 +407,7 @@ async function main() {
 	});
 
 	const deals = leads.map((lead, index) => {
+		const vehicleId = deterministicUuid(`demo-vehicle:${index + 1}`);
 		const createdAt = new Date(lead.createdAt);
 		createdAt.setHours(createdAt.getHours() + 2);
 		const updatedAt = new Date(lead.updatedAt);
@@ -378,6 +425,7 @@ async function main() {
 		return {
 			id: deterministicUuid(`demo-deal:${index + 1}`),
 			leadId: lead.id,
+			vehicleId,
 			title: `Negociação ${buildVehicle(index)} · ${customers[index]?.name ?? 'Cliente'}`,
 			value: String(65000 + ((index * 1750) % 90000)),
 			importance: DealImportance.WARM,
@@ -389,9 +437,70 @@ async function main() {
 		};
 	});
 
+	const vehicles = leads.map((lead, index) => {
+		const deal = deals[index];
+		const createdAt = deal?.createdAt ?? new Date();
+		const updatedAt = deal?.updatedAt ?? createdAt;
+		const status =
+			deal?.status === DealStatus.OPEN
+				? VehicleStatus.RESERVED
+				: deal?.status === DealStatus.WON
+					? VehicleStatus.SOLD
+					: VehicleStatus.AVAILABLE;
+
+		const label = buildVehicle(index);
+		const [brandMaybe, ...modelParts] = label.split(' ');
+		const model = modelParts.join(' ') || label;
+		const seed = `${lead.storeId}:${lead.id}:${deal?.id ?? index}`;
+		const brand =
+			brandMaybe ||
+			pickFrom(
+				['Chevrolet', 'Hyundai', 'Toyota', 'Jeep', 'Fiat', 'Volkswagen'],
+				`${seed}:brand`,
+			);
+		const modelYear = randomInt(2016, 2025, `${seed}:modelYear`);
+		const manufactureYear = Math.max(
+			2015,
+			modelYear - randomInt(0, 1, `${seed}:manufactureDelta`),
+		);
+		const mileage =
+			deal?.status === DealStatus.OPEN
+				? randomInt(1000, 95000, `${seed}:mileageOpen`)
+				: randomInt(0, 135000, `${seed}:mileageClosed`);
+
+		return {
+			id: deterministicUuid(`demo-vehicle:${index + 1}`),
+			storeId: lead.storeId,
+			brand,
+			model,
+			version: null,
+			modelYear,
+			manufactureYear,
+			color: pickFrom(VEHICLE_COLORS, `${seed}:color`),
+			mileage,
+			supportedFuelType: pickFrom(
+				[
+					SupportedFuelType.FLEX,
+					SupportedFuelType.GASOLINE,
+					SupportedFuelType.DIESEL,
+					SupportedFuelType.HYBRID,
+				],
+				`${seed}:fuel`,
+			),
+			price: deal?.value ?? String(randomInt(42000, 180000, `${seed}:price`)),
+			status,
+			plate:
+				randomInt(0, 100, `${seed}:plateChance`) < 70 ? buildPlate(seed) : null,
+			vin: randomInt(0, 100, `${seed}:vinChance`) < 80 ? buildVin(seed) : null,
+			createdAt,
+			updatedAt,
+		};
+	});
+
 	await prisma.$transaction(
 		async (tx) => {
 			await tx.deal.deleteMany();
+			await tx.vehicle.deleteMany();
 			await tx.lead.deleteMany();
 			await tx.customer.deleteMany();
 			await tx.team.deleteMany();
@@ -412,6 +521,7 @@ async function main() {
 			}
 			await tx.customer.createMany({ data: customers });
 			await tx.lead.createMany({ data: leads });
+			await tx.vehicle.createMany({ data: vehicles });
 			await tx.deal.createMany({ data: deals });
 		},
 		{

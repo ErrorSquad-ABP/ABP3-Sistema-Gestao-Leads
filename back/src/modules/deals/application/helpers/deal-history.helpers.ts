@@ -4,6 +4,7 @@ import type { Deal } from '../../domain/entities/deal.entity.js';
 import type { DealHistoryAppendInput } from '../../domain/repositories/deal-history.repository.js';
 
 type DealSnapshot = {
+	readonly vehicleId: string;
 	readonly title: string;
 	readonly value: string | null;
 	readonly importance: string;
@@ -13,8 +14,9 @@ type DealSnapshot = {
 
 function snapshotDeal(deal: Deal): DealSnapshot {
 	return {
+		vehicleId: deal.vehicleId.value,
 		title: deal.title,
-		value: deal.value,
+		value: deal.value === null ? null : deal.value.toDecimalString(),
 		importance: deal.importance,
 		stage: deal.stage,
 		status: deal.status,
@@ -49,6 +51,14 @@ function diffDealHistory(
 	actorUserId: Uuid | null,
 ): DealHistoryAppendInput[] {
 	const out: DealHistoryAppendInput[] = [];
+	appendIfChanged(
+		out,
+		dealId,
+		DealHistoryField.VEHICLE,
+		before.vehicleId,
+		after.vehicleId,
+		actorUserId,
+	);
 	appendIfChanged(
 		out,
 		dealId,
@@ -119,7 +129,11 @@ function initialDealHistory(
 		});
 	};
 	push(DealHistoryField.TITLE, deal.title);
-	push(DealHistoryField.VALUE, deal.value === null ? '' : deal.value);
+	push(
+		DealHistoryField.VALUE,
+		deal.value === null ? '' : deal.value.toDecimalString(),
+	);
+	push(DealHistoryField.VEHICLE, deal.vehicleId.value);
 	push(DealHistoryField.IMPORTANCE, deal.importance);
 	push(DealHistoryField.STAGE, deal.stage);
 	push(DealHistoryField.STATUS, deal.status);
