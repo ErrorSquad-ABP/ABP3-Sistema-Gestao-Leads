@@ -25,6 +25,7 @@ import { LeadController } from './presentation/controllers/lead.controller.js';
 @Module({
 	imports: [UsersModule],
 	controllers: [LeadController],
+	exports: [LeadAccessPolicy, LeadRepositoryFactory],
 	providers: [
 		LeadAccessPolicy,
 		LeadFactory,
