@@ -16,10 +16,29 @@ services:
       timeout: 5s
       retries: 20
 
+  local-bootstrap:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+      target: dev
+    container_name: abp3-local-bootstrap
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./back/.env
+    environment:
+      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
+      LOCAL_DB_SEED_MODE: dashboard
+    command: ['node', 'back/scripts/bootstrap-local-db.mjs']
+    restart: 'no'
+
   back:
     depends_on:
       postgres:
         condition: service_healthy
+      local-bootstrap:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
 
