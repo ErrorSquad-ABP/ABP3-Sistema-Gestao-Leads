@@ -43,7 +43,16 @@ type SeedLead = Pick<
 
 type SeedDeal = Pick<
 	Deal,
-	'id' | 'leadId' | 'title' | 'value' | 'closedAt' | 'createdAt' | 'updatedAt'
+	| 'id'
+	| 'leadId'
+	| 'title'
+	| 'value'
+	| 'importance'
+	| 'stage'
+	| 'status'
+	| 'closedAt'
+	| 'createdAt'
+	| 'updatedAt'
 >;
 
 type BaseSeedDataset = {

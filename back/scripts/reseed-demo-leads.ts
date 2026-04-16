@@ -3,6 +3,9 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 import {
+	DealImportance,
+	DealStage,
+	DealStatus,
 	PrismaClient,
 	LeadSource,
 	LeadStatus,
@@ -365,12 +368,21 @@ async function main() {
 			lead.status === LeadStatus.CONVERTED || lead.status === LeadStatus.LOST
 				? updatedAt
 				: null;
+		const status =
+			closedAt === null
+				? DealStatus.OPEN
+				: lead.status === LeadStatus.CONVERTED
+					? DealStatus.WON
+					: DealStatus.LOST;
 
 		return {
 			id: deterministicUuid(`demo-deal:${index + 1}`),
 			leadId: lead.id,
 			title: `Negociação ${buildVehicle(index)} · ${customers[index]?.name ?? 'Cliente'}`,
 			value: String(65000 + ((index * 1750) % 90000)),
+			importance: DealImportance.WARM,
+			stage: DealStage.NEGOTIATION,
+			status,
 			closedAt,
 			createdAt,
 			updatedAt,

@@ -396,18 +396,30 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 		};
 	});
 
-	const deals = rows.map((row) => {
+	const deals = rows.map((row, index) => {
 		const leadId = deterministicUuid(`lead:${row.lead_id.trim()}`);
 		const createdAt = parseDate(row.negotiation_created_at) ?? new Date();
 		const updatedAt = parseDate(row.negotiation_updated_at) ?? createdAt;
 		const isClosed = row.is_open.trim().toUpperCase() === 'FALSE';
+		const lead = leads[index];
+		const leadStatus = lead?.status;
+		const closedAt = isClosed ? updatedAt : null;
+		const status =
+			closedAt === null
+				? ('OPEN' as const)
+				: leadStatus === 'CONVERTED'
+					? ('WON' as const)
+					: ('LOST' as const);
 
 		return {
 			id: deterministicUuid(`deal:${row.lead_id.trim()}`),
 			leadId,
 			title: row.subject.trim(),
 			value: null,
-			closedAt: isClosed ? updatedAt : null,
+			importance: 'WARM' as const,
+			stage: 'NEGOTIATION' as const,
+			status,
+			closedAt,
 			createdAt,
 			updatedAt,
 		};
