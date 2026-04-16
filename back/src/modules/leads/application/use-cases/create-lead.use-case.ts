@@ -11,6 +11,7 @@ import { UserRepositoryFactory } from '../../../users/infrastructure/persistence
 import { LeadInvalidCustomerError } from '../../domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../domain/errors/lead-invalid-store.error.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata

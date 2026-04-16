@@ -74,18 +74,14 @@ describe('resolveLeadsListScope', () => {
 		});
 	});
 
-	it('MANAGER com várias equipas: teams', () => {
+	it('MANAGER com várias equipas: manager (listagem unificada na API)', () => {
 		const u = {
 			...baseUser,
 			role: 'MANAGER' as const,
 			memberTeamIds: ['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'],
 			managedTeamIds: ['cccccccc-cccc-4ccc-8ccc-cccccccccccc'],
 		};
-		const s = resolveLeadsListScope(u);
-		assert.equal(s?.kind, 'teams');
-		if (s?.kind === 'teams') {
-			assert.equal(s.ids.length, 2);
-		}
+		assert.deepEqual(resolveLeadsListScope(u), { kind: 'manager' });
 	});
 
 	it('ADMINISTRATOR: all', () => {

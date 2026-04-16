@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { ApiError } from '@/lib/http/api-error';
 
-/** Resposta `data` de `GET /api/leads/owner/:id` e `GET /api/leads/team/:id`. */
+/** Resposta `data` de listagens paginadas de leads. */
 const leadListItemSchema = z.object({
 	id: z.string().uuid(),
 	customerId: z.string().uuid(),
@@ -12,10 +12,16 @@ const leadListItemSchema = z.object({
 	status: z.string(),
 });
 
-const leadListResponseSchema = z.array(leadListItemSchema);
+const leadListPagedDataSchema = z.object({
+	items: z.array(leadListItemSchema),
+	page: z.number().int().min(1),
+	limit: z.number().int().min(1).max(10),
+	total: z.number().int().min(0),
+	totalPages: z.number().int().min(0),
+});
 
-function parseLeadListResponse(data: unknown) {
-	const parsed = leadListResponseSchema.safeParse(data);
+function parseLeadListPagedResponse(data: unknown) {
+	const parsed = leadListPagedDataSchema.safeParse(data);
 	if (!parsed.success) {
 		throw new ApiError('Resposta da API em formato inesperado.', 502, {
 			code: 'leads.invalid_response_shape',
@@ -24,4 +30,8 @@ function parseLeadListResponse(data: unknown) {
 	return parsed.data;
 }
 
-export { leadListItemSchema, leadListResponseSchema, parseLeadListResponse };
+export {
+	leadListItemSchema,
+	leadListPagedDataSchema,
+	parseLeadListPagedResponse,
+};

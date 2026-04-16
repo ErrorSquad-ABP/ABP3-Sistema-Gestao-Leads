@@ -4,7 +4,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthConfigModule } from './config/auth-config.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CustomersModule } from './modules/customers/customers.module.js';
+import { DealsModule } from './modules/deals/deals.module.js';
 import { LeadsModule } from './modules/leads/leads.module.js';
+import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
 import { SystemModule } from './modules/system/system.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { StoresModule } from './modules/stores/stores.module.js';
@@ -22,7 +24,9 @@ import { GlobalAuthGuard } from './shared/presentation/guards/global-auth.guard.
 		UsersModule,
 		AuthModule,
 		CustomersModule,
+		DealsModule,
 		LeadsModule,
+		VehiclesModule,
 		StoresModule,
 		TeamsModule,
 	],

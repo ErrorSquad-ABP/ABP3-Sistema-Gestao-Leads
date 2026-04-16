@@ -1,5 +1,6 @@
 import { ApiError } from '@/lib/http/api-error';
 import { apiFetch } from '@/lib/http/api-client';
+import { clearAccessToken } from '@/lib/auth/access-token';
 
 import {
 	authenticatedUserSchema,
@@ -37,6 +38,7 @@ async function fetchCurrentUser(
 			error instanceof ApiError &&
 			(error.status === 401 || error.status === 403)
 		) {
+			clearAccessToken();
 			return null;
 		}
 
@@ -48,6 +50,7 @@ async function logout() {
 	await apiFetch('/api/auth/logout', {
 		method: 'POST',
 	});
+	clearAccessToken();
 }
 
 export { fetchCurrentUser, login, logout };

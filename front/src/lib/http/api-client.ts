@@ -1,5 +1,6 @@
 import { env } from '../env';
 import { ApiError, type ApiErrorItem } from './api-error';
+import { getAccessToken } from '@/lib/auth/access-token';
 
 type ApiSuccessEnvelope<TData> = {
 	success: true;
@@ -88,6 +89,10 @@ async function parseResponseBody(response: Response) {
 async function apiFetch<TData>(path: string, options: ApiFetchOptions = {}) {
 	const headers = new Headers(options.headers);
 	headers.set('Accept', 'application/json');
+	const accessToken = getAccessToken();
+	if (accessToken && !headers.has('Authorization')) {
+		headers.set('Authorization', `Bearer ${accessToken}`);
+	}
 	const controller = new AbortController();
 	const timeoutMs = options.timeoutMs ?? 8_000;
 	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);

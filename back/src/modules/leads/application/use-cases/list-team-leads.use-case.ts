@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import type { LeadListPagination } from '../../domain/types/lead-list-page.js';
+// biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
@@ -13,10 +15,14 @@ class ListTeamLeadsUseCase {
 		private readonly leadAccessPolicy: LeadAccessPolicy,
 	) {}
 
-	async execute(actor: LeadActor, teamId: string) {
+	async execute(
+		actor: LeadActor,
+		teamId: string,
+		pagination: LeadListPagination,
+	) {
 		await this.leadAccessPolicy.assertCanListTeam(actor, teamId);
 		const leads = this.leadRepositoryFactory.create();
-		return leads.listByTeam(Uuid.parse(teamId));
+		return leads.listByTeam(Uuid.parse(teamId), pagination);
 	}
 }
 

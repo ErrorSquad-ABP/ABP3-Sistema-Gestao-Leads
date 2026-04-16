@@ -1,10 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { env } from '../../config/env.js';
+import type { Request } from 'express';
+
+import type { AuthConfig } from '../../config/auth.config.js';
+import { AUTH_CONFIG } from '../../config/auth-injection.token.js';
 import { parseCanonicalUserRole } from '../../shared/domain/enums/user-role.enum.js';
 import type { UserRole } from '../../shared/domain/enums/user-role.enum.js';
+import { extractAccessTokenFromRequest } from '../../shared/presentation/utils/request-auth.util.js';
 
 function normalizeJwtRole(raw: string): UserRole {
 	try {
@@ -17,11 +21,20 @@ function normalizeJwtRole(raw: string): UserRole {
 
 @Injectable()
 class JwtStrategy extends PassportStrategy(Strategy) {
-	constructor() {
+	constructor(@Inject(AUTH_CONFIG) authConfig: AuthConfig) {
 		super({
-			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+			jwtFromRequest: ExtractJwt.fromExtractors([
+				(req: Request) =>
+					extractAccessTokenFromRequest(req, authConfig.cookieAccessName) ??
+					null,
+			]),
 			ignoreExpiration: false,
-			secretOrKey: env.jwtSecret || 'local-dev-only-jwt-secret-change-in-env',
+			algorithms: ['RS256'],
+			secretOrKey: authConfig.accessPublicKey,
+			issuer: authConfig.issuer,
+			...(authConfig.audience !== undefined
+				? { audience: authConfig.audience }
+				: {}),
 		});
 	}
 

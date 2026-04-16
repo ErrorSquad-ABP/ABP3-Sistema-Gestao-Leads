@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { userRoleValues } from '@/features/login/types/login.types';
-import type { AccessFeatureKey } from '../types/users.types';
+import type { AccessFeatureKey } from '../model/users.model';
 
 const createUserSchema = z.object({
 	name: z.string().trim().min(1, 'Informe o nome do usuário.'),

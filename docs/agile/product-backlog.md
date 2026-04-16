@@ -6,7 +6,7 @@ Organizar o backlog inicial do produto em formato de épicos e `User Stories`, c
 
 ## Contexto do produto
 
-A 1000 Valle Multimarcas precisa de um sistema para registrar e acompanhar leads comerciais originados por múltiplos canais, associando cada lead a cliente, loja, atendente responsável e negociação. Além do fluxo operacional, a solução deve entregar dashboards gerenciais e analíticos, com filtros temporais e controle de acesso por perfil hierárquico.
+A 1000 Valle Multimarcas precisa de um sistema para registrar e acompanhar leads comerciais originados por múltiplos canais, associando cada lead a cliente, loja, atendente responsável, veículo ofertado e negociação. Além do fluxo operacional, a solução deve entregar dashboards gerenciais e analíticos, com filtros temporais e controle de acesso por perfil hierárquico.
 
 O repositório já parte de uma base técnica pronta para evolução incremental:
 
@@ -18,6 +18,23 @@ O repositório já parte de uma base técnica pronta para evolução incremental
 - documentação arquitetural e de governança já iniciada.
 
 Isso significa que o backlog abaixo foca principalmente o que ainda precisa ser implementado como produto e como capacidade real de negócio.
+
+## Estado do produto após a Sprint 1
+
+Leitura executiva da `main` no início da Sprint 2:
+
+- `EP-01` Identidade e Acesso: fechado no núcleo funcional;
+- `EP-02` Estrutura Organizacional: fechado no núcleo funcional;
+- `EP-03` Clientes e Leads: fechado no núcleo transacional;
+- `EP-07` Veículos: não iniciado como módulo de produto;
+- `EP-04` Negociações: não iniciado como módulo de produto;
+- `EP-05` Dashboards e Filtros: não iniciado como produto; telas atuais ainda são placeholder;
+- `EP-06` Auditoria e Entrega Final: parcial, com base documental e arquitetural, mas sem logs operacionais de produto e com pendência de aderência total do Compose ao edital.
+
+Implicação prática:
+
+- a Sprint 2 deve priorizar veículos, negociações, dashboards, filtros temporais e auditoria;
+- o valor percebido pelo parceiro precisa crescer no frontend, não só na fundação do backend.
 
 ## Requisitos funcionais de referência
 
@@ -85,9 +102,21 @@ Os pontos abaixo já estão parcialmente ou totalmente cobertos pela fundação 
 | `EP-01` | Identidade e Acesso | Garantir autenticação, atualização de credenciais e RBAC no backend | Crítica | Sprint 1 |
 | `EP-02` | Estrutura Organizacional | Sustentar usuários, equipes, lojas e vínculos administrativos | Alta | Sprint 1 |
 | `EP-03` | Clientes e Leads | Entregar o núcleo operacional do processo comercial | Alta | Sprint 1 |
+| `EP-07` | Veículos | Representar o objeto comercial negociado e vinculá-lo ao funil | Alta | Sprint 2 |
 | `EP-04` | Negociações | Controlar evolução comercial e histórico do funil | Alta | Sprint 2 |
 | `EP-05` | Dashboards e Filtros | Expor indicadores operacionais e analíticos com recorte temporal | Alta | Sprint 2 e Sprint 3 |
 | `EP-06` | Auditoria e Entrega Final | Garantir logs, documentação final, segurança, desempenho e estabilidade | Alta | Sprint 3 e contínuo |
+
+## Foco confirmado para Sprint 2
+
+Os cards da Sprint 2 deixam de ser tarefas por camada e passam a ser épicos fullstack `end-to-end`, com responsável único por feature. O recorte confirmado é:
+
+- negociações;
+- veículos;
+- dashboard operacional;
+- dashboard analítico com filtros temporais;
+- logs de auditoria;
+- conformidade de execução local com PostgreSQL em Docker Compose e fechamento arquitetural impactado.
 
 ## Visão priorizada dos épicos e stories
 
@@ -96,9 +125,10 @@ Os pontos abaixo já estão parcialmente ou totalmente cobertos pela fundação 
 | 1 | `EP-01` | `US-01`, `US-02`, `US-03` |
 | 2 | `EP-02` | `US-04`, `US-05` |
 | 3 | `EP-03` | `US-06`, `US-07`, `US-08` |
-| 4 | `EP-04` | `US-09`, `US-10` |
-| 5 | `EP-05` | `US-11`, `US-12`, `US-13` |
-| 6 | `EP-06` | `US-14`, `US-15`, `US-16` |
+| 4 | `EP-07` | `US-17`, `US-18` |
+| 5 | `EP-04` | `US-09`, `US-10` |
+| 6 | `EP-05` | `US-11`, `US-12`, `US-13` |
+| 7 | `EP-06` | `US-14`, `US-15`, `US-16` |
 
 ## EP-01 - Identidade e Acesso
 
@@ -349,11 +379,90 @@ Não basta ter RBAC de rota. O sistema precisa respeitar também o escopo do dad
 - listagens coerentes com a hierarquia;
 - proteção contra acesso indevido a dados de outras equipes.
 
+## EP-07 - Veículos
+
+### Objetivo do épico
+
+Representar o veículo como objeto comercial negociado, permitindo que o CRM trate o interesse do cliente em algo concreto do portfólio da revenda.
+
+### Requisitos relacionados
+
+- `RF03`
+- `RF04`
+- `RNF05`
+- `RNF13`
+
+### User Stories do épico
+
+| ID | História | Prioridade | Sprint sugerida | Status inicial |
+| --- | --- | --- | --- | --- |
+| `US-17` | Implementar catálogo operacional de veículos | Alta | Sprint 2 | Backend concluído / frontend pendente |
+| `US-18` | Vincular veículo ao fluxo de lead e negociação | Alta | Sprint 2 | Backend concluído / frontend pendente |
+
+### US-17 - Implementar catálogo operacional de veículos
+
+**Como** administrador ou operação autorizada  
+**Quero** cadastrar e manter veículos negociáveis no CRM  
+**Para** que as negociações sejam feitas sobre um objeto comercial real, e não sobre um registro abstrato.
+
+**Contexto**
+
+O módulo de negociação perde aderência ao domínio da revenda se não houver um veículo associado ao interesse comercial. O veículo passa a ser a peça que conecta lead, oferta e parte dos indicadores gerenciais.
+
+**Requisitos relacionados**
+
+- `RF03`: negociação vinculada ao processo comercial do lead;
+- `RF04`: necessidade de leitura operacional coerente do pipeline;
+- `RNF05`: integridade referencial entre os elementos do fluxo;
+- `RNF13`: separação de responsabilidade entre catálogo, lead e negociação.
+
+**Saída esperada**
+
+- entidade e persistência de veículo;
+- CRUD ou catálogo operacional de veículos;
+- campos mínimos para identificação comercial do veículo;
+- API pronta para seleção e vínculo no fluxo operacional.
+
+**Estado atual da `main`**
+
+- modelagem, migrations e regras de domínio de `vehicles` já estão no backend;
+- a API de veículos já está publicada com `RBAC` administrativo;
+- o trabalho restante desta story está no frontend operacional e na integração de UX.
+
+### US-18 - Vincular veículo ao fluxo de lead e negociação
+
+**Como** atendente ou gestor autorizado  
+**Quero** associar um veículo ao interesse comercial do cliente  
+**Para** que o lead e a negociação reflitam o objeto real da venda.
+
+**Contexto**
+
+Não basta ter o catálogo disponível. O valor do módulo aparece quando o veículo entra no contexto operacional do lead e no contrato da negociação.
+
+**Requisitos relacionados**
+
+- `RF03`: criação e evolução de negociação com contexto comercial completo;
+- `RNF05`: consistência transacional;
+- `RNF12`: contrato e regra de vínculo bem definidos entre os módulos.
+
+**Saída esperada**
+
+- vínculo do veículo ao lead, à negociação ou ao modelo de relação definido pela sprint;
+- exibição do veículo no detalhe do lead e da negociação;
+- proteção de regra para evitar vínculos inválidos;
+- base pronta para leituras analíticas futuras envolvendo portfólio comercial.
+
+**Estado atual da `main`**
+
+- o backend já vincula `vehicle`, `lead` e `deal`;
+- a negociação já valida disponibilidade do veículo, consistência de loja e reserva/fecho;
+- o trabalho restante desta story está na visualização e operação de frontend.
+
 ## EP-04 - Negociações
 
 ### Objetivo do épico
 
-Controlar a evolução comercial do lead até a conclusão da negociação, com histórico e consistência de estados.
+Controlar a evolução comercial do lead até a conclusão da negociação, com histórico, consistência de estados e vínculo ao veículo ofertado.
 
 ### Requisitos relacionados
 
@@ -366,8 +475,8 @@ Controlar a evolução comercial do lead até a conclusão da negociação, com 
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-09` | Implementar gestão de negociações por lead | Alta | Sprint 2 | Não iniciado |
-| `US-10` | Registrar histórico de estágio e status das negociações | Alta | Sprint 2 | Não iniciado |
+| `US-09` | Implementar gestão de negociações por lead | Alta | Sprint 2 | Backend concluído / frontend pendente |
+| `US-10` | Registrar histórico de estágio e status das negociações | Alta | Sprint 2 | Backend concluído / frontend pendente |
 
 ### US-09 - Implementar gestão de negociações por lead
 
@@ -377,7 +486,7 @@ Controlar a evolução comercial do lead até a conclusão da negociação, com 
 
 **Contexto**
 
-A negociação transforma o lead em fluxo comercial real. Ela é o ponto de ligação entre operação e indicadores analíticos.
+A negociação transforma o lead em fluxo comercial real. Ela é o ponto de ligação entre operação, veículo ofertado e indicadores analíticos.
 
 **Requisitos relacionados**
 
@@ -389,8 +498,16 @@ A negociação transforma o lead em fluxo comercial real. Ela é o ponto de liga
 
 - entidade de negociação;
 - endpoints e casos de uso para manutenção;
+- vínculo explícito com o veículo do processo comercial;
 - validação de estados da negociação no backend;
 - garantia de que cada lead possua no máximo uma negociação ativa.
+
+**Estado atual da `main`**
+
+- o módulo `deals` já existe no backend com criação, listagem, leitura, atualização e exclusão;
+- a regra de uma negociação ativa por lead já está aplicada;
+- a negociação já nasce vinculada a veículo e já atualiza estado comercial associado;
+- o trabalho restante desta story está no frontend do fluxo de negociação.
 
 ### US-10 - Registrar histórico de estágio e status das negociações
 
@@ -413,6 +530,11 @@ O histórico é essencial para auditoria, análise de desempenho e explicação 
 - registro de cada mudança relevante;
 - vínculo com usuário responsável e data/hora;
 - base pronta para logs e analytics.
+
+**Estado atual da `main`**
+
+- o backend já registra histórico mínimo de mudanças relevantes da negociação;
+- a timeline e a leitura operacional desse histórico ainda dependem de frontend dedicado.
 
 ## EP-05 - Dashboards e Filtros
 

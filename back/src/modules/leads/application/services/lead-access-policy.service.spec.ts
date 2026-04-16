@@ -81,6 +81,10 @@ function userRepoWithUsers(users: readonly User[]): IUserRepository {
 		},
 		findById: async (id) => byId.get(id.value) ?? null,
 		findByEmail: async () => null,
+		listByIds: async (ids) =>
+			ids
+				.map((id) => byId.get(id.value) ?? null)
+				.filter((user): user is User => user !== null),
 		listPaged: async () => ({ users: [], total: 0 }),
 	};
 }
@@ -109,11 +113,15 @@ describe('LeadAccessPolicy.assertCanListAllLeads', () => {
 		});
 	});
 
-	it('permite GENERAL_MANAGER', async () => {
-		await policy.assertCanListAllLeads({
-			userId: '00000000-0000-4000-8000-000000000002',
-			role: 'GENERAL_MANAGER',
-		});
+	it('rejeita GENERAL_MANAGER', async () => {
+		await assert.rejects(
+			() =>
+				policy.assertCanListAllLeads({
+					userId: '00000000-0000-4000-8000-000000000002',
+					role: 'GENERAL_MANAGER',
+				}),
+			LeadAccessDeniedError,
+		);
 	});
 
 	it('rejeita MANAGER', async () => {
@@ -310,14 +318,47 @@ describe('LeadAccessPolicy.assertCanListOwner', () => {
 		);
 	});
 
-	it('permite GENERAL_MANAGER sem consultar equipas do alvo', async () => {
-		const policy = new LeadAccessPolicy(
-			{ create: () => ({}) } as never,
-			{ create: () => ({}) } as never,
-		);
+	it('permite GENERAL_MANAGER quando o proprietario partilha equipa de leitura', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'GENERAL_MANAGER',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const owner = userFixture({
+			id: OWNER_OTHER_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor, [owner]);
 		await policy.assertCanListOwner(
 			{ userId: ACTOR_ID, role: 'GENERAL_MANAGER' },
 			OWNER_OTHER_ID,
+		);
+	});
+
+	it('rejeita GENERAL_MANAGER quando nao ha equipas em comum com o proprietario', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'GENERAL_MANAGER',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const owner = userFixture({
+			id: OWNER_OTHER_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_B],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor, [owner]);
+		await assert.rejects(
+			() =>
+				policy.assertCanListOwner(
+					{ userId: ACTOR_ID, role: 'GENERAL_MANAGER' },
+					OWNER_OTHER_ID,
+				),
+			LeadAccessDeniedError,
 		);
 	});
 });

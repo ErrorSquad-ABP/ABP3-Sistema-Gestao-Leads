@@ -2,80 +2,76 @@
 
 ## Objetivo
 
-O frontend será a aplicação web do sistema, responsável por oferecer uma navegação responsiva, clara e orientada ao fluxo comercial de leads, negociações e dashboards, consumindo a API Nest separada exclusivamente por `HTTP/JSON`.
+O `front` é a aplicação web autenticada do CRM. Ele consome a API do `back` via `HTTP/JSON`, organiza a navegação por papel e entrega a experiência operacional do sistema.
 
-## Stack definida
+## Stack
 
-- Next.js 16 com React 19 e TypeScript
-- App Router para composição de rotas, layouts e server components
-- Tailwind CSS 4, shadcn/ui e Radix para a base visual
-- Prettier para formatação do workspace do frontend
-- ESLint com `eslint-config-next` para qualidade estática complementar
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- shadcn/ui
+- React Query
+- React Hook Form + Zod
 
-Guias complementares:
-
-- **Plano de navegação, telas e UX (implementação):** [`../docs/architecture/frontend-information-architecture.md`](../docs/architecture/frontend-information-architecture.md)
-- Uso do Next.js nesta base: [`../docs/architecture/next-frontend.md`](../docs/architecture/next-frontend.md)
-
-## Princípios de implementação
-
-- Interface guiada por papéis e permissões vindas do backend.
-- Componentes pequenos, orientados a responsabilidade única.
-- Separação entre `app`, `features`, `lib` e `components`.
-- Uso preferencial de server components para composição inicial e client components apenas quando houver interação real no navegador.
-- Estado local por feature antes de introduzir complexidade adicional.
-- Consumo de API desacoplado da camada visual.
-
-## Estrutura proposta
+## Estrutura
 
 ```text
 front/
-├── src/
-│   ├── app/                # App Router, páginas, layouts e entrypoint de estilos
-│   ├── components/         # Componentes compartilhados de UI
-│   │   └── shared/
-│   ├── features/           # Fatias por domínio com api, model, schema e UI
-│   ├── lib/                # Config, auth, HTTP, query e utilitários
-│   └── styles/             # CSS compartilhado de apoio, quando necessário
-├── .env.example            # Variáveis do frontend e URL da API
-├── components.json         # Configuração do shadcn/ui
-├── next.config.ts          # Configuração do Next.js
-├── next-env.d.ts           # Tipagens geradas pelo Next.js
-├── postcss.config.mjs      # Integração do Tailwind CSS 4
-├── package.json
-└── tsconfig.json
+├── src/app/
+├── src/components/
+├── src/features/
+├── src/lib/
+├── public/
+└── package.json
 ```
 
-## Features presentes na base
+## Módulos ativos
 
-- `landing`: página inicial e checagem de disponibilidade da API.
-- `login`: autenticação do usuário.
-- `leads`, `customers`, `deals`, `stores`, `teams` e `users`: fatias previstas para o fluxo comercial e administrativo.
-- `audit-logs`: apoio às telas e consultas de auditoria.
+- `login`
+- `profile`
+- `leads`
+- `customers`
+- `stores`
+- `teams`
+- `users`
 
-## Boas práticas esperadas
+## Estado atual
 
-- Não duplicar regra de negócio do backend.
-- Não esconder autorização somente no frontend.
-- Priorizar acessibilidade, feedback visual e responsividade.
-- Centralizar integração HTTP em `features/*/api`, `features/*/server` ou `lib/http`.
-- Deixar os componentes de página livres de lógica de infraestrutura.
-- Consumir a API separada por contratos explícitos e payloads previsíveis.
+Hoje o frontend já possui:
 
-## Convenções de pastas
+- login funcional;
+- shell autenticado;
+- redirecionamento por papel;
+- perfil com atualização de credenciais;
+- CRUD de leads;
+- gestão de clientes;
+- gestão de lojas;
+- gestão de equipas;
+- gestão administrativa de utilizadores;
+- telas de erro e redirect customizadas.
 
-- `app`: tudo que compõe o esqueleto global da aplicação.
-- `features`: telas, componentes, contratos e modelos específicos de cada domínio.
-- `components/shared`: blocos visuais reaproveitáveis entre múltiplas features.
-- `lib`: infraestrutura transversal de frontend, incluindo `env`, clientes HTTP e query setup.
-- `styles`: CSS compartilhado de apoio; o entrypoint global atual do App Router está em `src/app/styles.css`.
+Ainda não fecha como produto:
 
-## Variáveis de ambiente
+- dashboards reais;
+- módulo de negociações;
+- logs administrativos.
 
-- `NEXT_PUBLIC_API_URL`: URL pública da API para navegação e chamadas expostas ao navegador.
-- `API_INTERNAL_URL`: URL interna usada pelo servidor Next do frontend para consultar a API sem depender da mesma origem.
-- O acesso a essas variáveis deve ser centralizado em `src/lib/env.ts`.
+## Rotas relevantes
 
-## Evolução esperada
+- `/login`
+- `/forgot-password`
+- `/app/profile`
+- `/app/leads`
+- `/app/customers`
+- `/app/stores`
+- `/app/teams`
+- `/app/users`
+- `/app/dashboard/operational`
+- `/app/dashboard/analytic`
 
-Nas primeiras sprints, esta camada deve cobrir autenticação, listagem de leads, telas de negociação e os painéis gerenciais. Em paralelo, os componentes compartilhados devem consolidar uma linguagem visual única para o projeto e contratos estáveis com a API.
+## Observações
+
+- os dashboards atuais ainda são placeholders;
+- `/app/operations` é só alias de compatibilidade para `/app/stores`;
+- o frontend não é autoridade de autorização: o backend continua sendo a fonte de verdade para `RBAC`.

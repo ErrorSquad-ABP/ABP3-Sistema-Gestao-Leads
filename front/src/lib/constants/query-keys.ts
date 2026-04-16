@@ -15,26 +15,25 @@ const queryKeys = {
 	leads: {
 		/** Prefixo comum a todas as queries de listagem; adequado a `invalidateQueries`. */
 		listRoot: ['leads', 'list'] as const,
+		catalogRoot: ['leads', 'catalog'] as const,
 		list: (
 			params:
-				| { scope: 'owner'; id: string }
-				| { scope: 'team'; id: string }
-				| { scope: 'all' },
+				| { scope: 'owner'; id: string; page: number }
+				| { scope: 'team'; id: string; page: number }
+				| { scope: 'all'; page: number }
+				| { scope: 'manager'; page: number },
 		) =>
 			params.scope === 'all'
-				? (['leads', 'list', 'all'] as const)
-				: (['leads', 'list', params.scope, params.id] as const),
+				? (['leads', 'list', 'all', params.page] as const)
+				: params.scope === 'manager'
+					? (['leads', 'list', 'manager', params.page] as const)
+					: (['leads', 'list', params.scope, params.id, params.page] as const),
 		inactive: (userId: string) =>
 			['leads', 'list', 'inactive', userId] as const,
-		/** Várias equipas (merge no cliente); `teamIds` ordenados para chave estável. */
-		listMultiTeam: (userId: string, teamIds: readonly string[]) =>
-			[
-				'leads',
-				'list',
-				'multi',
-				userId,
-				[...teamIds].sort().join('|'),
-			] as const,
+		customers: ['leads', 'catalog', 'customers'] as const,
+		stores: ['leads', 'catalog', 'stores'] as const,
+		teams: ['leads', 'catalog', 'teams'] as const,
+		owners: ['leads', 'catalog', 'owners'] as const,
 	},
 };
 

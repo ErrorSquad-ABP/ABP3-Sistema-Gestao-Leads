@@ -139,6 +139,11 @@ describe('CreateTeamUseCase', () => {
 			async findByEmail() {
 				return null;
 			},
+			async listByIds(ids) {
+				return ids
+					.map((id) => (id.equals(manager.id) ? manager : null))
+					.filter((user): user is User => user !== null);
+			},
 			async listPaged() {
 				return { users: [], total: 0 };
 			},
@@ -230,6 +235,11 @@ describe('CreateTeamUseCase', () => {
 						async findByEmail() {
 							return null;
 						},
+						async listByIds(ids) {
+							return ids
+								.map((id) => (id.equals(attendant.id) ? attendant : null))
+								.filter((user): user is User => user !== null);
+						},
 						async listPaged() {
 							return { users: [], total: 0 };
 						},
@@ -313,6 +323,11 @@ describe('CreateTeamUseCase', () => {
 						},
 						async findByEmail() {
 							return null;
+						},
+						async listByIds(ids) {
+							return ids
+								.map((id) => (id.equals(manager.id) ? manager : null))
+								.filter((user): user is User => user !== null);
 						},
 						async listPaged() {
 							return { users: [], total: 0 };

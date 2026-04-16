@@ -1,21 +1,16 @@
 # Runbooks Operacionais
 
-Este diretório concentra os guias operacionais do projeto: setup local, bootstrap de ambiente, execução com Docker Compose e procedimentos de validação depois de subir a stack.
+Este diretório documenta o fluxo real de operação do projeto.
 
-O objetivo destes runbooks é reduzir dependência de contexto oral. Um novo dev deve conseguir:
+## Cobertura
 
-- subir `front`, `back` e `postgres` sem depender de outro membro;
-- entender quais variáveis de ambiente são obrigatórias;
-- gerar ou configurar as chaves JWT corretamente;
-- aplicar migrations e seed;
-- validar login, sessão autenticada e sanidade mínima do backend;
-- entender o que é fluxo real e o que ainda está em placeholder.
+- `local-setup.md`: bootstrap local com `docker compose` atual e banco externo via `DATABASE_URL`.
+- `deploy.md`: operação de produção em `Vercel + Neon`, smoke checks e cuidados de ambiente.
 
-## Arquivos
+## Regra editorial
 
-- `local-setup.md`: bootstrap local ponta a ponta para desenvolvimento.
-- `deploy.md`: checklist operacional para subir a stack com Compose e validar o resultado.
+Se o código ou a topologia operacional mudar, o runbook correspondente deve mudar na mesma entrega. Hoje isso é especialmente importante porque:
 
-## Escopo
-
-Estes documentos descrevem o estado real atual do repositório. Se algum fluxo mudar em código, o runbook correspondente deve ser atualizado na mesma entrega.
+- o Compose não sobe mais PostgreSQL local por padrão;
+- migrations e seeds são operações explícitas;
+- a produção está ativa e precisa de documentação aderente ao runtime real.

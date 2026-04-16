@@ -1,5 +1,7 @@
 # Sprint 1 Planning
 
+> Documento histórico de planejamento. A sprint já foi encerrada. Para o resultado consolidado, consulte [`sprint-1-review.md`](./sprint-1-review.md).
+
 ## Objetivo
 
 Documentar o planejamento da Sprint 1 com base no `Product Backlog`, definindo meta da sprint, escopo comprometido, backlog de trabalho, riscos, dependências e critérios de conclusão. Este documento funciona como referência operacional para a execução do primeiro ciclo de desenvolvimento.

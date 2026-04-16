@@ -9,6 +9,7 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
@@ -26,11 +27,15 @@ import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
+	ApiOkResponseEnvelopePaged,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import {
 	CurrentUser,
 	type JwtUser,
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
+import { StoreResponseDto } from '../../../stores/application/dto/store-response.dto.js';
+import { StorePresenter } from '../../../stores/presentation/presenters/store.presenter.js';
+import { LeadCatalogOwnerDto } from '../../application/dto/lead-catalog-owner.dto.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
 import type { LeadActor } from '../../application/types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -42,7 +47,13 @@ import { DeleteLeadUseCase } from '../../application/use-cases/delete-lead.use-c
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { FindLeadUseCase } from '../../application/use-cases/find-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListLeadCatalogOwnersUseCase } from '../../application/use-cases/list-lead-catalog-owners.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListLeadCatalogStoresUseCase } from '../../application/use-cases/list-lead-catalog-stores.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListAllLeadsUseCase } from '../../application/use-cases/list-all-leads.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListManagerLeadsUseCase } from '../../application/use-cases/list-manager-leads.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListOwnLeadsUseCase } from '../../application/use-cases/list-own-leads.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -54,6 +65,8 @@ import { UpdateLeadUseCase } from '../../application/use-cases/update-lead.use-c
 import { LeadPresenter } from '../presenters/lead.presenter.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateLeadValidator } from '../validators/create-lead.validator.js';
+// biome-ignore lint/style/useImportType: presenter e validators usados em runtime
+import { ListLeadsQueryValidator } from '../validators/list-leads-query.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { ReassignLeadValidator } from '../validators/reassign-lead.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
@@ -89,9 +102,12 @@ class LeadController {
 		private readonly createLeadUseCase: CreateLeadUseCase,
 		private readonly updateLeadUseCase: UpdateLeadUseCase,
 		private readonly findLeadUseCase: FindLeadUseCase,
+		private readonly listLeadCatalogStoresUseCase: ListLeadCatalogStoresUseCase,
+		private readonly listLeadCatalogOwnersUseCase: ListLeadCatalogOwnersUseCase,
 		private readonly listOwnLeadsUseCase: ListOwnLeadsUseCase,
 		private readonly listTeamLeadsUseCase: ListTeamLeadsUseCase,
 		private readonly listAllLeadsUseCase: ListAllLeadsUseCase,
+		private readonly listManagerLeadsUseCase: ListManagerLeadsUseCase,
 		private readonly reassignLeadUseCase: ReassignLeadUseCase,
 		private readonly convertLeadUseCase: ConvertLeadUseCase,
 		private readonly deleteLeadUseCase: DeleteLeadUseCase,
@@ -111,56 +127,162 @@ class LeadController {
 	}
 
 	@Get('owner/:ownerUserId')
-	@ApiOperation({ summary: 'Listar leads por owner' })
+	@ApiOperation({ summary: 'Listar leads por owner (paginado)' })
 	@ApiParam({
 		name: 'ownerUserId',
 		format: 'uuid',
 		description: 'Identificador do usuário dono dos leads',
 	})
-	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiOkResponseEnvelopePaged(LeadResponseDto, {
+		description:
+			'`data.items` com até 10 leads por página; `data.page`, `data.limit`, `data.total`, `data.totalPages`.',
+	})
+	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listByOwner(
+	async listByOwner(
 		@CurrentUser() user: JwtUser,
 		@Param('ownerUserId', ParseUUIDPipe) ownerUserId: string,
+		@Query() query: ListLeadsQueryValidator,
 	) {
-		return this.listOwnLeadsUseCase
-			.execute(toLeadActor(user), ownerUserId)
-			.then((leads) => LeadPresenter.toResponseList(leads));
+		const leadPage = await this.listOwnLeadsUseCase.execute(
+			toLeadActor(user),
+			ownerUserId,
+			{ page: query.page, limit: query.limit },
+		);
+		return {
+			items: LeadPresenter.toResponseList([...leadPage.items]),
+			page: leadPage.page,
+			limit: leadPage.limit,
+			total: leadPage.total,
+			totalPages: leadPage.totalPages,
+		};
 	}
 
 	@Get('all')
 	@ApiOperation({
-		summary: 'Listar todos os leads (alcance global)',
+		summary: 'Listar todos os leads (alcance global, paginado)',
 		description:
-			'Reservado a `ADMINISTRATOR` e `GENERAL_MANAGER`. Lista todos os leads do sistema.',
+			'Reservado a `ADMINISTRATOR`. Lista todos os leads do sistema.',
 	})
-	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiOkResponseEnvelopePaged(LeadResponseDto, {
+		description:
+			'`data.items` com até 10 leads por página; `data.page`, `data.limit`, `data.total`, `data.totalPages`.',
+	})
+	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listAll(@CurrentUser() user: JwtUser) {
-		return this.listAllLeadsUseCase
+	async listAll(
+		@CurrentUser() user: JwtUser,
+		@Query() query: ListLeadsQueryValidator,
+	) {
+		const leadPage = await this.listAllLeadsUseCase.execute(toLeadActor(user), {
+			page: query.page,
+			limit: query.limit,
+		});
+		return {
+			items: LeadPresenter.toResponseList([...leadPage.items]),
+			page: leadPage.page,
+			limit: leadPage.limit,
+			total: leadPage.total,
+			totalPages: leadPage.totalPages,
+		};
+	}
+
+	@Get('catalog/stores')
+	@ApiOperation({
+		summary: 'Listar lojas disponíveis para operação de leads',
+		description:
+			'Retorna apenas as lojas que o utilizador autenticado pode usar no fluxo de leads.',
+	})
+	@ApiOkResponseEnvelopeArray(StoreResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listCatalogStores(@CurrentUser() user: JwtUser) {
+		return this.listLeadCatalogStoresUseCase
 			.execute(toLeadActor(user))
-			.then((leads) => LeadPresenter.toResponseList(leads));
+			.then((stores) =>
+				stores.map((store) => StorePresenter.toResponse(store)),
+			);
+	}
+
+	@Get('catalog/owners')
+	@ApiOperation({
+		summary: 'Listar responsáveis disponíveis para operação de leads',
+		description:
+			'Retorna os utilizadores atribuíveis dentro do escopo do utilizador autenticado, com as lojas em que cada um pode operar.',
+	})
+	@ApiOkResponseEnvelopeArray(LeadCatalogOwnerDto)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listCatalogOwners(@CurrentUser() user: JwtUser) {
+		return this.listLeadCatalogOwnersUseCase.execute(toLeadActor(user));
 	}
 
 	@Get('team/:teamId')
-	@ApiOperation({ summary: 'Listar leads por team' })
+	@ApiOperation({ summary: 'Listar leads por team (paginado)' })
 	@ApiParam({
 		name: 'teamId',
 		format: 'uuid',
 		description: 'Identificador do time',
 	})
-	@ApiOkResponseEnvelopeArray(LeadResponseDto)
+	@ApiOkResponseEnvelopePaged(LeadResponseDto, {
+		description:
+			'`data.items` com até 10 leads por página; `data.page`, `data.limit`, `data.total`, `data.totalPages`.',
+	})
+	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listByTeam(
+	async listByTeam(
 		@CurrentUser() user: JwtUser,
 		@Param('teamId', ParseUUIDPipe) teamId: string,
+		@Query() query: ListLeadsQueryValidator,
 	) {
-		return this.listTeamLeadsUseCase
-			.execute(toLeadActor(user), teamId)
-			.then((leads) => LeadPresenter.toResponseList(leads));
+		const leadPage = await this.listTeamLeadsUseCase.execute(
+			toLeadActor(user),
+			teamId,
+			{ page: query.page, limit: query.limit },
+		);
+		return {
+			items: LeadPresenter.toResponseList([...leadPage.items]),
+			page: leadPage.page,
+			limit: leadPage.limit,
+			total: leadPage.total,
+			totalPages: leadPage.totalPages,
+		};
+	}
+
+	@Get('manager')
+	@ApiOperation({
+		summary: 'Listar leads do escopo do gestor (paginado)',
+		description:
+			'Reservado a `MANAGER`. Agrega leads cujo responsável pertence a qualquer equipa visível (membro ou gestor).',
+	})
+	@ApiOkResponseEnvelopePaged(LeadResponseDto, {
+		description:
+			'`data.items` com até 10 leads por página; `data.page`, `data.limit`, `data.total`, `data.totalPages`.',
+	})
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async listManager(
+		@CurrentUser() user: JwtUser,
+		@Query() query: ListLeadsQueryValidator,
+	) {
+		const leadPage = await this.listManagerLeadsUseCase.execute(
+			toLeadActor(user),
+			{
+				page: query.page,
+				limit: query.limit,
+			},
+		);
+		return {
+			items: LeadPresenter.toResponseList([...leadPage.items]),
+			page: leadPage.page,
+			limit: leadPage.limit,
+			total: leadPage.total,
+			totalPages: leadPage.totalPages,
+		};
 	}
 
 	@Get(':id')

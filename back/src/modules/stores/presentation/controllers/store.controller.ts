@@ -67,14 +67,15 @@ const UNAUTHORIZED = {
 };
 
 const FORBIDDEN = {
-	description: 'Papel insuficiente: operacoes exigem ADMINISTRATOR.',
+	description:
+		'Papel insuficiente: operacoes exigem ADMINISTRATOR ou GENERAL_MANAGER.',
 };
 
 @ApiBearerAuth('access-token')
 @ApiTags('stores')
 @ApiUnauthorizedResponse(UNAUTHORIZED)
 @ApiForbiddenResponse(FORBIDDEN)
-@Roles('ADMINISTRATOR')
+@Roles('ADMINISTRATOR', 'GENERAL_MANAGER')
 @Controller('stores')
 class StoreController {
 	constructor(

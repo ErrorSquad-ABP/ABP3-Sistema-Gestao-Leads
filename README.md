@@ -2,134 +2,128 @@
 
 Repositório oficial da equipe `ErrorSquad-ABP` para o ABP 2026-1 do 3º DSM da FATEC Jacareí, desenvolvido para o parceiro `1000 Valle Multimarcas`.
 
-## Contexto do projeto
+## Contexto
 
 | Item | Detalhe |
 | --- | --- |
-| Instituição | Faculdade de Tecnologia Professor Francisco de Moura - FATEC Jacareí |
+| Instituição | FATEC Jacareí |
 | Curso | DSM - 3º semestre |
 | Metodologia | ABP - Aprendizagem Baseada em Projetos |
 | Parceiro | 1000 Valle Multimarcas |
-| Contato do parceiro | Leonardo Robles - contato@atitudeti.com.br |
+| Contato | Leonardo Robles - `contato@atitudeti.com.br` |
 | Focal point | Prof. Arley Ferreira de Souza |
 | Kickoff | 19/03/2026 às 19h30 |
-| Tema do semestre | Sistema de Gestão de Leads com Dashboard Analítico |
+| Tema | Sistema de Gestão de Leads com Dashboard Analítico |
 
-## Visão inicial
+## Estado atual da `main`
 
-O desafio consiste em desenvolver, do zero, um sistema web para gestão de leads comerciais de uma revendedora de veículos com múltiplas unidades. O produto deverá centralizar o cadastro de leads, sua associação a clientes, lojas e atendentes, a evolução da negociação e a geração de indicadores operacionais e analíticos para diferentes níveis de gestão.
+O produto já entrega um incremento funcional do núcleo transacional:
 
-Este repositório nasce como um `single repository` com duas aplicações separadas por responsabilidade: `front` em `Next.js` para a experiência web e `back` em `NestJS` para a API. As duas aplicações se comunicam via `HTTP/JSON`, enquanto o backend preserva organização interna de `monólito modular` para sustentar crescimento com clareza de domínio e baixo acoplamento.
+- autenticação por e-mail e senha;
+- `RBAC` aplicado no backend;
+- perfil e atualização das próprias credenciais;
+- gestão administrativa de utilizadores;
+- gestão de lojas;
+- gestão de equipas;
+- gestão de clientes;
+- CRUD operacional de leads com catálogos auxiliares;
+- API de negociações com histórico mínimo e vínculo a veículo;
+- catálogo operacional de veículos no backend;
+- deploy de `front` e `back` na Vercel com banco Neon.
+
+O que ainda não está fechado como produto:
+
+- módulo funcional de negociações no frontend;
+- módulo funcional de veículos no frontend;
+- dashboards operacionais e analíticos reais;
+- logs administrativos como feature de produto;
+- filtros temporais completos de analytics.
 
 ## Direcionadores arquiteturais
 
 - Estratégia de solução: `single repository` com `front` e `back` separados.
-- Padrão arquitetural interno do backend: `Monólito Modular` com `Arquitetura em Camadas`.
-- Separação macro: `front` como aplicação web em Next.js e `back` como API em NestJS.
+- Backend: `NestJS` em `monólito modular` com organização em camadas.
+- Frontend: `Next.js` com `App Router`, `React` e `TypeScript`.
 - Comunicação entre aplicações exclusivamente por `HTTP/JSON`.
-- NestJS adotado no backend por reforçar modularidade, injeção de dependência, uso de decorators e fronteiras explícitas entre camadas.
-- Módulos de negócio planejados: `auth`, `users`, `teams`, `stores`, `customers`, `leads`, `negotiations`, `dashboards` e `audit-logs`.
-- Regras de autorização centralizadas exclusivamente no backend, conforme o enunciado.
-- Estrutura preparada para PostgreSQL, Prisma ORM, Docker Compose, quality gate com Biome, ESLint e TypeScript.
-- Base desenhada para crescer além do ABP, preservando evolução incremental sem forçar microserviços cedo demais.
+- Persistência com `PostgreSQL` e `Prisma ORM`.
+- Regras de autorização aplicadas exclusivamente no backend.
+- Quality gate com `Biome`, `ESLint` e `TypeScript`.
+- Produção atual em `Vercel + Neon`.
+- Compose local secundário com PostgreSQL para conformidade e uso externo.
 
-## Stack base
+## Stack
 
 | Camada | Stack |
 | --- | --- |
-| Frontend | Next.js + React + TypeScript |
-| Backend | NestJS + TypeScript |
-| Banco de dados | PostgreSQL + Prisma ORM |
-| Qualidade | Biome, ESLint, TypeScript Checker |
-| Segurança | JWT, hashing seguro, lint de segurança, Snyk para VS Code |
-| Infraestrutura | Docker, Docker Compose, GitHub Actions |
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui |
+| Backend | NestJS 11, TypeScript, Prisma ORM |
+| Banco | PostgreSQL |
+| Qualidade | Biome, ESLint, TypeScript |
+| Infra | Docker, Docker Compose, Vercel, Neon |
 
-## Estrutura inicial do repositório
+## Estrutura do repositório
 
 ```text
 .
-├── .github/                # Templates e workflows
-├── .vscode/                # Recomendacoes e padroes de editor
-├── back/                   # API em NestJS + TypeScript
-├── docs/                   # Artefatos de arquitetura, dados, API e agilidade
-├── front/                  # Aplicacao web em Next.js + TypeScript
-├── infra/                  # Scripts e bootstrap de infraestrutura
-├── biome.json              # Formatacao e lint baseline
-├── docker-compose.dev.yml  # Override de desenvolvimento com hot reload
-├── eslint.config.cjs       # ESLint v9+ flat config
-├── docker-compose.yml      # Orquestracao local padrao
-└── tsconfig.base.json      # Configuracao TS compartilhada
+├── back/
+├── docs/
+├── front/
+├── infra/
+├── docker-compose.yml
+├── docker-compose.dev.yml
+├── docker-compose.local.yml
+├── eslint.config.cjs
+├── biome.json
+└── tsconfig.base.json
 ```
 
-## Escalabilidade e evolução
+## Funcionalidades ativas
 
-A arquitetura base não foi desenhada apenas para cumprir o enunciado do semestre. Ela foi montada para permitir crescimento progressivo do produto sem recomeçar a base técnica quando o sistema ficar maior.
+### Frontend
 
-Os princípios para essa evolução são:
+- `/login`
+- `/forgot-password`
+- `/app/profile`
+- `/app/leads`
+- `/app/customers`
+- `/app/stores`
+- `/app/teams`
+- `/app/users`
+- `/app/dashboard/operational` placeholder
+- `/app/dashboard/analytic` placeholder
 
-- separar `front` e `back` desde a base para manter fronteira HTTP clara e permitir evolução independente de cada aplicação;
-- manter o backend como `monólito modular` para ganhar velocidade, coesão de domínio e simplicidade operacional;
-- isolar módulos de negócio desde o início para reduzir acoplamento e facilitar manutenção;
-- concentrar regras críticas no backend para preservar segurança, auditoria e rastreabilidade;
-- preparar o backend para consultas analíticas mais exigentes com boa modelagem relacional, índices, agregações e materializações quando necessário;
-- permitir a introdução futura de filas, jobs assíncronos, cache e read models sem ruptura da base principal;
-- deixar extração para serviços separados apenas como decisão futura, orientada por necessidade real de escala, não por modismo arquitetural.
+### Backend
 
-Em outras palavras: a base atual é enxuta para o semestre, mas não é descartável nem um beco sem saída.
-
-## Time do projeto
-
-### Papéis definidos
-
-| Pessoa | GitHub | Papel |
-| --- | --- | --- |
-| João Victor Lopes Rosa | `@JV-L0pes` | Scrum Master e Responsável Técnico |
-| Leonardo da Silva Irineu | `@Leo-Slv` | Product Owner e Tech Lead |
-
-### Membros da organização
-
-| Pessoa | GitHub | Atuação inicial |
-| --- | --- | --- |
-| Arthur Facchinetti | `@ArtFacchinetti` | Time de desenvolvimento |
-| Caiuuutecnologico | `@Caiuuutecnologico` | Time de desenvolvimento |
-| Carlos Santo | `@Carlos-Santo` | Time de desenvolvimento |
-| Felipe Pacheco | `@FelipePacheco30` | Time de desenvolvimento |
-| João Victor Lopes Rosa | `@JV-L0pes` | Liderança técnica e facilitação |
-| Leonardo da Silva Irineu | `@Leo-Slv` | Produto e liderança técnica |
+- `/api/auth`
+- `/api/users`
+- `/api/teams`
+- `/api/stores`
+- `/api/customers`
+- `/api/leads`
+- `/api/deals`
+- `/api/vehicles`
 
 ## Organização ágil
 
-| Sprint | Período |
-| --- | --- |
-| Sprint 1 | 24/03/2026 a 14/04/2026 |
-| Sprint 2 | 15/04/2026 a 21/05/2026 |
-| Sprint 3 | 22/05/2026 a 11/06/2026 |
-| Apresentação final | Semana de 22/07/2026 |
+| Sprint | Período | Estado |
+| --- | --- | --- |
+| Sprint 1 | 24/03/2026 a 14/04/2026 | Encerrada |
+| Sprint 2 | 15/04/2026 a 21/05/2026 | Planejamento em atualização |
+| Sprint 3 | 22/05/2026 a 11/06/2026 | Não iniciada |
 
-Artefatos iniciais de acompanhamento já estão previstos em [`docs/agile/README.md`](./docs/agile/README.md), incluindo backlog, Definition of Done e visão das sprints.
+A Sprint 1 já foi encerrada. O resultado consolidado está em [docs/agile/sprint-1-review.md](./docs/agile/sprint-1-review.md).
+
+## Fluxo de branches
+
+- `main`: produção
+- `develop`: integração
+- `feat/*`, `fix/*`, `docs/*`, `refactor/*`, `chore/*`, `ci/*`, `build/*`, `style/*`, `perf/*`, `test/*`, `revert/*`: trabalho
+
+Pull requests para `main` saem exclusivamente de `develop`, salvo contingência com bypass administrativo da liderança.
 
 ## Qualidade e segurança
 
-- Formatação, lint e checks de consistência com `Biome`.
-- Qualidade estática com `ESLint` para TypeScript, React e regras de segurança.
-- Configuração oficial de ESLint centralizada em `eslint.config.cjs` (flat config do ESLint v9).
-- Gate de tipos com `tsc --noEmit`.
-- Recomendação de extensão `Snyk` no VS Code para análise de vulnerabilidades em tempo de desenvolvimento.
-- Workflows de CI para qualidade e para enforcement do fluxo `develop -> main`.
-
-### Política de workspaces
-
-O `package.json` da raiz existe para `tooling`, scripts de orquestração e padronização do repositório único. Dependências de aplicação não devem ser instaladas nele.
-
-Padrão esperado:
-
-- frontend: `npm i <pacote> -w front`
-- backend: `npm i <pacote> -w back`
-
-O CI valida essa regra automaticamente com `npm run guard:root-package`, impedindo que dependências de runtime sejam adicionadas por engano na raiz.
-### Fluxo obrigatório de validação local
-
-Antes de abrir PR, o fluxo esperado da equipe é:
+Fluxo local obrigatório antes de PR:
 
 1. `npm run format`
 2. `npm run lint`
@@ -137,102 +131,43 @@ Antes de abrir PR, o fluxo esperado da equipe é:
 4. `npm run lint:eslint`
 5. `npm run build`
 
-No CI, os equivalentes em modo de verificação são executados automaticamente para bloquear merges com código fora do padrão:
+Gate bloqueante do repositório:
 
-1. `npm run guard:root-package`
-2. `npm run format:check`
-3. `npm run lint:check`
-4. `npm run typecheck`
-5. `npm run lint:eslint`
-6. `npm run build`
+```bash
+npm run quality:gate:blocking
+```
 
-Observação: o `Snyk` permanece como ferramenta de apoio no editor via extensão do VS Code, não como etapa do GitHub Actions neste momento.
+## Subida local
 
-## Fluxo de branches
+O `docker compose` atual sobe apenas `front` e `back`. O banco é externo ao Compose e vem da `DATABASE_URL` em `back/.env`.
 
-- `main`: branch estável, protegida para releases.
-- `develop`: branch de integração contínua da equipe.
-- `feat/*`, `fix/*`, `docs/*`, `refactor/*`, `chore/*`, `ci/*`, `build/*`, `style/*`, `perf/*`, `test/*`, `revert/*`: branches de trabalho.
+### Desenvolvimento
 
-Pull requests para `main` devem sair exclusivamente de `develop`.
-Todas as alterações em `main` e `develop` devem entrar por pull request. Push direto e force-push nessas branches não fazem parte do fluxo do projeto.
-O repositório inclui template de PR, workflow para recusar PRs inválidos automaticamente e regras do GitHub para proteger `main` e `develop`.
-Na `main`, `@JV-L0pes` e `@Leo-Slv` possuem bypass apenas sobre as exigências de pull request, para contingência e governança da liderança. Esse bypass não libera push direto nem force-push.
+```bash
+npm install
+cp back/.env.example back/.env
+npm run dev
+```
 
-## Convenções obrigatórias
+### Produção atual
 
-- O título do PR é livre e serve para comunicação.
-- As mensagens de commit devem seguir `Conventional Commits`.
-- Os nomes das branches de trabalho devem seguir o mesmo vocabulário-base dos tipos de commit.
+- Front: `https://abp3-sistema-gestao-leads-front.vercel.app`
+- Back: `https://abp3-sistema-gestao-leads-back.vercel.app`
+- Banco: Neon PostgreSQL
 
-Exemplos válidos de branches:
+## Documentação
 
-- `feat/auth-jwt`
-- `fix/leads-active-negotiation`
-- `docs/wiki-quality-flow`
-- `chore/github-rulesets`
+- [docs/README.md](./docs/README.md)
+- [docs/architecture/README.md](./docs/architecture/README.md)
+- [docs/architecture/frontend-information-architecture.md](./docs/architecture/frontend-information-architecture.md)
+- [docs/api/README.md](./docs/api/README.md)
+- [docs/auth/current-state.md](./docs/auth/current-state.md)
+- [docs/agile/README.md](./docs/agile/README.md)
+- [docs/runbooks/README.md](./docs/runbooks/README.md)
+- [Wiki remota](https://github.com/ErrorSquad-ABP/ABP3-Sistema-Gestao-Leads/wiki)
 
-Exemplos válidos de commits:
+## Próximas frentes naturais
 
-- `feat(auth): add jwt login flow`
-- `fix(leads): prevent duplicated active negotiation`
-- `docs(readme): clarify branch workflow`
-
-Commits e branches fora desse padrão são recusados pelas regras do GitHub.
-
-## Documentação complementar
-
-- [`docs/README.md`](./docs/README.md)
-- [`docs/architecture/README.md`](./docs/architecture/README.md)
-- [`docs/architecture/next-frontend.md`](./docs/architecture/next-frontend.md)
-- [`docs/architecture/frontend-information-architecture.md`](./docs/architecture/frontend-information-architecture.md) (plano de IA/UX do frontend)
-- [Wiki do GitHub](https://github.com/ErrorSquad-ABP/ABP3-Sistema-Gestao-Leads/wiki) (espelho da documentação em `docs/`, hospedada no remoto)
-- [`docs/architecture/nest-backend.md`](./docs/architecture/nest-backend.md)
-- [`docs/api/README.md`](./docs/api/README.md)
-- [`docs/data/README.md`](./docs/data/README.md)
-- [`docs/agile/README.md`](./docs/agile/README.md)
-- [`docs/quality/README.md`](./docs/quality/README.md)
-- [`docs/runbooks/README.md`](./docs/runbooks/README.md)
-- [`docs/auth/current-state.md`](./docs/auth/current-state.md)
-- [`docs/frontend/app-shell.md`](./docs/frontend/app-shell.md)
-- [`front/README.md`](./front/README.md)
-- [`back/README.md`](./back/README.md)
-
-## Como subir o esqueleto inicial
-
-Guia operacional recomendado:
-
-- [`docs/runbooks/local-setup.md`](./docs/runbooks/local-setup.md)
-- [`docs/runbooks/deploy.md`](./docs/runbooks/deploy.md)
-
-### Desenvolvimento com hot reload
-
-1. Instale `Docker` e `Docker Compose`.
-2. Clone o repositório.
-3. Configure o backend: copie [`back/.env.example`](./back/.env.example) para `back/.env` e ajuste `DATABASE_URL` / segredos se necessário.
-4. Execute `npm run dev`.
-5. Acesse o frontend em `http://localhost:3000`, a API em `http://localhost:3001/api/health` e o PostgreSQL no host em `localhost:5433`.
-
-### Execução base mais estável
-
-1. Execute `npm run compose:up`.
-2. O frontend sobe em modo de execução, o backend em build compilado e o banco aplica bootstrap + migrations pendentes.
-
-## Estratégia de banco
-
-A estratégia oficial de banco do projeto é:
-
-- usar `Prisma ORM` como camada obrigatória de acesso a dados no backend;
-- tratar o schema do Prisma como fonte primária da estrutura relacional;
-- gerar e aplicar migrations exclusivamente pelo fluxo do Prisma;
-- manter seeds vinculados ao fluxo da aplicação e do Prisma;
-- não adotar scripts SQL manuais como estratégia de evolução do banco.
-
-Os artefatos oficiais dessa estratégia ficam em `back/prisma/`, junto da configuração do backend.
-
-## Próximos passos sugeridos
-
-1. Refinar o modelo de dados oficial e validar o DER com o parceiro.
-2. Detalhar casos de uso, classes, componentes e sequência em `docs/`.
-3. Priorizar backlog da Sprint 1 e iniciar implementação dos módulos `auth`, `users` e `leads`.
-4. Definir estratégia de autenticação, autorização RBAC e histórico de negociação no backend.
+1. Fechar Sprint 2 com recorte realista de frontend para negociações, veículos, dashboards e gaps restantes.
+2. Consolidar dashboards como produto, não placeholder.
+3. Fechar documentação final de cobertura ABP, incluindo DER/UML e matriz requisito x entrega.

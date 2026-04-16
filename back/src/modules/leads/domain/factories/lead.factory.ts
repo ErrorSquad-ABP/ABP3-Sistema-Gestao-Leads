@@ -8,6 +8,7 @@ type CreateLeadParams = {
 	readonly storeId: string;
 	readonly ownerUserId: string | null;
 	readonly source: string;
+	readonly vehicleInterestText?: string | null;
 };
 
 class LeadFactory {
@@ -19,6 +20,7 @@ class LeadFactory {
 			params.ownerUserId === null ? null : Uuid.parse(params.ownerUserId),
 			LeadSource.create(params.source),
 			'NEW',
+			params.vehicleInterestText ?? null,
 		);
 		lead.recordDomainEvent(
 			new LeadRegisteredEvent(

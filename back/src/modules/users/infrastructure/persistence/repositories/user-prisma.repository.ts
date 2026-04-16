@@ -2,6 +2,7 @@ import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { UserRole as PrismaUserRole } from '../../../../../generated/prisma/enums.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import { parseUserRole } from '../../../../../shared/domain/enums/user-role.enum.js';
+import type { UUID } from '../../../../../shared/domain/types/identifiers.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
 import { Email } from '../../../../../shared/domain/value-objects/email.value-object.js';
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
@@ -138,6 +139,20 @@ class UserPrismaRepository implements IUserRepository {
 			include: userRelationsInclude,
 		});
 		return user ? this.toDomain(user) : null;
+	}
+
+	async listByIds(ids: readonly UUID[]): Promise<readonly User[]> {
+		if (ids.length === 0) {
+			return [];
+		}
+
+		const rows = await this.client.user.findMany({
+			where: { id: { in: ids.map((id) => id.value) } },
+			orderBy: { name: 'asc' },
+			include: userRelationsInclude,
+		});
+
+		return rows.map((row) => this.toDomain(row));
 	}
 
 	async listPaged(query: {

@@ -1,5 +1,7 @@
 # Sprint 1 Goal
 
+> Documento histórico de planejamento. A sprint já foi encerrada. Para o resultado consolidado, consulte [`sprint-1-review.md`](./sprint-1-review.md).
+
 ## Objetivo
 
 Formalizar o objetivo central da Sprint 1 de forma curta, executiva e compartilhável com o time, conectando a meta da sprint ao backlog priorizado e aos resultados esperados para o primeiro incremento do produto.

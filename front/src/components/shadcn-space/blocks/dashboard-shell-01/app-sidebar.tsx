@@ -3,10 +3,13 @@
 import type { ReactNode } from 'react';
 import {
 	BarChart3,
+	Building2,
 	ClipboardList,
+	ContactRound,
 	LayoutPanelTop,
 	type LucideIcon,
 	ShieldCheck,
+	Users,
 } from 'lucide-react';
 import SimpleBar from 'simplebar-react';
 
@@ -36,16 +39,22 @@ export type NavItem = {
 };
 
 const iconByLabel: Record<AppNavigationItem['key'], LucideIcon> = {
+	customers: ContactRound,
 	dashboardAnalytic: BarChart3,
 	dashboardOperational: LayoutPanelTop,
 	leads: ClipboardList,
+	stores: Building2,
+	teams: Users,
 	users: ShieldCheck,
 };
 
 const sectionByKey: Record<AppNavigationItem['key'], string> = {
+	customers: 'Workspace',
 	dashboardAnalytic: 'Dashboards',
 	dashboardOperational: 'Dashboards',
 	leads: 'Workspace',
+	stores: 'Administração',
+	teams: 'Administração',
 	users: 'Administração',
 };
 

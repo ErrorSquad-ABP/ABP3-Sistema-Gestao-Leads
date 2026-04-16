@@ -1,5 +1,7 @@
 # Sprint 1 Backlog
 
+> Documento histórico de planejamento e execução. A sprint já foi encerrada. Para a consolidação final do que permaneceu na `main`, consulte [`sprint-1-review.md`](./sprint-1-review.md).
+
 ## Objetivo
 
 Detalhar o backlog operacional da Sprint 1, quebrando o escopo comprometido em frentes de trabalho e entregáveis concretos que orientem execução, acompanhamento diário e revisão ao final da sprint.

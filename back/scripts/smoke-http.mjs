@@ -368,7 +368,8 @@ async function main() {
 		});
 		if (adminAuthHeader) {
 			assert(res.status === 200, `GET leads/owner esperado 200`);
-			assert(Array.isArray(json?.data), 'leads/owner data array');
+			assert(Array.isArray(json?.data?.items), 'leads/owner data.items array');
+			assert(typeof json?.data?.total === 'number', 'leads/owner data.total');
 			console.log('OK GET /leads/owner/:ownerUserId');
 		} else {
 			assert(res.status === 401, 'GET leads/owner sem auth → 401');
@@ -380,7 +381,7 @@ async function main() {
 		});
 		if (adminAuthHeader) {
 			assert(res.status === 200, `GET leads/team esperado 200`);
-			assert(Array.isArray(json?.data), 'leads/team data array');
+			assert(Array.isArray(json?.data?.items), 'leads/team data.items array');
 			console.log('OK GET /leads/team/:teamId');
 		} else {
 			assert(res.status === 401, 'GET leads/team sem auth → 401');
@@ -392,7 +393,7 @@ async function main() {
 		});
 		if (adminAuthHeader) {
 			assert(res.status === 200, `GET leads/all esperado 200`);
-			assert(Array.isArray(json?.data), 'leads/all data array');
+			assert(Array.isArray(json?.data?.items), 'leads/all data.items array');
 			console.log('OK GET /leads/all');
 		}
 	}

@@ -1,6 +1,8 @@
 import path from 'node:path';
 import type { NextConfig } from 'next';
 
+const apiProxyTarget = process.env.API_INTERNAL_URL?.replace(/\/$/, '');
+
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	output: 'standalone',
@@ -14,6 +16,18 @@ const nextConfig: NextConfig = {
 				pathname: '/**',
 			},
 		],
+	},
+	async rewrites() {
+		if (!apiProxyTarget) {
+			return [];
+		}
+
+		return [
+			{
+				source: '/api/:path*',
+				destination: `${apiProxyTarget}/api/:path*`,
+			},
+		];
 	},
 };
 

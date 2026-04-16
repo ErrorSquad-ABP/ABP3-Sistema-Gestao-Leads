@@ -14,6 +14,7 @@ type LeadScope =
 	| {
 			kind: 'attendant';
 			readonly actorUserId: string;
+			readonly readTeamIds: ReadonlySet<string>;
 			readonly readStoreIds: ReadonlySet<string>;
 	  }
 	| {
@@ -23,6 +24,12 @@ type LeadScope =
 			readonly mutateTeamIds: ReadonlySet<string>;
 			readonly readStoreIds: ReadonlySet<string>;
 			readonly mutateStoreIds: ReadonlySet<string>;
+	  }
+	| {
+			kind: 'general_manager';
+			readonly actorUserId: string;
+			readonly readTeamIds: ReadonlySet<string>;
+			readonly readStoreIds: ReadonlySet<string>;
 	  };
 
 function unionTeamIds(ids: readonly { value: string }[]): string[] {
@@ -37,7 +44,7 @@ class LeadAccessPolicy {
 	) {}
 
 	private async resolveScope(actor: LeadActor): Promise<LeadScope> {
-		if (actor.role === 'ADMINISTRATOR' || actor.role === 'GENERAL_MANAGER') {
+		if (actor.role === 'ADMINISTRATOR') {
 			return { kind: 'full' };
 		}
 
@@ -50,7 +57,7 @@ class LeadAccessPolicy {
 		const memberTeamIds = unionTeamIds(user.memberTeamIds);
 		const managedTeamIds = unionTeamIds(user.managedTeamIds);
 		const readableTeamIds =
-			actor.role === 'MANAGER'
+			actor.role === 'MANAGER' || actor.role === 'GENERAL_MANAGER'
 				? [...new Set([...memberTeamIds, ...managedTeamIds])]
 				: memberTeamIds;
 
@@ -75,11 +82,25 @@ class LeadAccessPolicy {
 			};
 		}
 
+		if (actor.role === 'GENERAL_MANAGER') {
+			return {
+				kind: 'general_manager',
+				actorUserId: actor.userId,
+				readTeamIds: new Set(readableTeamIds),
+				readStoreIds: new Set(readTeams.map((team) => team.storeId.value)),
+			};
+		}
+
 		return {
 			kind: 'attendant',
 			actorUserId: actor.userId,
+			readTeamIds: new Set(readableTeamIds),
 			readStoreIds: new Set(readTeams.map((team) => team.storeId.value)),
 		};
+	}
+
+	async resolveCatalogScope(actor: LeadActor): Promise<LeadScope> {
+		return this.resolveScope(actor);
 	}
 
 	private async targetUserTeamIds(userId: string): Promise<readonly string[]> {
@@ -160,12 +181,27 @@ class LeadAccessPolicy {
 
 	/** Listagem sem filtro por owner/equipa: alinhado a `resolveScope` com `kind: 'full'`. */
 	async assertCanListAllLeads(actor: LeadActor): Promise<void> {
-		if (actor.role === 'ADMINISTRATOR' || actor.role === 'GENERAL_MANAGER') {
+		if (actor.role === 'ADMINISTRATOR') {
 			return;
 		}
 		throw new LeadAccessDeniedError(
-			'Listagem global permitida apenas para administrador ou gestor geral.',
+			'Listagem global permitida apenas para administrador.',
 		);
+	}
+
+	/**
+	 * Listagem paginada unificada das equipas visíveis ao gestor (`memberTeams` ∪ `managedTeams`).
+	 */
+	async resolveManagerListTeamIds(
+		actor: LeadActor,
+	): Promise<readonly string[]> {
+		const scope = await this.resolveScope(actor);
+		if (scope.kind !== 'manager') {
+			throw new LeadAccessDeniedError(
+				'Listagem unificada por equipas disponivel apenas para gestores de equipa.',
+			);
+		}
+		return [...scope.readTeamIds];
 	}
 
 	async assertCanReadLead(actor: LeadActor, lead: Lead): Promise<void> {
@@ -208,6 +244,11 @@ class LeadAccessPolicy {
 		if (scope.kind === 'attendant') {
 			throw new LeadAccessDeniedError(
 				'Atendentes podem alterar apenas os proprios leads.',
+			);
+		}
+		if (scope.kind === 'general_manager') {
+			throw new LeadAccessDeniedError(
+				'Gestores gerais nao podem alterar leads fora do proprio ownership.',
 			);
 		}
 		if (lead.ownerUserId === null) {

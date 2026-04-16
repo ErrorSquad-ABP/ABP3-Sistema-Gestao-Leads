@@ -6,6 +6,7 @@ import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção

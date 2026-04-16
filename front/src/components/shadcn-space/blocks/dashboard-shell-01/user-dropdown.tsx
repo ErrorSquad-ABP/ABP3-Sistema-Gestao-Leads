@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { type LucideIcon, LogOut, Mail, ShieldCheck } from 'lucide-react';
 import { queryKeys } from '@/lib/constants/query-keys';
+import { clearAccessToken } from '@/lib/auth/access-token';
 import { appRoutes } from '@/lib/routes/app-routes';
 import { logout } from '@/features/login/api/login.service';
 
@@ -29,11 +30,16 @@ type Props = {
 type MenuItem = {
 	label: string;
 	icon: LucideIcon;
+	href?: string;
 };
 
 const MANAGE_ACCOUNT_ITEMS: MenuItem[] = [
-	{ label: 'Perfil', icon: ShieldCheck },
-	{ label: 'Credenciais', icon: Mail },
+	{ label: 'Perfil', icon: ShieldCheck, href: appRoutes.app.profile },
+	{
+		label: 'Credenciais',
+		icon: Mail,
+		href: `${appRoutes.app.profile}#credentials`,
+	},
 ];
 
 const LOGOUT_ITEM: MenuItem = {
@@ -64,14 +70,13 @@ const UserDropdown = ({
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 	const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
 
-	const canManageUsers = currentUser.role === 'ADMINISTRATOR';
-
 	async function handleLogout() {
 		setIsLoggingOut(true);
 
 		try {
 			await logout();
 		} finally {
+			clearAccessToken();
 			queryClient.setQueryData(queryKeys.auth.currentUser, null);
 			await queryClient.cancelQueries({ queryKey: queryKeys.auth.currentUser });
 			router.replace(appRoutes.auth.login);
@@ -90,7 +95,7 @@ const UserDropdown = ({
 				<DropdownMenuTrigger>{trigger}</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align={align}
-					className="w-3xs rounded-2xl data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:!bg-transparent"
+					className="w-3xs rounded-2xl data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:bg-transparent!"
 				>
 					{/* User Info */}
 					<DropdownMenuGroup>
@@ -118,40 +123,42 @@ const UserDropdown = ({
 					<DropdownMenuSeparator />
 
 					{/* Main Links */}
-					{canManageUsers ? (
-						<DropdownMenuGroup>
-							{MANAGE_ACCOUNT_ITEMS.map(({ label, icon: Icon }) => (
-								<DropdownMenuItem
-									key={label}
-									className={itemClass}
-									onFocus={() => setHighlightedItem(label)}
-									onPointerMove={() => setHighlightedItem(label)}
-									onPointerLeave={() => setHighlightedItem(null)}
-									onSelect={() => router.push(appRoutes.app.users)}
+					<DropdownMenuGroup>
+						{MANAGE_ACCOUNT_ITEMS.map(({ label, icon: Icon, href }) => (
+							<DropdownMenuItem
+								key={label}
+								className={itemClass}
+								onFocus={() => setHighlightedItem(label)}
+								onPointerMove={() => setHighlightedItem(label)}
+								onPointerLeave={() => setHighlightedItem(null)}
+								onSelect={() => {
+									if (href) {
+										router.push(href);
+									}
+								}}
+								style={{
+									backgroundColor: 'transparent',
+									color: isHighlighted(label) ? '#D96C3F' : undefined,
+								}}
+							>
+								<Icon
 									style={{
-										backgroundColor: 'transparent',
+										color: isHighlighted(label) ? '#D96C3F' : undefined,
+									}}
+									size={20}
+								/>
+								<span
+									style={{
 										color: isHighlighted(label) ? '#D96C3F' : undefined,
 									}}
 								>
-									<Icon
-										style={{
-											color: isHighlighted(label) ? '#D96C3F' : undefined,
-										}}
-										size={20}
-									/>
-									<span
-										style={{
-											color: isHighlighted(label) ? '#D96C3F' : undefined,
-										}}
-									>
-										{label}
-									</span>
-								</DropdownMenuItem>
-							))}
-						</DropdownMenuGroup>
-					) : null}
+									{label}
+								</span>
+							</DropdownMenuItem>
+						))}
+					</DropdownMenuGroup>
 
-					{canManageUsers ? <DropdownMenuSeparator /> : null}
+					<DropdownMenuSeparator />
 
 					{/* Logout */}
 					<DropdownMenuItem

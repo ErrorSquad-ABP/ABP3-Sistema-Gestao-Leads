@@ -2,14 +2,7 @@
 
 ## Objetivo
 
-Este runbook descreve o bootstrap local completo do projeto no estado atual da implementação. O fluxo cobre:
-
-- configuração de variáveis de ambiente;
-- geração de chaves JWT;
-- subida da stack com Docker Compose;
-- migrations e seed;
-- credenciais bootstrap;
-- validação funcional mínima de autenticação.
+Documentar o bootstrap local no estado atual da `main`.
 
 ## Pré-requisitos
 
@@ -17,236 +10,191 @@ Este runbook descreve o bootstrap local completo do projeto no estado atual da i
 - `npm >= 10`
 - `Docker`
 - `Docker Compose`
+- acesso a um PostgreSQL válido, local ou remoto
 
-## Visão geral da stack local
+## Topologia local atual
 
-| Serviço | URL / Porta | Observação |
-| --- | --- | --- |
-| Frontend | `http://localhost:3000` | Next.js |
-| Backend | `http://localhost:3001` | NestJS |
-| Healthcheck | `http://localhost:3001/api/health` | Sanidade mínima da API |
-| PostgreSQL | `localhost:5433` | Host local mapeado para o container |
+O projeto mantém dois modos locais:
 
-## 1. Clonar e instalar dependências
+- padrão do time: `front + back` usando o banco definido em `back/.env` (normalmente Neon dev);
+- secundário de conformidade: `front + back + postgres` via `docker-compose.local.yml`.
 
-Na raiz do repositório:
+O banco **não** faz parte do Compose padrão. O PostgreSQL local existe como opção secundária para uso externo, validação isolada e aderência ao edital.
+
+## Portas
+
+| Serviço | URL |
+| --- | --- |
+| Frontend | `http://localhost:3000` |
+| Backend | `http://localhost:3001` |
+| Health | `http://localhost:3001/api/health` |
+
+## 1. Instalar dependências
 
 ```bash
 npm install
 ```
 
-## 2. Configurar o backend
-
-Copie o exemplo versionado:
+## 2. Configurar ambiente do backend
 
 ```bash
 cp back/.env.example back/.env
 ```
 
-Pontos importantes do `back/.env`:
+Preencher no mínimo:
 
-- `DATABASE_URL` local deve apontar para `localhost:5433`
-- `FRONTEND_ORIGINS` deve incluir `http://localhost:3000`
-- o `AuthModule` exige `JWT_ACCESS_PRIVATE_KEY` e `JWT_ACCESS_PUBLIC_KEY`
-
-## 3. Gerar as chaves JWT
-
-O backend usa JWT `RS256` com par PEM. Existem dois caminhos válidos.
-
-### Opção A - gerar manualmente com OpenSSL
-
-```bash
-openssl genrsa -out private.pem 2048
-openssl rsa -in private.pem -pubout -out public.pem
-```
-
-Depois, converta os PEMs para uma linha só com `\\n`:
-
-```bash
-node -e "console.log(require('fs').readFileSync('private.pem','utf8').replace(/\\n/g,'\\\\n'))"
-node -e "console.log(require('fs').readFileSync('public.pem','utf8').replace(/\\n/g,'\\\\n'))"
-```
-
-Cole o resultado em `back/.env`:
-
-```env
-JWT_ACCESS_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----
-JWT_ACCESS_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----
-```
-
-### Opção B - gerar arquivo de apoio para Docker
-
-O repositório inclui:
-
-```bash
-node back/scripts/write-docker-jwt-env.mjs
-```
-
-Esse script escreve `.env.docker-jwt-test` com:
-
+- `DATABASE_URL`
 - `JWT_ACCESS_PRIVATE_KEY`
 - `JWT_ACCESS_PUBLIC_KEY`
+- `JWT_ISSUER`
+- `JWT_AUDIENCE`
+- `FRONTEND_ORIGINS=http://localhost:3000`
 
-Você pode usar esse arquivo como base para preencher o `.env` da raiz quando o foco for Compose.
+Observação:
 
-## 4. Configurar o `.env` da raiz para Docker Compose
+- o time pode apontar `DATABASE_URL` tanto para um banco local quanto para a Neon de desenvolvimento;
+- o Compose não cria nem reseta banco.
 
-O `docker-compose.yml` lê as chaves JWT da raiz do repositório, não de `back/.env`.
+## 3. Subir a stack
 
-Crie ou atualize `.env` na raiz com:
-
-```env
-JWT_ACCESS_PRIVATE_KEY=...
-JWT_ACCESS_PUBLIC_KEY=...
-JWT_ISSUER=abp3-leads-api
-JWT_AUDIENCE=abp3-leads-api
-FRONTEND_ORIGINS=http://localhost:3000
-```
-
-Sem isso, o container do backend sobe e cai com erro de configuração do `AuthModule`.
-
-## 5. Subir a stack
-
-### Desenvolvimento com override
+### Desenvolvimento com hot reload
 
 ```bash
 npm run dev
 ```
 
-Esse comando usa:
-
-- `docker-compose.yml`
-- `docker-compose.dev.yml`
-
-### Subida padrão mais estável
+### Execução padrão
 
 ```bash
 npm run compose:up
 ```
 
-## 6. Aplicar migrations e seed
+### Execução secundária com PostgreSQL local
 
-Se estiver usando a stack local da raiz:
+```bash
+npm run compose:local:up
+```
+
+Nesse modo:
+
+- o PostgreSQL sobe em `localhost:5433`;
+- um bootstrap local aplica `migrations` automaticamente;
+- o seed roda automaticamente apenas se a base estiver vazia;
+- o container `back` passa a usar `postgresql://abp:abp@postgres:5432/lead_management`;
+- o `back/.env` continua existindo, mas `DATABASE_URL` é sobrescrita pelo override local.
+
+## 4. Migrations
+
+Quando houver migration nova:
 
 ```bash
 npm run db:migrate
-npm run db:seed
+```
+
+Como o banco não é parte do Compose, esse passo é explícito e consciente.
+
+### Migration no PostgreSQL local secundário
+
+```bash
+npm run db:migrate:local
 ```
 
 Observação:
 
-- `prisma-migrate` do Compose já aplica migrations no container.
-- o seed não roda automaticamente no `docker-compose.yml` atual.
-- o seed precisa ser disparado manualmente.
+- no `compose.local`, esse passo já é executado automaticamente pelo serviço `local-bootstrap` antes do `back` subir;
+- o comando manual continua útil para reaplicar ou validar a base sem subir a stack inteira.
 
-## 7. Credenciais bootstrap
+## 5. Seed
 
-Hoje o seed cria pelo menos os seguintes usuários de suporte:
+### Seed mínimo
+
+```bash
+npm run db:seed
+```
+
+### Seed analítico
+
+```bash
+SEED_MODE=dashboard npm run db:seed
+```
+
+### Seed no PostgreSQL local secundário
+
+```bash
+SEED_MODE=dashboard npm run db:seed:local
+```
+
+Observação:
+
+- no `compose.local`, o seed só roda automaticamente quando a base local está vazia;
+- se já existir utilizador na tabela `User`, o bootstrap local pula o seed para não sobrescrever a base.
+
+## 6. Credenciais bootstrap
 
 | Perfil | E-mail | Senha |
 | --- | --- | --- |
 | Administrador | `admin@crm.com` | `admin123` |
 | Gerente Geral | `geral@crm.com` | `admin123` |
 
-Origem: [dashboard-csv.seed.ts](/home/jvl0pes/Desktop/ABP3-Sistema-Gestao-Leads/back/prisma/seeds/dashboard-csv.seed.ts)
+## 7. Verificação mínima
 
-## 8. Validar a autenticação
-
-### Validação manual
-
-1. Acesse `http://localhost:3000/login`
-2. Entre com `admin@crm.com / admin123`
-3. Confirme:
-   - login concluído
-   - redirecionamento para `/app/dashboard/analytic`
-   - renderização do AppShell autenticado
-
-### Validação por healthcheck
+### API
 
 ```bash
 curl http://localhost:3001/api/health
 ```
 
-### Validação de smoke da API
+### Front
 
-O backend já possui smoke script:
+1. Abrir `http://localhost:3000/login`
+2. Entrar com `admin@crm.com / admin123`
+3. Confirmar acesso a `/app/leads` e `/app/users`
+
+### Smoke script
 
 ```bash
 npm run smoke:http -w back
 ```
 
-Quando aplicável, defina:
+## 8. Problemas comuns
+
+### `401` no login
+
+Causas mais comuns:
+
+- seed não executado;
+- banco apontando para ambiente diferente do esperado;
+- credenciais bootstrap ainda não existem naquela base.
+
+### Backend cai no bootstrap
+
+Verificar:
+
+- `DATABASE_URL`
+- chaves JWT
+- `JWT_ISSUER`
+- `JWT_AUDIENCE`
+
+### `docker compose down -v` não limpa o banco
+
+Isso agora é esperado. O Compose não sobe PostgreSQL local por padrão. O banco só muda se você:
+
+- trocar a `DATABASE_URL`;
+- rodar migrations;
+- rodar seed;
+- limpar a base externamente.
+
+### Quero um banco local sem depender do remoto
+
+Use o modo secundário:
 
 ```bash
-export SMOKE_ADMIN_EMAIL=admin@crm.com
-export SMOKE_ADMIN_PASSWORD=admin123
+npm run compose:local:up
 ```
 
-## 9. Fluxos atuais relevantes
-
-- `POST /api/auth/login`: funcional
-- `POST /api/auth/logout`: funcional
-- `POST /api/auth/refresh`: funcional
-- `GET /api/auth/session`: funcional (público; `data: null` sem sessão)
-- `GET /api/auth/me`: funcional (401 sem JWT)
-- `/login`: funcional
-- `/forgot-password`: informativo, sem recuperação automática
-- `/register`: fora do fluxo público; criação pública não é suportada
-
-## 10. Problemas comuns
-
-### Backend sobe e cai com erro de JWT
-
-Causa:
-
-- `JWT_ACCESS_PRIVATE_KEY` e `JWT_ACCESS_PUBLIC_KEY` ausentes ou inválidos
-
-Correção:
-
-- preencher o `.env` da raiz e/ou `back/.env` com o par PEM em uma linha
-
-### Login falha mesmo com a stack de pé
-
-Causa provável:
-
-- seed ainda não rodou
-
-Correção:
+Depois disso, o fluxo local fica totalmente independente do banco remoto. Se quiser forçar ciclo manual, ainda existem:
 
 ```bash
-npm run db:seed
+npm run db:migrate:local
+SEED_MODE=dashboard npm run db:seed:local
 ```
-
-### Prisma Studio conecta, mas emite erro de stream
-
-Isso já apareceu com o Studio, mas não caracteriza necessariamente erro de banco ou schema. Trate primeiro como problema do tooling do Prisma Studio. O banco do projeto deve continuar acessível normalmente por:
-
-- Prisma CLI
-- migrations
-- pgAdmin
-
-### Vídeo do login não carrega no container
-
-O `front/Dockerfile` atual já copia `front/public` para a imagem final. Se o vídeo não aparecer:
-
-```bash
-docker compose build front
-docker compose up -d front
-```
-
-Depois, valide:
-
-```text
-http://localhost:3000/assets/login-wave.mp4
-```
-
-## 11. Checklist de bootstrap local
-
-- [ ] Dependências instaladas com `npm install`
-- [ ] `back/.env` criado a partir do exemplo
-- [ ] `.env` da raiz criado com chaves JWT para o Compose
-- [ ] Stack subiu com `npm run dev` ou `npm run compose:up`
-- [ ] Migrations aplicadas
-- [ ] Seed executado
-- [ ] Login com `admin@crm.com / admin123` validado
-- [ ] AppShell autenticado carregando após login

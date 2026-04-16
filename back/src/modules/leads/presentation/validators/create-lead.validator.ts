@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
 	IsIn,
 	IsNotEmpty,
+	IsOptional,
 	IsString,
 	IsUUID,
 	ValidateIf,
@@ -41,6 +42,17 @@ class CreateLeadValidator {
 	@IsNotEmpty()
 	@IsIn(ALLOWED_LEAD_SOURCES)
 	source!: string;
+
+	@ApiPropertyOptional({
+		nullable: true,
+		description:
+			'Interesse inicial em veículo (texto livre, sem vínculo estrutural).',
+	})
+	@IsOptional()
+	@ValidateIf((_, value) => value !== null && value !== undefined)
+	@IsString()
+	@IsNotEmpty()
+	vehicleInterestText?: string | null;
 }
 
 export { CreateLeadValidator };
