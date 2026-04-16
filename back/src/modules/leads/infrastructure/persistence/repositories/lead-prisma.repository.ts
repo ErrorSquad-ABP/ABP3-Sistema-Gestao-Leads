@@ -21,6 +21,7 @@ class LeadPrismaRepository implements ILeadRepository {
 				id: record.id,
 				customerId: record.customerId,
 				ownerUserId: record.ownerUserId,
+				vehicleInterestText: record.vehicleInterestText,
 				source: record.source,
 				status: record.status,
 				storeId: record.storeId,
@@ -35,6 +36,7 @@ class LeadPrismaRepository implements ILeadRepository {
 			data: {
 				customerId: record.customerId,
 				ownerUserId: record.ownerUserId,
+				vehicleInterestText: record.vehicleInterestText,
 				source: record.source,
 				status: record.status,
 				storeId: record.storeId,

@@ -10,6 +10,7 @@ class LeadPresenter {
 			source: lead.source.value,
 			status: lead.status,
 			storeId: lead.storeId.value,
+			vehicleInterestText: lead.vehicleInterestText,
 		} as LeadResponseDto;
 	}
 

@@ -8,6 +8,7 @@ type LeadRecord = {
 	readonly customerId: string;
 	readonly storeId: string;
 	readonly ownerUserId: string | null;
+	readonly vehicleInterestText: string | null;
 	readonly source: PrismaLeadSource;
 	readonly status: PrismaLeadStatus;
 };

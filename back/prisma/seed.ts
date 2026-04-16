@@ -25,6 +25,7 @@ const SEED_TRANSACTION_OPTIONS = {
 async function truncateSeedData(tx: Prisma.TransactionClient) {
 	await tx.auditLog.deleteMany();
 	await tx.deal.deleteMany();
+	await tx.vehicle.deleteMany();
 	await tx.lead.deleteMany();
 	await tx.customer.deleteMany();
 	await tx.authSession.deleteMany();
@@ -67,6 +68,7 @@ export async function runSeed() {
 			await createTeams(tx, dataset.teams);
 			await tx.customer.createMany({ data: dataset.customers });
 			await tx.lead.createMany({ data: dataset.leads });
+			await tx.vehicle.createMany({ data: dataset.vehicles });
 			await tx.deal.createMany({ data: dataset.deals });
 		}, SEED_TRANSACTION_OPTIONS);
 

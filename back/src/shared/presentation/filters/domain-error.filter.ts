@@ -18,6 +18,13 @@ import { LeadAccessDeniedError } from '../../../modules/leads/domain/errors/lead
 import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead-invalid-store.error.js';
+import { ActiveDealAlreadyExistsError } from '../../../modules/deals/domain/errors/active-deal-already-exists.error.js';
+import { ActiveDealForVehicleAlreadyExistsError } from '../../../modules/deals/domain/errors/active-deal-for-vehicle-already-exists.error.js';
+import { DealAlreadyClosedError } from '../../../modules/deals/domain/errors/deal-already-closed.error.js';
+import { DealInvalidStageTransitionError } from '../../../modules/deals/domain/errors/deal-invalid-stage-transition.error.js';
+import { DealNotFoundError } from '../../../modules/deals/domain/errors/deal-not-found.error.js';
+import { DealVehicleNotAvailableError } from '../../../modules/deals/domain/errors/deal-vehicle-not-available.error.js';
+import { DealVehicleStoreMismatchError } from '../../../modules/deals/domain/errors/deal-vehicle-store-mismatch.error.js';
 import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not-found.error.js';
 import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/store-delete-blocked.error.js';
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
@@ -28,6 +35,8 @@ import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
 import { UserInvalidAccessGroupError } from '../../../modules/users/domain/errors/user-invalid-access-group.error.js';
 import { UserNotFoundError } from '../../../modules/users/domain/errors/user-not-found.error.js';
+import { VehicleInactiveError } from '../../../modules/vehicles/domain/errors/vehicle-inactive.error.js';
+import { VehicleNotFoundError } from '../../../modules/vehicles/domain/errors/vehicle-not-found.error.js';
 import { DomainValidationError } from '../../domain/errors/domain-validation.error.js';
 import type {
 	ApiErrorEnvelope,
@@ -204,6 +213,27 @@ class DomainErrorFilter implements ExceptionFilter {
 		if (exception instanceof LeadNotFoundError) {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
+		if (exception instanceof DealNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof ActiveDealAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof ActiveDealForVehicleAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof DealAlreadyClosedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof DealVehicleNotAvailableError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof DealVehicleStoreMismatchError) {
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
+		}
+		if (exception instanceof DealInvalidStageTransitionError) {
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
+		}
 		if (
 			exception instanceof LeadInvalidCustomerError ||
 			exception instanceof LeadInvalidStoreError ||
@@ -261,6 +291,12 @@ class DomainErrorFilter implements ExceptionFilter {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
 		if (exception instanceof UserEmailAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof VehicleNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof VehicleInactiveError) {
 			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
 		}
 		if (exception instanceof DomainValidationError) {

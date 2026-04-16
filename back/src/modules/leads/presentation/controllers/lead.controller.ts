@@ -163,7 +163,7 @@ class LeadController {
 	@ApiOperation({
 		summary: 'Listar todos os leads (alcance global, paginado)',
 		description:
-			'Reservado a `ADMINISTRATOR` e `GENERAL_MANAGER`. Lista todos os leads do sistema.',
+			'Reservado a `ADMINISTRATOR`. Lista todos os leads do sistema.',
 	})
 	@ApiOkResponseEnvelopePaged(LeadResponseDto, {
 		description:

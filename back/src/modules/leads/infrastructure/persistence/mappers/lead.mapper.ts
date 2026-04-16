@@ -58,6 +58,7 @@ class LeadMapper {
 			record.ownerUserId === null ? null : Uuid.parse(record.ownerUserId),
 			LeadSource.create(PRISMA_SOURCE_TO_LEAD[record.source] ?? 'other'),
 			parseLeadStatus(PRISMA_STATUS_TO_LEAD[record.status] ?? 'NEW'),
+			record.vehicleInterestText ?? null,
 		);
 	}
 
@@ -69,6 +70,7 @@ class LeadMapper {
 			source: LEAD_SOURCE_TO_PRISMA[lead.source.value] ?? 'OTHER',
 			status: LEAD_STATUS_TO_PRISMA[lead.status] ?? 'NEW',
 			storeId: lead.storeId.value,
+			vehicleInterestText: lead.vehicleInterestText,
 		};
 	}
 }
