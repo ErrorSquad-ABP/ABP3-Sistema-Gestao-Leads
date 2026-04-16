@@ -18,6 +18,7 @@ A Sprint 1 deixou pronto o núcleo transacional do sistema:
 
 O principal gap do produto agora está em:
 
+- veículos;
 - negociações;
 - dashboards;
 - detalhe operacional do lead;
@@ -35,13 +36,15 @@ O principal gap do produto agora está em:
 
 ## Sprint Goal
 
-Entregar a evolução comercial do CRM com negociações, dashboards gerenciais, filtros temporais e trilha de auditoria, consolidando também a execução local aderente ao edital da ABP.
+Entregar a evolução comercial do CRM com veículos, negociações, dashboards gerenciais, filtros temporais e trilha de auditoria, consolidando também a execução local aderente ao edital da ABP.
 
 ## Resultado de negócio esperado
 
 Ao final da sprint, a equipe deve conseguir demonstrar que:
 
+- o catálogo de veículos já existe como objeto comercial do processo;
 - o lead já pode evoluir para negociação com regras explícitas;
+- a negociação passa a refletir o veículo ofertado ao cliente;
 - o lead passa a ter uma tela de detalhe/timeline que concentra operação e contexto;
 - gestores e administração conseguem acompanhar indicadores reais em dashboard;
 - os recortes temporais funcionam com validação por perfil;
@@ -51,6 +54,7 @@ Ao final da sprint, a equipe deve conseguir demonstrar que:
 ## Escopo que sustenta o goal
 
 - gestão de negociações `end-to-end`;
+- gestão de veículos `end-to-end`;
 - detalhe do lead e timeline operacional `end-to-end`;
 - dashboard operacional `end-to-end`;
 - dashboard analítico com filtros temporais `end-to-end`;
@@ -68,6 +72,7 @@ Ao final da sprint, a equipe deve conseguir demonstrar que:
 ## Critérios para considerar o goal atingido
 
 - negociação criada e evoluída a partir de lead, com restrições válidas de domínio;
+- veículo disponível e vinculável no fluxo operacional;
 - dashboards operacionais e analíticos consumindo dados reais;
 - filtros temporais funcionando no backend e refletidos na UI;
 - eventos auditáveis críticos registrados e consultáveis por administrador;
