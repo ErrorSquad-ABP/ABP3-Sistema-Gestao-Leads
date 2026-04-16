@@ -111,6 +111,14 @@ Cada épico deve considerar, no mínimo:
 - se a sprint perder foco e tentar reabrir escopo da Sprint 1, o ganho de produto visível volta a cair;
 - a conformidade de execução local não deve ser tratada como “detalhe de infraestrutura”, porque é requisito explícito do edital.
 
+## Trade-offs do `S2-EPIC-05`
+
+- o modo remoto continua como fluxo padrão do time, porque reduz fricção operacional e evita reseed local recorrente;
+- o PostgreSQL local foi mantido como modo secundário de conformidade, para atender edital, validação isolada e uso externo sem acesso ao banco remoto;
+- `migrations` e `seed` automáticos ficaram restritos ao `compose.local`, para não acoplar operações destrutivas ao fluxo remoto compartilhado;
+- o seed automático só roda em base vazia, preservando reexecução segura do ambiente local sem sobrescrever dados já existentes;
+- a validação da stack local foi tratada pelo caminho crítico de `postgres + bootstrap + dados resultantes`, suficiente para o objetivo do épico sem reverter o fluxo principal do time para local-first.
+
 ## Critérios de sucesso da sprint
 
 - pelo menos um fluxo completo de veículo + negociação demonstrável;
