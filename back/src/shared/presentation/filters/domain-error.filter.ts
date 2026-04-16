@@ -18,6 +18,10 @@ import { LeadAccessDeniedError } from '../../../modules/leads/domain/errors/lead
 import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead-invalid-store.error.js';
+import { ActiveDealAlreadyExistsError } from '../../../modules/deals/domain/errors/active-deal-already-exists.error.js';
+import { DealAlreadyClosedError } from '../../../modules/deals/domain/errors/deal-already-closed.error.js';
+import { DealInvalidStageTransitionError } from '../../../modules/deals/domain/errors/deal-invalid-stage-transition.error.js';
+import { DealNotFoundError } from '../../../modules/deals/domain/errors/deal-not-found.error.js';
 import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not-found.error.js';
 import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/store-delete-blocked.error.js';
 import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
@@ -203,6 +207,18 @@ class DomainErrorFilter implements ExceptionFilter {
 		}
 		if (exception instanceof LeadNotFoundError) {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof DealNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof ActiveDealAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof DealAlreadyClosedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof DealInvalidStageTransitionError) {
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
 		}
 		if (
 			exception instanceof LeadInvalidCustomerError ||

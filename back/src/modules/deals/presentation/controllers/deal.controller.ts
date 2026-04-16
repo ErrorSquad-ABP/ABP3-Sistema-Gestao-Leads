@@ -1,0 +1,207 @@
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	HttpCode,
+	HttpStatus,
+	Param,
+	ParseUUIDPipe,
+	Patch,
+	Post,
+} from '@nestjs/common';
+import {
+	ApiBadRequestResponse,
+	ApiBearerAuth,
+	ApiForbiddenResponse,
+	ApiInternalServerErrorResponse,
+	ApiNoContentResponse,
+	ApiOperation,
+	ApiParam,
+	ApiTags,
+} from '@nestjs/swagger';
+
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
+import {
+	ApiCreatedResponseEnvelope,
+	ApiOkResponseEnvelope,
+	ApiOkResponseEnvelopeArray,
+} from '../../../../shared/presentation/swagger/api-success-response.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
+import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
+import { DealHistoryItemDto } from '../../application/dto/deal-history-response.dto.js';
+import { DealResponseDto } from '../../application/dto/deal-response.dto.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { CreateDealUseCase } from '../../application/use-cases/create-deal.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { DeleteDealUseCase } from '../../application/use-cases/delete-deal.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { FindDealUseCase } from '../../application/use-cases/find-deal.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListDealHistoryUseCase } from '../../application/use-cases/list-deal-history.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListDealsByLeadUseCase } from '../../application/use-cases/list-deals-by-lead.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { UpdateDealUseCase } from '../../application/use-cases/update-deal.use-case.js';
+import { DealPresenter } from '../presenters/deal.presenter.js';
+// biome-ignore lint/style/useImportType: validators usados em runtime
+import { CreateDealValidator } from '../validators/create-deal.validator.js';
+// biome-ignore lint/style/useImportType: validators usados em runtime
+import { UpdateDealValidator } from '../validators/update-deal.validator.js';
+
+const BAD_REQUEST = {
+	description:
+		'Corpo ou parâmetros inválidos (falha de validação do ValidationPipe).',
+};
+
+const SERVER_ERROR = {
+	description:
+		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
+};
+
+const FORBIDDEN = {
+	description:
+		'Utilizador autenticado sem permissão para o recurso ou parâmetro solicitado.',
+};
+
+function toLeadActor(user: JwtUser): LeadActor {
+	return {
+		userId: user.userId,
+		role: user.role as UserRole,
+	};
+}
+
+@ApiBearerAuth()
+@ApiTags('deals')
+@Controller()
+class DealController {
+	constructor(
+		private readonly createDealUseCase: CreateDealUseCase,
+		private readonly updateDealUseCase: UpdateDealUseCase,
+		private readonly findDealUseCase: FindDealUseCase,
+		private readonly listDealsByLeadUseCase: ListDealsByLeadUseCase,
+		private readonly listDealHistoryUseCase: ListDealHistoryUseCase,
+		private readonly deleteDealUseCase: DeleteDealUseCase,
+	) {}
+
+	@Post('leads/:leadId/deals')
+	@ApiOperation({ summary: 'Criar negociação para o lead' })
+	@ApiParam({ name: 'leadId', format: 'uuid' })
+	@ApiCreatedResponseEnvelope(DealResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async create(
+		@CurrentUser() user: JwtUser,
+		@Param('leadId', ParseUUIDPipe) leadId: string,
+		@Body() body: CreateDealValidator,
+	) {
+		const deal = await this.createDealUseCase.execute(
+			toLeadActor(user),
+			leadId,
+			{
+				title: body.title,
+				value: body.value ?? null,
+				importance: body.importance,
+				stage: body.stage,
+			},
+		);
+		return DealPresenter.toResponse(deal);
+	}
+
+	@Get('leads/:leadId/deals')
+	@ApiOperation({ summary: 'Listar negociações do lead' })
+	@ApiParam({ name: 'leadId', format: 'uuid' })
+	@ApiOkResponseEnvelopeArray(DealResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async listByLead(
+		@CurrentUser() user: JwtUser,
+		@Param('leadId', ParseUUIDPipe) leadId: string,
+	) {
+		const deals = await this.listDealsByLeadUseCase.execute(
+			toLeadActor(user),
+			leadId,
+		);
+		return DealPresenter.toResponseList([...deals]);
+	}
+
+	@Get('deals/:id/history')
+	@ApiOperation({ summary: 'Histórico de alterações da negociação' })
+	@ApiParam({ name: 'id', format: 'uuid' })
+	@ApiOkResponseEnvelopeArray(DealHistoryItemDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async history(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	) {
+		const rows = await this.listDealHistoryUseCase.execute(
+			toLeadActor(user),
+			id,
+		);
+		return DealPresenter.toHistoryList([...rows]);
+	}
+
+	@Get('deals/:id')
+	@ApiOperation({ summary: 'Obter negociação por id' })
+	@ApiParam({ name: 'id', format: 'uuid' })
+	@ApiOkResponseEnvelope(DealResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async findById(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	) {
+		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
+		return DealPresenter.toResponse(deal);
+	}
+
+	@Patch('deals/:id')
+	@ApiOperation({ summary: 'Atualizar negociação (campos parciais)' })
+	@ApiParam({ name: 'id', format: 'uuid' })
+	@ApiOkResponseEnvelope(DealResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async update(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() body: UpdateDealValidator,
+	) {
+		const deal = await this.updateDealUseCase.execute(toLeadActor(user), id, {
+			title: body.title,
+			value: body.value,
+			importance: body.importance,
+			stage: body.stage,
+			status: body.status,
+		});
+		return DealPresenter.toResponse(deal);
+	}
+
+	@Delete('deals/:id')
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@ApiOperation({ summary: 'Excluir negociação' })
+	@ApiParam({ name: 'id', format: 'uuid' })
+	@ApiNoContentResponse({
+		description:
+			'Negociação removida (sem corpo JSON; envelope aplicado apenas em respostas com corpo).',
+	})
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async delete(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteDealUseCase.execute(toLeadActor(user), id);
+	}
+}
+
+export { DealController };
