@@ -71,6 +71,43 @@ describe('ListDealsUseCase', () => {
 		assert.equal(r.status, 'OPEN');
 	});
 
+	it('manager keeps empty scoped store filter when no readable store exists', async () => {
+		let received: unknown = null;
+		const uc = new ListDealsUseCase(
+			{
+				create: () =>
+					({
+						listScoped: async (filters: unknown) => {
+							received = filters;
+							return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
+						},
+					}) as never,
+			} as never,
+			{
+				resolveCatalogScope: async () => ({
+					kind: 'manager',
+					actorUserId: 'u2',
+					readTeamIds: new Set(),
+					mutateTeamIds: new Set(),
+					readStoreIds: new Set(),
+					mutateStoreIds: new Set(),
+				}),
+			} as never,
+		);
+
+		await uc.execute(
+			{ userId: 'u2', role: 'MANAGER' },
+			{ status: 'OPEN', page: 1, limit: 20 },
+		);
+
+		const r = received as { storeIds?: string[]; status?: string } | null;
+		if (r === null) {
+			throw new Error('expected listScoped to be called');
+		}
+		assert.deepEqual(r.storeIds, []);
+		assert.equal(r.status, 'OPEN');
+	});
+
 	it('general_manager rejects storeId outside scope', async () => {
 		const uc = new ListDealsUseCase(
 			{

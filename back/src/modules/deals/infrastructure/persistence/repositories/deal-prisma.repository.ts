@@ -111,10 +111,7 @@ class DealPrismaRepository implements IDealRepository {
 			status: filters.status,
 			lead: {
 				is: {
-					storeId:
-						filters.storeIds && filters.storeIds.length > 0
-							? { in: [...filters.storeIds] }
-							: undefined,
+					storeId: filters.storeIds ? { in: [...filters.storeIds] } : undefined,
 					ownerUserId: filters.ownerUserId,
 				},
 			},

@@ -14,14 +14,17 @@ import {
 import {
 	ApiBadRequestResponse,
 	ApiBearerAuth,
+	ApiForbiddenResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
 	ApiNotFoundResponse,
 	ApiOperation,
 	ApiParam,
 	ApiTags,
+	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+import { Roles } from '../../../../shared/presentation/decorators/roles.decorator.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
@@ -56,8 +59,20 @@ const SERVER_ERROR = {
 		'Erro interno ou erro de domínio ainda não mapeado para status HTTP específico.',
 };
 
+const UNAUTHORIZED = {
+	description: 'Token Bearer ausente ou inválido.',
+};
+
+const FORBIDDEN = {
+	description:
+		'Papel insuficiente: operações do catálogo de veículos exigem ADMINISTRATOR ou GENERAL_MANAGER.',
+};
+
 @ApiBearerAuth()
 @ApiTags('vehicles')
+@ApiUnauthorizedResponse(UNAUTHORIZED)
+@ApiForbiddenResponse(FORBIDDEN)
+@Roles('ADMINISTRATOR', 'GENERAL_MANAGER')
 @Controller('vehicles')
 class VehicleController {
 	constructor(
