@@ -49,6 +49,7 @@ O que ainda não está fechado como produto:
 - Regras de autorização aplicadas exclusivamente no backend.
 - Quality gate com `Biome`, `ESLint` e `TypeScript`.
 - Produção atual em `Vercel + Neon`.
+- Compose local secundário com PostgreSQL para conformidade e uso externo.
 
 ## Stack
 
@@ -70,6 +71,7 @@ O que ainda não está fechado como produto:
 ├── infra/
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
+├── docker-compose.local.yml
 ├── eslint.config.cjs
 ├── biome.json
 └── tsconfig.base.json

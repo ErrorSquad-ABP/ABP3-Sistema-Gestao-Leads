@@ -14,12 +14,12 @@ Documentar o bootstrap local no estado atual da `main`.
 
 ## Topologia local atual
 
-O `docker compose` atual sobe apenas:
+O projeto mantém dois modos locais:
 
-- `front`
-- `back`
+- padrão do time: `front + back` usando o banco definido em `back/.env` (normalmente Neon dev);
+- secundário de conformidade: `front + back + postgres` via `docker-compose.local.yml`.
 
-O banco **não** faz parte do Compose padrão. O backend lê `DATABASE_URL` de `back/.env`.
+O banco **não** faz parte do Compose padrão. O PostgreSQL local existe como opção secundária para uso externo, validação isolada e aderência ao edital.
 
 ## Portas
 
@@ -69,6 +69,18 @@ npm run dev
 npm run compose:up
 ```
 
+### Execução secundária com PostgreSQL local
+
+```bash
+npm run compose:local:up
+```
+
+Nesse modo:
+
+- o PostgreSQL sobe em `localhost:5433`;
+- o container `back` passa a usar `postgresql://abp:abp@postgres:5432/lead_management`;
+- o `back/.env` continua existindo, mas `DATABASE_URL` é sobrescrita pelo override local.
+
 ## 4. Migrations
 
 Quando houver migration nova:
@@ -78,6 +90,12 @@ npm run db:migrate
 ```
 
 Como o banco não é parte do Compose, esse passo é explícito e consciente.
+
+### Migration no PostgreSQL local secundário
+
+```bash
+npm run db:migrate:local
+```
 
 ## 5. Seed
 
@@ -91,6 +109,12 @@ npm run db:seed
 
 ```bash
 SEED_MODE=dashboard npm run db:seed
+```
+
+### Seed no PostgreSQL local secundário
+
+```bash
+SEED_MODE=dashboard npm run db:seed:local
 ```
 
 ## 6. Credenciais bootstrap
@@ -147,3 +171,15 @@ Isso agora é esperado. O Compose não sobe PostgreSQL local por padrão. O banc
 - rodar migrations;
 - rodar seed;
 - limpar a base externamente.
+
+### Quero um banco local sem depender do remoto
+
+Use o modo secundário:
+
+```bash
+npm run compose:local:up
+npm run db:migrate:local
+SEED_MODE=dashboard npm run db:seed:local
+```
+
+Depois disso, o fluxo local fica totalmente independente do banco remoto.
