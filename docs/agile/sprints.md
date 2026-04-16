@@ -18,7 +18,6 @@
 - Planning: [`sprint-2-planning.md`](./sprint-2-planning.md)
 - Backlog: [`sprint-2-backlog.md`](./sprint-2-backlog.md)
 - Breakdown: [`sprint-2-task-breakdown.md`](./sprint-2-task-breakdown.md)
-- Observação: a Sprint 2 parte do estado atual da `main`, sem reaproveitar automaticamente backlog não concluído da Sprint 1.
 
 ## Sprint 3
 
