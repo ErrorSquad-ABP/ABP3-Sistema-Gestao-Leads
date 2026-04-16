@@ -53,7 +53,8 @@ Fechar o `RF04` com visualização operacional demonstrável para gestão do pip
 - leads por loja;
 - leads por importância;
 - filtro padrão dos últimos 30 dias;
-- dashboard operacional real no frontend.
+- dashboard operacional real no frontend;
+- entrada inicial por perfil com cards-resumo e atalhos úteis.
 
 ## `S2-EPIC-03` - Dashboard analítico e filtros temporais end-to-end
 
@@ -78,6 +79,8 @@ Fechar `RF05` e `RF06` com recortes temporais validados no backend e refletidos 
 - distribuição por importância;
 - motivos de finalização;
 - tempo médio até atendimento;
+- funil de conversão;
+- ranking de atendentes e equipas;
 - filtros por semana, mês, ano e período customizado;
 - limite máximo de um ano para não administradores.
 
@@ -100,7 +103,8 @@ Fechar `RF07` com gravação e consulta administrativa de logs de acesso e opera
 - registro de criação, atualização e exclusão de clientes, utilizadores, times, leads e negociações;
 - persistência com data, hora e utilizador responsável;
 - API de consulta administrativa;
-- tela de logs para administrador.
+- tela de logs para administrador;
+- filtros por utilizador, ação, entidade e período.
 
 ## `S2-EPIC-05` - Conformidade Docker/PostgreSQL e fechamento arquitetural
 
@@ -123,6 +127,27 @@ Restaurar aderência ao edital em execução local e atualizar os artefatos arqu
 - documentação de setup atualizada;
 - atualização de diagramas e registros arquiteturais impactados pelos épicos da sprint.
 
+## `S2-EPIC-06` - Detalhe do lead e timeline operacional end-to-end
+
+### Objetivo
+
+Transformar o lead em um hub operacional completo do CRM, com visão consolidada, timeline e integração direta com cliente, negociação e reatribuição.
+
+### Requisitos relacionados
+
+- `RF02`
+- `RF03`
+- `RNF04`
+- `RNF05`
+
+### Saída esperada
+
+- tela dedicada de detalhe do lead no frontend;
+- dados consolidados de cliente, loja, responsável, origem, status e negociação vinculada;
+- timeline cronológica do lead;
+- atalhos para reatribuição, cliente e negociação;
+- eventual endpoint agregador no backend, se a composição por recurso ficar cara demais.
+
 ## Ordem sugerida de execução
 
 1. `S2-EPIC-01`
@@ -130,6 +155,7 @@ Restaurar aderência ao edital em execução local e atualizar os artefatos arqu
 3. `S2-EPIC-03`
 4. `S2-EPIC-04`
 5. `S2-EPIC-05`
+6. `S2-EPIC-06`
 
 ## Leitura de prioridade
 
@@ -137,3 +163,4 @@ Restaurar aderência ao edital em execução local e atualizar os artefatos arqu
 - `S2-EPIC-03` depende parcialmente da estabilização analítica dos dados;
 - `S2-EPIC-04` fecha governança e banca;
 - `S2-EPIC-05` evita não conformidade técnica e documental no fechamento do ciclo.
+- `S2-EPIC-06` aumenta fortemente valor percebido no frontend e reduz a sensação de CRM “sem tela principal” para operação diária.
