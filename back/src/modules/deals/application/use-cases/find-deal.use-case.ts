@@ -23,17 +23,17 @@ class FindDealUseCase {
 		const deals = this.dealRepositoryFactory.create();
 		const leads = this.leadRepositoryFactory.create();
 
-		const deal = await deals.findById(Uuid.parse(dealId));
-		if (!deal) {
+		const row = await deals.findByIdEnriched(Uuid.parse(dealId));
+		if (!row) {
 			throw new DealNotFoundError(dealId);
 		}
-		const lead = await leads.findById(deal.leadId);
+		const lead = await leads.findById(Uuid.parse(row.leadId));
 		if (!lead) {
-			throw new LeadNotFoundError(deal.leadId.value);
+			throw new LeadNotFoundError(row.leadId);
 		}
 		await this.leadAccessPolicy.assertCanReadLead(actor, lead);
 
-		return deal;
+		return row;
 	}
 }
 

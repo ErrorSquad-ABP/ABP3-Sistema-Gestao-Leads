@@ -27,7 +27,7 @@ class ListDealsUseCase {
 		const deals = this.dealRepositoryFactory.create();
 
 		if (scope.kind === 'full') {
-			return deals.listScoped(
+			return deals.listScopedEnriched(
 				{
 					storeIds: query.storeId ? [query.storeId] : undefined,
 					ownerUserId: query.ownerUserId,
@@ -48,7 +48,7 @@ class ListDealsUseCase {
 					'Consulta permitida apenas para lojas dentro do seu escopo.',
 				);
 			}
-			return deals.listScoped(
+			return deals.listScopedEnriched(
 				{
 					storeIds: query.storeId ? [query.storeId] : undefined,
 					ownerUserId: actor.userId,
@@ -72,7 +72,7 @@ class ListDealsUseCase {
 			);
 		}
 
-		return deals.listScoped(
+		return deals.listScopedEnriched(
 			{
 				storeIds: query.storeId ? [query.storeId] : allowedStoreIds,
 				status: query.status,

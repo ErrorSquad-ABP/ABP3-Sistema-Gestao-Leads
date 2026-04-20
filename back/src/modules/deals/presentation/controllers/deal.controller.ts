@@ -106,7 +106,7 @@ class DealController {
 		@Param('leadId', ParseUUIDPipe) leadId: string,
 		@Body() body: CreateDealValidator,
 	) {
-		const deal = await this.createDealUseCase.execute(
+		const created = await this.createDealUseCase.execute(
 			toLeadActor(user),
 			leadId,
 			{
@@ -117,7 +117,11 @@ class DealController {
 				stage: body.stage,
 			},
 		);
-		return DealPresenter.toResponse(deal);
+		const deal = await this.findDealUseCase.execute(
+			toLeadActor(user),
+			created.id.value,
+		);
+		return DealPresenter.toResponseEnriched(deal);
 	}
 
 	@Get('leads/:leadId/deals')
@@ -135,7 +139,7 @@ class DealController {
 			toLeadActor(user),
 			leadId,
 		);
-		return DealPresenter.toResponseList([...deals]);
+		return DealPresenter.toResponseListEnriched([...deals]);
 	}
 
 	@Get('deals')
@@ -161,7 +165,7 @@ class DealController {
 		});
 
 		return {
-			items: DealPresenter.toResponseList([...page.items]),
+			items: DealPresenter.toResponseListEnriched([...page.items]),
 			page: page.page,
 			limit: page.limit,
 			total: page.total,
@@ -199,7 +203,7 @@ class DealController {
 		@Param('id', ParseUUIDPipe) id: string,
 	) {
 		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
-		return DealPresenter.toResponse(deal);
+		return DealPresenter.toResponseEnriched(deal);
 	}
 
 	@Patch('deals/:id')
@@ -214,7 +218,7 @@ class DealController {
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateDealValidator,
 	) {
-		const deal = await this.updateDealUseCase.execute(toLeadActor(user), id, {
+		await this.updateDealUseCase.execute(toLeadActor(user), id, {
 			vehicleId: body.vehicleId,
 			title: body.title,
 			value: body.value,
@@ -222,7 +226,8 @@ class DealController {
 			stage: body.stage,
 			status: body.status,
 		});
-		return DealPresenter.toResponse(deal);
+		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
+		return DealPresenter.toResponseEnriched(deal);
 	}
 
 	@Delete('deals/:id')

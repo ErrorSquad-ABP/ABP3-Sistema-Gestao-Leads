@@ -28,7 +28,7 @@ class ListDealsByLeadUseCase {
 		}
 		await this.leadAccessPolicy.assertCanReadLead(actor, lead);
 
-		return deals.listByLeadId(Uuid.parse(leadId));
+		return deals.listByLeadIdEnriched(Uuid.parse(leadId));
 	}
 }
 

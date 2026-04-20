@@ -11,8 +11,21 @@ class DealResponseDto {
 	@ApiProperty({ format: 'uuid' })
 	leadId!: string;
 
+	@ApiProperty({
+		description: 'Nome do cliente associado ao lead.',
+		example: 'João Silva',
+	})
+	leadCustomerName!: string;
+
 	@ApiProperty({ format: 'uuid' })
 	vehicleId!: string;
+
+	@ApiProperty({
+		description:
+			'Resumo humano do veículo no formato "Marca Modelo Ano · Placa".',
+		example: 'Toyota Corolla 2020 · ABC1D23',
+	})
+	vehicleLabel!: string;
 
 	@ApiProperty()
 	title!: string;
