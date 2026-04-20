@@ -63,6 +63,7 @@ import {
 	StoreManagerDialog,
 } from './LeadDetails';
 import { LeadsTable } from './LeadsTable';
+import { LeadDealsDialog } from '@/features/deals/components/LeadDealsDialog';
 
 type LeadsPageContentProps = {
 	user: AuthenticatedUser;
@@ -104,6 +105,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const [reassignOpen, setReassignOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [convertOpen, setConvertOpen] = useState(false);
+	const [dealsOpen, setDealsOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [targetLead, setTargetLead] = useState<LeadListItem | null>(null);
 	const { scope, data, isPending, isError, isSuccess, error, totalPages } =
@@ -224,6 +226,12 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 		setDialogError(null);
 		setTargetLead(lead);
 		setConvertOpen(true);
+	}
+
+	function openDealsDialog(lead: LeadListItem) {
+		setDialogError(null);
+		setTargetLead(lead);
+		setDealsOpen(true);
 	}
 
 	async function handleLeadFormSubmit(
@@ -458,6 +466,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 										customerLabelById={customerLabelById}
 										leads={filteredLeads}
 										onConvert={openConvertDialog}
+										onDeals={openDealsDialog}
 										onDelete={
 											user.role === 'ADMINISTRATOR'
 												? openDeleteDialog
@@ -607,6 +616,17 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 				onConfirm={handleDeleteConfirm}
 				open={deleteOpen}
 				title="Excluir lead"
+			/>
+
+			<LeadDealsDialog
+				leadId={targetLead?.id ?? null}
+				leadStoreId={targetLead?.storeId ?? null}
+				onClose={() => {
+					setDealsOpen(false);
+					setTargetLead(null);
+					setDialogError(null);
+				}}
+				open={dealsOpen}
 			/>
 		</div>
 	);
