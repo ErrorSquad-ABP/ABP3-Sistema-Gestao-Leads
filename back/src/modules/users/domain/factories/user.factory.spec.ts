@@ -52,13 +52,13 @@ function buildUser(overrides?: {
 describe('UserFactory', () => {
 	it('create preenche estado inicial sem equipes', () => {
 		const factory = new UserFactory();
-			const created = factory.create({
-				accessGroupId: null,
-				name: 'João',
-				email: buildEmail('joao'),
-				passwordHash: buildSampleHash(),
-				role: 'ATTENDANT',
-			});
+		const created = factory.create({
+			accessGroupId: null,
+			name: 'João',
+			email: buildEmail('joao'),
+			passwordHash: buildSampleHash(),
+			role: 'ATTENDANT',
+		});
 
 		assert.equal(created.name.value, 'João');
 		assert.equal(created.email.value, buildEmail('joao'));
@@ -70,12 +70,12 @@ describe('UserFactory', () => {
 
 	it('update preserva vínculos de equipe e altera accessGroupId quando informado', () => {
 		const factory = new UserFactory();
-			const existing = new User(
-				Uuid.parse('11111111-1111-4111-8111-111111111111'),
-				Name.create('Ana'),
-				Email.create(buildEmail('a')),
-				PasswordHash.create(buildSampleHash()),
-				'MANAGER',
+		const existing = new User(
+			Uuid.parse('11111111-1111-4111-8111-111111111111'),
+			Name.create('Ana'),
+			Email.create(buildEmail('a')),
+			PasswordHash.create(buildSampleHash()),
+			'MANAGER',
 			[Uuid.parse('22222222-2222-4222-8222-222222222222')],
 			[Uuid.parse('33333333-3333-4333-8333-333333333333')],
 			null,
