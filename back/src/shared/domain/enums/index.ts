@@ -48,6 +48,16 @@ export {
 	parseCanonicalLeadStatus,
 	parseLeadStatus,
 } from './lead-status.enum.js';
+export type { TemporalFilterMode } from './temporal-filter-mode.enum.js';
+export {
+	assertCanonicalTemporalFilterMode,
+	assertTemporalFilterMode,
+	isCanonicalTemporalFilterMode,
+	isTemporalFilterMode,
+	parseCanonicalTemporalFilterMode,
+	parseTemporalFilterMode,
+	TEMPORAL_FILTER_MODES,
+} from './temporal-filter-mode.enum.js';
 export type { UserRole } from './user-role.enum.js';
 export {
 	assertCanonicalUserRole,

@@ -22,6 +22,7 @@
 - [`definition-of-done.md`](./definition-of-done.md)
 - [`product-backlog.md`](./product-backlog.md)
 - [`frontend-implementation-backlog.md`](./frontend-implementation-backlog.md)
+- [`s2-epic-03-dashboard-analitico-backlog.md`](./s2-epic-03-dashboard-analitico-backlog.md)
 - [`sprint-1-goal.md`](./sprint-1-goal.md)
 - [`sprint-1-backlog.md`](./sprint-1-backlog.md)
 - [`sprint-1-task-breakdown.md`](./sprint-1-task-breakdown.md)
