@@ -23,4 +23,3 @@ function parseDealsPagedResponse(data: unknown) {
 }
 
 export { dealsPagedDataSchema, parseDealsPagedResponse };
-

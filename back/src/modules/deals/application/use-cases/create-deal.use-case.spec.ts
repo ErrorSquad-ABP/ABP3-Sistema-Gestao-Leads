@@ -72,6 +72,9 @@ describe('CreateDealUseCase', () => {
 			async findById() {
 				return null;
 			},
+			async findByIdEnriched() {
+				return null;
+			},
 			async findOpenByLeadId() {
 				return existingDeal;
 			},
@@ -81,7 +84,13 @@ describe('CreateDealUseCase', () => {
 			async listByLeadId() {
 				return [];
 			},
+			async listByLeadIdEnriched() {
+				return [];
+			},
 			async listScoped() {
+				return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
+			},
+			async listScopedEnriched() {
 				return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
 			},
 		};

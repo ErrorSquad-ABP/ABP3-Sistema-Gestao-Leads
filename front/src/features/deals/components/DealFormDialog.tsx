@@ -27,7 +27,11 @@ import {
 	dealStatusOptions,
 } from '../lib/deal-labels';
 import { dealUpdateSchema } from '../schemas/deal-management.schema';
-import type { Deal, DealUpdateFormInput, DealUpdateInput } from '../model/deals.model';
+import type {
+	Deal,
+	DealUpdateFormInput,
+	DealUpdateInput,
+} from '../model/deals.model';
 
 type DealFormDialogProps = {
 	isPending: boolean;
@@ -53,7 +57,9 @@ function getDealsErrorMessage(error: unknown) {
 		return error.message || 'Os dados não passaram na validação da API.';
 	}
 	if (error.status === 403) {
-		return error.message || 'O seu perfil não tem permissão para esta operação.';
+		return (
+			error.message || 'O seu perfil não tem permissão para esta operação.'
+		);
 	}
 	if (error.status === 404) {
 		return error.message || 'A negociação selecionada não foi encontrada.';
@@ -61,7 +67,13 @@ function getDealsErrorMessage(error: unknown) {
 	return error.message;
 }
 
-function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: DealFormDialogProps) {
+function DealFormDialog({
+	isPending,
+	onClose,
+	onSubmit,
+	open,
+	targetDeal,
+}: DealFormDialogProps) {
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const isReadOnly = Boolean(targetDeal && targetDeal.status !== 'OPEN');
 
@@ -74,11 +86,16 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 	const valueValue = useWatch({ control: form.control, name: 'value' });
 	const vehicleValue = useWatch({ control: form.control, name: 'vehicleId' });
 	const stageValue = useWatch({ control: form.control, name: 'stage' });
-	const importanceValue = useWatch({ control: form.control, name: 'importance' });
+	const importanceValue = useWatch({
+		control: form.control,
+		name: 'importance',
+	});
 	const statusValue = useWatch({ control: form.control, name: 'status' });
 
 	const leadId = targetDeal?.leadId ?? '';
-	const leadQuery = useLeadDetailQuery(leadId, { enabled: Boolean(open && leadId) });
+	const leadQuery = useLeadDetailQuery(leadId, {
+		enabled: Boolean(open && leadId),
+	});
 	const leadStoreId = leadQuery.data?.storeId ?? null;
 
 	const vehiclesQuery = useVehiclesListQuery(
@@ -165,17 +182,22 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 							</p>
 							<DialogTitle>Editar negociação</DialogTitle>
 							<DialogDescription className="max-w-2xl">
-								Ajuste veículo, etapa, importância, status e valor. O backend valida transições e disponibilidade.
+								Ajuste veículo, etapa, importância, status e valor. O backend
+								valida transições e disponibilidade.
 							</DialogDescription>
 						</div>
 					</div>
 				</DialogHeader>
 
-				<form className="flex min-h-0 flex-1 flex-col overflow-hidden" onSubmit={form.handleSubmit(handleSubmit)}>
+				<form
+					className="flex min-h-0 flex-1 flex-col overflow-hidden"
+					onSubmit={form.handleSubmit(handleSubmit)}
+				>
 					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pb-8 pt-7">
 						{isReadOnly ? (
 							<div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-3 text-sm text-[#6b7687]">
-								Negociação finalizada. Os dados abaixo estão disponíveis apenas para consulta.
+								Negociação finalizada. Os dados abaixo estão disponíveis apenas
+								para consulta.
 							</div>
 						) : null}
 						{submitError ? (
@@ -193,7 +215,10 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 										disabled={isPending || isReadOnly}
 										id="deal-form-title"
 										onChange={(event) =>
-											form.setValue('title', event.target.value, { shouldDirty: true, shouldValidate: true })
+											form.setValue('title', event.target.value, {
+												shouldDirty: true,
+												shouldValidate: true,
+											})
 										}
 										value={titleValue ?? ''}
 									/>
@@ -206,7 +231,10 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 										disabled={isPending || isReadOnly}
 										id="deal-form-value"
 										onChange={(event) =>
-											form.setValue('value', event.target.value, { shouldDirty: true, shouldValidate: true })
+											form.setValue('value', event.target.value, {
+												shouldDirty: true,
+												shouldValidate: true,
+											})
 										}
 										placeholder="45000.00"
 										value={(valueValue as string | null | undefined) ?? ''}
@@ -222,10 +250,19 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 									<Label htmlFor="deal-form-vehicle">Veículo</Label>
 									<select
 										className={selectClass}
-										disabled={isPending || isReadOnly || !leadStoreId || vehiclesQuery.isPending}
+										disabled={
+											isPending ||
+											isReadOnly ||
+											!leadStoreId ||
+											vehiclesQuery.isPending
+										}
 										id="deal-form-vehicle"
 										onChange={(event) =>
-											form.setValue('vehicleId', event.target.value as DealUpdateFormInput['vehicleId'], { shouldDirty: true, shouldValidate: true })
+											form.setValue(
+												'vehicleId',
+												event.target.value as DealUpdateFormInput['vehicleId'],
+												{ shouldDirty: true, shouldValidate: true },
+											)
 										}
 										value={vehicleValue ?? ''}
 									>
@@ -237,11 +274,14 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 									</select>
 									{!leadStoreId ? (
 										<p className="text-xs text-[#6b7687]">
-											Não foi possível determinar a loja do lead para filtrar os veículos.
+											Não foi possível determinar a loja do lead para filtrar os
+											veículos.
 										</p>
 									) : null}
 									{vehiclesQuery.isPending ? (
-										<p className="text-xs text-[#6b7687]">Carregando veículos disponíveis...</p>
+										<p className="text-xs text-[#6b7687]">
+											Carregando veículos disponíveis...
+										</p>
 									) : null}
 									{form.formState.errors.vehicleId ? (
 										<p className="text-xs text-destructive">
@@ -257,7 +297,11 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 										disabled={isPending || isReadOnly}
 										id="deal-form-stage"
 										onChange={(event) =>
-											form.setValue('stage', event.target.value as DealUpdateFormInput['stage'], { shouldDirty: true, shouldValidate: true })
+											form.setValue(
+												'stage',
+												event.target.value as DealUpdateFormInput['stage'],
+												{ shouldDirty: true, shouldValidate: true },
+											)
 										}
 										value={stageValue ?? ''}
 									>
@@ -276,7 +320,11 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 										disabled={isPending || isReadOnly}
 										id="deal-form-importance"
 										onChange={(event) =>
-											form.setValue('importance', event.target.value as DealUpdateFormInput['importance'], { shouldDirty: true, shouldValidate: true })
+											form.setValue(
+												'importance',
+												event.target.value as DealUpdateFormInput['importance'],
+												{ shouldDirty: true, shouldValidate: true },
+											)
 										}
 										value={importanceValue ?? ''}
 									>
@@ -295,7 +343,11 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 										disabled={isPending || isReadOnly}
 										id="deal-form-status"
 										onChange={(event) =>
-											form.setValue('status', event.target.value as DealUpdateFormInput['status'], { shouldDirty: true, shouldValidate: true })
+											form.setValue(
+												'status',
+												event.target.value as DealUpdateFormInput['status'],
+												{ shouldDirty: true, shouldValidate: true },
+											)
 										}
 										value={statusValue ?? ''}
 									>
@@ -311,10 +363,19 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 					</div>
 
 					<DialogFooter className="shrink-0 px-8 pb-6 pt-4">
-						<Button className="rounded-md" onClick={onClose} type="button" variant="outline">
+						<Button
+							className="rounded-md"
+							onClick={onClose}
+							type="button"
+							variant="outline"
+						>
 							Cancelar
 						</Button>
-						<Button className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]" disabled={isPending || isReadOnly} type="submit">
+						<Button
+							className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+							disabled={isPending || isReadOnly}
+							type="submit"
+						>
 							{isPending ? 'Salvando...' : 'Salvar alterações'}
 						</Button>
 					</DialogFooter>
@@ -325,4 +386,3 @@ function DealFormDialog({ isPending, onClose, onSubmit, open, targetDeal }: Deal
 }
 
 export { DealFormDialog, getDealsErrorMessage };
-

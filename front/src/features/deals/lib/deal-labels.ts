@@ -1,4 +1,8 @@
-import type { DealImportance, DealStage, DealStatus } from '../model/deals.model';
+import type {
+	DealImportance,
+	DealStage,
+	DealStatus,
+} from '../model/deals.model';
 
 const dealStatusLabels: Record<DealStatus, string> = {
 	OPEN: 'Em aberto',
@@ -20,26 +24,65 @@ const dealImportanceLabels: Record<DealImportance, string> = {
 };
 
 function formatDealStatusLabel(value: DealStatus) {
-	return dealStatusLabels[value] ?? value;
+	switch (value) {
+		case 'OPEN':
+			return dealStatusLabels.OPEN;
+		case 'WON':
+			return dealStatusLabels.WON;
+		case 'LOST':
+			return dealStatusLabels.LOST;
+		default: {
+			const _exhaustive: never = value;
+			return _exhaustive;
+		}
+	}
 }
 
 function formatDealStageLabel(value: DealStage) {
-	return dealStageLabels[value] ?? value;
+	switch (value) {
+		case 'INITIAL_CONTACT':
+			return dealStageLabels.INITIAL_CONTACT;
+		case 'NEGOTIATION':
+			return dealStageLabels.NEGOTIATION;
+		case 'PROPOSAL':
+			return dealStageLabels.PROPOSAL;
+		case 'CLOSING':
+			return dealStageLabels.CLOSING;
+		default: {
+			const _exhaustive: never = value;
+			return _exhaustive;
+		}
+	}
 }
 
 function formatDealImportanceLabel(value: DealImportance) {
-	return dealImportanceLabels[value] ?? value;
+	switch (value) {
+		case 'COLD':
+			return dealImportanceLabels.COLD;
+		case 'WARM':
+			return dealImportanceLabels.WARM;
+		case 'HOT':
+			return dealImportanceLabels.HOT;
+		default: {
+			const _exhaustive: never = value;
+			return _exhaustive;
+		}
+	}
 }
 
-const dealStatusOptions = Object.entries(dealStatusLabels).map(([value, label]) => ({
-	value: value as DealStatus,
-	label,
-}));
+const dealStatusOptions = Object.entries(dealStatusLabels).map(
+	([value, label]) => ({
+		value: value as DealStatus,
+		label,
+	}),
+);
 
-const dealStageOptions = Object.entries(dealStageLabels).map(([value, label]) => ({
-	value: value as DealStage,
-	label,
-}));
+const dealStageOptions = Object.entries(dealStageLabels).map(
+	([value, label]) => ({
+		value: value as DealStage,
+		label,
+	}),
+);
 
 const dealImportanceOptions = Object.entries(dealImportanceLabels).map(
 	([value, label]) => ({
@@ -71,4 +114,3 @@ export {
 	formatDealStatusLabel,
 	formatDealValueBRL,
 };
-

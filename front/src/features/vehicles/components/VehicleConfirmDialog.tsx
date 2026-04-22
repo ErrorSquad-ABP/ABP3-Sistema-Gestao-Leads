@@ -52,7 +52,12 @@ function VehicleConfirmDialog({
 					) : null}
 				</div>
 				<DialogFooter>
-					<Button className="rounded-md" onClick={onClose} type="button" variant="outline">
+					<Button
+						className="rounded-md"
+						onClick={onClose}
+						type="button"
+						variant="outline"
+					>
 						Cancelar
 					</Button>
 					<Button
@@ -70,4 +75,3 @@ function VehicleConfirmDialog({
 }
 
 export { VehicleConfirmDialog };
-

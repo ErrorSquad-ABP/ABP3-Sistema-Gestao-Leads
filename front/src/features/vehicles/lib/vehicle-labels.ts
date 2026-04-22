@@ -19,11 +19,45 @@ const supportedFuelTypeLabels: Record<SupportedFuelType, string> = {
 };
 
 function formatVehicleStatusLabel(status: VehicleStatus) {
-	return vehicleStatusLabels[status] ?? status;
+	switch (status) {
+		case 'AVAILABLE':
+			return vehicleStatusLabels.AVAILABLE;
+		case 'RESERVED':
+			return vehicleStatusLabels.RESERVED;
+		case 'SOLD':
+			return vehicleStatusLabels.SOLD;
+		case 'INACTIVE':
+			return vehicleStatusLabels.INACTIVE;
+		default: {
+			const _exhaustive: never = status;
+			return _exhaustive;
+		}
+	}
 }
 
 function formatSupportedFuelTypeLabel(value: SupportedFuelType) {
-	return supportedFuelTypeLabels[value] ?? value;
+	switch (value) {
+		case 'GASOLINE':
+			return supportedFuelTypeLabels.GASOLINE;
+		case 'ETHANOL':
+			return supportedFuelTypeLabels.ETHANOL;
+		case 'FLEX':
+			return supportedFuelTypeLabels.FLEX;
+		case 'DIESEL':
+			return supportedFuelTypeLabels.DIESEL;
+		case 'ELECTRIC':
+			return supportedFuelTypeLabels.ELECTRIC;
+		case 'HYBRID':
+			return supportedFuelTypeLabels.HYBRID;
+		case 'PLUG_IN_HYBRID':
+			return supportedFuelTypeLabels.PLUG_IN_HYBRID;
+		case 'CNG':
+			return supportedFuelTypeLabels.CNG;
+		default: {
+			const _exhaustive: never = value;
+			return _exhaustive;
+		}
+	}
 }
 
 const vehicleStatusOptions = Object.entries(vehicleStatusLabels).map(
@@ -46,4 +80,3 @@ export {
 	supportedFuelTypeOptions,
 	vehicleStatusOptions,
 };
-

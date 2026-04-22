@@ -1,6 +1,9 @@
 import type { z } from 'zod';
 
-import type { dealCreateSchema, dealUpdateSchema } from '../schemas/deal-management.schema';
+import type {
+	dealCreateSchema,
+	dealUpdateSchema,
+} from '../schemas/deal-management.schema';
 import type {
 	dealHistoryItemSchema,
 	dealImportances,
@@ -32,4 +35,3 @@ export type {
 	DealUpdateFormInput,
 	DealUpdateInput,
 };
-

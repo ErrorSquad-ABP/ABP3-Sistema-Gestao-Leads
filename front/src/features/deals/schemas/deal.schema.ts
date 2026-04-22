@@ -79,4 +79,3 @@ export {
 	parseDealResponse,
 	parseDealsResponse,
 };
-

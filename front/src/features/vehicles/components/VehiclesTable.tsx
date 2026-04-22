@@ -20,7 +20,12 @@ import {
 } from '@/components/ui/table';
 
 import type { Vehicle } from '../model/vehicles.model';
-import { formatFuelType, formatMileage, formatVehiclePriceBRL, formatVehicleStatus } from '../lib/vehicle-formatters';
+import {
+	formatFuelType,
+	formatMileage,
+	formatVehiclePriceBRL,
+	formatVehicleStatus,
+} from '../lib/vehicle-formatters';
 
 type VehiclesTableProps = {
 	storeLabelById?: Readonly<Record<string, string>>;
@@ -91,19 +96,29 @@ function VehiclesTable({
 								{formatVehiclePriceBRL(vehicle.price)}
 							</TableCell>
 							<TableCell>
-								<Badge className="rounded-md px-2.5 py-1 text-[0.72rem] font-medium" variant="outline">
+								<Badge
+									className="rounded-md px-2.5 py-1 text-[0.72rem] font-medium"
+									variant="outline"
+								>
 									{formatVehicleStatus(vehicle.status)}
 								</Badge>
 							</TableCell>
 							<TableCell className="text-right">
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button className="rounded-md" size="icon-sm" variant="ghost">
+										<Button
+											className="rounded-md"
+											size="icon-sm"
+											variant="ghost"
+										>
 											<MoreHorizontal className="size-4" />
 											<span className="sr-only">Ações do veículo</span>
 										</Button>
 									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end" className="w-44 rounded-xl bg-white">
+									<DropdownMenuContent
+										align="end"
+										className="w-44 rounded-xl bg-white"
+									>
 										{onEdit ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
@@ -135,4 +150,3 @@ function VehiclesTable({
 }
 
 export { VehiclesTable };
-

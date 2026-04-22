@@ -60,4 +60,3 @@ const vehicleFormSchema = z.object({
 });
 
 export { vehicleFormSchema };
-

@@ -116,7 +116,9 @@ class DealPrismaRepository implements IDealRepository {
 		return rows.map((r) => DealMapper.toDomain(r));
 	}
 
-	async listByLeadIdEnriched(leadId: Uuid): Promise<readonly DealEnrichedRow[]> {
+	async listByLeadIdEnriched(
+		leadId: Uuid,
+	): Promise<readonly DealEnrichedRow[]> {
 		const rows = await this.client.deal.findMany({
 			where: { leadId: leadId.value },
 			orderBy: { createdAt: 'desc' },

@@ -54,4 +54,3 @@ const dealUpdateSchema = z.object({
 });
 
 export { dealCreateSchema, dealUpdateSchema };
-

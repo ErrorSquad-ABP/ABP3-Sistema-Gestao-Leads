@@ -58,7 +58,9 @@ class DealPresenter {
 		} as DealResponseDto;
 	}
 
-	static toResponseListEnriched(rows: readonly DealEnrichedRow[]): DealResponseDto[] {
+	static toResponseListEnriched(
+		rows: readonly DealEnrichedRow[],
+	): DealResponseDto[] {
 		return rows.map((r) => DealPresenter.toResponseEnriched(r));
 	}
 

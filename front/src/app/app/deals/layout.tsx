@@ -13,4 +13,3 @@ async function DealsLayout({ children }: DealsLayoutProps) {
 }
 
 export default DealsLayout;
-

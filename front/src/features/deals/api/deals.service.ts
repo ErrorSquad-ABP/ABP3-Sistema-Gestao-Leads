@@ -65,7 +65,9 @@ async function findDeal(dealId: string, signal?: AbortSignal) {
 }
 
 async function listDealHistory(dealId: string, signal?: AbortSignal) {
-	const raw = await apiFetch<unknown>(`/api/deals/${dealId}/history`, { signal });
+	const raw = await apiFetch<unknown>(`/api/deals/${dealId}/history`, {
+		signal,
+	});
 	return parseDealHistoryResponse(raw);
 }
 
@@ -91,4 +93,3 @@ export {
 	updateDeal,
 };
 export type { ListDealsQuery };
-

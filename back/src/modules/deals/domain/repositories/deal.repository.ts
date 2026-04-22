@@ -62,4 +62,9 @@ type DealEnrichedListPage = {
 	readonly totalPages: number;
 };
 
-export type { DealEnrichedListPage, DealEnrichedRow, DealListScopedFilters, IDealRepository };
+export type {
+	DealEnrichedListPage,
+	DealEnrichedRow,
+	DealListScopedFilters,
+	IDealRepository,
+};

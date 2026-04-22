@@ -4,18 +4,16 @@ import { ChevronLeft, ChevronRight, LayoutList, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { ApiError } from '@/lib/http/api-error';
 
 import { useDealsListQuery } from '../hooks/deals.queries';
-import { useDeleteDealMutation, useUpdateDealMutation } from '../hooks/deals.mutations';
+import {
+	useDeleteDealMutation,
+	useUpdateDealMutation,
+} from '../hooks/deals.mutations';
 import type { Deal, DealStatus, DealUpdateInput } from '../model/deals.model';
 import { dealStatusOptions } from '../lib/deal-labels';
 import { DealsTable } from './DealsTable';
@@ -98,7 +96,10 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 
 	async function handleEditSubmit(values: DealUpdateInput) {
 		if (!targetDeal) return;
-		await updateDealMutation.mutateAsync({ dealId: targetDeal.id, payload: values });
+		await updateDealMutation.mutateAsync({
+			dealId: targetDeal.id,
+			payload: values,
+		});
 	}
 
 	async function handleDeleteConfirm() {
@@ -113,7 +114,8 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 		}
 	}
 
-	const title = user.role === 'ATTENDANT' ? 'Minhas negociações' : 'Gestão de negociações';
+	const title =
+		user.role === 'ATTENDANT' ? 'Minhas negociações' : 'Gestão de negociações';
 	const subtitle =
 		'Acompanhe status, etapa e importância das negociações dentro do seu escopo.';
 
@@ -144,7 +146,10 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 			</Card>
 
 			{query.isError ? (
-				<div className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive" role="alert">
+				<div
+					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+					role="alert"
+				>
 					{query.error instanceof ApiError
 						? query.error.message
 						: 'Não foi possível carregar as negociações.'}
@@ -231,7 +236,9 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 									</Button>
 									<Button
 										className="rounded-md"
-										disabled={page >= Math.max(totalPages, 1) || query.isPending}
+										disabled={
+											page >= Math.max(totalPages, 1) || query.isPending
+										}
 										onClick={() => setPage((p) => p + 1)}
 										size="icon-sm"
 										type="button"
@@ -289,4 +296,3 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 }
 
 export { DealsPageContent };
-

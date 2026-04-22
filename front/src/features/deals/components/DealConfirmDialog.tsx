@@ -34,7 +34,10 @@ function DealConfirmDialog({
 	title,
 }: DealConfirmDialogProps) {
 	return (
-		<Dialog onOpenChange={(nextOpen) => (!nextOpen ? onClose() : null)} open={open}>
+		<Dialog
+			onOpenChange={(nextOpen) => (!nextOpen ? onClose() : null)}
+			open={open}
+		>
 			<DialogContent className="max-w-xl">
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
@@ -52,7 +55,12 @@ function DealConfirmDialog({
 					) : null}
 				</div>
 				<DialogFooter>
-					<Button className="rounded-md" onClick={onClose} type="button" variant="outline">
+					<Button
+						className="rounded-md"
+						onClick={onClose}
+						type="button"
+						variant="outline"
+					>
 						Cancelar
 					</Button>
 					<Button
@@ -70,4 +78,3 @@ function DealConfirmDialog({
 }
 
 export { DealConfirmDialog };
-

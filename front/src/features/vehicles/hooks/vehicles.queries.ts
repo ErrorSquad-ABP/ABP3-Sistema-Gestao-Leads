@@ -2,7 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 
 import { queryKeys } from '@/lib/constants/query-keys';
 
-import { listVehicles, type ListVehiclesFilters } from '../api/vehicles.service';
+import {
+	listVehicles,
+	type ListVehiclesFilters,
+} from '../api/vehicles.service';
 
 function useVehiclesListQuery(
 	filters: ListVehiclesFilters,
@@ -10,10 +13,10 @@ function useVehiclesListQuery(
 ) {
 	return useQuery({
 		queryKey: queryKeys.vehicles.list(filters),
-		queryFn: ({ signal }: { signal: AbortSignal }) => listVehicles(filters, signal),
+		queryFn: ({ signal }: { signal: AbortSignal }) =>
+			listVehicles(filters, signal),
 		enabled: options?.enabled,
 	});
 }
 
 export { useVehiclesListQuery };
-

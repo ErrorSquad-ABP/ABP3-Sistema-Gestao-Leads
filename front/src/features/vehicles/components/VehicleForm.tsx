@@ -18,7 +18,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { isApiError } from '@/lib/http/api-error';
 
-import { supportedFuelTypeOptions, vehicleStatusOptions } from '../lib/vehicle-labels';
+import {
+	supportedFuelTypeOptions,
+	vehicleStatusOptions,
+} from '../lib/vehicle-labels';
 import { vehicleFormSchema } from '../schemas/vehicle-management.schema';
 import type {
 	Vehicle,
@@ -45,11 +48,15 @@ function getVehiclesErrorMessage(error: unknown) {
 	}
 
 	if (error.status === 400) {
-		return error.message || 'Os dados do veículo não passaram na validação da API.';
+		return (
+			error.message || 'Os dados do veículo não passaram na validação da API.'
+		);
 	}
 
 	if (error.status === 403) {
-		return error.message || 'O seu perfil não tem permissão para esta operação.';
+		return (
+			error.message || 'O seu perfil não tem permissão para esta operação.'
+		);
 	}
 
 	if (error.status === 404) {
@@ -102,7 +109,10 @@ function VehicleFormDialog({
 	const mileageValue = useWatch({ control: form.control, name: 'mileage' });
 	const plateValue = useWatch({ control: form.control, name: 'plate' });
 	const vinValue = useWatch({ control: form.control, name: 'vin' });
-	const fuelValue = useWatch({ control: form.control, name: 'supportedFuelType' });
+	const fuelValue = useWatch({
+		control: form.control,
+		name: 'supportedFuelType',
+	});
 	const statusValue = useWatch({ control: form.control, name: 'status' });
 	const priceValue = useWatch({ control: form.control, name: 'price' });
 
@@ -225,7 +235,10 @@ function VehicleFormDialog({
 
 						<div className="rounded-3xl border border-[#e5ebf3] bg-[#f9fbfd] p-5">
 							<div className="space-y-1">
-								<Label className="text-base font-semibold text-[#1b2430]" htmlFor="vehicle-form-store">
+								<Label
+									className="text-base font-semibold text-[#1b2430]"
+									htmlFor="vehicle-form-store"
+								>
 									Loja
 								</Label>
 								<p className="text-sm leading-6 text-[#6b7687]">
@@ -267,7 +280,8 @@ function VehicleFormDialog({
 									Dados do veículo
 								</h3>
 								<p className="text-sm leading-6 text-[#6b7687]">
-									Preencha identificação, anos, quilometragem, combustível e preço.
+									Preencha identificação, anos, quilometragem, combustível e
+									preço.
 								</p>
 							</div>
 
@@ -366,7 +380,9 @@ function VehicleFormDialog({
 												shouldValidate: true,
 											})
 										}
-										value={modelYearValue === undefined ? '' : String(modelYearValue)}
+										value={
+											modelYearValue === undefined ? '' : String(modelYearValue)
+										}
 									/>
 									{form.formState.errors.modelYear ? (
 										<p className="text-xs text-destructive">
@@ -376,7 +392,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-manufacture-year">Ano de fabricação</Label>
+									<Label htmlFor="vehicle-form-manufacture-year">
+										Ano de fabricação
+									</Label>
 									<Input
 										className="h-11 rounded-xl border-[#d6dce5] bg-white shadow-none focus-visible:border-[#2d3648]/45"
 										id="vehicle-form-manufacture-year"
@@ -384,16 +402,19 @@ function VehicleFormDialog({
 										onChange={(event) =>
 											form.setValue(
 												'manufactureYear',
-												event.target.value.length ? Number(event.target.value) : null,
+												event.target.value.length
+													? Number(event.target.value)
+													: null,
 												{
-												shouldDirty: true,
-												shouldValidate: true,
+													shouldDirty: true,
+													shouldValidate: true,
 												},
 											)
 										}
 										placeholder="Opcional"
 										value={
-											manufactureYearValue === null || manufactureYearValue === undefined
+											manufactureYearValue === null ||
+											manufactureYearValue === undefined
 												? ''
 												: String(manufactureYearValue)
 										}
@@ -417,7 +438,9 @@ function VehicleFormDialog({
 												shouldValidate: true,
 											})
 										}
-										value={mileageValue === undefined ? '' : String(mileageValue)}
+										value={
+											mileageValue === undefined ? '' : String(mileageValue)
+										}
 									/>
 									{form.formState.errors.mileage ? (
 										<p className="text-xs text-destructive">
@@ -437,8 +460,8 @@ function VehicleFormDialog({
 												event.target
 													.value as VehicleFormInput['supportedFuelType'],
 												{
-												shouldDirty: true,
-												shouldValidate: true,
+													shouldDirty: true,
+													shouldValidate: true,
 												},
 											)
 										}
@@ -488,8 +511,8 @@ function VehicleFormDialog({
 												'status',
 												event.target.value as VehicleFormInput['status'],
 												{
-												shouldDirty: true,
-												shouldValidate: true,
+													shouldDirty: true,
+													shouldValidate: true,
 												},
 											)
 										}
@@ -566,7 +589,8 @@ function VehicleFormDialog({
 								<p className="mt-5 rounded-2xl border border-[#e5ebf3] bg-[#f9fbfd] px-4 py-4 text-sm text-[#6b7687]">
 									Editando veículo da loja{' '}
 									<span className="font-medium text-[#1b2430]">
-										{storeLabelById[targetVehicle.storeId] ?? 'Loja selecionada'}
+										{storeLabelById[targetVehicle.storeId] ??
+											'Loja selecionada'}
 									</span>
 									.
 								</p>
@@ -575,7 +599,12 @@ function VehicleFormDialog({
 					</div>
 
 					<DialogFooter className="shrink-0 px-8 pb-6 pt-4">
-						<Button className="rounded-md" onClick={onClose} type="button" variant="outline">
+						<Button
+							className="rounded-md"
+							onClick={onClose}
+							type="button"
+							variant="outline"
+						>
 							Cancelar
 						</Button>
 						<Button
@@ -599,4 +628,3 @@ function VehicleFormDialog({
 }
 
 export { VehicleFormDialog, getVehiclesErrorMessage };
-

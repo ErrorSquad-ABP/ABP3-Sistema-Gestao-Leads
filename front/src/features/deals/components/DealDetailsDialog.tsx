@@ -42,7 +42,10 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 	}
 
 	return (
-		<Dialog onOpenChange={(nextOpen) => (!nextOpen ? onClose() : null)} open={open}>
+		<Dialog
+			onOpenChange={(nextOpen) => (!nextOpen ? onClose() : null)}
+			open={open}
+		>
 			<DialogContent className="flex max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white">
 				<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 					<div className="flex items-center gap-4">
@@ -123,14 +126,18 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									<Clock className="size-3.5" />
 									Criado em
 								</p>
-								<p className="mt-1 text-[#1b2430]">{formatDateTime(deal.createdAt)}</p>
+								<p className="mt-1 text-[#1b2430]">
+									{formatDateTime(deal.createdAt)}
+								</p>
 							</div>
 							<div>
 								<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
 									<Clock className="size-3.5" />
 									Atualizado em
 								</p>
-								<p className="mt-1 text-[#1b2430]">{formatDateTime(deal.updatedAt)}</p>
+								<p className="mt-1 text-[#1b2430]">
+									{formatDateTime(deal.updatedAt)}
+								</p>
 							</div>
 						</div>
 					</div>
@@ -172,11 +179,10 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 											className="flex flex-col gap-1 rounded-2xl border border-border/80 bg-card px-4 py-3 text-sm"
 											key={item.id}
 										>
-											<p className="font-medium text-[#1b2430]">
-												{item.field}
-											</p>
+											<p className="font-medium text-[#1b2430]">{item.field}</p>
 											<p className="text-[#6b7687]">
-												{item.fromValue ? `De: ${item.fromValue} · ` : ''}Para: {item.toValue}
+												{item.fromValue ? `De: ${item.fromValue} · ` : ''}Para:{' '}
+												{item.toValue}
 											</p>
 											<p className="text-xs text-[#6b7687]">
 												{formatDateTime(item.createdAt)}
@@ -194,4 +200,3 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 }
 
 export { DealDetailsDialog };
-

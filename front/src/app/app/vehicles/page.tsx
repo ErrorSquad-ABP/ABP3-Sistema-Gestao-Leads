@@ -15,4 +15,3 @@ async function VehiclesHomePage() {
 }
 
 export default VehiclesHomePage;
-

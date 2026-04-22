@@ -23,4 +23,3 @@ function parseLeadDetailResponse(data: unknown) {
 }
 
 export { leadDetailSchema, parseLeadDetailResponse };
-

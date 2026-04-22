@@ -15,4 +15,3 @@ async function DealsHomePage() {
 }
 
 export default DealsHomePage;
-

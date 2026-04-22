@@ -27,5 +27,9 @@ function formatFuelType(value: SupportedFuelType) {
 	return formatSupportedFuelTypeLabel(value);
 }
 
-export { formatFuelType, formatMileage, formatVehiclePriceBRL, formatVehicleStatus };
-
+export {
+	formatFuelType,
+	formatMileage,
+	formatVehiclePriceBRL,
+	formatVehicleStatus,
+};

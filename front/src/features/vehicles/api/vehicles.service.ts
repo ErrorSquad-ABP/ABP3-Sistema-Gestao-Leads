@@ -4,7 +4,10 @@ import {
 	parseVehicleResponse,
 	parseVehiclesResponse,
 } from '../schemas/vehicle.schema';
-import type { CreateVehicleInput, UpdateVehicleInput } from '../model/vehicles.model';
+import type {
+	CreateVehicleInput,
+	UpdateVehicleInput,
+} from '../model/vehicles.model';
 
 type ListVehiclesFilters = {
 	storeId?: string;
@@ -22,11 +25,17 @@ function vehiclesListQuery(filters: ListVehiclesFilters) {
 	return params.toString();
 }
 
-async function listVehicles(filters: ListVehiclesFilters, signal?: AbortSignal) {
+async function listVehicles(
+	filters: ListVehiclesFilters,
+	signal?: AbortSignal,
+) {
 	const query = vehiclesListQuery(filters);
-	const raw = await apiFetch<unknown>(`/api/vehicles${query ? `?${query}` : ''}`, {
-		signal,
-	});
+	const raw = await apiFetch<unknown>(
+		`/api/vehicles${query ? `?${query}` : ''}`,
+		{
+			signal,
+		},
+	);
 	return parseVehiclesResponse(raw);
 }
 
@@ -54,4 +63,3 @@ async function deactivateVehicle(vehicleId: string) {
 
 export { createVehicle, deactivateVehicle, listVehicles, updateVehicle };
 export type { ListVehiclesFilters };
-

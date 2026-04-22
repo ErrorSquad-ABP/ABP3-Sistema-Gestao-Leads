@@ -13,4 +13,3 @@ async function VehiclesLayout({ children }: VehiclesLayoutProps) {
 }
 
 export default VehiclesLayout;
-

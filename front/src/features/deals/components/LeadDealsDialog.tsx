@@ -14,14 +14,22 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ApiError, isApiError } from '@/lib/http/api-error';
+import { ApiError } from '@/lib/http/api-error';
 
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
 import { useDealsByLeadQuery } from '../hooks/deals.queries';
-import { useCreateDealForLeadMutation, useDeleteDealMutation, useUpdateDealMutation } from '../hooks/deals.mutations';
+import {
+	useCreateDealForLeadMutation,
+	useDeleteDealMutation,
+	useUpdateDealMutation,
+} from '../hooks/deals.mutations';
 import { dealCreateSchema } from '../schemas/deal-management.schema';
-import type { Deal, DealCreateFormInput, DealCreateInput } from '../model/deals.model';
+import type {
+	Deal,
+	DealCreateFormInput,
+	DealCreateInput,
+} from '../model/deals.model';
 import { DealConfirmDialog } from './DealConfirmDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
 import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
@@ -39,15 +47,23 @@ function formatVehicleOptionLabel(vehicle: Vehicle) {
 	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
 }
 
-function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialogProps) {
+function LeadDealsDialog({
+	leadId,
+	leadStoreId,
+	onClose,
+	open,
+}: LeadDealsDialogProps) {
 	const safeLeadId = leadId ?? '';
 	const listQuery = useDealsByLeadQuery(safeLeadId);
 	const deals = useMemo(() => listQuery.data ?? [], [listQuery.data]);
 
-	const vehiclesQuery = useVehiclesListQuery({
-		status: 'AVAILABLE',
-		storeId: leadStoreId ?? undefined,
-	}, { enabled: Boolean(leadId && leadStoreId) });
+	const vehiclesQuery = useVehiclesListQuery(
+		{
+			status: 'AVAILABLE',
+			storeId: leadStoreId ?? undefined,
+		},
+		{ enabled: Boolean(leadId && leadStoreId) },
+	);
 	const availableVehicles = useMemo(
 		() => vehiclesQuery.data ?? [],
 		[vehiclesQuery.data],
@@ -166,7 +182,10 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 
 					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-8 pb-8 pt-7">
 						{listQuery.isError ? (
-							<div className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive" role="alert">
+							<div
+								className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+								role="alert"
+							>
 								{listQuery.error instanceof ApiError
 									? listQuery.error.message
 									: 'Não foi possível carregar as negociações do lead.'}
@@ -190,7 +209,12 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 					</div>
 
 					<DialogFooter className="px-8 pb-6 pt-4">
-						<Button className="rounded-md" onClick={onClose} type="button" variant="outline">
+						<Button
+							className="rounded-md"
+							onClick={onClose}
+							type="button"
+							variant="outline"
+						>
 							Fechar
 						</Button>
 					</DialogFooter>
@@ -209,7 +233,8 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 					<DialogHeader>
 						<DialogTitle>Nova negociação</DialogTitle>
 						<DialogDescription>
-							Informe veículo, título e valor. O backend valida disponibilidade e escopo.
+							Informe veículo, título e valor. O backend valida disponibilidade
+							e escopo.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6 py-5">
@@ -232,7 +257,7 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 										? 'Carregando veículos disponíveis...'
 										: !leadStoreId
 											? 'Lead sem loja definida'
-										: 'Selecione um veículo'}
+											: 'Selecione um veículo'}
 								</option>
 								{availableVehicles.map((vehicle) => (
 									<option key={vehicle.id} value={vehicle.id}>
@@ -242,7 +267,8 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 							</select>
 							{!leadStoreId ? (
 								<p className="text-xs text-[#6b7687]">
-									Não foi possível determinar a loja do lead para filtrar os veículos.
+									Não foi possível determinar a loja do lead para filtrar os
+									veículos.
 								</p>
 							) : null}
 							{vehiclesQuery.isSuccess && availableVehicles.length === 0 ? (
@@ -260,21 +286,38 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="lead-deal-title">Título</Label>
-							<Input id="lead-deal-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+							<Input
+								id="lead-deal-title"
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="lead-deal-value">Valor</Label>
-							<Input id="lead-deal-value" placeholder="45000.00" value={value} onChange={(e) => setValue(e.target.value)} />
+							<Input
+								id="lead-deal-value"
+								placeholder="45000.00"
+								value={value}
+								onChange={(e) => setValue(e.target.value)}
+							/>
 						</div>
 					</div>
 					<DialogFooter>
-						<Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setCreateOpen(false)}
+						>
 							Cancelar
 						</Button>
 						<Button
 							type="button"
 							className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
-							disabled={createMutation.isPending || !vehicleId || (vehiclesQuery.isSuccess && availableVehicles.length === 0)}
+							disabled={
+								createMutation.isPending ||
+								!vehicleId ||
+								(vehiclesQuery.isSuccess && availableVehicles.length === 0)
+							}
 							onClick={() => void handleCreateSubmit()}
 						>
 							{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
@@ -300,7 +343,10 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 				}}
 				onSubmit={async (values) => {
 					if (!targetDeal) return;
-					await updateMutation.mutateAsync({ dealId: targetDeal.id, payload: values });
+					await updateMutation.mutateAsync({
+						dealId: targetDeal.id,
+						payload: values,
+					});
 				}}
 				open={editOpen}
 				targetDeal={targetDeal}
@@ -329,4 +375,3 @@ function LeadDealsDialog({ leadId, leadStoreId, onClose, open }: LeadDealsDialog
 }
 
 export { LeadDealsDialog };
-

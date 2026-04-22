@@ -34,7 +34,12 @@ type DealsTableProps = {
 	onOpenDetails?: (deal: Deal) => void;
 };
 
-function DealsTable({ deals, onDelete, onEdit, onOpenDetails }: DealsTableProps) {
+function DealsTable({
+	deals,
+	onDelete,
+	onEdit,
+	onOpenDetails,
+}: DealsTableProps) {
 	if (deals.length === 0) {
 		return (
 			<div className="rounded-2xl border border-border/80 bg-card px-4 py-10 text-center text-sm text-[#6b7687]">
@@ -66,7 +71,10 @@ function DealsTable({ deals, onDelete, onEdit, onOpenDetails }: DealsTableProps)
 							onDoubleClick={() => onOpenDetails?.(deal)}
 						>
 							<TableCell>
-								<Badge className="rounded-md px-2.5 py-1 text-[0.72rem] font-medium" variant="outline">
+								<Badge
+									className="rounded-md px-2.5 py-1 text-[0.72rem] font-medium"
+									variant="outline"
+								>
 									{formatDealStatusLabel(deal.status)}
 								</Badge>
 							</TableCell>
@@ -91,12 +99,19 @@ function DealsTable({ deals, onDelete, onEdit, onOpenDetails }: DealsTableProps)
 							<TableCell className="text-right">
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button className="rounded-md" size="icon-sm" variant="ghost">
+										<Button
+											className="rounded-md"
+											size="icon-sm"
+											variant="ghost"
+										>
 											<MoreHorizontal className="size-4" />
 											<span className="sr-only">Ações da negociação</span>
 										</Button>
 									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end" className="w-44 rounded-xl bg-white">
+									<DropdownMenuContent
+										align="end"
+										className="w-44 rounded-xl bg-white"
+									>
 										{onEdit ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
@@ -128,4 +143,3 @@ function DealsTable({ deals, onDelete, onEdit, onOpenDetails }: DealsTableProps)
 }
 
 export { DealsTable };
-

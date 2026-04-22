@@ -7,7 +7,10 @@ import {
 	deactivateVehicle,
 	updateVehicle,
 } from '../api/vehicles.service';
-import type { CreateVehicleInput, UpdateVehicleInput } from '../model/vehicles.model';
+import type {
+	CreateVehicleInput,
+	UpdateVehicleInput,
+} from '../model/vehicles.model';
 
 function useCreateVehicleMutation() {
 	const queryClient = useQueryClient();
@@ -15,7 +18,9 @@ function useCreateVehicleMutation() {
 	return useMutation({
 		mutationFn: (input: CreateVehicleInput) => createVehicle(input),
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.listRoot });
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.vehicles.listRoot,
+			});
 		},
 	});
 }
@@ -27,7 +32,9 @@ function useUpdateVehicleMutation() {
 		mutationFn: (input: { vehicleId: string; payload: UpdateVehicleInput }) =>
 			updateVehicle(input.vehicleId, input.payload),
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.listRoot });
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.vehicles.listRoot,
+			});
 		},
 	});
 }
@@ -38,10 +45,15 @@ function useDeactivateVehicleMutation() {
 	return useMutation({
 		mutationFn: (vehicleId: string) => deactivateVehicle(vehicleId),
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.listRoot });
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.vehicles.listRoot,
+			});
 		},
 	});
 }
 
-export { useCreateVehicleMutation, useDeactivateVehicleMutation, useUpdateVehicleMutation };
-
+export {
+	useCreateVehicleMutation,
+	useDeactivateVehicleMutation,
+	useUpdateVehicleMutation,
+};

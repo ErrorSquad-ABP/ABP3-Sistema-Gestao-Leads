@@ -41,7 +41,7 @@ type VehiclesPageContentProps = {
 	user: AuthenticatedUser;
 };
 
-function VehiclesPageContent({ user }: VehiclesPageContentProps) {
+function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 	const storesQuery = useStoresQuery();
 	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
 	const storeLabelById = useMemo(
@@ -51,7 +51,9 @@ function VehiclesPageContent({ user }: VehiclesPageContentProps) {
 
 	const [search, setSearch] = useState('');
 	const [storeFilter, setStoreFilter] = useState<string>('ALL');
-	const [statusFilter, setStatusFilter] = useState<'ALL' | VehicleStatus>('ALL');
+	const [statusFilter, setStatusFilter] = useState<'ALL' | VehicleStatus>(
+		'ALL',
+	);
 
 	const vehiclesQuery = useVehiclesListQuery({
 		storeId: storeFilter === 'ALL' ? undefined : storeFilter,
@@ -71,7 +73,10 @@ function VehiclesPageContent({ user }: VehiclesPageContentProps) {
 	const [targetVehicle, setTargetVehicle] = useState<Vehicle | null>(null);
 	const [detailsOpen, setDetailsOpen] = useState(false);
 
-	const vehicles = useMemo(() => vehiclesQuery.data ?? [], [vehiclesQuery.data]);
+	const vehicles = useMemo(
+		() => vehiclesQuery.data ?? [],
+		[vehiclesQuery.data],
+	);
 
 	const normalizedSearch = normalizeSearchValue(search);
 	const filteredVehicles = useMemo(() => {
@@ -175,7 +180,10 @@ function VehiclesPageContent({ user }: VehiclesPageContentProps) {
 		'Cadastre e mantenha o catálogo de veículos por loja e status operacional.';
 
 	return (
-		<div className="space-y-6" aria-busy={vehiclesQuery.isPending ? 'true' : 'false'}>
+		<div
+			className="space-y-6"
+			aria-busy={vehiclesQuery.isPending ? 'true' : 'false'}
+		>
 			<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
 				<CardHeader className="gap-5 border-none pb-6">
 					<div className="flex items-start justify-between gap-4">
@@ -352,4 +360,3 @@ function VehiclesPageContent({ user }: VehiclesPageContentProps) {
 }
 
 export { VehiclesPageContent };
-

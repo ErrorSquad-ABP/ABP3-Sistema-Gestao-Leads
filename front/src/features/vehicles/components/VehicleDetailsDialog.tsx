@@ -11,7 +11,12 @@ import {
 } from '@/components/ui/dialog';
 
 import type { Vehicle } from '../model/vehicles.model';
-import { formatFuelType, formatMileage, formatVehiclePriceBRL, formatVehicleStatus } from '../lib/vehicle-formatters';
+import {
+	formatFuelType,
+	formatMileage,
+	formatVehiclePriceBRL,
+	formatVehicleStatus,
+} from '../lib/vehicle-formatters';
 
 type VehicleDetailsDialogProps = {
 	onClose: () => void;
@@ -220,4 +225,3 @@ function VehicleDetailsDialog({
 }
 
 export { VehicleDetailsDialog };
-
