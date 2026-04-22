@@ -15,9 +15,17 @@ type CustomTemporalFilterDto = {
 
 type TemporalFilterDto = PresetTemporalFilterDto | CustomTemporalFilterDto;
 
+type ResolvedTemporalFilterDto = {
+	readonly period: TemporalFilterMode;
+	readonly startDate: string;
+	readonly endDate: string;
+	readonly referenceDate: string;
+};
+
 export type {
 	CustomTemporalFilterDto,
 	PresetTemporalFilterDto,
 	PresetTemporalFilterMode,
+	ResolvedTemporalFilterDto,
 	TemporalFilterDto,
 };
