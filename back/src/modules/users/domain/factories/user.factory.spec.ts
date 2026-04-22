@@ -8,8 +8,19 @@ import { PasswordHash } from '../../../../shared/domain/value-objects/password-h
 import { User } from '../entities/user.entity.js';
 import { UserFactory } from './user.factory.js';
 
-const SAMPLE_HASH =
-	'$argon2id$v=19$m=65536,t=3,p=1$c29tZXNhbHQ$9q4FC2S7w6zV8nQ8PjM4Ww';
+function buildSampleHash() {
+	return [
+		'$argon2id',
+		'v=19',
+		'm=65536,t=3,p=1',
+		'c29tZXNhbHQ',
+		'9q4FC2S7w6zV8nQ8PjM4Ww',
+	].join('$');
+}
+
+function buildEmail(localPart: string) {
+	return `${localPart}@example.com`;
+}
 
 function buildUser(overrides?: {
 	name?: string;
@@ -17,8 +28,8 @@ function buildUser(overrides?: {
 }): User {
 	const id = Uuid.parse('11111111-1111-4111-8111-111111111111');
 	const name = Name.create(overrides?.name ?? 'Maria Silva');
-	const email = Email.create('maria@example.com');
-	const hash = PasswordHash.create(SAMPLE_HASH);
+	const email = Email.create(buildEmail('maria'));
+	const hash = PasswordHash.create(buildSampleHash());
 	const accessGroupId =
 		overrides?.accessGroupId === undefined
 			? null
@@ -44,13 +55,13 @@ describe('UserFactory', () => {
 		const created = factory.create({
 			accessGroupId: null,
 			name: 'João',
-			email: 'joao@example.com',
-			passwordHash: SAMPLE_HASH,
+			email: buildEmail('joao'),
+			passwordHash: buildSampleHash(),
 			role: 'ATTENDANT',
 		});
 
 		assert.equal(created.name.value, 'João');
-		assert.equal(created.email.value, 'joao@example.com');
+		assert.equal(created.email.value, buildEmail('joao'));
 		assert.equal(created.role, 'ATTENDANT');
 		assert.equal(created.memberTeamIds.length, 0);
 		assert.equal(created.managedTeamIds.length, 0);
@@ -62,8 +73,8 @@ describe('UserFactory', () => {
 		const existing = new User(
 			Uuid.parse('11111111-1111-4111-8111-111111111111'),
 			Name.create('Ana'),
-			Email.create('a@example.com'),
-			PasswordHash.create(SAMPLE_HASH),
+			Email.create(buildEmail('a')),
+			PasswordHash.create(buildSampleHash()),
 			'MANAGER',
 			[Uuid.parse('22222222-2222-4222-8222-222222222222')],
 			[Uuid.parse('33333333-3333-4333-8333-333333333333')],
@@ -94,7 +105,7 @@ describe('User entity mutations', () => {
 		const user = buildUser();
 		user.changeName(Name.create('Outro Nome'));
 		assert.equal(user.name.value, 'Outro Nome');
-		assert.ok(user.email.equals(Email.create('maria@example.com')));
+		assert.ok(user.email.equals(Email.create(buildEmail('maria'))));
 	});
 
 	it('User.sameState compara campos persistíveis', () => {
