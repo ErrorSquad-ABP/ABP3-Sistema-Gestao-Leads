@@ -17,6 +17,10 @@ const VALID_ARGON2_FIXTURE =
 const NEW_HASH =
 	'$argon2id$v=19$m=19456,t=2,p=1$bbbbbbbbbbbbbbbb$cccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
 
+function buildTestPassword(prefix: string) {
+	return `${prefix}-password`;
+}
+
 function uowThatRunsCallback(): IUnitOfWork {
 	return {
 		run: async <T>(fn: () => Promise<T>) => fn(),
@@ -50,8 +54,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 		await assert.rejects(
 			() =>
 				uc.execute(self.id.value, {
-					currentPassword: 'samepassword',
-					newPassword: 'samepassword',
+					currentPassword: buildTestPassword('same'),
+					newPassword: buildTestPassword('same'),
 				}),
 			DomainValidationError,
 		);
@@ -81,8 +85,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 		await assert.rejects(
 			() =>
 				uc.execute(self.id.value, {
-					currentPassword: 'wrong',
-					newPassword: 'newpassword1',
+					currentPassword: buildTestPassword('wrong'),
+					newPassword: buildTestPassword('new-1'),
 				}),
 			InvalidCredentialsError,
 		);
@@ -125,8 +129,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 			unitOfWork: uowThatRunsCallback(),
 		});
 		const out = await uc.execute(self.id.value, {
-			currentPassword: 'oldpassword',
-			newPassword: 'newpassword1',
+			currentPassword: buildTestPassword('old'),
+			newPassword: buildTestPassword('new-1'),
 		});
 		assert.ok(out.passwordHash.value.includes('argon2'));
 		assert.equal(users.update.mock.calls.length, 1);

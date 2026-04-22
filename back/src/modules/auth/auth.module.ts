@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
-import { env } from '../../config/env.js';
 import { UsersModule } from '../users/users.module.js';
 import { AuthRateLimiterService } from './infrastructure/auth-rate-limiter.service.js';
 import { AuthSessionPrismaRepository } from './infrastructure/auth-session.prisma-repository.js';
@@ -22,7 +21,6 @@ import { RolesGuard } from './roles.guard.js';
 		UsersModule,
 		PassportModule.register({ defaultStrategy: 'jwt' }),
 		JwtModule.register({
-			secret: env.jwtSecret || 'local-dev-only-jwt-secret-change-in-env',
 			signOptions: { expiresIn: '7d' },
 		}),
 	],
