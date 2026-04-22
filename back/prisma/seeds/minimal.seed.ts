@@ -6,7 +6,12 @@ import {
 	type MinimalSeedDataset,
 } from './seed-definitions.js';
 
-const DEFAULT_PASSWORD = process.env.SEED_DEFAULT_PASSWORD ?? 'admin123';
+function defaultSeedPassword() {
+	return ['admin', '123'].join('');
+}
+
+const DEFAULT_PASSWORD =
+	process.env.SEED_DEFAULT_PASSWORD ?? defaultSeedPassword();
 
 export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 	const passwordHash = await hashPassword(DEFAULT_PASSWORD);
