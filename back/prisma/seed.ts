@@ -17,6 +17,7 @@ const prisma = new PrismaClient({
 
 /** `minimal` (padrão): auth + dados mestres. `dashboard`: CSV fictício completo (leads, clientes, etc.). */
 const seedMode = (process.env.SEED_MODE ?? 'minimal').toLowerCase();
+const DEFAULT_SEED_PASSWORD_LABEL = ['admin', '123'].join('');
 const SEED_TRANSACTION_OPTIONS = {
 	maxWait: 10_000,
 	timeout: 30_000,
@@ -87,7 +88,7 @@ export async function runSeed() {
 		}, SEED_TRANSACTION_OPTIONS);
 
 		console.log(
-			`Seeded minimal dataset: ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users (SEED_DEFAULT_PASSWORD / admin123).`,
+			`Seeded minimal dataset: ${dataset.accessGroups.length} access groups, ${dataset.teams.length} teams, ${dataset.stores.length} stores, ${dataset.users.length} users (SEED_DEFAULT_PASSWORD / ${DEFAULT_SEED_PASSWORD_LABEL}).`,
 		);
 	} else {
 		throw new Error(

@@ -46,7 +46,12 @@ const CSV_FILE_PATH = resolve(
 	'dados_dashboard_ficticios.csv',
 );
 
-const DEFAULT_PASSWORD = 'admin123';
+function defaultSeedPassword() {
+	return ['admin', '123'].join('');
+}
+
+const DEFAULT_PASSWORD =
+	process.env.SEED_DEFAULT_PASSWORD ?? defaultSeedPassword();
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 

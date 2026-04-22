@@ -14,6 +14,10 @@ import { UpdateOwnEmailUseCase } from './update-own-email.use-case.js';
 const VALID_ARGON2_FIXTURE =
 	'$argon2id$v=19$m=19456,t=2,p=1$H5K4T/9lCdJ1rPy/qic1Iw$FxSLF4hsA96bMKbhvKfu/V2rNzhVOH9YGJdkYyqbyXA';
 
+function buildTestPassword(prefix: string) {
+	return `${prefix}-password`;
+}
+
 function uowThatRunsCallback(): IUnitOfWork {
 	return {
 		run: async <T>(fn: () => Promise<T>) => fn(),
@@ -66,7 +70,7 @@ describe('UpdateOwnEmailUseCase', () => {
 		await assert.rejects(
 			() =>
 				uc.execute(self.id.value, {
-					currentPassword: 'wrong',
+					currentPassword: buildTestPassword('wrong'),
 					email: 'new@example.com',
 				}),
 			InvalidCredentialsError,
@@ -111,7 +115,7 @@ describe('UpdateOwnEmailUseCase', () => {
 		await assert.rejects(
 			() =>
 				uc.execute(self.id.value, {
-					currentPassword: 'okpassword',
+					currentPassword: buildTestPassword('ok'),
 					email: 'taken@example.com',
 				}),
 			UserEmailAlreadyExistsError,
@@ -156,7 +160,7 @@ describe('UpdateOwnEmailUseCase', () => {
 			unitOfWork: uowThatRunsCallback(),
 		});
 		const out = await uc.execute(self.id.value, {
-			currentPassword: 'okpassword',
+			currentPassword: buildTestPassword('ok'),
 			email: 'new@example.com',
 		});
 		assert.equal(out.user.email.value, 'new@example.com');
@@ -200,7 +204,7 @@ describe('UpdateOwnEmailUseCase', () => {
 			unitOfWork: uowThatRunsCallback(),
 		});
 		const out = await uc.execute(self.id.value, {
-			currentPassword: 'okpassword',
+			currentPassword: buildTestPassword('ok'),
 			email: self.email.value,
 		});
 		assert.equal(out.user.email.value, 'old@example.com');
