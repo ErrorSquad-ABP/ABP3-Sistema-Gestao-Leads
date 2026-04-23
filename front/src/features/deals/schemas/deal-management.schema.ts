@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import {
+	isBrlApiDecimalAtOrUnderDbMax,
+	MONEY_BRL_EXCEEDS_DB_LIMIT,
+} from '@/lib/money-brl-limits';
+
 import { dealImportances, dealStages, dealStatuses } from './deal.schema';
 
 const pricePattern = /^\d+(\.\d{2})$/;
@@ -17,6 +22,9 @@ const dealCreateSchema = z.object({
 		})
 		.refine((value) => value === null || pricePattern.test(value), {
 			message: 'Informe um valor no formato 45000.00 ou deixe vazio.',
+		})
+		.refine((value) => isBrlApiDecimalAtOrUnderDbMax(value ?? null), {
+			message: MONEY_BRL_EXCEEDS_DB_LIMIT,
 		}),
 	importance: z
 		.enum(dealImportances, {
@@ -47,6 +55,13 @@ const dealUpdateSchema = z.object({
 			{
 				message: 'Informe um valor no formato 45000.00 ou deixe vazio.',
 			},
+		)
+		.refine(
+			(value) =>
+				value === undefined ||
+				value === null ||
+				isBrlApiDecimalAtOrUnderDbMax(value),
+			{ message: MONEY_BRL_EXCEEDS_DB_LIMIT },
 		),
 	importance: z.enum(dealImportances).optional(),
 	stage: z.enum(dealStages).optional(),

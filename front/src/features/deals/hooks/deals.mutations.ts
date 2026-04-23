@@ -14,7 +14,7 @@ function useCreateDealForLeadMutation(leadId: string) {
 
 	return useMutation({
 		mutationFn: (input: DealCreateInput) => createDealForLead(leadId, input),
-		onSuccess: async () => {
+		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.listRoot,
 			});
@@ -24,6 +24,11 @@ function useCreateDealForLeadMutation(leadId: string) {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.vehicles.listRoot,
 			});
+			if (variables.vehicleId) {
+				await queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.detail(variables.vehicleId),
+				});
+			}
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
 			});
@@ -56,6 +61,16 @@ function useUpdateDealMutation() {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.vehicles.listRoot,
 			});
+			if (data.vehicleId) {
+				await queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.detail(data.vehicleId),
+				});
+			}
+			if (variables.payload.vehicleId) {
+				await queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.detail(variables.payload.vehicleId),
+				});
+			}
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
 			});

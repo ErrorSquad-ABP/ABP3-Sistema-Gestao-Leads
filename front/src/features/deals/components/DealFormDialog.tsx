@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { PencilLine } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { ZodError } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,22 +17,28 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { isApiError } from '@/lib/http/api-error';
-
 import { useLeadDetailQuery } from '@/features/leads/hooks/leads.queries';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
+import { isApiError } from '@/lib/http/api-error';
 import {
 	dealImportanceOptions,
 	dealStageOptions,
 	dealStatusOptions,
 } from '../lib/deal-labels';
-import { dealUpdateSchema } from '../schemas/deal-management.schema';
+import { useResolvedVehicleLabel } from '../hooks/use-resolved-vehicle-label';
+import {
+	apiDecimalStringToCentsDigits,
+	centsDigitsToApiDecimalString,
+	formatCentsDigitsToBrlDisplay,
+	sanitizeMoneyDigitsInput,
+} from '../lib/deal-money-input';
 import type {
 	Deal,
 	DealUpdateFormInput,
 	DealUpdateInput,
 } from '../model/deals.model';
+import { dealUpdateSchema } from '../schemas/deal-management.schema';
 
 type DealFormDialogProps = {
 	isPending: boolean;
@@ -44,14 +51,38 @@ type DealFormDialogProps = {
 const selectClass =
 	'flex h-11 w-full rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45';
 
+const DEAL_INVALID_STAGE_TRANSITION_CODE = 'deal.invalid_stage_transition';
+
+function getFriendlyMessageForInvalidStageTransition(apiMessage: string) {
+	if (/negociac[aã]o nova|nova deve iniciar/i.test(apiMessage)) {
+		return 'Negociações novas começam na primeira etapa do funil. Ajuste a etapa e tente de novo.';
+	}
+	return 'Não é possível pular etapas. Avance ou volte somente uma etapa por vez no funil.';
+}
+
 function formatVehicleOptionLabel(vehicle: Vehicle) {
 	const plate = vehicle.plate ? vehicle.plate.trim() : '';
 	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
 }
 
 function getDealsErrorMessage(error: unknown) {
+	if (error instanceof ZodError) {
+		return error.issues[0]?.message ?? 'Dados inválidos. Revise o formulário.';
+	}
 	if (!isApiError(error)) {
 		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
+	}
+	if (error.code === DEAL_INVALID_STAGE_TRANSITION_CODE) {
+		return getFriendlyMessageForInvalidStageTransition(error.message);
+	}
+	if (
+		error.status === 400 &&
+		error.errors.some((e) => e.code === DEAL_INVALID_STAGE_TRANSITION_CODE)
+	) {
+		const raw =
+			error.errors.find((e) => e.code === DEAL_INVALID_STAGE_TRANSITION_CODE)
+				?.message ?? error.message;
+		return getFriendlyMessageForInvalidStageTransition(raw);
 	}
 	if (error.status === 400) {
 		return error.message || 'Os dados não passaram na validação da API.';
@@ -75,6 +106,7 @@ function DealFormDialog({
 	targetDeal,
 }: DealFormDialogProps) {
 	const [submitError, setSubmitError] = useState<string | null>(null);
+	const [valueCentsDigits, setValueCentsDigits] = useState('');
 	const isReadOnly = Boolean(targetDeal && targetDeal.status !== 'OPEN');
 
 	const form = useForm<DealUpdateFormInput>({
@@ -83,7 +115,6 @@ function DealFormDialog({
 	});
 
 	const titleValue = useWatch({ control: form.control, name: 'title' });
-	const valueValue = useWatch({ control: form.control, name: 'value' });
 	const vehicleValue = useWatch({ control: form.control, name: 'vehicleId' });
 	const stageValue = useWatch({ control: form.control, name: 'stage' });
 	const importanceValue = useWatch({
@@ -110,11 +141,16 @@ function DealFormDialog({
 		[vehiclesQuery.data],
 	);
 
+	const resolvedCurrentVehicle = useResolvedVehicleLabel(
+		targetDeal?.vehicleId ?? '',
+		targetDeal?.vehicleLabel,
+	);
+
 	const vehicleOptions = useMemo(() => {
 		const current = targetDeal
 			? ({
 					id: targetDeal.vehicleId,
-					label: targetDeal.vehicleLabel || 'Veículo não encontrado',
+					label: resolvedCurrentVehicle.displayLabel,
 				} as const)
 			: null;
 
@@ -127,33 +163,41 @@ function DealFormDialog({
 
 		const hasCurrent = fromAvailable.some((v) => v.id === current.id);
 		return hasCurrent ? fromAvailable : [current, ...fromAvailable];
-	}, [availableVehicles, targetDeal]);
+	}, [availableVehicles, resolvedCurrentVehicle.displayLabel, targetDeal]);
 
 	useEffect(() => {
 		if (!open) {
 			form.reset({});
+			setValueCentsDigits('');
 			return;
 		}
 		if (targetDeal) {
 			form.reset({
 				title: targetDeal.title,
-				value: targetDeal.value ?? '',
 				vehicleId: targetDeal.vehicleId,
 				stage: targetDeal.stage,
 				importance: targetDeal.importance,
 				status: targetDeal.status,
 			});
+			setValueCentsDigits(apiDecimalStringToCentsDigits(targetDeal.value));
+		} else {
+			setValueCentsDigits('');
 		}
 	}, [form, open, targetDeal]);
 
-	async function handleSubmit(values: DealUpdateFormInput) {
+	async function handleSubmit(_values: DealUpdateFormInput) {
 		if (isReadOnly) {
 			setSubmitError('Negociação finalizada. Não é possível editar os campos.');
 			return;
 		}
 		setSubmitError(null);
 		try {
-			const parsed = dealUpdateSchema.parse(values);
+			const base = form.getValues();
+			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits);
+			const parsed = dealUpdateSchema.parse({
+				...base,
+				value: valueAsApi,
+			} satisfies DealUpdateFormInput);
 			await onSubmit(parsed as DealUpdateInput);
 			onClose();
 		} catch (error) {
@@ -230,20 +274,16 @@ function DealFormDialog({
 										className="h-11 rounded-xl border-[#d6dce5] bg-white shadow-none focus-visible:border-[#2d3648]/45"
 										disabled={isPending || isReadOnly}
 										id="deal-form-value"
+										inputMode="numeric"
+										autoComplete="off"
 										onChange={(event) =>
-											form.setValue('value', event.target.value, {
-												shouldDirty: true,
-												shouldValidate: true,
-											})
+											setValueCentsDigits(
+												sanitizeMoneyDigitsInput(event.target.value),
+											)
 										}
-										placeholder="45000.00"
-										value={(valueValue as string | null | undefined) ?? ''}
+										placeholder="R$ 0,00"
+										value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
 									/>
-									{form.formState.errors.value ? (
-										<p className="text-xs text-destructive">
-											{String(form.formState.errors.value.message)}
-										</p>
-									) : null}
 								</div>
 
 								<div className="space-y-2">
