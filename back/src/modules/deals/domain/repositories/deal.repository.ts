@@ -44,6 +44,8 @@ type DealEnrichedRow = {
 	readonly createdAt: Date;
 	readonly updatedAt: Date;
 	readonly lead: {
+		readonly storeId: string;
+		readonly ownerUserId: string | null;
 		readonly customer: { readonly name: string } | null;
 	} | null;
 	readonly vehicle: {

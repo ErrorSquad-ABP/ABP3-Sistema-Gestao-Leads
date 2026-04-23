@@ -34,6 +34,7 @@ import {
 	type JwtUser,
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
+import { DealsByLeadListDto } from '../../application/dto/deals-by-lead-list.dto.js';
 import { DealHistoryItemDto } from '../../application/dto/deal-history-response.dto.js';
 import { DealResponseDto } from '../../application/dto/deal-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -121,13 +122,13 @@ class DealController {
 			toLeadActor(user),
 			created.id.value,
 		);
-		return DealPresenter.toResponseEnriched(deal);
+		return DealPresenter.toResponseEnriched(deal.row, deal.canMutate);
 	}
 
 	@Get('leads/:leadId/deals')
 	@ApiOperation({ summary: 'Listar negociações do lead' })
 	@ApiParam({ name: 'leadId', format: 'uuid' })
-	@ApiOkResponseEnvelopeArray(DealResponseDto)
+	@ApiOkResponseEnvelope(DealsByLeadListDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
@@ -135,11 +136,14 @@ class DealController {
 		@CurrentUser() user: JwtUser,
 		@Param('leadId', ParseUUIDPipe) leadId: string,
 	) {
-		const deals = await this.listDealsByLeadUseCase.execute(
+		const result = await this.listDealsByLeadUseCase.execute(
 			toLeadActor(user),
 			leadId,
 		);
-		return DealPresenter.toResponseListEnriched([...deals]);
+		return {
+			items: DealPresenter.toResponseListEnriched(result.items),
+			canMutateLead: result.canMutateLead,
+		};
 	}
 
 	@Get('deals')
@@ -203,7 +207,7 @@ class DealController {
 		@Param('id', ParseUUIDPipe) id: string,
 	) {
 		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
-		return DealPresenter.toResponseEnriched(deal);
+		return DealPresenter.toResponseEnriched(deal.row, deal.canMutate);
 	}
 
 	@Patch('deals/:id')
@@ -227,7 +231,7 @@ class DealController {
 			status: body.status,
 		});
 		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
-		return DealPresenter.toResponseEnriched(deal);
+		return DealPresenter.toResponseEnriched(deal.row, deal.canMutate);
 	}
 
 	@Delete('deals/:id')

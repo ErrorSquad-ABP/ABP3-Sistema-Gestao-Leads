@@ -53,6 +53,12 @@ class DealResponseDto {
 
 	@ApiProperty({ type: String, format: 'date-time' })
 	updatedAt!: Date;
+
+	@ApiProperty({
+		description:
+			'Indica se o utilizador autenticado pode mutar a negociação (o mesmo critério de `assertCanMutateLead` no lead).',
+	})
+	canMutate!: boolean;
 }
 
 export { DealResponseDto };

@@ -33,7 +33,12 @@ class FindDealUseCase {
 		}
 		await this.leadAccessPolicy.assertCanReadLead(actor, lead);
 
-		return row;
+		const canMutate = await this.leadAccessPolicy.canActorMutateLeadOnSnapshot(
+			actor,
+			lead.storeId.value,
+			lead.ownerUserId?.value ?? null,
+		);
+		return { row, canMutate };
 	}
 }
 

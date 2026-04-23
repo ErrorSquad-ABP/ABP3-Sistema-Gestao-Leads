@@ -33,6 +33,7 @@ class DealPresenter {
 			closedAt: deal.closedAt,
 			createdAt: deal.createdAt,
 			updatedAt: deal.updatedAt,
+			canMutate: false,
 		} as DealResponseDto;
 	}
 
@@ -40,7 +41,10 @@ class DealPresenter {
 		return deals.map((d) => DealPresenter.toResponse(d));
 	}
 
-	static toResponseEnriched(row: DealEnrichedRow): DealResponseDto {
+	static toResponseEnriched(
+		row: DealEnrichedRow,
+		canMutate: boolean,
+	): DealResponseDto {
 		return {
 			id: row.id,
 			leadId: row.leadId,
@@ -55,13 +59,19 @@ class DealPresenter {
 			closedAt: row.closedAt,
 			createdAt: row.createdAt,
 			updatedAt: row.updatedAt,
+			canMutate,
 		} as DealResponseDto;
 	}
 
 	static toResponseListEnriched(
-		rows: readonly DealEnrichedRow[],
+		rows: readonly {
+			readonly row: DealEnrichedRow;
+			readonly canMutate: boolean;
+		}[],
 	): DealResponseDto[] {
-		return rows.map((r) => DealPresenter.toResponseEnriched(r));
+		return rows.map((r) =>
+			DealPresenter.toResponseEnriched(r.row, r.canMutate),
+		);
 	}
 
 	static toHistoryItem(row: DealHistoryRow): DealHistoryItemDto {

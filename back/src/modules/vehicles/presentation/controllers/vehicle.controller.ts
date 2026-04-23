@@ -119,7 +119,11 @@ class VehicleController {
 	}
 
 	@Patch(':id')
-	@ApiOperation({ summary: 'Atualizar veículo (campos parciais)' })
+	@ApiOperation({
+		summary: 'Atualizar veículo (campos parciais)',
+		description:
+			'Não é possível alterar a loja (storeId) após o cadastro; o campo não faz parte do contrato de atualização.',
+	})
 	@ApiParam({ name: 'id', format: 'uuid' })
 	@ApiOkResponseEnvelope(VehicleResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)

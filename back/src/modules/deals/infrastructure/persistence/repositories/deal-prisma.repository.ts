@@ -88,7 +88,13 @@ class DealPrismaRepository implements IDealRepository {
 				vehicle: {
 					select: { brand: true, model: true, modelYear: true, plate: true },
 				},
-				lead: { select: { customer: { select: { name: true } } } },
+				lead: {
+					select: {
+						storeId: true,
+						ownerUserId: true,
+						customer: { select: { name: true } },
+					},
+				},
 			},
 		});
 		return row as DealEnrichedRow | null;
@@ -126,7 +132,13 @@ class DealPrismaRepository implements IDealRepository {
 				vehicle: {
 					select: { brand: true, model: true, modelYear: true, plate: true },
 				},
-				lead: { select: { customer: { select: { name: true } } } },
+				lead: {
+					select: {
+						storeId: true,
+						ownerUserId: true,
+						customer: { select: { name: true } },
+					},
+				},
 			},
 		});
 		return rows as DealEnrichedRow[];
@@ -193,7 +205,13 @@ class DealPrismaRepository implements IDealRepository {
 					vehicle: {
 						select: { brand: true, model: true, modelYear: true, plate: true },
 					},
-					lead: { select: { customer: { select: { name: true } } } },
+					lead: {
+						select: {
+							storeId: true,
+							ownerUserId: true,
+							customer: { select: { name: true } },
+						},
+					},
 				},
 			}),
 			this.client.deal.count({ where }),
