@@ -147,10 +147,12 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 			return;
 		}
 
+		const { storeId: _storeId, ...valuesWithoutStore } = values;
+
 		await updateVehicleMutation.mutateAsync({
 			vehicleId: targetVehicle.id,
 			payload: {
-				...values,
+				...valuesWithoutStore,
 				version: values.version ?? null,
 				color: values.color ?? null,
 				manufactureYear: values.manufactureYear ?? null,

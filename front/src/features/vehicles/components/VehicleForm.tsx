@@ -237,35 +237,54 @@ function VehicleFormDialog({
 							<div className="space-y-1">
 								<Label
 									className="text-base font-semibold text-[#1b2430]"
-									htmlFor="vehicle-form-store"
+									htmlFor={
+										isEditMode
+											? 'vehicle-form-store-readonly'
+											: 'vehicle-form-store'
+									}
 								>
 									Loja
 								</Label>
 								<p className="text-sm leading-6 text-[#6b7687]">
-									A loja define onde o veículo está disponível.
+									{isEditMode
+										? 'A loja é fixa após o cadastro e não pode ser alterada nesta tela.'
+										: 'A loja define onde o veículo está disponível.'}
 								</p>
 							</div>
 							<div className="mt-4 space-y-2">
-								<select
-									className={vehicleFormSelectClass}
-									id="vehicle-form-store"
-									onChange={(event) =>
-										form.setValue('storeId', event.target.value, {
-											shouldDirty: true,
-											shouldValidate: true,
-										})
-									}
-									value={selectedStoreId}
-								>
-									<option value="" disabled>
-										Selecione uma loja
-									</option>
-									{stores.map((store) => (
-										<option key={store.id} value={store.id}>
-											{store.name}
+								{isEditMode ? (
+									<div
+										className="flex h-11 w-full items-center rounded-xl border border-[#d6dce5] bg-[#f2f4f7] px-3 text-sm text-[#1b2430]"
+										id="vehicle-form-store-readonly"
+									>
+										{storeLabelById[
+											targetVehicle?.storeId ?? selectedStoreId
+										] ??
+											targetVehicle?.storeId ??
+											selectedStoreId}
+									</div>
+								) : (
+									<select
+										className={vehicleFormSelectClass}
+										id="vehicle-form-store"
+										onChange={(event) =>
+											form.setValue('storeId', event.target.value, {
+												shouldDirty: true,
+												shouldValidate: true,
+											})
+										}
+										value={selectedStoreId}
+									>
+										<option value="" disabled>
+											Selecione uma loja
 										</option>
-									))}
-								</select>
+										{stores.map((store) => (
+											<option key={store.id} value={store.id}>
+												{store.name}
+											</option>
+										))}
+									</select>
+								)}
 								{form.formState.errors.storeId ? (
 									<p className="text-xs text-destructive">
 										{form.formState.errors.storeId.message}
@@ -584,17 +603,6 @@ function VehicleFormDialog({
 									) : null}
 								</div>
 							</div>
-
-							{isEditMode && targetVehicle ? (
-								<p className="mt-5 rounded-2xl border border-[#e5ebf3] bg-[#f9fbfd] px-4 py-4 text-sm text-[#6b7687]">
-									Editando veículo da loja{' '}
-									<span className="font-medium text-[#1b2430]">
-										{storeLabelById[targetVehicle.storeId] ??
-											'Loja selecionada'}
-									</span>
-									.
-								</p>
-							) : null}
 						</div>
 					</div>
 

@@ -29,7 +29,8 @@ type CreateVehicleInput = {
 	vin?: string | null;
 };
 
-type UpdateVehicleInput = Partial<CreateVehicleInput>;
+/** PATCH de veículo: backend não aceita alteração de `storeId` após criação. */
+type UpdateVehicleInput = Partial<Omit<CreateVehicleInput, 'storeId'>>;
 
 export type {
 	CreateVehicleInput,
