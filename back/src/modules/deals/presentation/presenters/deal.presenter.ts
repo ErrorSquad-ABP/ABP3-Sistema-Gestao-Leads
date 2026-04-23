@@ -5,16 +5,27 @@ import type { DealResponseDto } from '../../application/dto/deal-response.dto.js
 import type { DealEnrichedRow } from '../../domain/repositories/deal.repository.js';
 
 function formatVehicleLabelFromRow(row: DealEnrichedRow) {
-	const brand = row.vehicle?.brand?.trim() || '';
-	const model = row.vehicle?.model?.trim() || '';
-	const year = row.vehicle?.modelYear;
-	const plate = row.vehicle?.plate?.trim() || 'Sem placa';
-
-	if (!brand || !model || !year) {
+	const v = row.vehicle;
+	if (v == null) {
 		return 'Veículo não encontrado';
 	}
+	const brand = v.brand?.trim() || '';
+	const model = v.model?.trim() || '';
+	const year = v.modelYear;
+	const plate = v.plate?.trim() || 'Sem placa';
 
-	return `${brand} ${model} ${year} · ${plate}`;
+	/** Sempre que existir ligação com o registro, mostrar marca/modelo/ano, mesmo com dados mínimos. */
+	if (brand && model) {
+		const y =
+			year != null && Number.isFinite(year) && year > 0 ? String(year) : 's/d';
+		return `${brand} ${model} ${y} · ${plate}`;
+	}
+	if (brand) {
+		const y =
+			year != null && Number.isFinite(year) && year > 0 ? String(year) : 's/d';
+		return `${brand} ${y} · ${plate}`;
+	}
+	return 'Veículo não encontrado';
 }
 
 class DealPresenter {
