@@ -3,6 +3,12 @@ import { BRL, dinero } from 'dinero.js';
 import { DomainValidationError } from '../errors/domain-validation.error.js';
 
 /**
+ * Teto em centavos alinhado a `Decimal(12, 2)` no Prisma (9.999.999.999,99 BRL).
+ * Evita overflow do PostgreSQL e valores irreais.
+ */
+const MAX_MONEY_CENTS = 999_999_999_999;
+
+/**
  * Money value object for BRL with 2 decimals (cents).
  *
  * Domain format: integer amount in cents.
@@ -53,6 +59,16 @@ class Money {
 		const unsigned = trimmed.startsWith('-') ? trimmed.slice(1) : trimmed;
 		const parts = unsigned.split('.');
 		const intPart = parts[0] ?? '0';
+		/** 10 algarismos: máx. 9.999.999.999,99 (Decimal(12,2) no Prisma). */
+		if (intPart.length > 10) {
+			throw new DomainValidationError(
+				'Valor acima do limite permitido (máx. 9.999.999.999,99 BRL).',
+				{
+					code: 'money.exceeds_max',
+					context: { max: '9999999999.99' },
+				},
+			);
+		}
 		const fracPartRaw = parts[1];
 		if (fracPartRaw !== undefined && fracPartRaw.length > 2) {
 			throw new DomainValidationError('Money must be a decimal string', {
@@ -68,6 +84,16 @@ class Money {
 				code: 'money.invalid_number',
 				context: { value: trimmed },
 			});
+		}
+
+		if (cents > MAX_MONEY_CENTS) {
+			throw new DomainValidationError(
+				'Valor acima do limite permitido (máx. 9.999.999.999,99 BRL).',
+				{
+					code: 'money.exceeds_max',
+					context: { max: '9999999999.99' },
+				},
+			);
 		}
 
 		return new Money(cents);
@@ -87,6 +113,15 @@ class Money {
 				{
 					code: 'money.invalid_cents',
 					context: { cents: Number.isFinite(cents) ? cents : -1 },
+				},
+			);
+		}
+		if (cents > MAX_MONEY_CENTS) {
+			throw new DomainValidationError(
+				'Valor acima do limite permitido (máx. 9.999.999.999,99 BRL).',
+				{
+					code: 'money.exceeds_max',
+					context: { max: '9999999999.99' },
 				},
 			);
 		}
@@ -112,4 +147,4 @@ class Money {
 	}
 }
 
-export { Money };
+export { MAX_MONEY_CENTS, Money };

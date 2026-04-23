@@ -14,22 +14,26 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ApiError } from '@/lib/http/api-error';
-
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
+import { ApiError } from '@/lib/http/api-error';
 import { useDealsByLeadQuery } from '../hooks/deals.queries';
 import {
 	useCreateDealForLeadMutation,
 	useDeleteDealMutation,
 	useUpdateDealMutation,
 } from '../hooks/deals.mutations';
-import { dealCreateSchema } from '../schemas/deal-management.schema';
+import {
+	centsDigitsToApiDecimalString,
+	formatCentsDigitsToBrlDisplay,
+	sanitizeMoneyDigitsInput,
+} from '../lib/deal-money-input';
 import type {
 	Deal,
 	DealCreateFormInput,
 	DealCreateInput,
 } from '../model/deals.model';
+import { dealCreateSchema } from '../schemas/deal-management.schema';
 import { DealConfirmDialog } from './DealConfirmDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
 import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
@@ -92,7 +96,7 @@ function LeadDealsDialog({
 
 	const [vehicleId, setVehicleId] = useState('');
 	const [title, setTitle] = useState('');
-	const [value, setValue] = useState('');
+	const [valueCentsDigits, setValueCentsDigits] = useState('');
 
 	useEffect(() => {
 		if (!open || !listQuery.isSuccess || canMutateLead) {
@@ -107,7 +111,7 @@ function LeadDealsDialog({
 	function resetCreateForm() {
 		setVehicleId('');
 		setTitle('');
-		setValue('');
+		setValueCentsDigits('');
 		setDialogError(null);
 	}
 
@@ -117,10 +121,11 @@ function LeadDealsDialog({
 		}
 		setDialogError(null);
 		try {
+			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits);
 			const parsed = dealCreateSchema.parse({
 				vehicleId,
 				title,
-				value,
+				value: valueAsApi,
 			} satisfies DealCreateFormInput) as DealCreateInput;
 			await createMutation.mutateAsync(parsed);
 			setCreateOpen(false);
@@ -348,9 +353,13 @@ function LeadDealsDialog({
 							<Label htmlFor="lead-deal-value">Valor</Label>
 							<Input
 								id="lead-deal-value"
-								placeholder="45000.00"
-								value={value}
-								onChange={(e) => setValue(e.target.value)}
+								inputMode="numeric"
+								autoComplete="off"
+								placeholder="R$ 0,00"
+								value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
+								onChange={(e) =>
+									setValueCentsDigits(sanitizeMoneyDigitsInput(e.target.value))
+								}
 							/>
 						</div>
 					</div>

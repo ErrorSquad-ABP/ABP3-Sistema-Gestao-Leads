@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCheck, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { ZodError } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -76,6 +77,9 @@ const leadFormSelectClass =
 	'flex h-11 w-full rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45';
 
 function getLeadsErrorMessage(error: unknown) {
+	if (error instanceof ZodError) {
+		return error.issues[0]?.message ?? 'Dados inválidos. Revise o formulário.';
+	}
 	if (!isApiError(error)) {
 		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
 	}
@@ -140,7 +144,7 @@ function LeadFormDialog({
 			customerId: '',
 			storeId: '',
 			ownerUserId: user.role === 'ATTENDANT' ? user.id : '',
-			source: 'WHATSAPP',
+			source: 'whatsapp',
 			status: 'NEW',
 		},
 	});
@@ -187,7 +191,7 @@ function LeadFormDialog({
 			customerId: customers[0]?.id ?? '',
 			storeId: stores[0]?.id ?? '',
 			ownerUserId: user.role === 'ATTENDANT' ? user.id : '',
-			source: 'WHATSAPP',
+			source: 'whatsapp',
 			status: 'NEW',
 		});
 	}, [

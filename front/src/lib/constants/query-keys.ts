@@ -45,6 +45,7 @@ const queryKeys = {
 				params.storeId ?? 'all-stores',
 				params.status ?? 'all-statuses',
 			] as const,
+		detail: (vehicleId: string) => ['vehicles', 'detail', vehicleId] as const,
 	},
 	deals: {
 		listRoot: ['deals', 'list'] as const,

@@ -19,6 +19,17 @@ import { Label } from '@/components/ui/label';
 import { isApiError } from '@/lib/http/api-error';
 
 import {
+	apiDecimalStringToCentsDigits,
+	centsDigitsToApiDecimalString,
+	formatCentsDigitsToBrlDisplay,
+	sanitizeMoneyDigitsInput,
+} from '@/features/deals/lib/deal-money-input';
+import {
+	digitsOnly,
+	formatFiniteIntForInput,
+	parseIntStrict,
+} from '../lib/vehicle-form-input-helpers';
+import {
 	supportedFuelTypeOptions,
 	vehicleStatusOptions,
 } from '../lib/vehicle-labels';
@@ -77,6 +88,8 @@ function VehicleFormDialog({
 }: VehicleFormDialogProps) {
 	const isEditMode = mode === 'edit';
 	const [submitError, setSubmitError] = useState<string | null>(null);
+	/** Dígitos de centavos; mesmo padrão de “Nova negociação” (BRL com máscara). */
+	const [priceCentsDigits, setPriceCentsDigits] = useState('');
 	const form = useForm<VehicleFormInput>({
 		resolver: zodResolver(vehicleFormSchema),
 		defaultValues: {
@@ -114,15 +127,17 @@ function VehicleFormDialog({
 		name: 'supportedFuelType',
 	});
 	const statusValue = useWatch({ control: form.control, name: 'status' });
-	const priceValue = useWatch({ control: form.control, name: 'price' });
 
 	useEffect(() => {
 		if (!open) {
+			setPriceCentsDigits('');
 			form.reset();
 			return;
 		}
 
 		if (isEditMode && targetVehicle) {
+			const priceAsApi = targetVehicle.price;
+			setPriceCentsDigits(apiDecimalStringToCentsDigits(priceAsApi));
 			form.reset({
 				storeId: targetVehicle.storeId,
 				brand: targetVehicle.brand,
@@ -133,7 +148,7 @@ function VehicleFormDialog({
 				color: targetVehicle.color,
 				mileage: targetVehicle.mileage,
 				supportedFuelType: targetVehicle.supportedFuelType,
-				price: targetVehicle.price,
+				price: priceAsApi,
 				status: targetVehicle.status,
 				plate: targetVehicle.plate,
 				vin: targetVehicle.vin,
@@ -141,6 +156,7 @@ function VehicleFormDialog({
 			return;
 		}
 
+		setPriceCentsDigits('0');
 		form.reset({
 			storeId: stores[0]?.id ?? '',
 			brand: '',
@@ -393,15 +409,22 @@ function VehicleFormDialog({
 										className="h-11 rounded-xl border-[#d6dce5] bg-white shadow-none focus-visible:border-[#2d3648]/45"
 										id="vehicle-form-model-year"
 										inputMode="numeric"
-										onChange={(event) =>
-											form.setValue('modelYear', Number(event.target.value), {
+										autoComplete="off"
+										onChange={(event) => {
+											const d = digitsOnly(event.target.value, 4);
+											if (d.length === 0) {
+												return;
+											}
+											const n = parseIntStrict(d);
+											if (n === null) {
+												return;
+											}
+											form.setValue('modelYear', n, {
 												shouldDirty: true,
 												shouldValidate: true,
-											})
-										}
-										value={
-											modelYearValue === undefined ? '' : String(modelYearValue)
-										}
+											});
+										}}
+										value={formatFiniteIntForInput(modelYearValue)}
 									/>
 									{form.formState.errors.modelYear ? (
 										<p className="text-xs text-destructive">
@@ -418,25 +441,29 @@ function VehicleFormDialog({
 										className="h-11 rounded-xl border-[#d6dce5] bg-white shadow-none focus-visible:border-[#2d3648]/45"
 										id="vehicle-form-manufacture-year"
 										inputMode="numeric"
-										onChange={(event) =>
-											form.setValue(
-												'manufactureYear',
-												event.target.value.length
-													? Number(event.target.value)
-													: null,
-												{
+										autoComplete="off"
+										onChange={(event) => {
+											const d = digitsOnly(event.target.value, 4);
+											if (d.length === 0) {
+												form.setValue('manufactureYear', null, {
 													shouldDirty: true,
 													shouldValidate: true,
-												},
-											)
-										}
+												});
+												return;
+											}
+											const n = parseIntStrict(d);
+											if (n === null) {
+												return;
+											}
+											form.setValue('manufactureYear', n, {
+												shouldDirty: true,
+												shouldValidate: true,
+											});
+										}}
 										placeholder="Opcional"
-										value={
-											manufactureYearValue === null ||
-											manufactureYearValue === undefined
-												? ''
-												: String(manufactureYearValue)
-										}
+										value={formatFiniteIntForInput(
+											manufactureYearValue ?? undefined,
+										)}
 									/>
 									{form.formState.errors.manufactureYear ? (
 										<p className="text-xs text-destructive">
@@ -451,15 +478,26 @@ function VehicleFormDialog({
 										className="h-11 rounded-xl border-[#d6dce5] bg-white shadow-none focus-visible:border-[#2d3648]/45"
 										id="vehicle-form-mileage"
 										inputMode="numeric"
-										onChange={(event) =>
-											form.setValue('mileage', Number(event.target.value), {
+										autoComplete="off"
+										onChange={(event) => {
+											const d = digitsOnly(event.target.value, 9);
+											if (d.length === 0) {
+												form.setValue('mileage', 0, {
+													shouldDirty: true,
+													shouldValidate: true,
+												});
+												return;
+											}
+											const n = parseIntStrict(d);
+											if (n === null) {
+												return;
+											}
+											form.setValue('mileage', n, {
 												shouldDirty: true,
 												shouldValidate: true,
-											})
-										}
-										value={
-											mileageValue === undefined ? '' : String(mileageValue)
-										}
+											});
+										}}
+										value={formatFiniteIntForInput(mileageValue)}
 									/>
 									{form.formState.errors.mileage ? (
 										<p className="text-xs text-destructive">
@@ -504,14 +542,19 @@ function VehicleFormDialog({
 									<Input
 										className="h-11 rounded-xl border-[#d6dce5] bg-white shadow-none focus-visible:border-[#2d3648]/45"
 										id="vehicle-form-price"
-										onChange={(event) =>
-											form.setValue('price', event.target.value, {
+										inputMode="numeric"
+										autoComplete="off"
+										onChange={(event) => {
+											const d = sanitizeMoneyDigitsInput(event.target.value);
+											setPriceCentsDigits(d);
+											const api = centsDigitsToApiDecimalString(d) ?? '0.00';
+											form.setValue('price', api, {
 												shouldDirty: true,
 												shouldValidate: true,
-											})
-										}
-										placeholder="45000.00"
-										value={priceValue ?? ''}
+											});
+										}}
+										placeholder="R$ 0,00"
+										value={formatCentsDigitsToBrlDisplay(priceCentsDigits)}
 									/>
 									{form.formState.errors.price ? (
 										<p className="text-xs text-destructive">
