@@ -15,11 +15,15 @@ import { ApiError } from '@/lib/http/api-error';
 
 import { useDealHistoryQuery } from '../hooks/deals.queries';
 import {
+	formatDealHistoryFieldName,
+	formatDealHistoryValueDisplay,
 	formatDealImportanceLabel,
+	formatDealLeadCustomerDisplay,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
 } from '../lib/deal-labels';
+import { DealVehicleLabelText } from './DealVehicleLabelText';
 import type { Deal } from '../model/deals.model';
 
 type DealDetailsDialogProps = {
@@ -110,7 +114,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									Lead
 								</p>
 								<p className="mt-1 text-[#1b2430]">
-									{deal.leadCustomerName || 'Cliente não encontrado'}
+									{formatDealLeadCustomerDisplay(deal.leadCustomerName ?? '')}
 								</p>
 							</div>
 							<div>
@@ -118,7 +122,10 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									Veículo
 								</p>
 								<p className="mt-1 text-[#1b2430]">
-									{deal.vehicleLabel || 'Veículo não encontrado'}
+									<DealVehicleLabelText
+										serverLabel={deal.vehicleLabel}
+										vehicleId={deal.vehicleId}
+									/>
 								</p>
 							</div>
 							<div>
@@ -179,10 +186,21 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 											className="flex flex-col gap-1 rounded-2xl border border-border/80 bg-card px-4 py-3 text-sm"
 											key={item.id}
 										>
-											<p className="font-medium text-[#1b2430]">{item.field}</p>
+											<p className="font-medium text-[#1b2430]">
+												{formatDealHistoryFieldName(item.field)}
+											</p>
 											<p className="text-[#6b7687]">
-												{item.fromValue ? `De: ${item.fromValue} · ` : ''}Para:{' '}
-												{item.toValue}
+												{item.fromValue != null && item.fromValue !== ''
+													? `De: ${formatDealHistoryValueDisplay(
+															item.field,
+															item.fromValue,
+														)} · `
+													: ''}
+												Para:{' '}
+												{formatDealHistoryValueDisplay(
+													item.field,
+													item.toValue,
+												)}
 											</p>
 											<p className="text-xs text-[#6b7687]">
 												{formatDateTime(item.createdAt)}

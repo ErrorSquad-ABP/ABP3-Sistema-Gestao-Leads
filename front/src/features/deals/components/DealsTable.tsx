@@ -21,10 +21,12 @@ import {
 
 import {
 	formatDealImportanceLabel,
+	formatDealLeadCustomerDisplay,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
 } from '../lib/deal-labels';
+import { DealVehicleLabelText } from './DealVehicleLabelText';
 import type { Deal } from '../model/deals.model';
 
 type DealsTableProps = {
@@ -92,10 +94,13 @@ function DealsTable({
 								{formatDealValueBRL(deal.value)}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
-								{deal.leadCustomerName || 'Cliente não encontrado'}
+								{formatDealLeadCustomerDisplay(deal.leadCustomerName ?? '')}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
-								{deal.vehicleLabel || 'Veículo não encontrado'}
+								<DealVehicleLabelText
+									serverLabel={deal.vehicleLabel}
+									vehicleId={deal.vehicleId}
+								/>
 							</TableCell>
 							<TableCell className="text-right">
 								<DropdownMenu>

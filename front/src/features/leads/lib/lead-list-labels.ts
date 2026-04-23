@@ -22,6 +22,7 @@ const sourceLabelByCode = new Map<string, string>([
 	['DIGITAL_FORM', 'Formulário digital'],
 	['WHATSAPP', 'WhatsApp'],
 	['PHONE', 'Contato telefônico'],
+	['PHONE_CALL', 'Contato telefônico'],
 	['CALL', 'Contato telefônico'],
 	['WALK_IN', 'Visita à loja'],
 	['STORE_VISIT', 'Visita à loja'],
@@ -44,15 +45,15 @@ const leadStatusOptions = [
 ] as const;
 
 const leadSourceOptions = [
-	{ value: 'WEBSITE', label: 'Formulário digital' },
-	{ value: 'WHATSAPP', label: 'WhatsApp' },
-	{ value: 'PHONE', label: 'Contato telefônico' },
-	{ value: 'WALK_IN', label: 'Visita à loja' },
-	{ value: 'INDICATION', label: 'Indicação' },
-	{ value: 'OTHER', label: 'Outros meios' },
-	{ value: 'INSTAGRAM', label: 'Instagram' },
-	{ value: 'FACEBOOK', label: 'Facebook' },
-	{ value: 'MERCADO_LIVRE', label: 'Mercado Livre' },
+	{ value: 'digital-form', label: 'Formulário digital' },
+	{ value: 'whatsapp', label: 'WhatsApp' },
+	{ value: 'phone-call', label: 'Contato telefônico' },
+	{ value: 'store-visit', label: 'Visita à loja' },
+	{ value: 'indication', label: 'Indicação' },
+	{ value: 'other', label: 'Outros meios' },
+	{ value: 'instagram', label: 'Instagram' },
+	{ value: 'facebook', label: 'Facebook' },
+	{ value: 'mercado-livre', label: 'Mercado Livre' },
 ] as const;
 
 function normalizeLeadStatusKey(status: string) {
@@ -86,6 +87,7 @@ function getLeadSourceBadgeClass(source: string) {
 		case 'DIGITAL_FORM':
 			return 'border-[#2563EB]/20 bg-[#2563EB]/10 text-[#1D4ED8]';
 		case 'PHONE':
+		case 'PHONE_CALL':
 		case 'CALL':
 			return 'border-[#0F766E]/20 bg-[#0F766E]/10 text-[#0F766E]';
 		case 'WALK_IN':

@@ -1,15 +1,16 @@
 import { z } from 'zod';
 
+/** Alinhado a `ALLOWED_LEAD_SOURCES` no domínio (API Nest). */
 const leadSourceValues = [
-	'WEBSITE',
-	'WHATSAPP',
-	'PHONE',
-	'WALK_IN',
-	'INDICATION',
-	'OTHER',
-	'INSTAGRAM',
-	'FACEBOOK',
-	'MERCADO_LIVRE',
+	'store-visit',
+	'phone-call',
+	'whatsapp',
+	'instagram',
+	'facebook',
+	'mercado-livre',
+	'indication',
+	'digital-form',
+	'other',
 ] as const;
 
 const leadStatusValues = [
