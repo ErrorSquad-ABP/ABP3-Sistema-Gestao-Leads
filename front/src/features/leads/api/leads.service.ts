@@ -5,6 +5,7 @@ import {
 	leadListItemSchema,
 	parseLeadListPagedResponse,
 } from '../schemas/lead-list.schema';
+import { parseLeadDetailResponse } from '../schemas/lead-detail.schema';
 import {
 	parseLeadCustomerResponse,
 	parseLeadCustomersResponse,
@@ -91,6 +92,11 @@ async function fetchLeadsAll(page: number, signal?: AbortSignal) {
 		},
 	);
 	return parseLeadListPagedResponse(raw);
+}
+
+async function findLeadById(leadId: string, signal?: AbortSignal) {
+	const raw = await apiFetch<unknown>(`/api/leads/${leadId}`, { signal });
+	return parseLeadDetailResponse(raw);
 }
 
 async function createLead(input: CreateLeadInput): Promise<LeadListItem> {
@@ -259,6 +265,7 @@ export {
 	deleteCustomer,
 	deleteLead,
 	deleteStore,
+	findLeadById,
 	fetchLeadsAll,
 	fetchLeadsByOwner,
 	fetchLeadsByTeam,

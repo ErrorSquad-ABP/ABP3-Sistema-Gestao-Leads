@@ -11,7 +11,7 @@ describe('ListDealsUseCase', () => {
 			{
 				create: () =>
 					({
-						listScoped: async (filters: unknown) => {
+						listScopedEnriched: async (filters: unknown) => {
 							calls.push(filters);
 							return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
 						},
@@ -24,6 +24,7 @@ describe('ListDealsUseCase', () => {
 					readTeamIds: new Set(),
 					readStoreIds: new Set(['s1']),
 				}),
+				canActorMutateLeadOnSnapshot: async () => true,
 			} as never,
 		);
 
@@ -40,7 +41,7 @@ describe('ListDealsUseCase', () => {
 			{
 				create: () =>
 					({
-						listScoped: async (filters: unknown) => {
+						listScopedEnriched: async (filters: unknown) => {
 							received = filters;
 							return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
 						},
@@ -55,6 +56,7 @@ describe('ListDealsUseCase', () => {
 					readStoreIds: new Set(['s1', 's2']),
 					mutateStoreIds: new Set(['s1']),
 				}),
+				canActorMutateLeadOnSnapshot: async () => true,
 			} as never,
 		);
 
@@ -77,7 +79,7 @@ describe('ListDealsUseCase', () => {
 			{
 				create: () =>
 					({
-						listScoped: async (filters: unknown) => {
+						listScopedEnriched: async (filters: unknown) => {
 							received = filters;
 							return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
 						},
@@ -92,6 +94,7 @@ describe('ListDealsUseCase', () => {
 					readStoreIds: new Set(),
 					mutateStoreIds: new Set(),
 				}),
+				canActorMutateLeadOnSnapshot: async () => true,
 			} as never,
 		);
 
@@ -113,7 +116,7 @@ describe('ListDealsUseCase', () => {
 			{
 				create: () =>
 					({
-						listScoped: async () => {
+						listScopedEnriched: async () => {
 							throw new Error('should not be called');
 						},
 					}) as never,
@@ -125,6 +128,7 @@ describe('ListDealsUseCase', () => {
 					readTeamIds: new Set(['t1']),
 					readStoreIds: new Set(['s1']),
 				}),
+				canActorMutateLeadOnSnapshot: async () => true,
 			} as never,
 		);
 
@@ -144,7 +148,7 @@ describe('ListDealsUseCase', () => {
 			{
 				create: () =>
 					({
-						listScoped: async (filters: unknown) => {
+						listScopedEnriched: async (filters: unknown) => {
 							received = filters;
 							return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
 						},
@@ -152,6 +156,7 @@ describe('ListDealsUseCase', () => {
 			} as never,
 			{
 				resolveCatalogScope: async () => ({ kind: 'full' }),
+				canActorMutateLeadOnSnapshot: async () => true,
 			} as never,
 		);
 

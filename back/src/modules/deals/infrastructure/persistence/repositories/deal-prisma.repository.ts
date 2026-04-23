@@ -7,6 +7,8 @@ import { ActiveDealAlreadyExistsError } from '../../../domain/errors/active-deal
 import { ActiveDealForVehicleAlreadyExistsError } from '../../../domain/errors/active-deal-for-vehicle-already-exists.error.js';
 import type { Deal } from '../../../domain/entities/deal.entity.js';
 import type {
+	DealEnrichedListPage,
+	DealEnrichedRow,
 	DealListScopedFilters,
 	IDealRepository,
 } from '../../../domain/repositories/deal.repository.js';
@@ -79,6 +81,25 @@ class DealPrismaRepository implements IDealRepository {
 		return row ? DealMapper.toDomain(row) : null;
 	}
 
+	async findByIdEnriched(id: Uuid): Promise<DealEnrichedRow | null> {
+		const row = await this.client.deal.findUnique({
+			where: { id: id.value },
+			include: {
+				vehicle: {
+					select: { brand: true, model: true, modelYear: true, plate: true },
+				},
+				lead: {
+					select: {
+						storeId: true,
+						ownerUserId: true,
+						customer: { select: { name: true } },
+					},
+				},
+			},
+		});
+		return row as DealEnrichedRow | null;
+	}
+
 	async findOpenByLeadId(leadId: Uuid): Promise<Deal | null> {
 		const row = await this.client.deal.findFirst({
 			where: { leadId: leadId.value, status: 'OPEN' },
@@ -99,6 +120,28 @@ class DealPrismaRepository implements IDealRepository {
 			orderBy: { createdAt: 'desc' },
 		});
 		return rows.map((r) => DealMapper.toDomain(r));
+	}
+
+	async listByLeadIdEnriched(
+		leadId: Uuid,
+	): Promise<readonly DealEnrichedRow[]> {
+		const rows = await this.client.deal.findMany({
+			where: { leadId: leadId.value },
+			orderBy: { createdAt: 'desc' },
+			include: {
+				vehicle: {
+					select: { brand: true, model: true, modelYear: true, plate: true },
+				},
+				lead: {
+					select: {
+						storeId: true,
+						ownerUserId: true,
+						customer: { select: { name: true } },
+					},
+				},
+			},
+		});
+		return rows as DealEnrichedRow[];
 	}
 
 	async listScoped(
@@ -129,6 +172,53 @@ class DealPrismaRepository implements IDealRepository {
 
 		return {
 			items: rows.map((r) => DealMapper.toDomain(r)),
+			page: pagination.page,
+			limit: pagination.limit,
+			total,
+			totalPages: computeTotalPages(total, pagination.limit),
+		};
+	}
+
+	async listScopedEnriched(
+		filters: DealListScopedFilters,
+		pagination: { readonly page: number; readonly limit: number },
+	): Promise<DealEnrichedListPage> {
+		const skip = (pagination.page - 1) * pagination.limit;
+
+		const where: Prisma.DealWhereInput = {
+			status: filters.status,
+			lead: {
+				is: {
+					storeId: filters.storeIds ? { in: [...filters.storeIds] } : undefined,
+					ownerUserId: filters.ownerUserId,
+				},
+			},
+		};
+
+		const [rows, total] = await Promise.all([
+			this.client.deal.findMany({
+				where,
+				orderBy: { createdAt: 'desc' },
+				skip,
+				take: pagination.limit,
+				include: {
+					vehicle: {
+						select: { brand: true, model: true, modelYear: true, plate: true },
+					},
+					lead: {
+						select: {
+							storeId: true,
+							ownerUserId: true,
+							customer: { select: { name: true } },
+						},
+					},
+				},
+			}),
+			this.client.deal.count({ where }),
+		]);
+
+		return {
+			items: rows as DealEnrichedRow[],
 			page: pagination.page,
 			limit: pagination.limit,
 			total,

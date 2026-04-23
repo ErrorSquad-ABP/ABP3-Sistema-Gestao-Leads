@@ -8,9 +8,22 @@ import {
 	fetchLeadsAll,
 	fetchLeadsByOwner,
 	fetchLeadsManager,
+	findLeadById,
 } from '../api/leads.service';
 import { type LeadsListScope, resolveLeadsListScope } from '../lib/leads-scope';
 import type { LeadListItem } from '../model/leads.model';
+
+function useLeadDetailQuery(
+	leadId: string,
+	options?: { readonly enabled?: boolean },
+) {
+	return useQuery({
+		queryKey: queryKeys.leads.detail(leadId),
+		queryFn: ({ signal }: { signal: AbortSignal }) =>
+			findLeadById(leadId, signal),
+		enabled: options?.enabled,
+	});
+}
 
 function isLeadsListQueryEnabled(scope: LeadsListScope | null) {
 	return scope !== null && scope.kind !== 'none';
@@ -103,6 +116,7 @@ function useLeadsListQuery(
 
 export {
 	buildLeadsListQueryKey,
+	useLeadDetailQuery,
 	isLeadsListQueryEnabled,
 	resolveLeadsListScope,
 	useLeadsListQuery,

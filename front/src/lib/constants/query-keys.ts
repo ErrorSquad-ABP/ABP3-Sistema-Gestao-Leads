@@ -16,6 +16,7 @@ const queryKeys = {
 		/** Prefixo comum a todas as queries de listagem; adequado a `invalidateQueries`. */
 		listRoot: ['leads', 'list'] as const,
 		catalogRoot: ['leads', 'catalog'] as const,
+		detail: (leadId: string) => ['leads', 'detail', leadId] as const,
 		list: (
 			params:
 				| { scope: 'owner'; id: string; page: number }
@@ -34,6 +35,42 @@ const queryKeys = {
 		stores: ['leads', 'catalog', 'stores'] as const,
 		teams: ['leads', 'catalog', 'teams'] as const,
 		owners: ['leads', 'catalog', 'owners'] as const,
+	},
+	vehicles: {
+		listRoot: ['vehicles', 'list'] as const,
+		list: (params: { storeId?: string; status?: string }) =>
+			[
+				'vehicles',
+				'list',
+				params.storeId ?? 'all-stores',
+				params.status ?? 'all-statuses',
+			] as const,
+	},
+	deals: {
+		listRoot: ['deals', 'list'] as const,
+		/**
+		 * Lista de negociações por lead (`useDealsByLeadQuery`). Após mutação,
+		 * invalidar com `queryKeys.deals.byLead(leadId)`.
+		 */
+		byLead: (leadId: string) => ['deals', 'by-lead', leadId] as const,
+		detail: (dealId: string) => ['deals', 'detail', dealId] as const,
+		history: (dealId: string) => ['deals', 'history', dealId] as const,
+		list: (params: {
+			storeId?: string;
+			ownerUserId?: string;
+			status?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'deals',
+				'list',
+				params.storeId ?? 'all-stores',
+				params.ownerUserId ?? 'all-owners',
+				params.status ?? 'all-statuses',
+				params.page,
+				params.limit,
+			] as const,
 	},
 };
 
