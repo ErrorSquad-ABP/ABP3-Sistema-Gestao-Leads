@@ -22,4 +22,24 @@ function parseDealsPagedResponse(data: unknown) {
 	return parsed.data;
 }
 
-export { dealsPagedDataSchema, parseDealsPagedResponse };
+const dealsByLeadListDataSchema = z.object({
+	items: z.array(dealSchema),
+	canMutateLead: z.boolean(),
+});
+
+function parseDealsByLeadListResponse(data: unknown) {
+	const parsed = dealsByLeadListDataSchema.safeParse(data);
+	if (!parsed.success) {
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'deals.invalid_by_lead_list_shape',
+		});
+	}
+	return parsed.data;
+}
+
+export {
+	dealsByLeadListDataSchema,
+	dealsPagedDataSchema,
+	parseDealsByLeadListResponse,
+	parseDealsPagedResponse,
+};

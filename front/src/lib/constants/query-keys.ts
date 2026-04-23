@@ -48,6 +48,10 @@ const queryKeys = {
 	},
 	deals: {
 		listRoot: ['deals', 'list'] as const,
+		/**
+		 * Lista de negociações por lead (`useDealsByLeadQuery`). Após mutação,
+		 * invalidar com `queryKeys.deals.byLead(leadId)`.
+		 */
 		byLead: (leadId: string) => ['deals', 'by-lead', leadId] as const,
 		detail: (dealId: string) => ['deals', 'detail', dealId] as const,
 		history: (dealId: string) => ['deals', 'history', dealId] as const,

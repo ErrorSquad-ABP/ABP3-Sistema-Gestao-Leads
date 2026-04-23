@@ -77,18 +77,34 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 		});
 	}, [deals, normalizedSearch]);
 
+	/** Alinha com a política do backend: só oferece editar/excluir quando há linhas com `canMutate` na vista atual. */
+	const canMutateInView = useMemo(
+		() => filteredDeals.some((d) => d.canMutate),
+		[filteredDeals],
+	);
+	const canMutateOnPage = useMemo(
+		() => deals.some((d) => d.canMutate),
+		[deals],
+	);
+
 	function openDetails(deal: Deal) {
 		setTargetDeal(deal);
 		setDetailsOpen(true);
 	}
 
 	function openEdit(deal: Deal) {
+		if (!deal.canMutate) {
+			return;
+		}
 		setDialogError(null);
 		setTargetDeal(deal);
 		setEditOpen(true);
 	}
 
 	function openDelete(deal: Deal) {
+		if (!deal.canMutate) {
+			return;
+		}
 		setDialogError(null);
 		setTargetDeal(deal);
 		setDeleteOpen(true);
@@ -106,7 +122,10 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 		if (!targetDeal) return;
 		setDialogError(null);
 		try {
-			await deleteDealMutation.mutateAsync(targetDeal.id);
+			await deleteDealMutation.mutateAsync({
+				dealId: targetDeal.id,
+				leadId: targetDeal.leadId,
+			});
 			setDeleteOpen(false);
 			setTargetDeal(null);
 		} catch (error) {
@@ -167,7 +186,14 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 								Lista de negociações
 							</CardTitle>
 							<p className="max-w-3xl text-[0.95rem] leading-7 text-muted-foreground">
-								Abra detalhes, edite e exclua negociações conforme o seu escopo.
+								{query.isSuccess && deals.length > 0 && !canMutateOnPage
+									? 'Apenas consulta: nesta página, o seu perfil não tem permissão para editar ou excluir nenhuma negociação (a alteração segue a mesma regra de quem pode alterar o respetivo lead). Pode abrir detalhes.'
+									: query.isSuccess &&
+											filteredDeals.length > 0 &&
+											!canMutateInView &&
+											canMutateOnPage
+										? 'Nenhum dos resultados filtrados tem permissão de alteração. Ajuste a pesquisa; editar e excluir exigem poder alterar o lead, não só vê-lo na listagem.'
+										: 'Abra detalhes. "Editar" e "Excluir" só aparecem no menu nas negociações em que tem permissão de alteração, na mesma linha da regra de mutação do respetivo lead.'}
 							</p>
 						</div>
 					</div>
@@ -211,8 +237,8 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 						<>
 							<DealsTable
 								deals={filteredDeals}
-								onDelete={openDelete}
-								onEdit={openEdit}
+								onDelete={canMutateInView ? openDelete : undefined}
+								onEdit={canMutateInView ? openEdit : undefined}
 								onOpenDetails={openDetails}
 							/>
 							<div className="flex flex-col gap-3 border-t border-border/75 pt-4 sm:flex-row sm:items-center sm:justify-between">

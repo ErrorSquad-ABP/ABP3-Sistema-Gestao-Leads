@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -54,15 +54,25 @@ function LeadDealsDialog({
 	open,
 }: LeadDealsDialogProps) {
 	const safeLeadId = leadId ?? '';
-	const listQuery = useDealsByLeadQuery(safeLeadId);
-	const deals = useMemo(() => listQuery.data ?? [], [listQuery.data]);
+	const listQuery = useDealsByLeadQuery(safeLeadId, {
+		enabled: open && Boolean(leadId),
+	});
+	const deals = useMemo(
+		() => listQuery.data?.items ?? [],
+		[listQuery.data?.items],
+	);
+	const canMutateLead = listQuery.data?.canMutateLead ?? false;
+	/** Só confia no payload após sucesso: evita affordance de mutação em erro/loading. */
+	const allowLeadMutations = listQuery.isSuccess && canMutateLead;
 
 	const vehiclesQuery = useVehiclesListQuery(
 		{
 			status: 'AVAILABLE',
 			storeId: leadStoreId ?? undefined,
 		},
-		{ enabled: Boolean(leadId && leadStoreId) },
+		{
+			enabled: Boolean(leadId && leadStoreId && open && allowLeadMutations),
+		},
 	);
 	const availableVehicles = useMemo(
 		() => vehiclesQuery.data ?? [],
@@ -84,6 +94,16 @@ function LeadDealsDialog({
 	const [title, setTitle] = useState('');
 	const [value, setValue] = useState('');
 
+	useEffect(() => {
+		if (!open || !listQuery.isSuccess || canMutateLead) {
+			return;
+		}
+		setCreateOpen(false);
+		setEditOpen(false);
+		setDeleteOpen(false);
+		setDialogError(null);
+	}, [open, listQuery.isSuccess, canMutateLead]);
+
 	function resetCreateForm() {
 		setVehicleId('');
 		setTitle('');
@@ -92,7 +112,7 @@ function LeadDealsDialog({
 	}
 
 	async function handleCreateSubmit() {
-		if (!leadId) {
+		if (!leadId || !allowLeadMutations) {
 			return;
 		}
 		setDialogError(null);
@@ -116,11 +136,17 @@ function LeadDealsDialog({
 	}
 
 	function openEdit(deal: Deal) {
+		if (!deal.canMutate) {
+			return;
+		}
 		setTargetDeal(deal);
 		setEditOpen(true);
 	}
 
 	function openDelete(deal: Deal) {
+		if (!deal.canMutate) {
+			return;
+		}
 		setDialogError(null);
 		setTargetDeal(deal);
 		setDeleteOpen(true);
@@ -130,7 +156,10 @@ function LeadDealsDialog({
 		if (!targetDeal) return;
 		setDialogError(null);
 		try {
-			await deleteMutation.mutateAsync(targetDeal.id);
+			await deleteMutation.mutateAsync({
+				dealId: targetDeal.id,
+				leadId: targetDeal.leadId,
+			});
 			setDeleteOpen(false);
 			setTargetDeal(null);
 		} catch (error) {
@@ -162,16 +191,31 @@ function LeadDealsDialog({
 								</p>
 								<DialogTitle>Negociações do lead</DialogTitle>
 								<DialogDescription className="max-w-2xl">
-									Crie e acompanhe negociações relacionadas ao lead selecionado.
+									{listQuery.isSuccess && !canMutateLead
+										? 'Acompanhe as negociações deste lead. O seu perfil só tem permissão de leitura neste contexto.'
+										: 'Crie e acompanhe negociações relacionadas ao lead selecionado.'}
 								</DialogDescription>
 							</div>
 							<Button
 								className="rounded-md shadow-none bg-[#2D3648] hover:bg-[#232B3B]"
-								disabled={!leadId}
+								disabled={!leadId || !allowLeadMutations}
 								onClick={() => {
+									if (!allowLeadMutations) return;
 									setCreateOpen(true);
 									setDialogError(null);
 								}}
+								title={(() => {
+									if (listQuery.isPending) {
+										return 'A carregar negociações e a verificar permissões…';
+									}
+									if (listQuery.isError) {
+										return 'Não foi possível carregar as negociações. Corrija o erro antes de criar.';
+									}
+									if (listQuery.isSuccess && !canMutateLead) {
+										return 'Sem permissão para criar ou alterar negociações deste lead.';
+									}
+									return undefined;
+								})()}
 								type="button"
 							>
 								<Plus className="size-4" />
@@ -201,8 +245,16 @@ function LeadDealsDialog({
 						{listQuery.isSuccess ? (
 							<DealsTable
 								deals={deals}
-								onDelete={openDelete}
-								onEdit={openEdit}
+								onDelete={
+									allowLeadMutations && deals.some((d) => d.canMutate)
+										? openDelete
+										: undefined
+								}
+								onEdit={
+									allowLeadMutations && deals.some((d) => d.canMutate)
+										? openEdit
+										: undefined
+								}
 								onOpenDetails={openDetails}
 							/>
 						) : null}
@@ -314,6 +366,7 @@ function LeadDealsDialog({
 							type="button"
 							className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
 							disabled={
+								!allowLeadMutations ||
 								createMutation.isPending ||
 								!vehicleId ||
 								(vehiclesQuery.isSuccess && availableVehicles.length === 0)

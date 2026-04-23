@@ -1,6 +1,6 @@
 'use client';
 
-import { MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
+import { Eye, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import type { Deal } from '../model/deals.model';
 
 type DealsTableProps = {
 	deals: Deal[];
+	/** Só passar quando a vista tem pelo menos uma linha mutável; o menu continua a filtrar com `deal.canMutate` por negociação. */
 	onDelete?: (deal: Deal) => void;
 	onEdit?: (deal: Deal) => void;
 	onOpenDetails?: (deal: Deal) => void;
@@ -98,7 +99,13 @@ function DealsTable({
 							</TableCell>
 							<TableCell className="text-right">
 								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
+									<DropdownMenuTrigger
+										asChild
+										disabled={
+											!onOpenDetails &&
+											!((onEdit || onDelete) && deal.canMutate)
+										}
+									>
 										<Button
 											className="rounded-md"
 											size="icon-sm"
@@ -112,7 +119,16 @@ function DealsTable({
 										align="end"
 										className="w-44 rounded-xl bg-white"
 									>
-										{onEdit ? (
+										{onOpenDetails ? (
+											<DropdownMenuItem
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
+												onSelect={() => onOpenDetails(deal)}
+											>
+												<Eye className="size-4" />
+												Detalhes
+											</DropdownMenuItem>
+										) : null}
+										{onEdit && deal.canMutate ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
 												onSelect={() => onEdit(deal)}
@@ -121,7 +137,7 @@ function DealsTable({
 												Editar
 											</DropdownMenuItem>
 										) : null}
-										{onDelete ? (
+										{onDelete && deal.canMutate ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2"
 												onSelect={() => onDelete(deal)}

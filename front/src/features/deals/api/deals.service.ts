@@ -1,10 +1,12 @@
 import { apiFetch } from '@/lib/http/api-client';
 
-import { parseDealsPagedResponse } from '../schemas/deal-list.schema';
+import {
+	parseDealsByLeadListResponse,
+	parseDealsPagedResponse,
+} from '../schemas/deal-list.schema';
 import {
 	parseDealHistoryResponse,
 	parseDealResponse,
-	parseDealsResponse,
 } from '../schemas/deal.schema';
 import type { DealCreateInput, DealUpdateInput } from '../model/deals.model';
 
@@ -42,7 +44,7 @@ async function listDealsPaged(query: ListDealsQuery, signal?: AbortSignal) {
 
 async function listDealsByLead(leadId: string, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/deals`, { signal });
-	return parseDealsResponse(raw);
+	return parseDealsByLeadListResponse(raw);
 }
 
 async function createDealForLead(leadId: string, input: DealCreateInput) {

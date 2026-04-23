@@ -27,6 +27,7 @@ const dealSchema = z.object({
 	closedAt: z.coerce.date().nullable(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
+	canMutate: z.boolean(),
 });
 
 const dealHistoryItemSchema = z.object({
@@ -44,16 +45,6 @@ function parseDealResponse(data: unknown) {
 	if (!parsed.success) {
 		throw new ApiError('Resposta da API em formato inesperado.', 502, {
 			code: 'deals.invalid_response_shape',
-		});
-	}
-	return parsed.data;
-}
-
-function parseDealsResponse(data: unknown) {
-	const parsed = z.array(dealSchema).safeParse(data);
-	if (!parsed.success) {
-		throw new ApiError('Resposta da API em formato inesperado.', 502, {
-			code: 'deals.invalid_list_response_shape',
 		});
 	}
 	return parsed.data;
@@ -77,5 +68,4 @@ export {
 	dealStatuses,
 	parseDealHistoryResponse,
 	parseDealResponse,
-	parseDealsResponse,
 };

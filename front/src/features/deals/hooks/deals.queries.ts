@@ -18,12 +18,21 @@ function useDealsListQuery(query: ListDealsQuery) {
 	});
 }
 
-function useDealsByLeadQuery(leadId: string) {
+type DealsByLeadQueryOptions = {
+	/** Se `false`, a query não corre (ex.: diálogo fechado). */
+	enabled?: boolean;
+};
+
+function useDealsByLeadQuery(
+	leadId: string,
+	options?: DealsByLeadQueryOptions,
+) {
+	const enabledByOption = options?.enabled !== false;
 	return useQuery({
 		queryKey: queryKeys.deals.byLead(leadId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			listDealsByLead(leadId, signal),
-		enabled: Boolean(leadId),
+		enabled: enabledByOption && Boolean(leadId),
 	});
 }
 
@@ -50,3 +59,4 @@ export {
 	useDealsByLeadQuery,
 	useDealsListQuery,
 };
+export type { DealsByLeadQueryOptions };

@@ -24,6 +24,12 @@ function useCreateDealForLeadMutation(leadId: string) {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.vehicles.listRoot,
 			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detail(leadId),
+			});
 		},
 	});
 }
@@ -34,7 +40,7 @@ function useUpdateDealMutation() {
 	return useMutation({
 		mutationFn: (input: { dealId: string; payload: DealUpdateInput }) =>
 			updateDeal(input.dealId, input.payload),
-		onSuccess: async (_data, variables) => {
+		onSuccess: async (data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.listRoot,
 			});
@@ -45,7 +51,16 @@ function useUpdateDealMutation() {
 				queryKey: queryKeys.deals.history(variables.dealId),
 			});
 			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.byLead(data.leadId),
+			});
+			await queryClient.invalidateQueries({
 				queryKey: queryKeys.vehicles.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detail(data.leadId),
 			});
 		},
 	});
@@ -55,13 +70,23 @@ function useDeleteDealMutation() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (dealId: string) => deleteDeal(dealId),
-		onSuccess: async () => {
+		mutationFn: ({ dealId }: { dealId: string; leadId: string }) =>
+			deleteDeal(dealId),
+		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.listRoot,
 			});
 			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.byLead(variables.leadId),
+			});
+			await queryClient.invalidateQueries({
 				queryKey: queryKeys.vehicles.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detail(variables.leadId),
 			});
 		},
 	});
