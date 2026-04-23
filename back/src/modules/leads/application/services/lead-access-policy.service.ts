@@ -233,14 +233,32 @@ class LeadAccessPolicy {
 		}
 	}
 
+	/**
+	 * Alinhado a `assertCanMutateLead(lead)`: indica se o ator pode mutar a negociação
+	 * (e o lead) a partir de loja e dono, sem instanciar a entidade `Lead`.
+	 */
+	async canActorMutateLeadOnSnapshot(
+		actor: LeadActor,
+		leadStoreId: string,
+		leadOwnerUserId: string | null,
+	): Promise<boolean> {
+		return this.isMutationAllowedByLeadSnapshot(
+			actor,
+			leadStoreId,
+			leadOwnerUserId,
+		);
+	}
+
 	async assertCanMutateLead(actor: LeadActor, lead: Lead): Promise<void> {
+		const allowed = await this.isMutationAllowedByLeadSnapshot(
+			actor,
+			lead.storeId.value,
+			lead.ownerUserId?.value ?? null,
+		);
+		if (allowed) {
+			return;
+		}
 		const scope = await this.resolveScope(actor);
-		if (scope.kind === 'full') {
-			return;
-		}
-		if (lead.ownerUserId?.value === scope.actorUserId) {
-			return;
-		}
 		if (scope.kind === 'attendant') {
 			throw new LeadAccessDeniedError(
 				'Atendentes podem alterar apenas os proprios leads.',
@@ -251,20 +269,37 @@ class LeadAccessPolicy {
 				'Gestores gerais nao podem alterar leads fora do proprio ownership.',
 			);
 		}
-		if (lead.ownerUserId === null) {
-			if (!scope.mutateStoreIds.has(lead.storeId.value)) {
-				throw new LeadAccessDeniedError();
+		throw new LeadAccessDeniedError();
+	}
+
+	private async isMutationAllowedByLeadSnapshot(
+		actor: LeadActor,
+		leadStoreId: string,
+		leadOwnerUserId: string | null,
+	): Promise<boolean> {
+		const scope = await this.resolveScope(actor);
+		if (scope.kind === 'full') {
+			return true;
+		}
+		if (leadOwnerUserId === scope.actorUserId) {
+			return true;
+		}
+		if (scope.kind === 'attendant') {
+			return false;
+		}
+		if (scope.kind === 'general_manager') {
+			return false;
+		}
+		if (scope.kind === 'manager') {
+			if (leadOwnerUserId === null) {
+				return scope.mutateStoreIds.has(leadStoreId);
 			}
-			return;
-		}
-		if (
-			!(await this.targetUserIntersectsTeams(
-				lead.ownerUserId.value,
+			return this.targetUserIntersectsTeams(
+				leadOwnerUserId,
 				scope.mutateTeamIds,
-			))
-		) {
-			throw new LeadAccessDeniedError();
+			);
 		}
+		return false;
 	}
 
 	async assertCanCreateLead(

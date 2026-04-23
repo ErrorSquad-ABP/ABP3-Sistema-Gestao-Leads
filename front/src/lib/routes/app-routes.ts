@@ -9,6 +9,8 @@ const appRoutes = {
 		root: '/app',
 		customers: '/app/customers',
 		leads: '/app/leads',
+		deals: '/app/deals',
+		vehicles: '/app/vehicles',
 		stores: '/app/stores',
 		teams: '/app/teams',
 		operations: '/app/operations',

@@ -4,6 +4,7 @@ import {
 	CheckCheck,
 	MoreHorizontal,
 	PencilLine,
+	Handshake,
 	Shuffle,
 	Trash2,
 } from 'lucide-react';
@@ -38,6 +39,7 @@ type LeadsTableProps = {
 	leads: LeadListItem[];
 	onConvert?: (lead: LeadListItem) => void;
 	onDelete?: (lead: LeadListItem) => void;
+	onDeals?: (lead: LeadListItem) => void;
 	onEdit?: (lead: LeadListItem) => void;
 	onReassign?: (lead: LeadListItem) => void;
 	ownerLabelById?: Readonly<Record<string, string>>;
@@ -65,6 +67,7 @@ function LeadsTable({
 	customerLabelById,
 	leads,
 	onConvert,
+	onDeals,
 	onDelete,
 	onEdit,
 	onReassign,
@@ -143,6 +146,15 @@ function LeadsTable({
 										align="end"
 										className="w-44 rounded-xl bg-white"
 									>
+										{onDeals ? (
+											<DropdownMenuItem
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
+												onSelect={() => onDeals(lead)}
+											>
+												<Handshake className="size-4" />
+												Negociações
+											</DropdownMenuItem>
+										) : null}
 										{onEdit ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"

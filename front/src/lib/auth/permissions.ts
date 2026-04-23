@@ -10,6 +10,8 @@ type AppRouteAccessKey =
 	| 'dashboardAnalytic'
 	| 'dashboardOperational'
 	| 'leads'
+	| 'deals'
+	| 'vehicles'
 	| 'stores'
 	| 'teams'
 	| 'users';
@@ -20,6 +22,8 @@ type AppNavigationIcon =
 	| 'customers'
 	| 'stores'
 	| 'teams'
+	| 'deals'
+	| 'vehicles'
 	| 'shield'
 	| 'users';
 
@@ -45,6 +49,8 @@ const routeAccessByKey: Record<AppRouteAccessKey, readonly UserRole[]> = {
 	dashboardAnalytic: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	dashboardOperational: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	leads: ['ATTENDANT', 'MANAGER', 'ADMINISTRATOR'],
+	deals: ['ATTENDANT', 'MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
+	vehicles: ['GENERAL_MANAGER', 'ADMINISTRATOR'],
 	stores: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	teams: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	users: ['ADMINISTRATOR'],
@@ -88,6 +94,24 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 		label: 'Leads',
 	},
 	{
+		allowedRoles: routeAccessByKey.deals,
+		description: 'Acompanhe etapas, importância e desfecho das negociações.',
+		featureKey: 'leads',
+		href: appRoutes.app.deals,
+		icon: 'deals',
+		key: 'deals',
+		label: 'Negociações',
+	},
+	{
+		allowedRoles: routeAccessByKey.vehicles,
+		description: 'Catálogo de veículos disponíveis por loja e status.',
+		featureKey: 'leads',
+		href: appRoutes.app.vehicles,
+		icon: 'vehicles',
+		key: 'vehicles',
+		label: 'Veículos',
+	},
+	{
 		allowedRoles: routeAccessByKey.stores,
 		description: 'Estrutura física disponível para distribuição operacional.',
 		featureKey: 'leads',
@@ -126,6 +150,10 @@ function getAllowedRolesForRoute(key: AppRouteAccessKey) {
 			return routeAccessByKey.dashboardOperational;
 		case 'leads':
 			return routeAccessByKey.leads;
+		case 'deals':
+			return routeAccessByKey.deals;
+		case 'vehicles':
+			return routeAccessByKey.vehicles;
 		case 'stores':
 			return routeAccessByKey.stores;
 		case 'teams':

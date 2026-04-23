@@ -34,6 +34,7 @@ import {
 	type JwtUser,
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
+import { DealsByLeadListDto } from '../../application/dto/deals-by-lead-list.dto.js';
 import { DealHistoryItemDto } from '../../application/dto/deal-history-response.dto.js';
 import { DealResponseDto } from '../../application/dto/deal-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -106,7 +107,7 @@ class DealController {
 		@Param('leadId', ParseUUIDPipe) leadId: string,
 		@Body() body: CreateDealValidator,
 	) {
-		const deal = await this.createDealUseCase.execute(
+		const created = await this.createDealUseCase.execute(
 			toLeadActor(user),
 			leadId,
 			{
@@ -117,13 +118,17 @@ class DealController {
 				stage: body.stage,
 			},
 		);
-		return DealPresenter.toResponse(deal);
+		const deal = await this.findDealUseCase.execute(
+			toLeadActor(user),
+			created.id.value,
+		);
+		return DealPresenter.toResponseEnriched(deal.row, deal.canMutate);
 	}
 
 	@Get('leads/:leadId/deals')
 	@ApiOperation({ summary: 'Listar negociações do lead' })
 	@ApiParam({ name: 'leadId', format: 'uuid' })
-	@ApiOkResponseEnvelopeArray(DealResponseDto)
+	@ApiOkResponseEnvelope(DealsByLeadListDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiForbiddenResponse(FORBIDDEN)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
@@ -131,11 +136,14 @@ class DealController {
 		@CurrentUser() user: JwtUser,
 		@Param('leadId', ParseUUIDPipe) leadId: string,
 	) {
-		const deals = await this.listDealsByLeadUseCase.execute(
+		const result = await this.listDealsByLeadUseCase.execute(
 			toLeadActor(user),
 			leadId,
 		);
-		return DealPresenter.toResponseList([...deals]);
+		return {
+			items: DealPresenter.toResponseListEnriched(result.items),
+			canMutateLead: result.canMutateLead,
+		};
 	}
 
 	@Get('deals')
@@ -161,7 +169,7 @@ class DealController {
 		});
 
 		return {
-			items: DealPresenter.toResponseList([...page.items]),
+			items: DealPresenter.toResponseListEnriched([...page.items]),
 			page: page.page,
 			limit: page.limit,
 			total: page.total,
@@ -199,7 +207,7 @@ class DealController {
 		@Param('id', ParseUUIDPipe) id: string,
 	) {
 		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
-		return DealPresenter.toResponse(deal);
+		return DealPresenter.toResponseEnriched(deal.row, deal.canMutate);
 	}
 
 	@Patch('deals/:id')
@@ -214,7 +222,7 @@ class DealController {
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateDealValidator,
 	) {
-		const deal = await this.updateDealUseCase.execute(toLeadActor(user), id, {
+		await this.updateDealUseCase.execute(toLeadActor(user), id, {
 			vehicleId: body.vehicleId,
 			title: body.title,
 			value: body.value,
@@ -222,7 +230,8 @@ class DealController {
 			stage: body.stage,
 			status: body.status,
 		});
-		return DealPresenter.toResponse(deal);
+		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
+		return DealPresenter.toResponseEnriched(deal.row, deal.canMutate);
 	}
 
 	@Delete('deals/:id')

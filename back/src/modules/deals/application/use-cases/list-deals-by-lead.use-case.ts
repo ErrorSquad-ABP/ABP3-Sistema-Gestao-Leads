@@ -28,7 +28,17 @@ class ListDealsByLeadUseCase {
 		}
 		await this.leadAccessPolicy.assertCanReadLead(actor, lead);
 
-		return deals.listByLeadId(Uuid.parse(leadId));
+		const canMutateLead =
+			await this.leadAccessPolicy.canActorMutateLeadOnSnapshot(
+				actor,
+				lead.storeId.value,
+				lead.ownerUserId?.value ?? null,
+			);
+		const rows = await deals.listByLeadIdEnriched(Uuid.parse(leadId));
+		return {
+			items: rows.map((row) => ({ row, canMutate: canMutateLead })),
+			canMutateLead,
+		};
 	}
 }
 
