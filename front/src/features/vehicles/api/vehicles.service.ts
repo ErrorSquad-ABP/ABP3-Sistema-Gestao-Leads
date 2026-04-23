@@ -55,11 +55,24 @@ async function updateVehicle(vehicleId: string, input: UpdateVehicleInput) {
 	return parseVehicleResponse(raw);
 }
 
+async function findVehicle(vehicleId: string, signal?: AbortSignal) {
+	const raw = await apiFetch<unknown>(`/api/vehicles/${vehicleId}`, {
+		signal,
+	});
+	return parseVehicleResponse(raw);
+}
+
 async function deactivateVehicle(vehicleId: string) {
 	await apiFetch(`/api/vehicles/${vehicleId}`, {
 		method: 'DELETE',
 	});
 }
 
-export { createVehicle, deactivateVehicle, listVehicles, updateVehicle };
+export {
+	createVehicle,
+	deactivateVehicle,
+	findVehicle,
+	listVehicles,
+	updateVehicle,
+};
 export type { ListVehiclesFilters };

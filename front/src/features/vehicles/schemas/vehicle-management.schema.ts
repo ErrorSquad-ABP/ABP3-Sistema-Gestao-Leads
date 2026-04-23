@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import {
+	isBrlApiDecimalAtOrUnderDbMax,
+	MONEY_BRL_EXCEEDS_DB_LIMIT,
+} from '@/lib/money-brl-limits';
+
 import { supportedFuelTypes, vehicleStatuses } from './vehicle.schema';
 
 const pricePattern = /^\d+(\.\d{2})$/;
@@ -43,6 +48,9 @@ const vehicleFormSchema = z.object({
 		.trim()
 		.refine((value) => pricePattern.test(value), {
 			message: 'Informe um preço no formato 45000.00.',
+		})
+		.refine((value) => isBrlApiDecimalAtOrUnderDbMax(value), {
+			message: MONEY_BRL_EXCEEDS_DB_LIMIT,
 		}),
 	status: z.enum(vehicleStatuses, {
 		message: 'Selecione um status válido.',
