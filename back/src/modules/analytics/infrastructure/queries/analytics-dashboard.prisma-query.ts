@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '../../../../generated/prisma/client.js';
 
 import type { ResolvedTemporalFilterDto } from '../../../../shared/application/dto/temporal-filter.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service.js';
-import type { AnalyticsLeadRecord } from '../../application/dto/analytics-dashboard.dto.js';
+import type {
+	AnalyticsLeadRecord,
+	AnalyticsScopeDto,
+} from '../../application/dto/analytics-dashboard.dto.js';
 
 function startOfDayUtc(dateOnly: string): Date {
 	return new Date(`${dateOnly}T00:00:00.000Z`);
@@ -19,11 +23,33 @@ function nextDayUtc(dateOnly: string): Date {
 class AnalyticsDashboardPrismaQuery {
 	constructor(private readonly prisma: PrismaService) {}
 
+	private buildScopeWhere(scope: AnalyticsScopeDto): Prisma.LeadWhereInput {
+		if (scope.kind === 'global') {
+			return {};
+		}
+
+		if (scope.kind === 'own') {
+			return {
+				ownerUserId: scope.userId,
+			};
+		}
+
+		return {
+			owner: {
+				is: {
+					teamId: scope.teamId,
+				},
+			},
+		};
+	}
+
 	async findDashboardRecords(
 		filter: ResolvedTemporalFilterDto,
+		scope: AnalyticsScopeDto,
 	): Promise<AnalyticsLeadRecord[]> {
 		const leads = await this.prisma.lead.findMany({
 			where: {
+				...this.buildScopeWhere(scope),
 				createdAt: {
 					gte: startOfDayUtc(filter.startDate),
 					lt: nextDayUtc(filter.endDate),

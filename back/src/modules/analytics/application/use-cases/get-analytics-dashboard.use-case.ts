@@ -3,12 +3,15 @@ import { Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: Nest DI
 import { TemporalFilterPolicyService } from '../../../../shared/application/services/temporal-filter-policy.service.js';
 // biome-ignore lint/style/useImportType: Nest DI
+import { FindUserUseCase } from '../../../users/application/use-cases/find-user.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI
 import { AnalyticsDashboardPrismaQuery } from '../../infrastructure/queries/analytics-dashboard.prisma-query.js';
 import type {
 	AnalyticsDashboardDto,
 	AnalyticsDistributionItemDto,
 	AnalyticsLeadRecord,
 	AnalyticsPerformanceItemDto,
+	AnalyticsScopeDto,
 	GetAnalyticsDashboardInputDto,
 } from '../dto/analytics-dashboard.dto.js';
 
@@ -90,17 +93,21 @@ class GetAnalyticsDashboardUseCase {
 	constructor(
 		private readonly temporalFilterPolicyService: TemporalFilterPolicyService,
 		private readonly analyticsDashboardPrismaQuery: AnalyticsDashboardPrismaQuery,
+		private readonly findUserUseCase: FindUserUseCase,
 	) {}
 
 	async execute(
 		input: GetAnalyticsDashboardInputDto,
 	): Promise<AnalyticsDashboardDto> {
+		const scope = await this.resolveScope(input);
 		const period = this.temporalFilterPolicyService.resolveForRole(
 			input.filter,
 			input.role,
 		);
-		const leads =
-			await this.analyticsDashboardPrismaQuery.findDashboardRecords(period);
+		const leads = await this.analyticsDashboardPrismaQuery.findDashboardRecords(
+			period,
+			scope,
+		);
 
 		const totalLeads = leads.length;
 		const convertedLeads = leads.filter((lead) =>
@@ -164,6 +171,32 @@ class GetAnalyticsDashboardUseCase {
 			// atual ainda nao persiste importance e closeReason no Deal.
 			byImportance: emptyDistribution,
 			closeReasons: emptyDistribution,
+		};
+	}
+
+	private async resolveScope(
+		input: GetAnalyticsDashboardInputDto,
+	): Promise<AnalyticsScopeDto> {
+		if (input.role === 'ADMINISTRATOR' || input.role === 'GENERAL_MANAGER') {
+			return { kind: 'global' };
+		}
+
+		if (input.role === 'ATTENDANT') {
+			return {
+				kind: 'own',
+				userId: input.userId,
+			};
+		}
+
+		const user = await this.findUserUseCase.execute(input.userId);
+
+		if (user.teamId === null) {
+			return { kind: 'global' };
+		}
+
+		return {
+			kind: 'team',
+			teamId: user.teamId.toString(),
 		};
 	}
 }

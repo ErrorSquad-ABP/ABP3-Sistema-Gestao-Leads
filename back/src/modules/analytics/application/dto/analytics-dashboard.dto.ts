@@ -4,9 +4,23 @@ import type {
 } from '../../../../shared/application/dto/temporal-filter.dto.js';
 import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 
+type AnalyticsScopeDto =
+	| {
+			readonly kind: 'own';
+			readonly userId: string;
+	  }
+	| {
+			readonly kind: 'team';
+			readonly teamId: string;
+	  }
+	| {
+			readonly kind: 'global';
+	  };
+
 type GetAnalyticsDashboardInputDto = {
 	readonly filter: TemporalFilterDto;
 	readonly role: UserRole;
+	readonly userId: string;
 };
 
 type AnalyticsSummaryDto = {
@@ -67,6 +81,7 @@ export type {
 	AnalyticsDistributionItemDto,
 	AnalyticsLeadRecord,
 	AnalyticsPerformanceItemDto,
+	AnalyticsScopeDto,
 	AnalyticsSummaryDto,
 	GetAnalyticsDashboardInputDto,
 };
