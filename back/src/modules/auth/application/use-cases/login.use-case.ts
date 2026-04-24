@@ -10,6 +10,7 @@ import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials
 import { AuthSessionPrismaRepository } from '../../infrastructure/auth-session.prisma-repository.js';
 // biome-ignore lint/style/useImportType: necessário em runtime para metadata de DI (Nest)
 import { AuthTokenService } from '../../infrastructure/auth-token.service.js';
+import { AuditLogService } from '../../../audit-logs/domain/utils/audit-log.service.js'
 
 /** Hash Argon2id fixo (senha desconhecida) para equalizar tempo quando o e-mail não existe. */
 const DUMMY_ARGON2_TIMING_PAD =
@@ -22,6 +23,8 @@ class LoginUseCase {
 		private readonly passwordHasher: Argon2PasswordHasherService,
 		private readonly tokens: AuthTokenService,
 		private readonly authSessions: AuthSessionPrismaRepository,
+		private readonly auditLogService: AuditLogService,
+
 	) {}
 
 	async execute(
