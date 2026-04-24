@@ -168,13 +168,10 @@ class UpdateDealUseCase {
 
 			if (lines.length > 0) {
 				await createAuditLogEntry(tx, {
+					action: 'UPDATE_DEAL',
 					actorUserId: actor.userId,
-					action: 'UPDATE',
-					entityName: 'Deal',
-					entityId: updated.id.value,
-					metadata: {
-						changedFields: lines.map((l) => l.field),
-					},
+					affectedId: updated.id.value,
+					description: null,
 				});
 			}
 

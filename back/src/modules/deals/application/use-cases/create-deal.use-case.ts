@@ -99,13 +99,11 @@ class CreateDealUseCase {
 			await history.appendMany(initialDealHistory(created, actorUuid));
 
 			await createAuditLogEntry(tx, {
+				action: 'CREATE_DEAL',
 				actorUserId: actor.userId,
-				action: 'CREATE',
-				entityName: 'Deal',
-				entityId: created.id.value,
-				metadata: { leadId },
+				affectedId: created.id.value,
+				description: null,
 			});
-
 			return created;
 		});
 	}

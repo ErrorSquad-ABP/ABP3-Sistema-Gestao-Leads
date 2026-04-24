@@ -19,6 +19,9 @@ import { LeadFactory } from '../../domain/factories/lead.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 import type { CreateLeadDto } from '../dto/create-lead.dto.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js'; //C:\ABP3-Sistema-Gestao-Leads\back\dist\modules\leads\application\use-cases\create-lead.use-case.js
+import type { Prisma } from '../../../../generated/prisma/client.js';
+//back/src/modules/leads/application/use-cases/create-lead.use-case.ts
 
 @Injectable()
 class CreateLeadUseCase {
@@ -42,7 +45,7 @@ class CreateLeadUseCase {
 				this.customerRepositoryFactory.create(transactionContext);
 			const stores = this.storeRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
-
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const customer = await customers.findById(Uuid.parse(dto.customerId));
 			if (!customer) {
 				throw new LeadInvalidCustomerError(dto.customerId);
@@ -65,6 +68,14 @@ class CreateLeadUseCase {
 			});
 
 			const lead = this.leadFactory.create(dto);
+
+			await createAuditLogEntry(tx, {
+				action: 'CREATE_LEAD',
+				actorUserId: actor.userId,
+				affectedId: lead.id.value,
+				description: null,
+			});
+			
 			return leads.create(lead);
 		});
 	}

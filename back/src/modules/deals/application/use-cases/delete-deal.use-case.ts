@@ -46,14 +46,6 @@ class DeleteDealUseCase {
 			}
 			await this.leadAccessPolicy.assertCanMutateLead(actor, lead);
 
-			await createAuditLogEntry(tx, {
-				actorUserId: actor.userId,
-				action: 'DELETE',
-				entityName: 'Deal',
-				entityId: deal.id.value,
-				metadata: { leadId: deal.leadId.value },
-			});
-
 			if (deal.status === 'OPEN') {
 				const vehicle = await vehicles.findById(deal.vehicleId);
 				if (
@@ -67,6 +59,13 @@ class DeleteDealUseCase {
 			}
 
 			await deals.delete(Uuid.parse(dealId));
+
+			await createAuditLogEntry(tx, {
+				action: 'DELETE_DEAL',
+				actorUserId: actor.userId,
+				affectedId: dealId,
+				description: null,
+			});
 		});
 	}
 }
