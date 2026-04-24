@@ -21,6 +21,7 @@ import { UpdateLeadUseCase } from './application/use-cases/update-lead.use-case.
 import { LeadFactory } from './domain/factories/lead.factory.js';
 import { LeadRepositoryFactory } from './infrastructure/persistence/factories/lead-repository.factory.js';
 import { LeadController } from './presentation/controllers/lead.controller.js';
+import { AuditLogService } from '../audit-logs/domain/utils/audit-log.service.js';
 
 @Module({
 	imports: [UsersModule],
@@ -34,6 +35,7 @@ import { LeadController } from './presentation/controllers/lead.controller.js';
 		StoreRepositoryFactory,
 		TeamRepositoryFactory,
 		UserRepositoryFactory,
+		AuditLogService,
 		CreateLeadUseCase,
 		UpdateLeadUseCase,
 		FindLeadUseCase,

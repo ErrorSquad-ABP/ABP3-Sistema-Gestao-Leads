@@ -8,6 +8,8 @@ import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
+import { AuditLogService } from '../../../audit-logs/domain/utils/audit-log.service.js'
+import type { Prisma } from '../../../../generated/prisma/client.js';
 
 @Injectable()
 class DeleteLeadUseCase {
@@ -17,7 +19,9 @@ class DeleteLeadUseCase {
 	constructor(
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
 		private readonly leadAccessPolicy: LeadAccessPolicy,
-	) {}
+		private readonly auditLogService: AuditLogService,
+
+	) { }
 
 	async execute(actor: LeadActor, leadId: string): Promise<void> {
 		return this.unitOfWork.run(async () => {
@@ -32,6 +36,13 @@ class DeleteLeadUseCase {
 			await this.leadAccessPolicy.assertCanMutateLead(actor, lead);
 
 			await leads.delete(leadIdVo);
+
+			const tx = transactionContext.client as Prisma.TransactionClient;
+			await this.auditLogService.log(tx, {
+				action: 'DELETE_LEAD',
+				actorUserId: actor.userId,
+				affectedId: leadId,
+			});
 		});
 	}
 }
