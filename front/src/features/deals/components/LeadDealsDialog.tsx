@@ -102,10 +102,12 @@ function LeadDealsDialog({
 		if (!open || !listQuery.isSuccess || canMutateLead) {
 			return;
 		}
-		setCreateOpen(false);
-		setEditOpen(false);
-		setDeleteOpen(false);
-		setDialogError(null);
+		queueMicrotask(() => {
+			setCreateOpen(false);
+			setEditOpen(false);
+			setDeleteOpen(false);
+			setDialogError(null);
+		});
 	}, [open, listQuery.isSuccess, canMutateLead]);
 
 	function resetCreateForm() {

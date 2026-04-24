@@ -167,25 +167,29 @@ function DealFormDialog({
 
 	useEffect(() => {
 		if (!open) {
-			form.reset({});
-			setValueCentsDigits('');
+			queueMicrotask(() => {
+				form.reset({});
+				setValueCentsDigits('');
+			});
 			return;
 		}
 		if (targetDeal) {
-			form.reset({
-				title: targetDeal.title,
-				vehicleId: targetDeal.vehicleId,
-				stage: targetDeal.stage,
-				importance: targetDeal.importance,
-				status: targetDeal.status,
+			queueMicrotask(() => {
+				form.reset({
+					title: targetDeal.title,
+					vehicleId: targetDeal.vehicleId,
+					stage: targetDeal.stage,
+					importance: targetDeal.importance,
+					status: targetDeal.status,
+				});
+				setValueCentsDigits(apiDecimalStringToCentsDigits(targetDeal.value));
 			});
-			setValueCentsDigits(apiDecimalStringToCentsDigits(targetDeal.value));
 		} else {
-			setValueCentsDigits('');
+			queueMicrotask(() => setValueCentsDigits(''));
 		}
 	}, [form, open, targetDeal]);
 
-	async function handleSubmit(_values: DealUpdateFormInput) {
+	async function handleSubmit() {
 		if (isReadOnly) {
 			setSubmitError('Negociação finalizada. Não é possível editar os campos.');
 			return;
