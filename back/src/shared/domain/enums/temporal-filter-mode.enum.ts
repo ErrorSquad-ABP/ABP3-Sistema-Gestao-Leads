@@ -8,6 +8,7 @@ const temporalFilterModeEnum = createDomainEnum({
 	code: 'enum.temporal_filter_mode.invalid_value',
 	label: 'Temporal filter mode',
 	values: TEMPORAL_FILTER_MODES,
+	normalize: (value: string) => value.trim().toLowerCase(),
 	allowNormalization: false,
 });
 
