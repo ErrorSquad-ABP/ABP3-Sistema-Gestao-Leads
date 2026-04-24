@@ -11,7 +11,7 @@ async function DealsHomePage() {
 		redirect(appRoutes.auth.login);
 	}
 
-	return <DealsPageContent user={user} />;
+	return <DealsPageContent />;
 }
 
 export default DealsHomePage;
