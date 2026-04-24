@@ -21,7 +21,8 @@ import { LeadRepositoryFactory } from '../../infrastructure/persistence/factorie
 import type { CreateLeadDto } from '../dto/create-lead.dto.js';
 import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js'; //C:\ABP3-Sistema-Gestao-Leads\back\dist\modules\leads\application\use-cases\create-lead.use-case.js
 import type { Prisma } from '../../../../generated/prisma/client.js';
-//back/src/modules/leads/application/use-cases/create-lead.use-case.ts
+import { AuditLogService } from '../../../audit-logs/domain/utils/audit-log.service.js'
+
 
 @Injectable()
 class CreateLeadUseCase {
@@ -35,6 +36,7 @@ class CreateLeadUseCase {
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
 		private readonly leadAccessPolicy: LeadAccessPolicy,
+		private readonly AuditLogService: AuditLogService,
 	) {}
 
 	async execute(actor: LeadActor, dto: CreateLeadDto) {
@@ -73,7 +75,6 @@ class CreateLeadUseCase {
 				action: 'CREATE_LEAD',
 				actorUserId: actor.userId,
 				affectedId: lead.id.value,
-				description: null,
 			});
 			
 			return leads.create(lead);

@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
-import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadNotFoundError } from '../../../leads/domain/errors/lead-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
@@ -25,6 +24,8 @@ import { VehicleRepositoryFactory } from '../../../vehicles/infrastructure/persi
 import { VehicleNotFoundError } from '../../../vehicles/domain/errors/vehicle-not-found.error.js';
 import { initialDealHistory } from '../helpers/deal-history.helpers.js';
 import type { CreateDealDto } from '../dto/create-deal.dto.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { AuditLogService } from '../../../audit-logs/domain/utils/audit-log.service.js'
 
 @Injectable()
 class CreateDealUseCase {
@@ -38,6 +39,7 @@ class CreateDealUseCase {
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
 		private readonly leadAccessPolicy: LeadAccessPolicy,
 		private readonly vehicleRepositoryFactory: VehicleRepositoryFactory,
+		private readonly auditLogService: AuditLogService,
 	) {}
 
 	async execute(actor: LeadActor, leadId: string, dto: CreateDealDto) {
@@ -98,12 +100,12 @@ class CreateDealUseCase {
 			const actorUuid = Uuid.parse(actor.userId);
 			await history.appendMany(initialDealHistory(created, actorUuid));
 
-			await createAuditLogEntry(tx, {
+			await this.auditLogService.log(tx, {
 				action: 'CREATE_DEAL',
 				actorUserId: actor.userId,
 				affectedId: created.id.value,
-				description: null,
 			});
+
 			return created;
 		});
 	}
