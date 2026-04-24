@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
 import { AuthConfigModule } from './config/auth-config.module.js';
+import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { LeadsModule } from './modules/leads/leads.module.js';
 import { SystemModule } from './modules/system/system.module.js';
@@ -15,6 +16,7 @@ import { GlobalAuthGuard } from './shared/presentation/guards/global-auth.guard.
 		AuthConfigModule,
 		PrismaModule,
 		TransactionModule,
+		AnalyticsModule,
 		SystemModule,
 		UsersModule,
 		AuthModule,
