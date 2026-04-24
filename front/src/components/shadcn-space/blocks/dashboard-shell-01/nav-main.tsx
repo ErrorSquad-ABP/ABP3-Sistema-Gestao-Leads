@@ -24,7 +24,9 @@ import { usePathname } from 'next/navigation';
 export function NavMain({ items }: { items: NavItem[] }) {
 	const pathname = usePathname();
 	const menuItemClassName =
-		'h-9 rounded-md !bg-transparent px-3 py-2 text-sm text-sidebar-foreground shadow-none transition-colors hover:!bg-[#D96C3F]/10 hover:!text-[#D96C3F]';
+		'relative h-10 rounded-xl !bg-transparent px-4 py-2 text-[0.95rem] font-medium text-slate-200 shadow-none transition-colors hover:!bg-white/5 hover:text-white group-data-[collapsible=icon]:!size-12 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!p-0';
+	const activeItemClassName =
+		'!bg-[#7A4A37] text-white hover:!bg-[#7A4A37] hover:text-white [&_svg]:text-white before:absolute before:left-[-20px] before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#F07A2A] group-data-[collapsible=icon]:before:hidden';
 
 	// Recursive render function
 	const renderItem = (item: NavItem) => {
@@ -32,7 +34,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
 		if (item.isSection && item.label) {
 			return (
 				<SidebarGroup key={item.label} className="p-0 pt-5 first:pt-0">
-					<SidebarGroupLabel className="p-0 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+					<SidebarGroupLabel className="px-1 pb-2 pt-0 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400/90">
 						{item.label}
 					</SidebarGroupLabel>
 				</SidebarGroup>
@@ -54,9 +56,11 @@ export function NavMain({ items }: { items: NavItem[] }) {
 										tooltip={item.title}
 										className={cn(menuItemClassName, 'cursor-pointer')}
 									>
-										{item.icon && <item.icon size={16} />}
-										<span>{item.title}</span>
-										<ChevronRight className="ml-auto transition-transform duration-200 collapsible/button-[aria-expanded='true']:rotate-90" />
+										{item.icon && <item.icon size={18} />}
+										<span className="group-data-[collapsible=icon]:hidden">
+											{item.title}
+										</span>
+										<ChevronRight className="ml-auto transition-transform duration-200 collapsible/button-[aria-expanded='true']:rotate-90 group-data-[collapsible=icon]:hidden" />
 									</SidebarMenuButton>
 								</CollapsibleTrigger>
 								<CollapsibleContent>
@@ -80,16 +84,21 @@ export function NavMain({ items }: { items: NavItem[] }) {
 						<SidebarMenuItem>
 							<SidebarMenuButton
 								asChild
-								isActive={false}
+								isActive={isActive}
 								tooltip={item.title}
 								className={cn(
 									menuItemClassName,
-									isActive ? 'font-medium text-sidebar-foreground' : '',
+									isActive ? activeItemClassName : '',
 								)}
 							>
-								<Link href={item.href ?? '#'}>
-									{item.icon && <item.icon />}
-									{item.title}
+							<Link
+								href={item.href ?? '#'}
+								className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
+							>
+									{item.icon && <item.icon size={18} />}
+									<span className="group-data-[collapsible=icon]:hidden">
+										{item.title}
+									</span>
 								</Link>
 							</SidebarMenuButton>
 						</SidebarMenuItem>

@@ -24,14 +24,18 @@
 	--destructive-foreground: #ffffff;
 	--success: #eef5f1;
 	--success-foreground: #1b2430;
-	--sidebar: #f4f6f8;
-	--sidebar-foreground: #1b2430;
-	--sidebar-primary: #2d3648;
+	/* Brand accents (used in CRM top headers and metrics). */
+	--brand-accent: #d96c3f;
+	--brand-accent-soft: #f4e6de;
+	/* Sidebar is a fixed palette (no dark/light mode yet). */
+	--sidebar: #0b1a2e;
+	--sidebar-foreground: #e6eef9;
+	--sidebar-primary: #0b1a2e;
 	--sidebar-primary-foreground: #ffffff;
-	--sidebar-accent: #f7ebe4;
-	--sidebar-accent-foreground: #d96c3f;
-	--sidebar-border: #d4dce6;
-	--sidebar-ring: rgba(45, 54, 72, 0.22);
+	--sidebar-accent: rgba(255, 255, 255, 0.06);
+	--sidebar-accent-foreground: #ffffff;
+	--sidebar-border: rgba(255, 255, 255, 0.12);
+	--sidebar-ring: rgba(240, 122, 42, 0.28);
 	--radius: 1rem;
 }
 
@@ -58,6 +62,8 @@
 	--color-destructive-foreground: var(--destructive-foreground);
 	--color-success: var(--success);
 	--color-success-foreground: var(--success-foreground);
+	--color-brand-accent: var(--brand-accent);
+	--color-brand-accent-soft: var(--brand-accent-soft);
 	--color-sidebar: var(--sidebar);
 	--color-sidebar-foreground: var(--sidebar-foreground);
 	--color-sidebar-primary: var(--sidebar-primary);
