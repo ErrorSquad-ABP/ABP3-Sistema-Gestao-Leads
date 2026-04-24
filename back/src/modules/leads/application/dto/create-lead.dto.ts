@@ -3,6 +3,7 @@ type CreateLeadDto = {
 	readonly storeId: string;
 	readonly ownerUserId: string | null;
 	readonly source: string;
+	readonly vehicleInterestText?: string | null;
 };
 
 export type { CreateLeadDto };

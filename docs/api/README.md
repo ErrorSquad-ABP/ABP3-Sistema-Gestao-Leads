@@ -1,16 +1,18 @@
 # API REST
 
-## Direção inicial
+## Objetivo
 
-A API será uma aplicação `NestJS` separada, orientada a recursos, com versionamento por prefixo e contratos explícitos entre `front` e `back`.
+Registrar o contrato macro e o inventário real da API no estado atual da `main`.
 
-Prefixo inicial sugerido:
+## Prefixo atual
 
 ```text
-/api/v1
+/api
 ```
 
-## Recursos previstos
+Não há versionamento por `/v1` na implementação atual.
+
+## Recursos ativos
 
 - `/auth`
 - `/users`
@@ -18,66 +20,73 @@ Prefixo inicial sugerido:
 - `/stores`
 - `/customers`
 - `/leads`
-- `/negotiations`
-- `/dashboards`
-- `/audit-logs`
+
+## Recursos ainda não fechados como produto
+
+- `negotiations`
+- `dashboards`
+- `audit-logs`
 
 ## Regras operacionais
 
 - JWT obrigatório para rotas protegidas.
-- RBAC aplicado no backend conforme papel do usuário.
-- Filtros temporais validados no servidor.
-- Logs de acesso e operações com data, hora e usuário responsável.
-- Comunicação com o frontend exclusivamente por `HTTP/JSON`.
+- `RBAC` aplicado exclusivamente no backend.
+- Escopo organizacional resolvido com `memberTeamIds` e `managedTeamIds`.
+- `teamId` permanece apenas como compatibilidade legada.
+- Paginação e filtros seguem query params explícitos.
+- Respostas usam envelope de sucesso/erro consistente.
 
-## Convenções propostas
+## Auth
 
-- Respostas com payload consistente e códigos HTTP semânticos.
-- Erros de domínio desacoplados da tecnologia de transporte.
-- Paginação e filtros sempre explícitos em query params.
-- Recursos analíticos separados dos recursos transacionais quando necessário.
-- Controllers do Nest funcionando apenas como adaptação HTTP, sem concentrar regra de negócio.
-- Decorators do Nest usados para roteamento, documentação e composição dos contratos da API.
-- Swagger disponível para documentação técnica inicial da API.
+### Endpoints relevantes
 
-## Estratégia de desenho dos endpoints
+| Método | Caminho | Estado |
+| --- | --- | --- |
+| `POST` | `/api/auth/login` | Funcional |
+| `POST` | `/api/auth/refresh` | Funcional |
+| `POST` | `/api/auth/logout` | Funcional |
+| `GET` | `/api/auth/session` | Funcional, opcional, retorna `data: null` sem sessão |
+| `GET` | `/api/auth/me` | Funcional, estrito, retorna `401` sem autenticação |
+| `PATCH` | `/api/auth/me/email` | Funcional |
+| `PATCH` | `/api/auth/me/password` | Funcional |
 
-A API deve seguir orientação por recurso como padrão. Isso significa:
+## Contrato atual de utilizador
 
-- endpoints separados por domínio e responsabilidade;
-- subrotas quando a relação entre recurso principal e bloco derivado for clara;
-- endpoint agregador apenas para telas que sempre precisem de muitos blocos juntos.
+Campos canônicos de vínculo organizacional:
 
-### Regra de decisão
+- `memberTeamIds`
+- `managedTeamIds`
 
-| Cenário | Estratégia |
-| --- | --- |
-| CRUD e telas simples | Endpoints por recurso |
-| Recurso principal com dados auxiliares independentes | Recurso principal + subrotas |
-| Dashboard e visão consolidada | Endpoint agregador por tela |
-| Detalhe muito complexo e sempre carregado em bloco | Endpoint de composição específico, se justificado |
+Campos administrativos complementares:
 
-```mermaid
-flowchart TD
-  A[Tela ou caso de uso] --> B{Dados pertencem a um recurso\nprincipal bem definido?}
-  B -->|Sim| C[Modelar endpoint por recurso]
-  C --> D{Existe bloco relacionado\nque merece autonomia?}
-  D -->|Sim| E[Criar subrota especifica]
-  D -->|Nao| F[Manter no endpoint principal]
-  B -->|Nao| G{Tela sempre exige carga\nconsolidada de muitos blocos?}
-  G -->|Sim| H[Criar endpoint agregador da tela]
-  G -->|Nao| I[Compor no frontend com endpoints separados]
-```
+- `accessGroupId`
+- `accessGroup`
 
-### Decisão atual do projeto
+Campo legado:
 
-- `auth`, `users`, `teams`, `stores`, `customers` e `leads` seguem desenho por recurso.
-- `dashboards` podem e devem ter endpoints agregadores por tela.
-- o detalhe de lead deve começar simples, com recurso principal e subrotas como histórico; só deve ganhar endpoint de composição se houver ganho real de desempenho e simplicidade.
-- a API não deve nascer acoplada à UI inteira; agregação é exceção consciente, não regra padrão.
+- `teamId`
 
-## Próximos passos
+## Leads
 
-1. Definir contratos mínimos da Sprint 1.
-2. Criar documentação de endpoints por módulo.
-3. Padronizar formato de erro e metadados de paginação.
+Rotas de listagem consumidas pelo frontend:
+
+| Método | Caminho | Uso |
+| --- | --- | --- |
+| `GET` | `/api/leads/owner/:ownerUserId?page=&limit=` | Escopo por responsável |
+| `GET` | `/api/leads/manager?page=&limit=` | Escopo consolidado gerencial |
+| `GET` | `/api/leads/team/:teamId?page=&limit=` | Listagem por equipa |
+| `GET` | `/api/leads/all?page=&limit=` | Listagem global |
+
+O frontend também já usa rotas transacionais de lead para:
+
+- criar;
+- editar;
+- reatribuir;
+- converter;
+- excluir.
+
+## Observações de estado
+
+- o backend já suporta o núcleo transacional de Sprint 1;
+- dashboards e analytics ainda não devem ser documentados como endpoints de produto concluídos;
+- logs administrativos ainda não devem ser tratados como recurso publicado para o frontend.

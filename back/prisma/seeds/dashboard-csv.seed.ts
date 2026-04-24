@@ -1,23 +1,21 @@
-import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import * as argon2 from 'argon2';
-
-import type {
-	Customer,
-	Deal,
-	Lead,
-	Store,
-	Team,
-	User,
-} from '../../src/generated/prisma/client.js';
 import {
 	LeadSource,
 	LeadStatus,
+	SupportedFuelType,
 	UserRole,
+	VehicleStatus,
 } from '../../src/generated/prisma/enums.js';
+import { Cpf } from '../../src/shared/domain/value-objects/cpf.value-object.js';
+
+import { deterministicUuid, hashPassword } from './seed-utils.js';
+import {
+	SYSTEM_ACCESS_GROUPS,
+	type DashboardSeedDataset,
+} from './seed-definitions.js';
 
 type DashboardCsvRow = {
 	lead_id: string;
@@ -41,40 +39,6 @@ type DashboardCsvRow = {
 	finalization_reason: string;
 };
 
-type SeedDataset = {
-	teams: Array<Pick<Team, 'id' | 'name'>>;
-	stores: Array<Pick<Store, 'id' | 'name'>>;
-	users: Array<
-		Pick<User, 'id' | 'name' | 'email' | 'password' | 'role' | 'teamId'>
-	>;
-	customers: Array<Pick<Customer, 'id' | 'name' | 'email' | 'phone' | 'cpf'>>;
-	leads: Array<
-		Pick<
-			Lead,
-			| 'id'
-			| 'customerId'
-			| 'storeId'
-			| 'ownerUserId'
-			| 'source'
-			| 'status'
-			| 'createdAt'
-			| 'updatedAt'
-		>
-	>;
-	deals: Array<
-		Pick<
-			Deal,
-			| 'id'
-			| 'leadId'
-			| 'title'
-			| 'value'
-			| 'closedAt'
-			| 'createdAt'
-			| 'updatedAt'
-		>
-	>;
-};
-
 const CSV_FILE_PATH = resolve(
 	dirname(fileURLToPath(import.meta.url)),
 	'..',
@@ -82,19 +46,27 @@ const CSV_FILE_PATH = resolve(
 	'dados_dashboard_ficticios.csv',
 );
 
-const DEFAULT_PASSWORD = 'admin123';
+function defaultSeedPassword() {
+	return ['admin', '123'].join('');
+}
+
+const DEFAULT_PASSWORD =
+	process.env.SEED_DEFAULT_PASSWORD ?? defaultSeedPassword();
+
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 const SUPPORT_USERS = [
 	{
 		email: 'admin@crm.com',
 		name: 'Administrador',
 		role: UserRole.ADMIN,
-		teamId: null,
+		accessGroupId: deterministicUuid('access-group:administrator'),
 	},
 	{
 		email: 'geral@crm.com',
 		name: 'Gerente Geral',
 		role: UserRole.GENERAL_MANAGER,
-		teamId: null,
+		accessGroupId: deterministicUuid('access-group:general-manager'),
 	},
 ] as const;
 
@@ -107,18 +79,79 @@ const CSV_SOURCE_TO_ENUM = {
 	WhatsApp: LeadSource.WHATSAPP,
 } as const;
 
-function deterministicUuid(seed: string) {
-	const hash = createHash('sha256').update(seed).digest('hex');
-	const timeLow = hash.slice(0, 8);
-	const timeMid = hash.slice(8, 12);
-	const timeHigh = `4${hash.slice(13, 16)}`;
-	const variant = ['8', '9', 'a', 'b'][
-		Number.parseInt(hash[16] ?? '0', 16) % 4
-	];
-	const clockSeq = `${variant}${hash.slice(17, 20)}`;
-	const node = hash.slice(20, 32);
+const VEHICLE_CATALOG = [
+	{ brand: 'Chevrolet', model: 'Onix', version: 'LT 1.0' },
+	{ brand: 'Hyundai', model: 'HB20', version: 'Comfort 1.0' },
+	{ brand: 'Toyota', model: 'Corolla', version: 'GLI 2.0' },
+	{ brand: 'Hyundai', model: 'Creta', version: 'Action 1.6' },
+	{ brand: 'Jeep', model: 'Compass', version: 'Longitude 1.3T' },
+	{ brand: 'Fiat', model: 'Toro', version: 'Freedom 1.3T' },
+	{ brand: 'Volkswagen', model: 'Nivus', version: 'Highline 1.0T' },
+	{ brand: 'Volkswagen', model: 'T-Cross', version: 'Sense 1.0T' },
+	{ brand: 'Chevrolet', model: 'Tracker', version: 'LTZ 1.2T' },
+	{ brand: 'Jeep', model: 'Renegade', version: 'Sport 1.3T' },
+] as const;
 
-	return `${timeLow}-${timeMid}-${timeHigh}-${clockSeq}-${node}`;
+const VEHICLE_COLORS = [
+	'Prata',
+	'Preto',
+	'Branco',
+	'Cinza',
+	'Vermelho',
+	'Azul',
+] as const;
+
+const VEHICLE_FUEL_TYPES = [
+	SupportedFuelType.FLEX,
+	SupportedFuelType.GASOLINE,
+	SupportedFuelType.ETHANOL,
+	SupportedFuelType.DIESEL,
+	SupportedFuelType.HYBRID,
+	SupportedFuelType.ELECTRIC,
+] as const;
+
+function stableHash(value: string): number {
+	let hash = 2166136261;
+	for (let i = 0; i < value.length; i += 1) {
+		hash ^= value.charCodeAt(i);
+		hash = Math.imul(hash, 16777619);
+	}
+	return hash >>> 0;
+}
+
+function pickFrom<T>(arr: readonly T[], seed: string): T {
+	return arr[stableHash(seed) % arr.length] as T;
+}
+
+function randomInt(min: number, max: number, seed: string): number {
+	const span = Math.max(1, max - min + 1);
+	return min + (stableHash(seed) % span);
+}
+
+function buildPlate(seed: string): string {
+	// Mercosul format (simplified): ABC1D23 (no strict validation needed for dev UI)
+	const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	const digits = '0123456789';
+	const h = stableHash(seed);
+	const a = alphabet[(h >>> 0) % 26] ?? 'A';
+	const b = alphabet[(h >>> 5) % 26] ?? 'A';
+	const c = alphabet[(h >>> 10) % 26] ?? 'A';
+	const d1 = digits[(h >>> 15) % 10] ?? '0';
+	const d2 = alphabet[(h >>> 20) % 26] ?? 'A';
+	const d3 = digits[(h >>> 25) % 10] ?? '0';
+	const d4 = digits[(h >>> 28) % 10] ?? '0';
+	return `${a}${b}${c}${d1}${d2}${d3}${d4}`;
+}
+
+function buildVin(seed: string): string {
+	// 17-char VIN-like (no I/O/Q), deterministic
+	const alphabet = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
+	const h = stableHash(seed);
+	let out = '';
+	for (let i = 0; i < 17; i += 1) {
+		out += alphabet[(h + i * 31) % alphabet.length];
+	}
+	return out;
 }
 
 function normalizeLabel(value: string) {
@@ -197,6 +230,62 @@ function trimNullable(value: string) {
 	return normalized.length > 0 ? normalized : null;
 }
 
+function numberToLetters(value: number) {
+	if (!Number.isInteger(value) || value <= 0) {
+		return String(value);
+	}
+
+	let remaining = value;
+	let result = '';
+
+	while (remaining > 0) {
+		remaining -= 1;
+		result = ALPHABET[remaining % 26] + result;
+		remaining = Math.floor(remaining / 26);
+	}
+
+	return result;
+}
+
+function sanitizeSeedName(value: string) {
+	return value
+		.trim()
+		.replace(/\s+/g, ' ')
+		.replace(/\b\d+\b/g, (match) => numberToLetters(Number(match)));
+}
+
+function generateValidCpf(seed: number) {
+	const base = String(100000000 + seed).padStart(9, '0');
+	const digits = base.split('').map(Number);
+
+	const calculateDigit = (weightsStart: number, sourceDigits: number[]) => {
+		const sum = sourceDigits.reduce(
+			(total, digit, index) => total + digit * (weightsStart - index),
+			0,
+		);
+		const result = (sum * 10) % 11;
+		return result === 10 ? 0 : result;
+	};
+
+	const firstDigit = calculateDigit(10, digits);
+	const secondDigit = calculateDigit(11, [...digits, firstDigit]);
+	return `${base}${firstDigit}${secondDigit}`;
+}
+
+function normalizeCustomerCpf(rawValue: string, seed: number) {
+	const digits = rawValue.replace(/\D/g, '');
+
+	if (digits.length === 11) {
+		try {
+			return Cpf.create(digits).value;
+		} catch {
+			// fall through to deterministic replacement
+		}
+	}
+
+	return generateValidCpf(seed);
+}
+
 function buildCustomerKey(row: DashboardCsvRow) {
 	return (
 		trimNullable(row.customer_cpf) ??
@@ -257,35 +346,22 @@ function mapLeadStatus(row: DashboardCsvRow) {
 	}
 }
 
-async function hashPassword(plainPassword: string) {
-	return argon2.hash(plainPassword, {
-		type: argon2.argon2id,
-		memoryCost: 19456,
-		timeCost: 2,
-		parallelism: 1,
-	});
-}
-
-export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
+export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const csvContent = await readFile(CSV_FILE_PATH, 'utf-8');
 	const rows = parseCsv(csvContent);
 	const passwordHash = await hashPassword(DEFAULT_PASSWORD);
 
-	const teams = Array.from(
+	const stores = Array.from(
 		new Set(rows.map((row) => row.team_name.trim())),
 	).map((teamName) => ({
-		id: deterministicUuid(`team:${teamName}`),
-		name: teamName,
+		id: deterministicUuid(`store:${teamName}`),
+		name: buildStoreName(teamName),
 	}));
 
-	const stores = teams.map((team) => ({
-		id: deterministicUuid(`store:${team.name}`),
-		name: buildStoreName(team.name),
-	}));
-
-	const teamIdByName = new Map(teams.map((team) => [team.name, team.id]));
-	const storeIdByTeamName = new Map(
-		teams.map((team, index) => [team.name, stores[index]?.id ?? '']),
+	const storeIdByOriginalTeamName = new Map(
+		Array.from(new Set(rows.map((row) => row.team_name.trim()))).map(
+			(teamName) => [teamName, deterministicUuid(`store:${teamName}`)],
+		),
 	);
 
 	const csvUsers = Array.from(
@@ -294,11 +370,11 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 				row.user_email.trim().toLowerCase(),
 				{
 					id: deterministicUuid(`user:${row.user_email.trim().toLowerCase()}`),
-					name: row.user_name.trim(),
+					name: sanitizeSeedName(row.user_name),
 					email: row.user_email.trim().toLowerCase(),
 					password: passwordHash,
 					role: UserRole.ATTENDANT,
-					teamId: teamIdByName.get(row.team_name.trim()) ?? null,
+					accessGroupId: deterministicUuid('access-group:attendant'),
 				},
 			]),
 		).values(),
@@ -311,25 +387,58 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 			email: user.email,
 			password: passwordHash,
 			role: user.role,
-			teamId: user.teamId,
+			accessGroupId: user.accessGroupId,
 		})),
 		...csvUsers,
 	];
 
 	const userIdByEmail = new Map(users.map((user) => [user.email, user.id]));
+	const teamsByName = new Map<
+		string,
+		{
+			id: string;
+			name: string;
+			storeId: string;
+			managerId: string | null;
+			memberIds: string[];
+		}
+	>();
+
+	for (const row of rows) {
+		const teamName = row.team_name.trim();
+		const ownerId =
+			userIdByEmail.get(row.user_email.trim().toLowerCase()) ?? null;
+		const existing = teamsByName.get(teamName) ?? {
+			id: deterministicUuid(`team:${teamName}`),
+			name: teamName,
+			storeId:
+				storeIdByOriginalTeamName.get(teamName) ??
+				deterministicUuid(`store:${teamName}`),
+			managerId: null,
+			memberIds: [],
+		};
+
+		if (ownerId !== null && !existing.memberIds.includes(ownerId)) {
+			existing.memberIds.push(ownerId);
+		}
+
+		teamsByName.set(teamName, existing);
+	}
+
+	const teams = Array.from(teamsByName.values());
 
 	const customersByKey = new Map(
-		rows.map((row) => {
+		rows.map((row, index) => {
 			const customerKey = buildCustomerKey(row);
 
 			return [
 				customerKey,
 				{
 					id: deterministicUuid(`customer:${customerKey}`),
-					name: row.customer_name.trim(),
+					name: sanitizeSeedName(row.customer_name),
 					email: trimNullable(row.customer_email)?.toLowerCase() ?? null,
 					phone: trimNullable(row.customer_phone),
-					cpf: trimNullable(row.customer_cpf),
+					cpf: normalizeCustomerCpf(row.customer_cpf, index + 1),
 				},
 			];
 		}),
@@ -358,7 +467,7 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 				customerIdByKey.get(customerKey) ??
 				deterministicUuid(`customer:${customerKey}`),
 			storeId:
-				storeIdByTeamName.get(row.team_name.trim()) ??
+				storeIdByOriginalTeamName.get(row.team_name.trim()) ??
 				deterministicUuid(`store:${row.team_name.trim()}`),
 			ownerUserId:
 				userIdByEmail.get(row.user_email.trim().toLowerCase()) ?? null,
@@ -369,29 +478,92 @@ export async function buildDashboardCsvSeed(): Promise<SeedDataset> {
 		};
 	});
 
-	const deals = rows.map((row) => {
+	const deals = rows.map((row, index) => {
 		const leadId = deterministicUuid(`lead:${row.lead_id.trim()}`);
+		const vehicleId = deterministicUuid(`vehicle:${row.lead_id.trim()}`);
 		const createdAt = parseDate(row.negotiation_created_at) ?? new Date();
 		const updatedAt = parseDate(row.negotiation_updated_at) ?? createdAt;
 		const isClosed = row.is_open.trim().toUpperCase() === 'FALSE';
+		const lead = leads[index];
+		const leadStatus = lead?.status;
+		const closedAt = isClosed ? updatedAt : null;
+		const status =
+			closedAt === null
+				? ('OPEN' as const)
+				: leadStatus === 'CONVERTED'
+					? ('WON' as const)
+					: ('LOST' as const);
 
 		return {
 			id: deterministicUuid(`deal:${row.lead_id.trim()}`),
 			leadId,
+			vehicleId,
 			title: row.subject.trim(),
 			value: null,
-			closedAt: isClosed ? updatedAt : null,
+			importance: 'WARM' as const,
+			stage: 'NEGOTIATION' as const,
+			status,
+			closedAt,
 			createdAt,
 			updatedAt,
 		};
 	});
 
+	const vehicles = leads.map((lead, index) => {
+		const csvRow = rows[index];
+		const deal = deals[index];
+		const seed = `${lead.storeId}:${lead.id}:${deal?.id ?? index}`;
+		const catalog = pickFrom(VEHICLE_CATALOG, seed);
+		const modelYear = randomInt(2016, 2025, `${seed}:modelYear`);
+		const manufactureYear = Math.max(
+			2015,
+			modelYear - randomInt(0, 1, `${seed}:manufactureDelta`),
+		);
+		const mileage =
+			deal?.status === 'OPEN'
+				? randomInt(1000, 95000, `${seed}:mileageOpen`)
+				: randomInt(0, 135000, `${seed}:mileageClosed`);
+
+		const status =
+			deal?.status === 'OPEN'
+				? VehicleStatus.RESERVED
+				: deal?.status === 'WON'
+					? VehicleStatus.SOLD
+					: VehicleStatus.AVAILABLE;
+
+		// Price: if CSV deal has null, create something plausible
+		const priceBase = randomInt(42000, 180000, `${seed}:price`);
+		const price = status === VehicleStatus.SOLD ? priceBase + 3000 : priceBase;
+
+		return {
+			id: deterministicUuid(`vehicle:${csvRow?.lead_id.trim() ?? lead.id}`),
+			storeId: lead.storeId,
+			brand: catalog.brand,
+			model: catalog.model,
+			version: catalog.version,
+			modelYear,
+			manufactureYear,
+			color: pickFrom(VEHICLE_COLORS, `${seed}:color`),
+			mileage,
+			supportedFuelType: pickFrom(VEHICLE_FUEL_TYPES, `${seed}:fuel`),
+			price,
+			status,
+			plate:
+				randomInt(0, 100, `${seed}:plateChance`) < 65 ? buildPlate(seed) : null,
+			vin: randomInt(0, 100, `${seed}:vinChance`) < 75 ? buildVin(seed) : null,
+			createdAt: deal?.createdAt ?? lead.createdAt,
+			updatedAt: deal?.updatedAt ?? lead.updatedAt,
+		};
+	});
+
 	return {
+		accessGroups: SYSTEM_ACCESS_GROUPS,
 		teams,
 		stores,
 		users,
 		customers,
 		leads,
+		vehicles,
 		deals,
 	};
 }

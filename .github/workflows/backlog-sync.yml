@@ -1,0 +1,35 @@
+name: Backlog Sync
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: backlog-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Sync backlog snapshot to Slack
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_SYNC_WEBHOOK_URL: ${{ secrets.SLACK_SYNC_WEBHOOK_URL }}
+          SLACK_SYNC_WEBHOOK_TOKEN: ${{ secrets.SLACK_SYNC_WEBHOOK_TOKEN }}
+          TRELLO_KEY: ${{ secrets.TRELLO_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
+        run: node scripts/send-backlog-sync-webhook.mjs

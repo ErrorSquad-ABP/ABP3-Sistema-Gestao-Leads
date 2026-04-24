@@ -8,10 +8,11 @@ function ForgotPasswordForm() {
 	return (
 		<AuthScreenLayout
 			asideTitle="Regularize o acesso à operação com apoio do administrador responsável."
+			contentClassName="w-full max-w-[31rem]"
 			subtitle="Siga as orientações abaixo para recuperar o acesso"
 			title="Recuperação de acesso"
 		>
-			<div className="w-full space-y-4 rounded-2xl border border-[#d6dce5] bg-white px-5 py-5 text-[#1b2430] shadow-[0_20px_60px_-28px_rgba(15,23,42,0.16)]">
+			<div className="w-full space-y-5 rounded-2xl border border-[#d6dce5] bg-white px-6 py-6 text-[#1b2430] shadow-[0_20px_60px_-28px_rgba(15,23,42,0.16)] sm:px-7">
 				<div className="space-y-1">
 					<p className="text-sm font-medium text-[#1b2430]">
 						Este ambiente não envia e-mails de redefinição automaticamente.

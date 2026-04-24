@@ -1,5 +1,7 @@
 # Sprint 1 Task Breakdown
 
+> Documento histórico de detalhamento operacional. A sprint já foi encerrada. Para o fechamento consolidado, consulte [`sprint-1-review.md`](./sprint-1-review.md).
+
 ## Objetivo
 
 Quebrar o backlog da Sprint 1 em tarefas operacionais menores, atribuíveis e fáceis de acompanhar no fluxo diário do time. Este documento existe para transformar o backlog da sprint em trabalho real de execução, com dependências explícitas, critérios mínimos e granularidade suficiente para Trello ou outro quadro `scrumban`.
@@ -189,18 +191,19 @@ Antes de mover um card para `Done`, o time deve conseguir responder:
 - se há dependência desbloqueada por ela;
 - se existe impacto documental ou contratual a atualizar.
 
-## Estado real sincronizado em `2026-04-07`
+## Estado real sincronizado em `2026-04-13`
 
 Esta seção existe para manter o breakdown coerente com o board da sprint e com o que já está integrado em `develop`.
 
 ### Concluídas ou já sustentadas pelo repositório
 
-- `S1-DAT-01` a `S1-DAT-06`
+- `S1-DAT-01` a `S1-DAT-07`
 - `S1-AUTH-01` a `S1-AUTH-05`
 - `S1-AUTH-08`
 - `S1-ADM-01` a `S1-ADM-03`
 - `S1-CRM-04` a `S1-CRM-08`
 - `S1-DOC-05`
+- `S1-FRONT-11` (listagem inicial de leads em `/app/leads`)
 
 ### Em andamento
 
@@ -214,7 +217,6 @@ Esta seção existe para manter o breakdown coerente com o board da sprint e com
 - `S1-AUTH-06` e `S1-AUTH-07`
 - `S1-ADM-04` a `S1-ADM-08`
 - `S1-CRM-01` a `S1-CRM-03`
-- `S1-DAT-07`
 - `S1-QA-01` e `S1-QA-02`
 
 ### Escopo condicional mantido como corte

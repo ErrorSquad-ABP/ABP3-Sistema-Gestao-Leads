@@ -5,10 +5,8 @@ import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-w
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
-import { User } from '../../../users/domain/entities/user.entity.js';
+import type { User } from '../../../users/domain/entities/user.entity.js';
 import { UserEmailAlreadyExistsError } from '../../../users/domain/errors/user-email-already-exists.error.js';
-// biome-ignore lint/style/useImportType: Nest DI
-import { UserFactory } from '../../../users/domain/factories/user.factory.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 // biome-ignore lint/style/useImportType: Nest DI
@@ -21,7 +19,6 @@ class UpdateOwnEmailUseCase {
 	private readonly unitOfWork!: IUnitOfWork;
 
 	constructor(
-		private readonly userFactory: UserFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly passwordHasher: Argon2PasswordHasherService,
 		private readonly authSessions: AuthSessionPrismaRepository,
@@ -46,18 +43,17 @@ class UpdateOwnEmailUseCase {
 				);
 
 				const nextEmail = Email.create(dto.email);
-				if (!nextEmail.equals(existing.email)) {
-					const other = await users.findByEmail(nextEmail.value);
-					if (other !== null && !other.id.equals(existing.id)) {
-						throw new UserEmailAlreadyExistsError(nextEmail.value);
-					}
-				}
-
-				const next = this.userFactory.update(existing, { email: dto.email });
-				if (User.sameState(existing, next)) {
+				if (nextEmail.equals(existing.email)) {
 					return { user: existing, refreshSessionsRevoked: false };
 				}
-				const saved = await users.update(next);
+
+				const other = await users.findByEmail(nextEmail.value);
+				if (other !== null && !other.id.equals(existing.id)) {
+					throw new UserEmailAlreadyExistsError(nextEmail.value);
+				}
+
+				existing.changeEmail(nextEmail);
+				const saved = await users.update(existing);
 				await this.authSessions.revokeAllActiveSessionsForUser(
 					actorUserId,
 					transactionContext,

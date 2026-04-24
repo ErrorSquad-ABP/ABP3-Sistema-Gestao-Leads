@@ -7,7 +7,14 @@ const appRoutes = {
 	},
 	app: {
 		root: '/app',
+		customers: '/app/customers',
 		leads: '/app/leads',
+		deals: '/app/deals',
+		vehicles: '/app/vehicles',
+		stores: '/app/stores',
+		teams: '/app/teams',
+		operations: '/app/operations',
+		profile: '/app/profile',
 		users: '/app/users',
 		dashboard: {
 			operational: '/app/dashboard/operational',
@@ -15,6 +22,7 @@ const appRoutes = {
 		},
 	},
 	system: {
+		unauthorized: '/401',
 		forbidden: '/403',
 	},
 } as const;

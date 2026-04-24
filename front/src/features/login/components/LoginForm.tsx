@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { queryKeys } from '@/lib/constants/query-keys';
+import { setAccessToken } from '@/lib/auth/access-token';
 import { isApiError } from '@/lib/http/api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 import { cn } from '@/lib/utils';
@@ -67,11 +68,17 @@ function LoginForm() {
 		await queryClient.cancelQueries({
 			queryKey: queryKeys.auth.currentUser,
 		});
-		const result = await loginMutation.mutateAsync(values);
-		queryClient.setQueryData(queryKeys.auth.currentUser, result.user);
-		startTransition(() => {
-			router.replace(appRoutes.app.root);
-		});
+
+		try {
+			const result = await loginMutation.mutateAsync(values);
+			setAccessToken(result.accessToken);
+			queryClient.setQueryData(queryKeys.auth.currentUser, result.user);
+			startTransition(() => {
+				router.replace(appRoutes.app.root);
+			});
+		} catch {
+			// The mutation state already stores the error for the inline feedback UI.
+		}
 	});
 
 	const loginErrorMessage = loginMutation.error

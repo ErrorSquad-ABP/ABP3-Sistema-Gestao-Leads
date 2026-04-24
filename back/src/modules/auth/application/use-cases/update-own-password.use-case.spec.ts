@@ -8,7 +8,6 @@ import { Email } from '../../../../shared/domain/value-objects/email.value-objec
 import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 import { User } from '../../../users/domain/entities/user.entity.js';
-import { UserFactory } from '../../../users/domain/factories/user.factory.js';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error.js';
 import { UpdateOwnPasswordUseCase } from './update-own-password.use-case.js';
 
@@ -17,6 +16,10 @@ const VALID_ARGON2_FIXTURE =
 
 const NEW_HASH =
 	'$argon2id$v=19$m=19456,t=2,p=1$bbbbbbbbbbbbbbbb$cccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+
+function buildTestPassword(prefix: string) {
+	return `${prefix}-password`;
+}
 
 function uowThatRunsCallback(): IUnitOfWork {
 	return {
@@ -35,12 +38,12 @@ describe('UpdateOwnPasswordUseCase', () => {
 		Email.create('t@example.com'),
 		PasswordHash.create(VALID_ARGON2_FIXTURE),
 		'ADMINISTRATOR',
-		null,
+		[],
+		[],
 	);
 
 	it('lança DomainValidationError quando a nova senha é igual à atual', async () => {
 		const uc = new UpdateOwnPasswordUseCase(
-			new UserFactory(),
 			{} as never,
 			{} as never,
 			{} as never,
@@ -51,8 +54,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 		await assert.rejects(
 			() =>
 				uc.execute(self.id.value, {
-					currentPassword: 'samepassword',
-					newPassword: 'samepassword',
+					currentPassword: buildTestPassword('same'),
+					newPassword: buildTestPassword('same'),
 				}),
 			DomainValidationError,
 		);
@@ -72,7 +75,6 @@ describe('UpdateOwnPasswordUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnPasswordUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,
@@ -83,8 +85,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 		await assert.rejects(
 			() =>
 				uc.execute(self.id.value, {
-					currentPassword: 'wrong',
-					newPassword: 'newpassword1',
+					currentPassword: buildTestPassword('wrong'),
+					newPassword: buildTestPassword('new-1'),
 				}),
 			InvalidCredentialsError,
 		);
@@ -101,7 +103,10 @@ describe('UpdateOwnPasswordUseCase', () => {
 			self.email,
 			PasswordHash.create(NEW_HASH),
 			self.role,
-			self.teamId,
+			self.memberTeamIds,
+			self.managedTeamIds,
+			self.accessGroupId,
+			self.accessGroup,
 		);
 		const users = {
 			findById: mock.fn(async () => self),
@@ -116,7 +121,6 @@ describe('UpdateOwnPasswordUseCase', () => {
 			revokeAllActiveSessionsForUser: mock.fn(async () => {}),
 		};
 		const uc = new UpdateOwnPasswordUseCase(
-			new UserFactory(),
 			userRepositoryFactory as never,
 			passwordHasher as never,
 			authSessions as never,
@@ -125,8 +129,8 @@ describe('UpdateOwnPasswordUseCase', () => {
 			unitOfWork: uowThatRunsCallback(),
 		});
 		const out = await uc.execute(self.id.value, {
-			currentPassword: 'oldpassword',
-			newPassword: 'newpassword1',
+			currentPassword: buildTestPassword('old'),
+			newPassword: buildTestPassword('new-1'),
 		});
 		assert.ok(out.passwordHash.value.includes('argon2'));
 		assert.equal(users.update.mock.calls.length, 1);

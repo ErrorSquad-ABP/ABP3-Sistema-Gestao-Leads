@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: abp3-postgres-local
+    environment:
+      POSTGRES_DB: lead_management
+      POSTGRES_USER: abp
+      POSTGRES_PASSWORD: abp
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres-data-local:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U abp -d lead_management']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  local-bootstrap:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+      target: dev
+    container_name: abp3-local-bootstrap
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./back/.env
+    environment:
+      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
+      LOCAL_DB_SEED_MODE: dashboard
+    command: ['node', 'back/scripts/bootstrap-local-db.mjs']
+    restart: 'no'
+
+  back:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      local-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
+
+volumes:
+  postgres-data-local:

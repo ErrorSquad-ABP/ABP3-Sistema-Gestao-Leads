@@ -120,6 +120,29 @@ async function main() {
 		console.log('OK POST /auth/login (401 credenciais inválidas)');
 	}
 
+	// Sessão opcional (pública): nunca 401 — adequado a bootstrap no cliente
+	{
+		const { res, json } = await req('GET', '/auth/session');
+		assert(
+			res.status === 200,
+			`GET /auth/session sem JWT esperado 200, obteve ${res.status}`,
+		);
+		assert(json?.success === true, 'GET /auth/session envelope success');
+		assert(json?.data === null, 'GET /auth/session data null sem sessão');
+		console.log('OK GET /auth/session (200 sem sessão)');
+	}
+	{
+		const { res, json } = await req('GET', '/auth/session', {
+			headers: { Authorization: 'Bearer invalid.token.value' },
+		});
+		assert(
+			res.status === 200,
+			`GET /auth/session Bearer inválido esperado 200, obteve ${res.status}`,
+		);
+		assert(json?.data === null, 'GET /auth/session data null JWT inválido');
+		console.log('OK GET /auth/session (200 JWT inválido)');
+	}
+
 	// Sem token → 401 nas rotas protegidas
 	{
 		const { res } = await req('GET', '/users');
@@ -208,6 +231,29 @@ async function main() {
 		adminAuthHeader = { Authorization: `Bearer ${accessAfter}` };
 		adminCookie = cookieAfterLogin;
 		console.log('OK login smoke + POST /auth/refresh (credenciais SMOKE_*)');
+	}
+
+	if (adminAuthHeader && adminCookie) {
+		const { res, json } = await req('GET', '/auth/session', {
+			headers: {
+				...adminAuthHeader,
+				Cookie: adminCookie,
+			},
+		});
+		assert(
+			res.status === 200,
+			`GET /auth/session autenticado esperado 200, obteve ${res.status}`,
+		);
+		assert(json?.success === true, 'GET /auth/session envelope (autenticado)');
+		assert(
+			json?.data !== null && typeof json.data === 'object',
+			'GET /auth/session data deve ser utilizador',
+		);
+		assert(
+			typeof json.data.id === 'string' && typeof json.data.email === 'string',
+			'GET /auth/session data.id / data.email',
+		);
+		console.log('OK GET /auth/session (200 com sessão admin)');
 	}
 
 	const authHeaders =
@@ -322,7 +368,8 @@ async function main() {
 		});
 		if (adminAuthHeader) {
 			assert(res.status === 200, `GET leads/owner esperado 200`);
-			assert(Array.isArray(json?.data), 'leads/owner data array');
+			assert(Array.isArray(json?.data?.items), 'leads/owner data.items array');
+			assert(typeof json?.data?.total === 'number', 'leads/owner data.total');
 			console.log('OK GET /leads/owner/:ownerUserId');
 		} else {
 			assert(res.status === 401, 'GET leads/owner sem auth → 401');
@@ -334,10 +381,20 @@ async function main() {
 		});
 		if (adminAuthHeader) {
 			assert(res.status === 200, `GET leads/team esperado 200`);
-			assert(Array.isArray(json?.data), 'leads/team data array');
+			assert(Array.isArray(json?.data?.items), 'leads/team data.items array');
 			console.log('OK GET /leads/team/:teamId');
 		} else {
 			assert(res.status === 401, 'GET leads/team sem auth → 401');
+		}
+	}
+	{
+		const { res, json } = await req('GET', '/leads/all', {
+			headers: adminAuthHeader,
+		});
+		if (adminAuthHeader) {
+			assert(res.status === 200, `GET leads/all esperado 200`);
+			assert(Array.isArray(json?.data?.items), 'leads/all data.items array');
+			console.log('OK GET /leads/all');
 		}
 	}
 

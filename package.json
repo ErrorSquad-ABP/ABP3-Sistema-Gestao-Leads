@@ -13,13 +13,18 @@
 	},
 	"scripts": {
 		"dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
+		"dev:local": "docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.local.yml up --build",
 		"dev:down": "docker compose -f docker-compose.yml -f docker-compose.dev.yml down",
 		"compose:up": "docker compose up --build",
+		"compose:local:up": "docker compose -f docker-compose.yml -f docker-compose.local.yml up --build",
 		"compose:down": "docker compose down",
+		"compose:local:down": "docker compose -f docker-compose.yml -f docker-compose.local.yml down -v",
 		"db:generate": "npm run prisma:generate -w back",
 		"db:migrate": "npm run prisma:migrate:deploy -w back",
+		"db:migrate:local": "DATABASE_URL=postgresql://abp:abp@127.0.0.1:5433/lead_management npm run prisma:migrate:deploy -w back",
 		"db:migrate:dev": "npm run prisma:migrate:dev -w back",
 		"db:seed": "npm run prisma:seed -w back",
+		"db:seed:local": "DATABASE_URL=postgresql://abp:abp@127.0.0.1:5433/lead_management npm run prisma:seed -w back",
 		"guard:root-package": "node scripts/check-root-package.mjs",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
@@ -50,9 +55,16 @@
 		"@nestjs/common": "11.1.18",
 		"@nestjs/core": "11.1.18",
 		"@nestjs/platform-express": "11.1.18",
+		"@prisma/dev": {
+			"@hono/node-server": "1.19.13",
+			"hono": "4.12.14"
+		},
+		"@modelcontextprotocol/sdk": {
+			"@hono/node-server": "1.19.13",
+			"hono": "4.12.14"
+		},
 		"defu": "6.1.6",
 		"lodash": "4.18.1",
-		"path-to-regexp": "8.4.2",
 		"minimatch@10.2.4": {
 			"brace-expansion": "5.0.5"
 		},

@@ -10,24 +10,39 @@ import type { Request, Response } from 'express';
 
 import { InvalidCredentialsError } from '../../../modules/auth/domain/errors/invalid-credentials.error.js';
 import { RefreshTokenInvalidError } from '../../../modules/auth/domain/errors/refresh-token-invalid.error.js';
+import { CustomerCpfAlreadyExistsError } from '../../../modules/customers/domain/errors/customer-cpf-already-exists.error.js';
+import { CustomerEmailAlreadyExistsError } from '../../../modules/customers/domain/errors/customer-email-already-exists.error.js';
+import { CustomerNotFoundError } from '../../../modules/customers/domain/errors/customer-not-found.error.js';
 import { LeadAlreadyConvertedError } from '../../../modules/leads/domain/errors/lead-already-converted.error.js';
+import { LeadAccessDeniedError } from '../../../modules/leads/domain/errors/lead-access-denied.error.js';
 import { LeadInvalidCustomerError } from '../../../modules/leads/domain/errors/lead-invalid-customer.error.js';
 import { LeadInvalidOwnerError } from '../../../modules/leads/domain/errors/lead-invalid-owner.error.js';
 import { LeadInvalidStoreError } from '../../../modules/leads/domain/errors/lead-invalid-store.error.js';
+import { ActiveDealAlreadyExistsError } from '../../../modules/deals/domain/errors/active-deal-already-exists.error.js';
+import { ActiveDealForVehicleAlreadyExistsError } from '../../../modules/deals/domain/errors/active-deal-for-vehicle-already-exists.error.js';
+import { DealAlreadyClosedError } from '../../../modules/deals/domain/errors/deal-already-closed.error.js';
+import { DealInvalidStageTransitionError } from '../../../modules/deals/domain/errors/deal-invalid-stage-transition.error.js';
+import { DealNotFoundError } from '../../../modules/deals/domain/errors/deal-not-found.error.js';
+import { DealVehicleNotAvailableError } from '../../../modules/deals/domain/errors/deal-vehicle-not-available.error.js';
+import { DealVehicleStoreMismatchError } from '../../../modules/deals/domain/errors/deal-vehicle-store-mismatch.error.js';
 import { LeadNotFoundError } from '../../../modules/leads/domain/errors/lead-not-found.error.js';
+import { StoreDeleteBlockedError } from '../../../modules/stores/domain/errors/store-delete-blocked.error.js';
+import { StoreNotFoundError } from '../../../modules/stores/domain/errors/store-not-found.error.js';
+import { TeamAccessDeniedError } from '../../../modules/teams/domain/errors/team-access-denied.error.js';
+import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/team-invalid-manager.error.js';
+import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
+import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
-import { UserInvalidTeamError } from '../../../modules/users/domain/errors/user-invalid-team.error.js';
+import { UserInvalidAccessGroupError } from '../../../modules/users/domain/errors/user-invalid-access-group.error.js';
 import { UserNotFoundError } from '../../../modules/users/domain/errors/user-not-found.error.js';
+import { VehicleInactiveError } from '../../../modules/vehicles/domain/errors/vehicle-inactive.error.js';
+import { VehicleNotFoundError } from '../../../modules/vehicles/domain/errors/vehicle-not-found.error.js';
 import { DomainValidationError } from '../../domain/errors/domain-validation.error.js';
 import type {
 	ApiErrorEnvelope,
 	ApiErrorItem,
 } from '../types/api-response.types.js';
 
-/**
- * Mapeia erros de domínio e `HttpException` para o envelope `{ success, message, data, errors }`.
- * Registrado globalmente em `main.ts` via `useGlobalFilters`.
- */
 @Catch()
 class DomainErrorFilter implements ExceptionFilter {
 	private readonly logger = new Logger(DomainErrorFilter.name);
@@ -118,12 +133,23 @@ class DomainErrorFilter implements ExceptionFilter {
 		]);
 	}
 
+	private envelopeForCodedError(
+		exception: { readonly message: string; readonly code: string },
+		status: HttpStatus,
+	): { status: number; body: ApiErrorEnvelope } {
+		return {
+			status,
+			body: this.toErrorEnvelope(exception.message, [
+				{ code: exception.code, message: exception.message },
+			]),
+		};
+	}
+
 	private isAuthRelatedPath(request: Request): boolean {
 		const p = request.path ?? request.url?.split('?')[0] ?? '';
 		return p.includes('/auth');
 	}
 
-	/** Auditoria leve: sem corpo, tokens ou credenciais — só método, path, IP e código. */
 	private logSecurityAudit(
 		request: Request,
 		status: number,
@@ -179,81 +205,100 @@ class DomainErrorFilter implements ExceptionFilter {
 		exception: unknown,
 	): { status: number; body: ApiErrorEnvelope } | undefined {
 		if (exception instanceof InvalidCredentialsError) {
-			return {
-				status: HttpStatus.UNAUTHORIZED,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.UNAUTHORIZED);
 		}
-
 		if (exception instanceof RefreshTokenInvalidError) {
-			return {
-				status: HttpStatus.UNAUTHORIZED,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.UNAUTHORIZED);
 		}
-
 		if (exception instanceof LeadNotFoundError) {
-			return {
-				status: HttpStatus.NOT_FOUND,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
-
-		if (exception instanceof UserNotFoundError) {
-			return {
-				status: HttpStatus.NOT_FOUND,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+		if (exception instanceof DealNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
 		}
-
-		if (exception instanceof UserEmailAlreadyExistsError) {
-			return {
-				status: HttpStatus.CONFLICT,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+		if (exception instanceof ActiveDealAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
 		}
-
-		if (exception instanceof UserInvalidTeamError) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+		if (exception instanceof ActiveDealForVehicleAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
 		}
-
+		if (exception instanceof DealAlreadyClosedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof DealVehicleNotAvailableError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof DealVehicleStoreMismatchError) {
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
+		}
+		if (exception instanceof DealInvalidStageTransitionError) {
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
+		}
 		if (
 			exception instanceof LeadInvalidCustomerError ||
 			exception instanceof LeadInvalidStoreError ||
 			exception instanceof LeadInvalidOwnerError
 		) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
-				]),
-			};
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
 		}
-
 		if (exception instanceof LeadAlreadyConvertedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof LeadAccessDeniedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.FORBIDDEN);
+		}
+		if (exception instanceof StoreNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof StoreDeleteBlockedError) {
 			return {
 				status: HttpStatus.CONFLICT,
 				body: this.toErrorEnvelope(exception.message, [
-					{ code: exception.code, message: exception.message },
+					{
+						code: exception.code,
+						message: exception.message,
+						details: {
+							leads: exception.leads,
+							teams: exception.teams,
+						},
+					},
 				]),
 			};
 		}
-
+		if (exception instanceof CustomerNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (
+			exception instanceof CustomerEmailAlreadyExistsError ||
+			exception instanceof CustomerCpfAlreadyExistsError
+		) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof TeamNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (
+			exception instanceof TeamInvalidManagerError ||
+			exception instanceof TeamInvalidStoreError ||
+			exception instanceof UserInvalidAccessGroupError
+		) {
+			return this.envelopeForCodedError(exception, HttpStatus.BAD_REQUEST);
+		}
+		if (exception instanceof TeamAccessDeniedError) {
+			return this.envelopeForCodedError(exception, HttpStatus.FORBIDDEN);
+		}
+		if (exception instanceof UserNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof UserEmailAlreadyExistsError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
+		if (exception instanceof VehicleNotFoundError) {
+			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof VehicleInactiveError) {
+			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);
+		}
 		if (exception instanceof DomainValidationError) {
 			const item: ApiErrorItem = {
 				code: exception.code,
@@ -271,7 +316,6 @@ class DomainErrorFilter implements ExceptionFilter {
 				body: this.toErrorEnvelope(exception.message, [item]),
 			};
 		}
-
 		return undefined;
 	}
 
