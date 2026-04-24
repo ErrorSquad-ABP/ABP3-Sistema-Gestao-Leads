@@ -81,6 +81,22 @@ enum SupportedFuelType {
   CNG
 }
 
+enum AuditAction {
+  USER_LOGIN
+  CREATE_LEAD
+  UPDATE_LEAD
+  DELETE_LEAD
+  CREATE_TEAM
+  UPDATE_TEAM
+  DELETE_TEAM
+  CREATE_DEAL
+  UPDATE_DEAL
+  DELETE_DEAL
+  CREATE_STORE
+  UPDATE_STORE
+  DELETE_STORE
+}
+
 model AccessGroup {
   id            String    @id @default(uuid()) @db.Uuid
   name          String    @unique
@@ -239,12 +255,11 @@ model DealHistory {
 }
 
 model AuditLog {
-  id          String   @id @default(uuid()) @db.Uuid
-  actorUserId String?  @db.Uuid
-  action      String
-  entityName  String
-  entityId    String?
-  metadata    Json?
-  actorUser   User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
+  id           String      @id @default(uuid()) @db.Uuid
+  action       AuditAction                          // ENUM no lugar de String livre
+  actorUserId  String?     @db.Uuid
+  actorUser    User?       @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  affectedId   String?                              // ID do item afetado (lead, deal, store... ou o próprio user no login)
+  description  String?                              // Gerado pelo módulo externo (mockado por ora)
+  createdAt    DateTime    @default(now())
 }

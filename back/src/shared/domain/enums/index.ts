@@ -1,13 +1,13 @@
-export type { AuditActionType } from './audit-action-type.enum.js';
+export type { AuditAction } from './audit-action.enum.js';
 export {
-	AUDIT_ACTION_TYPES,
-	assertAuditActionType,
-	assertCanonicalAuditActionType,
-	isAuditActionType,
-	isCanonicalAuditActionType,
-	parseAuditActionType,
-	parseCanonicalAuditActionType,
-} from './audit-action-type.enum.js';
+	AUDIT_ACTIONS,
+	assertAuditAction,
+	assertCanonicalAuditAction,
+	isAuditAction,
+	isCanonicalAuditAction,
+	parseAuditAction,
+	parseCanonicalAuditAction,
+} from './audit-action.enum.js';
 export type { DealImportance } from './deal-importance.enum.js';
 export {
 	assertCanonicalDealImportance,

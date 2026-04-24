@@ -1,5 +1,5 @@
 import { AggregateRoot } from '../../../../shared/domain/core/aggregate-root.js';
-import type { AuditActionType } from '../../../../shared/domain/enums/audit-action-type.enum.js';
+import type { AuditAction } from '../../../../shared/domain/enums/audit-action.enum.ts';
 import type {
 	AuditLogId,
 	UUID,
@@ -10,26 +10,26 @@ import type {
  */
 class AuditLog extends AggregateRoot {
 	readonly id: AuditLogId;
+	readonly action: AuditAction;
 	readonly actorUserId: UUID | null;
-	readonly actionType: AuditActionType;
-	readonly entityName: string;
-	readonly entityId: string;
+	readonly affectedId: string | null;
+	readonly description: string | null;
 	readonly createdAt: Date;
 
 	constructor(
 		id: AuditLogId,
+		action: AuditAction,
 		actorUserId: UUID | null,
-		actionType: AuditActionType,
-		entityName: string,
-		entityId: string,
+		affectedId: string | null,
+		description: string | null,
 		createdAt: Date,
 	) {
 		super();
 		this.id = id;
+		this.action = action;
 		this.actorUserId = actorUserId;
-		this.actionType = actionType;
-		this.entityName = entityName;
-		this.entityId = entityId;
+		this.affectedId = affectedId;
+		this.description = description;
 		this.createdAt = createdAt;
 	}
 }
