@@ -91,10 +91,10 @@ export function NavMain({ items }: { items: NavItem[] }) {
 									isActive ? activeItemClassName : '',
 								)}
 							>
-							<Link
-								href={item.href ?? '#'}
-								className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
-							>
+								<Link
+									href={item.href ?? '#'}
+									className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
+								>
 									{item.icon && <item.icon size={18} />}
 									<span className="group-data-[collapsible=icon]:hidden">
 										{item.title}

@@ -1,9 +1,7 @@
 'use client';
 
 import type { Deal } from '@/features/deals/model/deals.model';
-import {
-	getNegotiationsTopMetrics,
-} from '@/features/deals/lib/negotiations-metrics';
+import { getNegotiationsTopMetrics } from '@/features/deals/lib/negotiations-metrics';
 import { NegotiationsMetricCard } from '@/features/deals/components/NegotiationsMetricCard';
 
 type Props = {

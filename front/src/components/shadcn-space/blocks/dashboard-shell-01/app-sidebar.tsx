@@ -179,7 +179,9 @@ function SidebarLogo() {
 				/>
 			</div>
 			<div className="leading-tight group-data-[collapsible=icon]:hidden">
-				<p className="text-base font-semibold tracking-tight text-white">Quantum</p>
+				<p className="text-base font-semibold tracking-tight text-white">
+					Quantum
+				</p>
 				<p className="text-xs font-medium tracking-[0.22em] text-slate-300">
 					CRM
 				</p>

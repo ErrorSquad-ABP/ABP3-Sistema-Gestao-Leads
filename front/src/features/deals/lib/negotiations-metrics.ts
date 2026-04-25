@@ -1,10 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import {
-	CircleDollarSign,
-	Flame,
-	TrendingUp,
-	Trophy,
-} from 'lucide-react';
+import { CircleDollarSign, Flame, TrendingUp, Trophy } from 'lucide-react';
 
 import type { Deal } from '@/features/deals/model/deals.model';
 

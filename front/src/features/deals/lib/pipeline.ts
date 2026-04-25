@@ -1,4 +1,8 @@
-import type { Deal, DealImportance, DealStage } from '@/features/deals/model/deals.model';
+import type {
+	Deal,
+	DealImportance,
+	DealStage,
+} from '@/features/deals/model/deals.model';
 
 type PipelineStageKey = DealStage;
 

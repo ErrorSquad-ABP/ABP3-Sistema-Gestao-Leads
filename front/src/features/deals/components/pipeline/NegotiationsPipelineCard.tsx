@@ -22,7 +22,12 @@ type Props = {
 	onDelete?: (deal: Deal) => void;
 };
 
-function NegotiationsPipelineCard({ deals, onOpenDetails, onEdit, onDelete }: Props) {
+function NegotiationsPipelineCard({
+	deals,
+	onOpenDetails,
+	onEdit,
+	onDelete,
+}: Props) {
 	const [showValues, setShowValues] = useState(true);
 
 	const grouped = useMemo(() => groupDealsByStage(deals), [deals]);
