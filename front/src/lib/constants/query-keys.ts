@@ -73,6 +73,22 @@ const queryKeys = {
 				params.limit,
 			] as const,
 	},
+	dashboards: {
+		analytic: (params: {
+			mode: string;
+			referenceDate?: string;
+			startDate?: string;
+			endDate?: string;
+		}) =>
+			[
+				'dashboards',
+				'analytic',
+				params.mode,
+				params.referenceDate ?? 'no-reference-date',
+				params.startDate ?? 'no-start-date',
+				params.endDate ?? 'no-end-date',
+			] as const,
+	},
 };
 
 export { queryKeys };
