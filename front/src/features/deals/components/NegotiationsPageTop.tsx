@@ -23,7 +23,9 @@ function NegotiationsPageTop({
 	return (
 		<section className="space-y-6">
 			<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-				<NegotiationsHeader />
+				<div className="min-w-0 shrink-0">
+					<NegotiationsHeader />
+				</div>
 				<NegotiationsActions
 					search={search}
 					onSearchChange={onSearchChange}
