@@ -143,7 +143,6 @@ function DealsPageContent() {
 
 			<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
 				<CardContent className="space-y-5 pt-6">
-
 					{query.isPending ? (
 						<div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
 							Carregando negociações...
@@ -151,14 +150,12 @@ function DealsPageContent() {
 					) : null}
 
 					{query.isSuccess ? (
-						<>
-							<NegotiationsPipelineSection
-								deals={filteredDeals}
-								onOpenDetails={openDetails}
-								onDelete={canMutateInView ? openDelete : undefined}
-								onEdit={canMutateInView ? openEdit : undefined}
-							/>
-						</>
+						<NegotiationsPipelineSection
+							deals={filteredDeals}
+							onOpenDetails={openDetails}
+							onDelete={canMutateInView ? openDelete : undefined}
+							onEdit={canMutateInView ? openEdit : undefined}
+						/>
 					) : null}
 				</CardContent>
 			</Card>

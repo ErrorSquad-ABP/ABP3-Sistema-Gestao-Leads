@@ -2,8 +2,8 @@
 
 import { useSidebar } from '@/components/ui/sidebar';
 import type { Deal } from '@/features/deals/model/deals.model';
+import { NegotiationsRightSummary } from '@/features/deals/components/negotiations-right-summary/NegotiationsRightSummary';
 import { NegotiationsPipelineCard } from '@/features/deals/components/pipeline/NegotiationsPipelineCard';
-import { PipelineRightPlaceholder } from '@/features/deals/components/pipeline/PipelineRightPlaceholder';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -13,7 +13,12 @@ type Props = {
 	onDelete?: (deal: Deal) => void;
 };
 
-function NegotiationsPipelineSection({ deals, onOpenDetails, onEdit, onDelete }: Props) {
+function NegotiationsPipelineSection({
+	deals,
+	onOpenDetails,
+	onEdit,
+	onDelete,
+}: Props) {
 	const { state } = useSidebar();
 	const isCollapsed = state === 'collapsed';
 
@@ -22,7 +27,7 @@ function NegotiationsPipelineSection({ deals, onOpenDetails, onEdit, onDelete }:
 			className={cn(
 				'mx-auto grid grid-cols-1 items-start',
 				isCollapsed
-					? 'max-w-[1460px] gap-[18px] lg:grid-cols-[minmax(820px,1fr)_340px]'
+					? 'max-w-[min(100%,1460px)] gap-[18px] lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]'
 					: 'max-w-none gap-0',
 			)}
 		>
@@ -35,8 +40,8 @@ function NegotiationsPipelineSection({ deals, onOpenDetails, onEdit, onDelete }:
 				/>
 			</div>
 			{isCollapsed ? (
-				<div className="hidden lg:block">
-					<PipelineRightPlaceholder />
+				<div className="hidden min-w-0 max-w-full justify-self-stretch lg:block">
+					<NegotiationsRightSummary deals={deals} />
 				</div>
 			) : null}
 		</div>
