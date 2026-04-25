@@ -20,33 +20,32 @@ type Props = {
 	grouped: Record<PipelineStageKey, Deal[]>;
 };
 
-const iconByStage: Record<PipelineStageKey, ComponentType<{ className?: string }>> =
-	{
-		INITIAL_CONTACT: PhoneCall,
-		NEGOTIATION: Handshake,
-		PROPOSAL: ScrollText,
-		CLOSING: MessageSquareText,
-	};
+const iconByStage: Record<
+	PipelineStageKey,
+	ComponentType<{ className?: string }>
+> = {
+	INITIAL_CONTACT: PhoneCall,
+	NEGOTIATION: Handshake,
+	PROPOSAL: ScrollText,
+	CLOSING: MessageSquareText,
+};
 
 function PipelineStageRibbon({ grouped }: Props) {
 	return (
-		<div className="mb-4 overflow-hidden rounded-[14px] border border-border bg-white">
-			<div className="grid grid-cols-4 gap-0">
-				{PIPELINE_STAGES.map((stage, index) => {
-					const deals = grouped[stage.key];
-					return (
-						<PipelineStageRibbonItem
-							key={stage.key}
-							icon={iconByStage[stage.key]}
-							label={stage.label}
-							count={deals.length}
-							total={sumDealsValueBrl(deals)}
-							index={index}
-							isLast={index === PIPELINE_STAGES.length - 1}
-						/>
-					);
-				})}
-			</div>
+		<div className="mb-4 grid min-w-0 grid-cols-4 gap-2 overflow-hidden rounded-t-[12px] bg-card">
+			{PIPELINE_STAGES.map((stage, index) => {
+				const deals = grouped[stage.key];
+				return (
+					<PipelineStageRibbonItem
+						key={stage.key}
+						icon={iconByStage[stage.key]}
+						label={stage.label}
+						count={deals.length}
+						total={sumDealsValueBrl(deals)}
+						index={index}
+					/>
+				);
+			})}
 		</div>
 	);
 }
