@@ -18,6 +18,6 @@ import { AnalyticDashboardController } from './presentation/controllers/analytic
 		GetAnalyticDashboardUseCase,
 	],
 })
-class DashboardsModule {}
+class AnalyticDashboardModule {}
 
-export { DashboardsModule };
+export { AnalyticDashboardModule };
