@@ -1,5 +1,5 @@
 import { parseAnalyticDashboardResponse } from '../src/features/dashboard-analytic/schemas/analytic-dashboard.schema';
-import 'dotenv/config'
+import 'dotenv/config';
 
 const BASE_URL = process.env.ANALYTIC_BASE_URL ?? 'http://127.0.0.1:3001/api';
 const SMOKE_ADMIN_EMAIL = process.env.SMOKE_ADMIN_EMAIL;
@@ -156,7 +156,10 @@ async function main() {
 	};
 	assert(customEnvelope.success === true, 'Dashboard custom envelope success');
 	const parsedCustom = parseAnalyticDashboardResponse(customEnvelope.data);
-	assert(parsedCustom.filter.mode === 'custom', 'Dashboard custom preserva mode');
+	assert(
+		parsedCustom.filter.mode === 'custom',
+		'Dashboard custom preserva mode',
+	);
 	assert(
 		parsedCustom.filter.startDate === '2026-04-01' &&
 			parsedCustom.filter.endDate === '2026-04-25',

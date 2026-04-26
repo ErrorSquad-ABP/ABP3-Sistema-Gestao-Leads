@@ -167,11 +167,7 @@ type DashboardTooltipProps = {
 	readonly label?: string | number;
 };
 
-function DashboardTooltip({
-	active,
-	payload,
-	label,
-}: DashboardTooltipProps) {
+function DashboardTooltip({ active, payload, label }: DashboardTooltipProps) {
 	if (!active || !payload?.length) {
 		return null;
 	}
@@ -259,7 +255,8 @@ function AnalyticDashboardPageContent({
 	}, [dashboard]);
 	const importanceData = dashboard?.importanceDistribution ?? [];
 	const finalizationData = dashboard?.finalizationReasons ?? [];
-	const hasNoData = dashboard !== undefined && dashboard.summary.totalLeads === 0;
+	const hasNoData =
+		dashboard !== undefined && dashboard.summary.totalLeads === 0;
 
 	const topAttendant = topAttendants[0] ?? null;
 	const topTeam = topTeams[0] ?? null;
@@ -307,7 +304,10 @@ function AnalyticDashboardPageContent({
 	}
 
 	return (
-		<div className="space-y-6" aria-busy={dashboardQuery.isFetching ? 'true' : 'false'}>
+		<div
+			className="space-y-6"
+			aria-busy={dashboardQuery.isFetching ? 'true' : 'false'}
+		>
 			<section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#1f2a38_0%,#17212c_100%)] px-6 py-6 text-white shadow-[0_16px_40px_rgba(23,33,44,0.12)] md:px-8">
 				<div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
 					<div className="max-w-3xl space-y-4">
@@ -324,12 +324,18 @@ function AnalyticDashboardPageContent({
 						</div>
 
 						<div className="flex flex-wrap gap-2">
-							<Badge className="rounded-full border-none bg-white/12 px-3 py-1 text-white" variant="secondary">
+							<Badge
+								className="rounded-full border-none bg-white/12 px-3 py-1 text-white"
+								variant="secondary"
+							>
 								{dashboard
 									? getScopeLabel(dashboard.filter.scope)
 									: 'Escopo carregado pelo backend'}
 							</Badge>
-							<Badge className="rounded-full border-none bg-white/12 px-3 py-1 text-white" variant="secondary">
+							<Badge
+								className="rounded-full border-none bg-white/12 px-3 py-1 text-white"
+								variant="secondary"
+							>
 								{dashboard
 									? `${formatDateLabel(dashboard.filter.startDate)} ate ${formatDateLabel(
 											dashboard.filter.endDate,
@@ -524,8 +530,8 @@ function AnalyticDashboardPageContent({
 				<Alert>
 					<AlertTitle>Nenhum dado encontrado</AlertTitle>
 					<AlertDescription>
-						Este periodo nao retornou leads dentro do seu escopo. Ajuste o filtro
-						temporal para explorar outra janela de analise.
+						Este periodo nao retornou leads dentro do seu escopo. Ajuste o
+						filtro temporal para explorar outra janela de analise.
 					</AlertDescription>
 				</Alert>
 			) : null}
@@ -778,7 +784,9 @@ function AnalyticDashboardPageContent({
 								<div className="flex items-center justify-between">
 									<span>Total de leads</span>
 									<strong className="text-[#1f2a38]">
-										{dashboard ? formatCount(dashboard.summary.totalLeads) : '--'}
+										{dashboard
+											? formatCount(dashboard.summary.totalLeads)
+											: '--'}
 									</strong>
 								</div>
 								<div className="flex items-center justify-between">
@@ -943,7 +951,8 @@ function AnalyticDashboardPageContent({
 								))
 							) : (
 								<div className="rounded-2xl bg-[#f8f9fb] px-4 py-12 text-sm text-[#6c7683]">
-									As negociacoes encerradas ainda nao geraram motivos no intervalo aplicado.
+									As negociacoes encerradas ainda nao geraram motivos no
+									intervalo aplicado.
 								</div>
 							)}
 						</CardContent>
@@ -975,9 +984,9 @@ function AnalyticDashboardPageContent({
 							</div>
 
 							<p className="leading-6 text-[#6c7683]">
-								O backend valida o intervalo temporal e devolve os indicadores ja
-								recortados pelo seu papel, entao a interface trabalha com dados
-								reais e consistentes com o escopo permitido.
+								O backend valida o intervalo temporal e devolve os indicadores
+								ja recortados pelo seu papel, entao a interface trabalha com
+								dados reais e consistentes com o escopo permitido.
 							</p>
 						</CardContent>
 					</Card>

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
+import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { IAnalyticDashboardRepository } from '../../../domain/repositories/analytic-dashboard.repository.js';
 import { AnalyticDashboardPrismaRepository } from '../repositories/analytic-dashboard-prisma.repository.js';
 

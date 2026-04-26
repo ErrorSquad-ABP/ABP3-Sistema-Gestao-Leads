@@ -14,7 +14,10 @@ describe('GetAnalyticDashboardUseCase', () => {
 			{
 				create: () =>
 					({
-						getAnalyticDashboard: async (scope: unknown, timeRange: unknown) => {
+						getAnalyticDashboard: async (
+							scope: unknown,
+							timeRange: unknown,
+						) => {
 							calls.scope = scope;
 							calls.timeRange = timeRange;
 							return {

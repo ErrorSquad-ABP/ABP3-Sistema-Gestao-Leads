@@ -73,7 +73,9 @@ function resolvePrimaryTeam(
 
 	const candidates = [...owner.memberTeams, ...owner.managedTeams]
 		.filter((team) => team.storeId === lead.storeId)
-		.filter((team) => visibleTeamIds === undefined || visibleTeamIds.has(team.id))
+		.filter(
+			(team) => visibleTeamIds === undefined || visibleTeamIds.has(team.id),
+		)
 		.sort((left, right) => left.name.localeCompare(right.name));
 
 	const chosen = candidates[0];
@@ -81,7 +83,10 @@ function resolvePrimaryTeam(
 }
 
 function toPerformanceItems(
-	source: Map<string, { readonly id: string; readonly name: string; counter: Counter }>,
+	source: Map<
+		string,
+		{ readonly id: string; readonly name: string; counter: Counter }
+	>,
 ): AnalyticPerformanceItem[] {
 	return [...source.values()]
 		.map((item) => ({
@@ -110,7 +115,10 @@ function toPerformanceItems(
 }
 
 function toDistributionItems(
-	source: Map<string, { readonly key: string; readonly label: string; count: number }>,
+	source: Map<
+		string,
+		{ readonly key: string; readonly label: string; count: number }
+	>,
 ): AnalyticDistributionItem[] {
 	return [...source.values()]
 		.map((item) => ({ key: item.key, label: item.label, count: item.count }))
@@ -201,9 +209,11 @@ class AnalyticDashboardPrismaRepository
 
 			const ownerId = lead.owner?.id ?? '__unassigned__';
 			const ownerName = lead.owner?.name ?? 'Sem responsavel';
-			const attendantEntry =
-				attendantCounters.get(ownerId) ??
-				{ id: ownerId, name: ownerName, counter: emptyCounter() };
+			const attendantEntry = attendantCounters.get(ownerId) ?? {
+				id: ownerId,
+				name: ownerName,
+				counter: emptyCounter(),
+			};
 			attendantEntry.counter.totalLeads += 1;
 			attendantEntry.counter.convertedLeads += isConverted ? 1 : 0;
 			attendantEntry.counter.notConvertedLeads += isConverted ? 0 : 1;
@@ -214,28 +224,23 @@ class AnalyticDashboardPrismaRepository
 				attendantEntry.counter.lostDeals += deal.status === 'LOST' ? 1 : 0;
 
 				const importanceKey = deal.importance;
-				const importanceItem =
-					importanceCounters.get(importanceKey) ??
-					{
-						key: importanceKey,
-						label: this.importanceLabel(importanceKey),
-						count: 0,
-					};
+				const importanceItem = importanceCounters.get(importanceKey) ?? {
+					key: importanceKey,
+					label: this.importanceLabel(importanceKey),
+					count: 0,
+				};
 				importanceItem.count += 1;
 				importanceCounters.set(importanceKey, importanceItem);
 
 				if (deal.status === 'WON' || deal.status === 'LOST') {
-					const reasonKey = deal.status === 'WON' ? 'sale_completed' : 'closed_without_sale';
-					const reasonItem =
-						finalizationCounters.get(reasonKey) ??
-						{
-							key: reasonKey,
-							label:
-								deal.status === 'WON'
-									? 'Venda concluida'
-									: 'Encerrada sem venda',
-							count: 0,
-						};
+					const reasonKey =
+						deal.status === 'WON' ? 'sale_completed' : 'closed_without_sale';
+					const reasonItem = finalizationCounters.get(reasonKey) ?? {
+						key: reasonKey,
+						label:
+							deal.status === 'WON' ? 'Venda concluida' : 'Encerrada sem venda',
+						count: 0,
+					};
 					reasonItem.count += 1;
 					finalizationCounters.set(reasonKey, reasonItem);
 				}
@@ -245,9 +250,11 @@ class AnalyticDashboardPrismaRepository
 			const primaryTeam = resolvePrimaryTeam(lead, visibleTeamIds);
 			const teamId = primaryTeam?.id ?? '__no_team__';
 			const teamName = primaryTeam?.name ?? 'Sem equipe';
-			const teamEntry =
-				teamCounters.get(teamId) ??
-				{ id: teamId, name: teamName, counter: emptyCounter() };
+			const teamEntry = teamCounters.get(teamId) ?? {
+				id: teamId,
+				name: teamName,
+				counter: emptyCounter(),
+			};
 			teamEntry.counter.totalLeads += 1;
 			teamEntry.counter.convertedLeads += isConverted ? 1 : 0;
 			teamEntry.counter.notConvertedLeads += isConverted ? 0 : 1;
@@ -305,8 +312,16 @@ class AnalyticDashboardPrismaRepository
 						owner: {
 							is: {
 								OR: [
-									{ memberTeams: { some: { id: { in: [...scope.readTeamIds] } } } },
-									{ managedTeams: { some: { id: { in: [...scope.readTeamIds] } } } },
+									{
+										memberTeams: {
+											some: { id: { in: [...scope.readTeamIds] } },
+										},
+									},
+									{
+										managedTeams: {
+											some: { id: { in: [...scope.readTeamIds] } },
+										},
+									},
 								],
 							},
 						},

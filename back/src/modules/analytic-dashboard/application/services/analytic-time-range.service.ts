@@ -68,11 +68,7 @@ class AnalyticTimeRangeService {
 	): AnalyticsTimeRange {
 		const referenceDate = input.referenceDate
 			? parseDateOnly(input.referenceDate, 'referenceDate')
-			: toUtcDate(
-					now.getUTCFullYear(),
-					now.getUTCMonth(),
-					now.getUTCDate(),
-				);
+			: toUtcDate(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
 
 		let startAt: Date;
 		let endExclusive: Date;
@@ -81,7 +77,9 @@ class AnalyticTimeRangeService {
 			case 'week': {
 				const weekday = referenceDate.getUTCDay();
 				const mondayOffset = weekday === 0 ? -6 : 1 - weekday;
-				startAt = new Date(referenceDate.getTime() + mondayOffset * ONE_DAY_IN_MS);
+				startAt = new Date(
+					referenceDate.getTime() + mondayOffset * ONE_DAY_IN_MS,
+				);
 				endExclusive = new Date(startAt.getTime() + 7 * ONE_DAY_IN_MS);
 				break;
 			}

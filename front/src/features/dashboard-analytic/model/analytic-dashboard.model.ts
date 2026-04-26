@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import {
+import type {
 	analyticDashboardFilterModeValues,
 	analyticDashboardSchema,
 } from '../schemas/analytic-dashboard.schema';

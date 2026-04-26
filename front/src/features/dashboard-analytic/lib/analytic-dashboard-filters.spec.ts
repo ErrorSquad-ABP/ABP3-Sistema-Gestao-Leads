@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import type { AuthenticatedUser } from '../../login/types/login.types';
-import { diffDaysInclusive, validateDraftFilter } from './analytic-dashboard-filters';
+import {
+	diffDaysInclusive,
+	validateDraftFilter,
+} from './analytic-dashboard-filters';
 
 const baseUser = {
 	id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
@@ -24,12 +27,7 @@ describe('diffDaysInclusive', () => {
 describe('validateDraftFilter', () => {
 	it('allows non custom filters without checking dates', () => {
 		assert.equal(
-			validateDraftFilter(
-				{ ...baseUser, role: 'MANAGER' },
-				'month',
-				'',
-				'',
-			),
+			validateDraftFilter({ ...baseUser, role: 'MANAGER' }, 'month', '', ''),
 			null,
 		);
 	});

@@ -20,7 +20,8 @@ test('AnalyticTimeRangeService requires start and end for custom mode', () => {
 	const service = new AnalyticTimeRangeService();
 
 	assert.throws(
-		() => service.resolve({ mode: 'custom', startDate: '2026-04-01' }, 'MANAGER'),
+		() =>
+			service.resolve({ mode: 'custom', startDate: '2026-04-01' }, 'MANAGER'),
 		(error: unknown) =>
 			error instanceof DomainValidationError &&
 			error.code === 'dashboard.time_range.custom_requires_bounds',

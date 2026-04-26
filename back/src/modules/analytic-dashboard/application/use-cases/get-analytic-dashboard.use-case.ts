@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
-import { AnalyticDashboardRepositoryFactory } from '../../infrastructure/persistence/factories/analytic-dashboard-repository.factory.js';
+import type { AnalyticDashboardRepositoryFactory } from '../../infrastructure/persistence/factories/analytic-dashboard-repository.factory.js';
 import type { AnalyticsTimeMode } from '../../domain/repositories/analytic-dashboard.repository.js';
-import { AnalyticScopeService } from '../services/analytic-scope.service.js';
-import { AnalyticTimeRangeService } from '../services/analytic-time-range.service.js';
+import type { AnalyticScopeService } from '../services/analytic-scope.service.js';
+import type { AnalyticTimeRangeService } from '../services/analytic-time-range.service.js';
 
 type GetAnalyticDashboardInput = {
 	readonly mode: AnalyticsTimeMode;

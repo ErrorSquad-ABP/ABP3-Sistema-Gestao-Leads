@@ -17,9 +17,9 @@ import {
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import { AnalyticDashboardResponseDto } from '../../application/dto/analytic-dashboard-response.dto.js';
-import { GetAnalyticDashboardUseCase } from '../../application/use-cases/get-analytic-dashboard.use-case.js';
+import type { GetAnalyticDashboardUseCase } from '../../application/use-cases/get-analytic-dashboard.use-case.js';
 import { AnalyticDashboardPresenter } from '../presenters/analytic-dashboard.presenter.js';
-import { AnalyticDashboardQueryValidator } from '../validators/analytic-dashboard-query.validator.js';
+import type { AnalyticDashboardQueryValidator } from '../validators/analytic-dashboard-query.validator.js';
 
 const BAD_REQUEST = {
 	description:
@@ -31,7 +31,8 @@ const UNAUTHORIZED = {
 };
 
 const FORBIDDEN = {
-	description: 'Utilizador autenticado sem permissao para o recurso solicitado.',
+	description:
+		'Utilizador autenticado sem permissao para o recurso solicitado.',
 };
 
 const SERVER_ERROR = {

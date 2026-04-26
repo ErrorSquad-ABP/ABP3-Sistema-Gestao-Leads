@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
+import type { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import type { AnalyticsScope } from '../../domain/repositories/analytic-dashboard.repository.js';
 
