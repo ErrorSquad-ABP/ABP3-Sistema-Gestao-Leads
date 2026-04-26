@@ -37,6 +37,7 @@ import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { ApiError } from '@/lib/http/api-error';
 
 import { useAnalyticDashboardQuery } from '../hooks/analytic-dashboard.queries';
+import { validateDraftFilter } from '../lib/analytic-dashboard-filters';
 import type {
 	AnalyticDashboard,
 	AnalyticDashboardFilterMode,
@@ -57,15 +58,13 @@ const CHART_COLORS = ['#ff7a45', '#f39c12', '#3498db', '#2d3648'];
 const PRIMARY_COLOR = '#ff7a45';
 const SECONDARY_COLOR = '#2d3648';
 const MUTED_COLOR = '#cfd8e3';
-const NON_ADMIN_MAX_RANGE_DAYS = 366;
-const ONE_DAY_IN_MS = 86_400_000;
 
 function isoToday() {
 	return new Date().toISOString().slice(0, 10);
 }
 
 function isoThirtyDaysAgo() {
-	return new Date(Date.now() - 29 * ONE_DAY_IN_MS).toISOString().slice(0, 10);
+	return new Date(Date.now() - 29 * 86_400_000).toISOString().slice(0, 10);
 }
 
 function formatPercent(value: number) {
@@ -86,16 +85,6 @@ function formatHours(value: number | null) {
 function formatDateLabel(value: string) {
 	const [year, month, day] = value.split('-');
 	return `${day}/${month}/${year}`;
-}
-
-function parseIsoDate(value: string) {
-	return new Date(`${value}T00:00:00.000Z`);
-}
-
-function diffDaysInclusive(startDate: string, endDate: string) {
-	const start = parseIsoDate(startDate);
-	const end = parseIsoDate(endDate);
-	return Math.floor((end.getTime() - start.getTime()) / ONE_DAY_IN_MS) + 1;
 }
 
 function getScopeLabel(scope: AnalyticDashboard['filter']['scope']) {
@@ -163,34 +152,6 @@ function getDashboardErrorMessage(error: unknown) {
 	}
 
 	return error.message || 'Nao foi possivel carregar o dashboard analitico.';
-}
-
-function validateDraftFilter(
-	user: AuthenticatedUser,
-	mode: AnalyticDashboardFilterMode,
-	startDate: string,
-	endDate: string,
-) {
-	if (mode !== 'custom') {
-		return null;
-	}
-
-	if (!startDate || !endDate) {
-		return 'Selecione a data inicial e a data final para aplicar um periodo customizado.';
-	}
-
-	if (parseIsoDate(endDate).getTime() < parseIsoDate(startDate).getTime()) {
-		return 'A data final precisa ser igual ou posterior a data inicial.';
-	}
-
-	if (
-		user.role !== 'ADMINISTRATOR' &&
-		diffDaysInclusive(startDate, endDate) > NON_ADMIN_MAX_RANGE_DAYS
-	) {
-		return 'Para este perfil, o periodo customizado pode ter no maximo um ano.';
-	}
-
-	return null;
 }
 
 type DashboardTooltipItem = {
