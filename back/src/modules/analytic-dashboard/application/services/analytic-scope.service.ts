@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
-import type { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import type { AnalyticsScope } from '../../domain/repositories/analytic-dashboard.repository.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
+import { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
 
 @Injectable()
 class AnalyticScopeService {
