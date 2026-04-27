@@ -1,4 +1,5 @@
 import type { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import type { DealStage } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import type { Deal } from '../entities/deal.entity.js';
 import type {
 	DealListPage,
@@ -9,6 +10,8 @@ type DealListScopedFilters = {
 	readonly storeIds?: readonly string[];
 	readonly ownerUserId?: string;
 	readonly status?: 'OPEN' | 'WON' | 'LOST';
+	readonly stage?: DealStage;
+	readonly search?: string;
 };
 
 interface IDealRepository {
@@ -29,6 +32,14 @@ interface IDealRepository {
 		filters: DealListScopedFilters,
 		pagination: DealListPagination,
 	): Promise<DealEnrichedListPage>;
+	listPipelineStagesEnriched(
+		filters: DealListScopedFilters,
+		pagination: DealListPagination,
+	): Promise<readonly DealPipelineStagePage[]>;
+	listPipelineStageEnriched(
+		filters: DealListScopedFilters & { readonly stage: DealStage },
+		pagination: DealListPagination,
+	): Promise<DealPipelineStagePage>;
 }
 
 type DealEnrichedRow = {
@@ -64,9 +75,20 @@ type DealEnrichedListPage = {
 	readonly totalPages: number;
 };
 
+type DealPipelineStagePage = {
+	readonly stage: DealStage;
+	readonly items: readonly DealEnrichedRow[];
+	readonly page: number;
+	readonly limit: number;
+	readonly total: number;
+	readonly totalPages: number;
+	readonly totalValue: string | null;
+};
+
 export type {
 	DealEnrichedListPage,
 	DealEnrichedRow,
 	DealListScopedFilters,
+	DealPipelineStagePage,
 	IDealRepository,
 };
