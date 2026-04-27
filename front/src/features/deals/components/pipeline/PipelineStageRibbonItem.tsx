@@ -13,7 +13,7 @@ type Props = {
 };
 
 /** Largura comum: ponta direita e faixa do afundamento visual (itens 2+). */
-const CHEVRON_PX = 24;
+const CHEVRON_PX = 14;
 
 /**
  * Sempre: reta à esquerda da célula + ponta à direita.
@@ -36,7 +36,7 @@ function PipelineStageRibbonItem({
 				'relative h-[92px] min-w-0',
 				/* “Mordida” com cor do fundo do ribbon: triângulo com vértice à direita da faixa, sem projetar à esquerda. */
 				!isFirst &&
-					'before:pointer-events-none before:absolute before:left-0 before:top-0 before:z-[1] before:h-full before:w-6 before:bg-card before:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]',
+					'before:pointer-events-none before:absolute before:left-0 before:top-0 before:z-[1] before:h-full before:w-[14px] before:bg-card before:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]',
 				index <= 1 ? 'bg-[color:var(--brand-accent-soft)]/70' : 'bg-muted',
 			)}
 			style={{
@@ -46,7 +46,7 @@ function PipelineStageRibbonItem({
 			<div
 				className={cn(
 					'relative z-[2] flex h-full min-w-0 items-start gap-[11px] py-[17px] pr-9',
-					isFirst ? 'pl-[25px]' : 'pl-[49px]',
+					isFirst ? 'pl-[25px]' : 'pl-[35px]',
 				)}
 			>
 				<Icon className="mt-[2px] size-[18px] shrink-0 text-foreground/80" />
