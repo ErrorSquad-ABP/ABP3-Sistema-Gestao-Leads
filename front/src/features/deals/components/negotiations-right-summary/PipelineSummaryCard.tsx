@@ -40,8 +40,8 @@ function PipelineSummaryCard({ data }: Props) {
 							className="h-full w-full rounded-full"
 							style={{ background: conicFromSegments(segments) }}
 						/>
-						<div className="absolute inset-0 m-auto flex h-[58%] w-[58%] flex-col items-center justify-center rounded-full bg-card">
-							<span className="px-1 text-center text-[16px] font-extrabold leading-tight tracking-tight text-foreground">
+						<div className="absolute inset-0 m-auto flex h-[58%] w-[58%] min-w-0 flex-col items-center justify-center rounded-full bg-card text-center">
+							<span className="block max-w-[68px] truncate whitespace-nowrap text-center text-[clamp(6px,0.55vw,10px)] font-extrabold leading-none tracking-[-0.05em] text-foreground">
 								{centerValueLabel}
 							</span>
 							<span className="mt-0.5 text-[12px] text-muted-foreground">

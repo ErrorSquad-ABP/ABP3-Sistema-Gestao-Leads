@@ -25,6 +25,8 @@ function PipelineControls({ showValues, onShowValuesChange }: Props) {
 			<button
 				type="button"
 				onClick={() => onShowValuesChange(!showValues)}
+				role="switch"
+				aria-checked={showValues}
 				className={cn(
 					'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
 				)}
@@ -35,14 +37,14 @@ function PipelineControls({ showValues, onShowValuesChange }: Props) {
 				<span
 					aria-hidden="true"
 					className={cn(
-						'relative ml-[3px] h-4 w-[27px] rounded-full transition-colors',
+						'relative ml-[3px] inline-flex h-[18px] w-[32px] shrink-0 items-center rounded-full transition-colors',
 						showValues ? 'bg-[color:var(--brand-accent)]' : 'bg-muted/40',
 					)}
 				>
 					<span
 						className={cn(
-							'absolute top-0.5 size-3 rounded-full bg-white shadow-sm transition-transform',
-							showValues ? 'translate-x-[13px]' : 'translate-x-0.5',
+							'absolute left-0.5 top-1/2 block size-[14px] -translate-y-1/2 rounded-full bg-white shadow-[0_1px_2px_rgba(15,23,42,0.18)] transition-transform',
+							showValues ? 'translate-x-[14px]' : 'translate-x-0',
 						)}
 					/>
 				</span>

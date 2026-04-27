@@ -1,6 +1,7 @@
 'use client';
 
 import { Flame, PencilLine, Snowflake, SunMedium, Trash2 } from 'lucide-react';
+import type { DragEvent } from 'react';
 
 import {
 	DropdownMenu,
@@ -22,6 +23,11 @@ type Props = {
 	onOpenDetails: (deal: Deal) => void;
 	onEdit?: (deal: Deal) => void;
 	onDelete?: (deal: Deal) => void;
+	draggable?: boolean;
+	isDragging?: boolean;
+	isStageUpdating?: boolean;
+	onDragStart?: (deal: Deal) => void;
+	onDragEnd?: () => void;
 };
 
 function NegotiationPipelineDealCard({
@@ -30,6 +36,11 @@ function NegotiationPipelineDealCard({
 	onOpenDetails,
 	onEdit,
 	onDelete,
+	draggable = false,
+	isDragging = false,
+	isStageUpdating = false,
+	onDragStart,
+	onDragEnd,
 }: Props) {
 	const initials = initialsFromName(deal.leadCustomerName);
 	const importance = mapImportanceUi(deal.importance);
@@ -47,8 +58,28 @@ function NegotiationPipelineDealCard({
 				? 'bg-[color:var(--brand-accent-soft)]/55 text-[color:var(--brand-accent)]'
 				: 'bg-muted/50 text-muted-foreground';
 
+	function handleDragStart(event: DragEvent<HTMLDivElement>) {
+		if (!draggable) {
+			event.preventDefault();
+			return;
+		}
+		event.dataTransfer.effectAllowed = 'move';
+		event.dataTransfer.setData('text/plain', deal.id);
+		onDragStart?.(deal);
+	}
+
 	return (
-		<div className="grid h-[110px] grid-cols-[34px_minmax(0,1fr)_18px] grid-rows-[auto_1fr_auto] gap-x-[10px] overflow-hidden rounded-[11px] border border-border bg-white px-[13px] pb-[11px] pt-[14px] shadow-[0_2px_5px_rgba(15,23,42,0.025)]">
+		<div
+			draggable={draggable}
+			onDragStart={handleDragStart}
+			onDragEnd={onDragEnd}
+			className={cn(
+				'grid h-[110px] grid-cols-[34px_minmax(0,1fr)_18px] grid-rows-[auto_1fr_auto] gap-x-[10px] overflow-hidden rounded-[11px] border border-border bg-white px-[13px] pb-[11px] pt-[14px] shadow-[0_2px_5px_rgba(15,23,42,0.025)] transition-all duration-200 ease-out',
+				draggable ? 'cursor-grab active:cursor-grabbing' : '',
+				isDragging ? 'scale-[1.02] cursor-grabbing opacity-60 shadow-lg' : '',
+				isStageUpdating ? 'pointer-events-none opacity-50' : '',
+			)}
+		>
 			<button
 				type="button"
 				onClick={() => onOpenDetails(deal)}

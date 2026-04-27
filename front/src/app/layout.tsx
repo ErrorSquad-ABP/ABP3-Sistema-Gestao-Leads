@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Providers } from '@/lib/query/providers';
 
@@ -22,6 +23,7 @@ function RootLayout({ children }: RootLayoutProps) {
 			<body className="min-h-screen bg-background font-sans text-foreground antialiased">
 				<TooltipProvider>
 					<Providers>{children}</Providers>
+					<Toaster />
 				</TooltipProvider>
 			</body>
 		</html>
