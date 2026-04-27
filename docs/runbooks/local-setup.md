@@ -93,6 +93,10 @@ npm run db:migrate
 
 Como o banco não é parte do Compose, esse passo é explícito e consciente.
 
+Referência de migration estrutural recente:
+
+- `20260426195800_lead_operational_events` (criação de `LeadEvent` e `LeadEventType` para timeline operacional de leads).
+
 ### Migration no PostgreSQL local secundário
 
 ```bash
@@ -103,6 +107,7 @@ Observação:
 
 - no `compose.local`, esse passo já é executado automaticamente pelo serviço `local-bootstrap` antes do `back` subir;
 - o comando manual continua útil para reaplicar ou validar a base sem subir a stack inteira.
+- para validar o detalhe operacional de lead localmente, confirme que a migration de `LeadEvent` foi aplicada antes dos testes/smokes.
 
 ## 5. Seed
 
