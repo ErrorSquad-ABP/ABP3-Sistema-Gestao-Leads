@@ -8,16 +8,15 @@ import {
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
-import type { Deal } from '@/features/deals/model/deals.model';
+import type { DealPipelineStage } from '@/features/deals/model/deals.model';
 import {
 	PIPELINE_STAGES,
-	sumDealsValueBrl,
 	type PipelineStageKey,
 } from '@/features/deals/lib/pipeline';
 import { PipelineStageRibbonItem } from '@/features/deals/components/pipeline/PipelineStageRibbonItem';
 
 type Props = {
-	grouped: Record<PipelineStageKey, Deal[]>;
+	stages: DealPipelineStage[];
 };
 
 const iconByStage: Record<
@@ -30,18 +29,33 @@ const iconByStage: Record<
 	CLOSING: MessageSquareText,
 };
 
-function PipelineStageRibbon({ grouped }: Props) {
+function formatStageTotalValue(value: string | null) {
+	if (value === null) {
+		return '—';
+	}
+	const parsed = Number(value);
+	if (!Number.isFinite(parsed)) {
+		return '—';
+	}
+	return new Intl.NumberFormat('pt-BR', {
+		style: 'currency',
+		currency: 'BRL',
+		maximumFractionDigits: 0,
+	}).format(parsed);
+}
+
+function PipelineStageRibbon({ stages }: Props) {
 	return (
-		<div className="mb-4 grid min-w-0 grid-cols-4 gap-2 overflow-hidden rounded-t-[12px] bg-card">
+		<div className="mb-4 grid min-w-0 grid-cols-4 gap-0 overflow-hidden rounded-t-[12px] bg-card">
 			{PIPELINE_STAGES.map((stage, index) => {
-				const deals = grouped[stage.key];
+				const pipelineStage = stages.find((item) => item.key === stage.key);
 				return (
 					<PipelineStageRibbonItem
 						key={stage.key}
 						icon={iconByStage[stage.key]}
 						label={stage.label}
-						count={deals.length}
-						total={sumDealsValueBrl(deals)}
+						count={pipelineStage?.count ?? 0}
+						total={formatStageTotalValue(pipelineStage?.totalValue ?? null)}
 						index={index}
 					/>
 				);

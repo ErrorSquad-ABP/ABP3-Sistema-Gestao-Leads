@@ -1,23 +1,41 @@
 'use client';
 
 import { useSidebar } from '@/components/ui/sidebar';
-import type { Deal } from '@/features/deals/model/deals.model';
+import type {
+	Deal,
+	DealPipelineStage,
+	DealStage,
+} from '@/features/deals/model/deals.model';
 import { NegotiationsRightSummary } from '@/features/deals/components/negotiations-right-summary/NegotiationsRightSummary';
 import { NegotiationsPipelineCard } from '@/features/deals/components/pipeline/NegotiationsPipelineCard';
 import { cn } from '@/lib/utils';
 
 type Props = {
-	deals: Deal[];
+	stages: DealPipelineStage[];
+	summaryDeals: Deal[];
 	onOpenDetails: (deal: Deal) => void;
 	onEdit?: (deal: Deal) => void;
 	onDelete?: (deal: Deal) => void;
+	onMoveStage?: (deal: Deal, targetStage: DealStage) => void;
+	onInvalidStageMove?: () => void;
+	onLoadMoreStage?: (stage: DealPipelineStage) => void;
+	loadingStage?: DealStage | null;
+	updatingDealId?: string | null;
+	stageMoveError?: string | null;
 };
 
 function NegotiationsPipelineSection({
-	deals,
+	stages,
+	summaryDeals,
 	onOpenDetails,
 	onEdit,
 	onDelete,
+	onMoveStage,
+	onInvalidStageMove,
+	onLoadMoreStage,
+	loadingStage,
+	updatingDealId,
+	stageMoveError,
 }: Props) {
 	const { state } = useSidebar();
 	const isCollapsed = state === 'collapsed';
@@ -33,15 +51,21 @@ function NegotiationsPipelineSection({
 		>
 			<div className="min-w-0">
 				<NegotiationsPipelineCard
-					deals={deals}
+					stages={stages}
+					loadingStage={loadingStage}
+					updatingDealId={updatingDealId}
+					stageMoveError={stageMoveError}
 					onDelete={onDelete}
 					onEdit={onEdit}
+					onInvalidStageMove={onInvalidStageMove}
+					onLoadMoreStage={onLoadMoreStage}
+					onMoveStage={onMoveStage}
 					onOpenDetails={onOpenDetails}
 				/>
 			</div>
 			{isCollapsed ? (
 				<div className="hidden min-w-0 max-w-full justify-self-stretch lg:block">
-					<NegotiationsRightSummary deals={deals} />
+					<NegotiationsRightSummary deals={summaryDeals} />
 				</div>
 			) : null}
 		</div>

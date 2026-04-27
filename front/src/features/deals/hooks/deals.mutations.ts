@@ -19,6 +19,9 @@ function useCreateDealForLeadMutation(leadId: string) {
 				queryKey: queryKeys.deals.listRoot,
 			});
 			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.pipelineRoot,
+			});
+			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.byLead(leadId),
 			});
 			await queryClient.invalidateQueries({
@@ -48,6 +51,9 @@ function useUpdateDealMutation() {
 		onSuccess: async (data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.pipelineRoot,
 			});
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.detail(variables.dealId),
@@ -90,6 +96,9 @@ function useDeleteDealMutation() {
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.pipelineRoot,
 			});
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.byLead(variables.leadId),

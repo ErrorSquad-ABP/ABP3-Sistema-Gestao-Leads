@@ -49,6 +49,7 @@ const queryKeys = {
 	},
 	deals: {
 		listRoot: ['deals', 'list'] as const,
+		pipelineRoot: ['deals', 'pipeline'] as const,
 		/**
 		 * Lista de negociações por lead (`useDealsByLeadQuery`). Após mutação,
 		 * invalidar com `queryKeys.deals.byLead(leadId)`.
@@ -71,6 +72,34 @@ const queryKeys = {
 				params.status ?? 'all-statuses',
 				params.page,
 				params.limit,
+			] as const,
+		pipeline: (params: {
+			status?: string;
+			search?: string;
+			pageSize: number;
+		}) =>
+			[
+				'deals',
+				'pipeline',
+				params.status ?? 'all-statuses',
+				params.search?.trim() ?? '',
+				params.pageSize,
+			] as const,
+		pipelineStage: (params: {
+			stage: string;
+			status?: string;
+			search?: string;
+			page: number;
+			pageSize: number;
+		}) =>
+			[
+				'deals',
+				'pipeline-stage',
+				params.stage,
+				params.status ?? 'all-statuses',
+				params.search?.trim() ?? '',
+				params.page,
+				params.pageSize,
 			] as const,
 	},
 };

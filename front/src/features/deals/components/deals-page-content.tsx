@@ -1,38 +1,60 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { ApiError } from '@/lib/http/api-error';
 
-import { useDealsListQuery } from '../hooks/deals.queries';
+import {
+	useDealsPipelineQuery,
+	useLoadMorePipelineStageMutation,
+} from '../hooks/deals.queries';
 import {
 	useDeleteDealMutation,
 	useUpdateDealMutation,
 } from '../hooks/deals.mutations';
-import type { Deal, DealStatus, DealUpdateInput } from '../model/deals.model';
+import type {
+	Deal,
+	DealPipelineStage,
+	DealStage,
+	DealStatus,
+	DealUpdateInput,
+} from '../model/deals.model';
 import { DealConfirmDialog } from './DealConfirmDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
 import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
 import { NegotiationsPageTop } from './NegotiationsPageTop';
 import { NegotiationsPipelineSection } from './pipeline/NegotiationsPipelineSection';
 
-const DEALS_DEFAULT_LIMIT = 20;
+const PIPELINE_PAGE_SIZE = 5;
+const INVALID_STAGE_MOVE_MESSAGE = 'Não é possível pular etapas da negociação.';
+const STAGE_MOVE_SUCCESS_MESSAGE = 'Negociação movida com sucesso.';
+const STAGE_MOVE_ERROR_MESSAGE = 'Não foi possível atualizar a negociação.';
+const STAGE_MOVE_LOADING_MESSAGE = 'Atualizando negociação...';
 
-function normalizeSearchValue(value: string) {
-	return value.trim().toLowerCase();
-}
+const darkToastOptions = {
+	style: {
+		background: 'var(--sidebar)',
+		color: 'var(--sidebar-foreground)',
+		border: '1px solid var(--sidebar-border)',
+	},
+};
 
 function DealsPageContent() {
-	const page = 1;
 	const [statusFilter, setStatusFilter] = useState<'ALL' | DealStatus>('ALL');
 	const [search, setSearch] = useState('');
 
-	const query = useDealsListQuery({
-		page,
-		limit: DEALS_DEFAULT_LIMIT,
-		status: statusFilter === 'ALL' ? undefined : (statusFilter as DealStatus),
-	});
+	const pipelineQuery = useMemo(
+		() => ({
+			pageSize: PIPELINE_PAGE_SIZE,
+			status: statusFilter === 'ALL' ? undefined : (statusFilter as DealStatus),
+			search,
+		}),
+		[search, statusFilter],
+	);
+	const query = useDealsPipelineQuery(pipelineQuery);
+	const loadMoreStageMutation = useLoadMorePipelineStageMutation(pipelineQuery);
 
 	const deleteDealMutation = useDeleteDealMutation();
 	const updateDealMutation = useUpdateDealMutation();
@@ -41,38 +63,67 @@ function DealsPageContent() {
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
+	const [stageMoveError, setStageMoveError] = useState<string | null>(null);
+	const [updatingStageDealId, setUpdatingStageDealId] = useState<string | null>(
+		null,
+	);
 	const [targetDeal, setTargetDeal] = useState<Deal | null>(null);
 
-	const paged = query.data;
-	const deals = useMemo(() => paged?.items ?? [], [paged?.items]);
-
-	const normalizedSearch = normalizeSearchValue(search);
-	const filteredDeals = useMemo(() => {
-		if (!normalizedSearch) {
-			return deals;
-		}
-		return deals.filter((deal) => {
-			const haystack = [
-				deal.id,
-				deal.title,
-				deal.leadId,
-				deal.vehicleId,
-				deal.status,
-				deal.stage,
-				deal.importance,
-				deal.value ?? '',
-			]
-				.join(' ')
-				.toLowerCase();
-			return haystack.includes(normalizedSearch);
-		});
-	}, [deals, normalizedSearch]);
+	const pipeline = query.data;
+	const stages = useMemo(() => pipeline?.stages ?? [], [pipeline?.stages]);
+	const visibleDeals = useMemo(
+		() => stages.flatMap((stage) => stage.items),
+		[stages],
+	);
 
 	/** Alinha com a política do backend: só oferece editar/excluir quando há linhas com `canMutate` na vista atual. */
 	const canMutateInView = useMemo(
-		() => filteredDeals.some((d) => d.canMutate),
-		[filteredDeals],
+		() => visibleDeals.some((d) => d.canMutate),
+		[visibleDeals],
 	);
+
+	function handleLoadMoreStage(stage: DealPipelineStage) {
+		if (!stage.hasNextPage || loadMoreStageMutation.isPending) {
+			return;
+		}
+		loadMoreStageMutation.mutate({
+			stage: stage.key,
+			page: stage.page + 1,
+		});
+	}
+
+	function handleInvalidStageMove() {
+		toast.warning(INVALID_STAGE_MOVE_MESSAGE, {
+			id: 'deal-stage-invalid-move',
+			...darkToastOptions,
+		});
+	}
+
+	async function handleMoveStage(deal: Deal, targetStage: DealStage) {
+		setStageMoveError(null);
+		setUpdatingStageDealId(deal.id);
+		const toastId = toast.loading(STAGE_MOVE_LOADING_MESSAGE, {
+			...darkToastOptions,
+		});
+		try {
+			await updateDealMutation.mutateAsync({
+				dealId: deal.id,
+				payload: { stage: targetStage, value: undefined },
+			});
+			toast.success(STAGE_MOVE_SUCCESS_MESSAGE, {
+				id: toastId,
+				...darkToastOptions,
+			});
+		} catch (error) {
+			setStageMoveError(getDealsErrorMessage(error));
+			toast.error(STAGE_MOVE_ERROR_MESSAGE, {
+				id: toastId,
+				...darkToastOptions,
+			});
+		} finally {
+			setUpdatingStageDealId(null);
+		}
+	}
 
 	function openDetails(deal: Deal) {
 		setTargetDeal(deal);
@@ -123,7 +174,7 @@ function DealsPageContent() {
 	return (
 		<div className="space-y-6" aria-busy={query.isPending ? 'true' : 'false'}>
 			<NegotiationsPageTop
-				deals={deals}
+				deals={visibleDeals}
 				onSearchChange={setSearch}
 				onStatusFilterChange={setStatusFilter}
 				search={search}
@@ -151,7 +202,18 @@ function DealsPageContent() {
 
 					{query.isSuccess ? (
 						<NegotiationsPipelineSection
-							deals={filteredDeals}
+							stages={stages}
+							summaryDeals={visibleDeals}
+							loadingStage={
+								loadMoreStageMutation.isPending
+									? loadMoreStageMutation.variables?.stage
+									: null
+							}
+							updatingDealId={updatingStageDealId}
+							stageMoveError={stageMoveError}
+							onLoadMoreStage={handleLoadMoreStage}
+							onMoveStage={handleMoveStage}
+							onInvalidStageMove={handleInvalidStageMove}
 							onOpenDetails={openDetails}
 							onDelete={canMutateInView ? openDelete : undefined}
 							onEdit={canMutateInView ? openEdit : undefined}

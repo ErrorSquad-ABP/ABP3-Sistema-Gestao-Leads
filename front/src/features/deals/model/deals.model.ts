@@ -11,6 +11,10 @@ import type {
 	dealStages,
 	dealStatuses,
 } from '../schemas/deal.schema';
+import type {
+	dealPipelineResponseSchema,
+	dealPipelineStageSchema,
+} from '../schemas/deal-list.schema';
 
 type Deal = z.infer<typeof dealSchema>;
 type DealHistoryItem = z.infer<typeof dealHistoryItemSchema>;
@@ -23,6 +27,17 @@ type DealCreateInput = z.output<typeof dealCreateSchema>;
 type DealCreateFormInput = z.input<typeof dealCreateSchema>;
 type DealUpdateInput = z.output<typeof dealUpdateSchema>;
 type DealUpdateFormInput = z.input<typeof dealUpdateSchema>;
+type DealPipelineStage = z.infer<typeof dealPipelineStageSchema>;
+type DealPipelineResponse = z.infer<typeof dealPipelineResponseSchema>;
+type DealPipelineQuery = {
+	status?: DealStatus;
+	search?: string;
+	pageSize: number;
+};
+type DealPipelineStageQuery = DealPipelineQuery & {
+	stage: DealStage;
+	page: number;
+};
 
 export type {
 	Deal,
@@ -30,6 +45,10 @@ export type {
 	DealCreateInput,
 	DealHistoryItem,
 	DealImportance,
+	DealPipelineQuery,
+	DealPipelineResponse,
+	DealPipelineStage,
+	DealPipelineStageQuery,
 	DealStage,
 	DealStatus,
 	DealUpdateFormInput,
