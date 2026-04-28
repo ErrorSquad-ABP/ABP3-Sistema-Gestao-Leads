@@ -102,3 +102,11 @@
 - `distributions.byImportance[].key`
 - `distributions.byImportance[].count`
 - `distributions.byImportance[].percentage`
+
+## Notas arquiteturais
+
+- Não houve mudança de arquitetura do sistema para este incremento.
+- A feature foi implementada como novo módulo `dashboards` no backend, reutilizando:
+- política de escopo já existente (`LeadAccessPolicy`);
+- convenções de controller/use-case/repository do monólito modular;
+- envelope de resposta global da API.
