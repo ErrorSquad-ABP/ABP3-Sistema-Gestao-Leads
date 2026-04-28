@@ -73,6 +73,15 @@ const queryKeys = {
 				params.limit,
 			] as const,
 	},
+	dashboards: {
+		operational: (params: { startDate?: string; endDate?: string } = {}) =>
+			[
+				'dashboards',
+				'operational',
+				params.startDate ?? 'default',
+				params.endDate ?? 'default',
+			] as const,
+	},
 };
 
 export { queryKeys };
