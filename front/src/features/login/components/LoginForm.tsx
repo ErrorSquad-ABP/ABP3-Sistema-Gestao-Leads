@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import Image from 'next/image';
 import {
 	AlertCircle,
 	Eye,
@@ -40,6 +39,7 @@ import { useCurrentUserQuery } from '../hooks/login.queries';
 import { loginSchema } from '../schemas/login.schema';
 import type { LoginInput } from '../types/login.types';
 import { AuthStatusIndicator } from './AuthStatusIndicator';
+import { AuthAccentLink } from './AuthAccentLink';
 import { LoginScreenLayout } from './LoginScreenLayout';
 
 function getLoginErrorMessage(error: unknown) {
@@ -146,20 +146,9 @@ function LoginForm() {
 			<div className="space-y-5">
 				<Card className="rounded-[1.5rem] border-0 bg-card shadow-[0_24px_70px_-60px_var(--ring)]">
 					<CardHeader className="items-center gap-3 pb-4 text-center">
-						<div className="flex items-center justify-center gap-3">
-							<div className="relative size-11 overflow-hidden rounded-full bg-muted/30 ring-1 ring-border/70">
-								<Image
-									alt="Quantum CRM"
-									fill
-									priority
-									src="/assets/light-logo.png"
-									className="object-cover"
-								/>
-							</div>
-							<p className="text-[1.35rem] font-semibold tracking-tight text-foreground">
-								Quantum CRM
-							</p>
-						</div>
+						<p className="text-[1.35rem] font-semibold tracking-tight text-foreground">
+							Quantum CRM
+						</p>
 						<CardDescription className="text-[0.88rem]">
 							Entre para continuar gerenciando suas oportunidades.
 						</CardDescription>
@@ -265,12 +254,12 @@ function LoginForm() {
 									<Checkbox className="rounded-xs" />
 									Lembrar de mim
 								</label>
-								<a
-									className="font-medium !text-[color:var(--sidebar-accent-foreground)] !decoration-[color:var(--sidebar-accent-foreground)] underline-offset-4 hover:underline"
+								<AuthAccentLink
+									className="font-medium"
 									href={appRoutes.auth.forgotPassword}
 								>
 									Esqueci minha senha
-								</a>
+								</AuthAccentLink>
 							</div>
 
 							<Button
@@ -296,7 +285,7 @@ function LoginForm() {
 
 					<CardFooter className="border-t border-border/70">
 						<div className="flex w-full items-start gap-3">
-							<div className="grid size-9 place-items-center rounded-full bg-muted/40 text-[color:var(--sidebar-accent-foreground)] ring-1 ring-border/70">
+							<div className="grid size-9 place-items-center rounded-full bg-[color:var(--brand-accent-soft)]/55 text-[color:var(--brand-accent)] ring-1 ring-[color:var(--brand-accent)]/20">
 								<ShieldCheck className="size-4" />
 							</div>
 							<div className="min-w-0">

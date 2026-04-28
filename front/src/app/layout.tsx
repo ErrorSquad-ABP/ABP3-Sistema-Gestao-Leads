@@ -8,9 +8,14 @@ import { Providers } from '@/lib/query/providers';
 import './styles.css';
 
 const metadata: Metadata = {
-	title: 'ErrorSquad-ABP | Sistema de Gestão de Leads',
+	title: 'Quantum | Sistema de Gestão de Leads',
 	description:
 		'Aplicação web em Next.js para o Sistema de Gestão de Leads com Dashboard Analítico.',
+	icons: {
+		icon: '/assets/light-logo.png',
+		shortcut: '/assets/light-logo.png',
+		apple: '/assets/light-logo.png',
+	},
 };
 
 type RootLayoutProps = {
