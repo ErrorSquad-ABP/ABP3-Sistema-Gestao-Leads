@@ -1,12 +1,17 @@
-import { AppRoutePlaceholder } from '@/components/shared/AppRoutePlaceholder';
+import { redirect } from 'next/navigation';
 
-function OperationalDashboardPage() {
-	return (
-		<AppRoutePlaceholder
-			description="Destino inicial previsto para gerentes após autenticação."
-			title="Dashboard Operacional"
-		/>
-	);
+import { OperationalDashboardPageContent } from '@/features/dashboard-operational/components/operational-dashboard-page-content';
+import { getCurrentUserFromRequest } from '@/lib/auth/session';
+import { appRoutes } from '@/lib/routes/app-routes';
+
+async function OperationalDashboardPage() {
+	const user = await getCurrentUserFromRequest();
+
+	if (!user) {
+		redirect(appRoutes.auth.login);
+	}
+
+	return <OperationalDashboardPageContent user={user} />;
 }
 
 export default OperationalDashboardPage;
