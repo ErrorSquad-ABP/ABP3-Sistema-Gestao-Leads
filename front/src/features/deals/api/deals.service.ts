@@ -54,6 +54,9 @@ function dealsPipelineQuery(
 	if (query.status) {
 		params.set('status', query.status);
 	}
+	if (query.importance) {
+		params.set('importance', query.importance);
+	}
 	const search = query.search?.trim();
 	if (search) {
 		params.set('search', search);

@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+	IsBooleanString,
+	IsIn,
+	IsOptional,
+	IsString,
+	IsUUID,
+} from 'class-validator';
 
 import { VEHICLE_STATUSES } from '../../../../shared/domain/enums/vehicle-status.enum.js';
 
@@ -14,6 +20,14 @@ class ListVehiclesQueryValidator {
 	@IsString()
 	@IsIn(VEHICLE_STATUSES)
 	status?: string;
+
+	@ApiPropertyOptional({
+		description: 'Quando true, retorna apenas veículos sem negociação aberta.',
+		example: 'true',
+	})
+	@IsOptional()
+	@IsBooleanString()
+	withoutOpenDeal?: string;
 }
 
 export { ListVehiclesQueryValidator };

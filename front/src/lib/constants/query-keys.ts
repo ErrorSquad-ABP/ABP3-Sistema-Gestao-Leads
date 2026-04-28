@@ -38,12 +38,17 @@ const queryKeys = {
 	},
 	vehicles: {
 		listRoot: ['vehicles', 'list'] as const,
-		list: (params: { storeId?: string; status?: string }) =>
+		list: (params: {
+			storeId?: string;
+			status?: string;
+			withoutOpenDeal?: boolean;
+		}) =>
 			[
 				'vehicles',
 				'list',
 				params.storeId ?? 'all-stores',
 				params.status ?? 'all-statuses',
+				params.withoutOpenDeal ? 'without-open-deal' : 'all-deals',
 			] as const,
 		detail: (vehicleId: string) => ['vehicles', 'detail', vehicleId] as const,
 	},
@@ -75,6 +80,7 @@ const queryKeys = {
 			] as const,
 		pipeline: (params: {
 			status?: string;
+			importance?: string;
 			search?: string;
 			pageSize: number;
 		}) =>
@@ -82,12 +88,14 @@ const queryKeys = {
 				'deals',
 				'pipeline',
 				params.status ?? 'all-statuses',
+				params.importance ?? 'all-importances',
 				params.search?.trim() ?? '',
 				params.pageSize,
 			] as const,
 		pipelineStage: (params: {
 			stage: string;
 			status?: string;
+			importance?: string;
 			search?: string;
 			page: number;
 			pageSize: number;
@@ -97,6 +105,7 @@ const queryKeys = {
 				'pipeline-stage',
 				params.stage,
 				params.status ?? 'all-statuses',
+				params.importance ?? 'all-importances',
 				params.search?.trim() ?? '',
 				params.page,
 				params.pageSize,

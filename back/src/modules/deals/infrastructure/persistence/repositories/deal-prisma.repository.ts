@@ -68,6 +68,7 @@ class DealPrismaRepository implements IDealRepository {
 
 		return {
 			status: filters.status,
+			importance: filters.importance,
 			stage: filters.stage,
 			OR: searchOr.length > 0 ? searchOr : undefined,
 			lead: {

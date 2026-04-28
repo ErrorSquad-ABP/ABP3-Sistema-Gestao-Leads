@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import type { DealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
 import {
 	assertCanonicalDealStage,
 	type DealStage,
@@ -17,6 +18,7 @@ import { DealRepositoryFactory } from '../../infrastructure/persistence/factorie
 
 type DealPipelineQuery = {
 	readonly status?: 'OPEN' | 'WON' | 'LOST';
+	readonly importance?: DealImportance;
 	readonly search?: string;
 	readonly pageSize: number;
 };
@@ -63,18 +65,19 @@ class ListDealPipelineUseCase {
 
 	private async resolveScopedFilters(
 		actor: LeadActor,
-		query: Pick<DealPipelineQuery, 'status' | 'search'>,
+		query: Pick<DealPipelineQuery, 'importance' | 'search' | 'status'>,
 	): Promise<DealListScopedFilters> {
 		const scope = await this.leadAccessPolicy.resolveCatalogScope(actor);
 		const search = query.search?.trim() || undefined;
 
 		if (scope.kind === 'full') {
-			return { status: query.status, search };
+			return { importance: query.importance, status: query.status, search };
 		}
 
 		if (scope.kind === 'attendant') {
 			return {
 				ownerUserId: actor.userId,
+				importance: query.importance,
 				status: query.status,
 				search,
 			};
@@ -82,6 +85,7 @@ class ListDealPipelineUseCase {
 
 		return {
 			storeIds: [...scope.readStoreIds],
+			importance: query.importance,
 			status: query.status,
 			search,
 		};

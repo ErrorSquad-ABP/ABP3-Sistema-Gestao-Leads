@@ -1,4 +1,5 @@
 import type { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import type { DealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
 import type { DealStage } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import type { Deal } from '../entities/deal.entity.js';
 import type {
@@ -10,6 +11,7 @@ type DealListScopedFilters = {
 	readonly storeIds?: readonly string[];
 	readonly ownerUserId?: string;
 	readonly status?: 'OPEN' | 'WON' | 'LOST';
+	readonly importance?: DealImportance;
 	readonly stage?: DealStage;
 	readonly search?: string;
 };

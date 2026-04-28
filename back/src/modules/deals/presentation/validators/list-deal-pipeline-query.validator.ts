@@ -10,6 +10,7 @@ import {
 	Min,
 } from 'class-validator';
 
+import { DEAL_IMPORTANCES } from '../../../../shared/domain/enums/deal-importance.enum.js';
 import { DEAL_STATUSES } from '../../../../shared/domain/enums/deal-status.enum.js';
 
 const DEFAULT_PIPELINE_PAGE_SIZE = 5;
@@ -22,6 +23,12 @@ class ListDealPipelineQueryValidator {
 	@IsString()
 	@IsIn(DEAL_STATUSES)
 	status?: string;
+
+	@ApiPropertyOptional({ enum: DEAL_IMPORTANCES })
+	@IsOptional()
+	@IsString()
+	@IsIn(DEAL_IMPORTANCES)
+	importance?: string;
 
 	@ApiPropertyOptional({
 		description: 'Termo de busca por título, cliente ou veículo.',

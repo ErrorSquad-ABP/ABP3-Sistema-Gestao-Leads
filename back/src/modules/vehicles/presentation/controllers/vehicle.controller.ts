@@ -102,6 +102,7 @@ class VehicleController {
 		const vehicles = await this.listVehiclesUseCase.execute({
 			storeId: query.storeId,
 			status: query.status,
+			withoutOpenDeal: query.withoutOpenDeal === 'true',
 		});
 		return VehiclePresenter.toResponseList([...vehicles]);
 	}

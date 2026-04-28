@@ -31,6 +31,7 @@ type DealPipelineStage = z.infer<typeof dealPipelineStageSchema>;
 type DealPipelineResponse = z.infer<typeof dealPipelineResponseSchema>;
 type DealPipelineQuery = {
 	status?: DealStatus;
+	importance?: DealImportance;
 	search?: string;
 	pageSize: number;
 };

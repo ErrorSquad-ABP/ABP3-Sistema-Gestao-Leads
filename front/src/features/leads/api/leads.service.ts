@@ -23,11 +23,18 @@ import type {
 	UpdateLeadInput,
 } from '../model/leads.model';
 
-function leadsListQuery(page: number): string {
+type LeadsListQueryOptions = {
+	withoutOpenDeal?: boolean;
+};
+
+function leadsListQuery(page: number, options?: LeadsListQueryOptions): string {
 	const params = new URLSearchParams({
 		page: String(page),
 		limit: String(LEADS_PAGE_LIMIT),
 	});
+	if (options?.withoutOpenDeal) {
+		params.set('withoutOpenDeal', 'true');
+	}
 	return params.toString();
 }
 
@@ -40,9 +47,10 @@ async function fetchLeadsByOwner(
 	ownerUserId: string,
 	page: number,
 	signal?: AbortSignal,
+	options?: LeadsListQueryOptions,
 ) {
 	const raw = await apiFetch<unknown>(
-		`/api/leads/owner/${ownerUserId}?${leadsListQuery(page)}`,
+		`/api/leads/owner/${ownerUserId}?${leadsListQuery(page, options)}`,
 		{
 			signal,
 		},
@@ -53,9 +61,13 @@ async function fetchLeadsByOwner(
 /**
  * Lista leads do escopo do gestor (`GET /api/leads/manager`).
  */
-async function fetchLeadsManager(page: number, signal?: AbortSignal) {
+async function fetchLeadsManager(
+	page: number,
+	signal?: AbortSignal,
+	options?: LeadsListQueryOptions,
+) {
 	const raw = await apiFetch<unknown>(
-		`/api/leads/manager?${leadsListQuery(page)}`,
+		`/api/leads/manager?${leadsListQuery(page, options)}`,
 		{
 			signal,
 		},
@@ -71,9 +83,10 @@ async function fetchLeadsByTeam(
 	teamId: string,
 	page: number,
 	signal?: AbortSignal,
+	options?: LeadsListQueryOptions,
 ) {
 	const raw = await apiFetch<unknown>(
-		`/api/leads/team/${teamId}?${leadsListQuery(page)}`,
+		`/api/leads/team/${teamId}?${leadsListQuery(page, options)}`,
 		{
 			signal,
 		},
@@ -84,9 +97,13 @@ async function fetchLeadsByTeam(
 /**
  * Lista todos os leads (`GET /api/leads/all`). Reservado a `ADMINISTRATOR` e `GENERAL_MANAGER` no servidor.
  */
-async function fetchLeadsAll(page: number, signal?: AbortSignal) {
+async function fetchLeadsAll(
+	page: number,
+	signal?: AbortSignal,
+	options?: LeadsListQueryOptions,
+) {
 	const raw = await apiFetch<unknown>(
-		`/api/leads/all?${leadsListQuery(page)}`,
+		`/api/leads/all?${leadsListQuery(page, options)}`,
 		{
 			signal,
 		},

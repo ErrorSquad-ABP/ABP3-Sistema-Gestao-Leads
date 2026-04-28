@@ -12,6 +12,7 @@ import type {
 type ListVehiclesFilters = {
 	storeId?: string;
 	status?: string;
+	withoutOpenDeal?: boolean;
 };
 
 function vehiclesListQuery(filters: ListVehiclesFilters) {
@@ -21,6 +22,9 @@ function vehiclesListQuery(filters: ListVehiclesFilters) {
 	}
 	if (filters.status) {
 		params.set('status', filters.status);
+	}
+	if (filters.withoutOpenDeal) {
+		params.set('withoutOpenDeal', 'true');
 	}
 	return params.toString();
 }

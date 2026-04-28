@@ -29,6 +29,7 @@ import {
 	ApiOkResponseEnvelopeArray,
 	ApiOkResponseEnvelopePaged,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
+import type { DealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
 import {
 	CurrentUser,
 	type JwtUser,
@@ -223,6 +224,7 @@ class DealController {
 			toLeadActor(user),
 			{
 				status: query.status as 'OPEN' | 'WON' | 'LOST' | undefined,
+				importance: query.importance as DealImportance | undefined,
 				search: query.search,
 				pageSize: query.pageSize,
 			},
@@ -255,6 +257,7 @@ class DealController {
 			{
 				stage,
 				status: query.status as 'OPEN' | 'WON' | 'LOST' | undefined,
+				importance: query.importance as DealImportance | undefined,
 				search: query.search,
 				page: query.page,
 				pageSize: query.pageSize,

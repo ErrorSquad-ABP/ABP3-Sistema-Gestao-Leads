@@ -75,6 +75,9 @@ class VehiclePrismaRepository implements IVehicleRepository {
 			where: {
 				storeId: filters?.storeId ? filters.storeId.value : undefined,
 				status: filters?.status,
+				deals: filters?.withoutOpenDeal
+					? { none: { status: 'OPEN' } }
+					: undefined,
 			},
 			orderBy: { createdAt: 'desc' },
 		});
