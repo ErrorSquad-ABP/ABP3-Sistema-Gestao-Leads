@@ -1,31 +1,21 @@
 'use client';
 
-import { Bell, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { Bell, Plus, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import type { DealStatus } from '@/features/deals/model/deals.model';
 
 type Props = {
 	search: string;
+	onCreateDeal: () => void;
 	onSearchChange: (value: string) => void;
-	statusFilter: 'ALL' | DealStatus;
-	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
 	notificationCount?: number;
 };
 
 function NegotiationsActions({
 	search,
+	onCreateDeal,
 	onSearchChange,
-	statusFilter,
-	onStatusFilterChange,
 	notificationCount = 3,
 }: Props) {
 	return (
@@ -41,70 +31,9 @@ function NegotiationsActions({
 			</div>
 
 			<div className="flex items-center gap-2">
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant="outline"
-							size="icon-lg"
-							className="rounded-xl bg-white shadow-none"
-							aria-label="Filtrar"
-						>
-							<SlidersHorizontal className="size-4" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent
-						align="end"
-						className="w-56 rounded-2xl border-border bg-white"
-					>
-						<DropdownMenuItem
-							className={cn(
-								'cursor-pointer rounded-xl px-3 py-2 text-sm',
-								statusFilter === 'ALL'
-									? 'text-[color:var(--brand-accent)]'
-									: '',
-							)}
-							onSelect={() => onStatusFilterChange('ALL')}
-						>
-							Todos os status
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							className={cn(
-								'cursor-pointer rounded-xl px-3 py-2 text-sm',
-								statusFilter === 'OPEN'
-									? 'text-[color:var(--brand-accent)]'
-									: '',
-							)}
-							onSelect={() => onStatusFilterChange('OPEN')}
-						>
-							Abertas
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							className={cn(
-								'cursor-pointer rounded-xl px-3 py-2 text-sm',
-								statusFilter === 'WON'
-									? 'text-[color:var(--brand-accent)]'
-									: '',
-							)}
-							onSelect={() => onStatusFilterChange('WON')}
-						>
-							Ganhas
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							className={cn(
-								'cursor-pointer rounded-xl px-3 py-2 text-sm',
-								statusFilter === 'LOST'
-									? 'text-[color:var(--brand-accent)]'
-									: '',
-							)}
-							onSelect={() => onStatusFilterChange('LOST')}
-						>
-							Perdidas
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-
 				<Button
 					className="h-11 rounded-xl bg-[color:var(--brand-accent)] px-4 text-white shadow-none hover:bg-[color:var(--brand-accent)]/90"
+					onClick={onCreateDeal}
 					type="button"
 				>
 					<Plus className="size-4" />

@@ -3,24 +3,140 @@
 import { ChevronDown, Ellipsis, SlidersHorizontal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import type {
+	DealImportance,
+	DealStatus,
+} from '@/features/deals/model/deals.model';
 import { cn } from '@/lib/utils';
 
+type ImportanceFilter = 'ALL' | DealImportance;
+type StatusFilter = 'ALL' | DealStatus;
+
 type Props = {
+	importanceFilter: ImportanceFilter;
+	statusFilter: StatusFilter;
 	showValues: boolean;
+	onImportanceFilterChange: (next: ImportanceFilter) => void;
+	onStatusFilterChange: (next: StatusFilter) => void;
 	onShowValuesChange: (next: boolean) => void;
 };
 
-function PipelineControls({ showValues, onShowValuesChange }: Props) {
+const IMPORTANCE_OPTIONS: { label: string; value: ImportanceFilter }[] = [
+	{ label: 'Todas', value: 'ALL' },
+	{ label: 'Fria', value: 'COLD' },
+	{ label: 'Morna', value: 'WARM' },
+	{ label: 'Quente', value: 'HOT' },
+];
+
+const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
+	{ label: 'Todos', value: 'ALL' },
+	{ label: 'Abertas', value: 'OPEN' },
+	{ label: 'Ganhas', value: 'WON' },
+	{ label: 'Perdidas', value: 'LOST' },
+];
+
+function getImportanceLabel(value: ImportanceFilter) {
+	return (
+		IMPORTANCE_OPTIONS.find((option) => option.value === value)?.label ?? 'Todas'
+	);
+}
+
+function getStatusLabel(value: StatusFilter) {
+	return (
+		STATUS_OPTIONS.find((option) => option.value === value)?.label ?? 'Todos'
+	);
+}
+
+function PipelineControls({
+	importanceFilter,
+	statusFilter,
+	showValues,
+	onImportanceFilterChange,
+	onStatusFilterChange,
+	onShowValuesChange,
+}: Props) {
 	return (
 		<div className="flex items-center gap-[10px] pt-0.5">
-			<button
-				type="button"
-				className="inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30"
-			>
-				<SlidersHorizontal className="size-4 text-muted-foreground" />
-				Importância
-				<ChevronDown className="size-4 text-muted-foreground" />
-			</button>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<button
+						type="button"
+						className={cn(
+							'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
+							statusFilter !== 'ALL' &&
+								'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent-soft)]/25 text-[color:var(--brand-accent)]',
+						)}
+					>
+						<SlidersHorizontal className="size-4 text-muted-foreground" />
+						Status: {getStatusLabel(statusFilter)}
+						<ChevronDown className="size-4 text-muted-foreground" />
+					</button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent
+					align="start"
+					className="w-44 rounded-lg border border-border bg-white p-1 text-foreground shadow-lg"
+				>
+					<DropdownMenuRadioGroup
+						value={statusFilter}
+						onValueChange={(value) => onStatusFilterChange(value as StatusFilter)}
+					>
+						{STATUS_OPTIONS.map((option) => (
+							<DropdownMenuRadioItem
+								key={option.value}
+								value={option.value}
+								className="rounded-md text-[13px]"
+							>
+								{option.label}
+							</DropdownMenuRadioItem>
+						))}
+					</DropdownMenuRadioGroup>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<button
+						type="button"
+						className={cn(
+							'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
+							importanceFilter !== 'ALL' &&
+								'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent-soft)]/25 text-[color:var(--brand-accent)]',
+						)}
+					>
+						<SlidersHorizontal className="size-4 text-muted-foreground" />
+						Importância: {getImportanceLabel(importanceFilter)}
+						<ChevronDown className="size-4 text-muted-foreground" />
+					</button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent
+					align="start"
+					className="w-44 rounded-lg border border-border bg-white p-1 text-foreground shadow-lg"
+				>
+					<DropdownMenuRadioGroup
+						value={importanceFilter}
+						onValueChange={(value) =>
+							onImportanceFilterChange(value as ImportanceFilter)
+						}
+					>
+						{IMPORTANCE_OPTIONS.map((option) => (
+							<DropdownMenuRadioItem
+								key={option.value}
+								value={option.value}
+								className="rounded-md text-[13px]"
+							>
+								{option.label}
+							</DropdownMenuRadioItem>
+						))}
+					</DropdownMenuRadioGroup>
+				</DropdownMenuContent>
+			</DropdownMenu>
 
 			<button
 				type="button"

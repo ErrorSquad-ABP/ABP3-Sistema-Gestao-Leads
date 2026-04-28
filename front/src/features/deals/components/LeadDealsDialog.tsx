@@ -405,6 +405,10 @@ function LeadDealsDialog({
 					setEditOpen(false);
 					setTargetDeal(null);
 				}}
+				onDelete={(deal) => {
+					setEditOpen(false);
+					openDelete(deal);
+				}}
 				onSubmit={async (values) => {
 					if (!targetDeal) return;
 					await updateMutation.mutateAsync({

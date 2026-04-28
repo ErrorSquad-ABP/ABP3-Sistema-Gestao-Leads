@@ -6,8 +6,10 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import type {
 	Deal,
+	DealImportance,
 	DealPipelineStage,
 	DealStage,
+	DealStatus,
 } from '@/features/deals/model/deals.model';
 import { PIPELINE_STAGES } from '@/features/deals/lib/pipeline';
 import { PipelineControls } from '@/features/deals/components/pipeline/PipelineControls';
@@ -17,11 +19,16 @@ import { PipelineStageRibbon } from '@/features/deals/components/pipeline/Pipeli
 
 type Props = {
 	stages: DealPipelineStage[];
+	importanceFilter: 'ALL' | DealImportance;
+	statusFilter: 'ALL' | DealStatus;
 	onOpenDetails: (deal: Deal) => void;
 	onEdit?: (deal: Deal) => void;
 	onDelete?: (deal: Deal) => void;
+	onCreateDeal: () => void;
 	onMoveStage?: (deal: Deal, targetStage: DealStage) => void;
 	onInvalidStageMove?: () => void;
+	onImportanceFilterChange: (value: 'ALL' | DealImportance) => void;
+	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
 	onLoadMoreStage?: (stage: DealPipelineStage) => void;
 	loadingStage?: DealStage | null;
 	updatingDealId?: string | null;
@@ -42,11 +49,16 @@ function isAdjacentStageMove(from: DealStage, to: DealStage) {
 
 function NegotiationsPipelineCard({
 	stages,
+	importanceFilter,
+	statusFilter,
 	onOpenDetails,
 	onEdit,
 	onDelete,
+	onCreateDeal,
 	onMoveStage,
 	onInvalidStageMove,
+	onImportanceFilterChange,
+	onStatusFilterChange,
 	onLoadMoreStage,
 	loadingStage,
 	updatingDealId,
@@ -110,7 +122,11 @@ function NegotiationsPipelineCard({
 					</div>
 
 					<PipelineControls
+						importanceFilter={importanceFilter}
+						statusFilter={statusFilter}
 						showValues={showValues}
+						onImportanceFilterChange={onImportanceFilterChange}
+						onStatusFilterChange={onStatusFilterChange}
 						onShowValuesChange={setShowValues}
 					/>
 				</div>
@@ -159,6 +175,7 @@ function NegotiationsPipelineCard({
 								}
 								onOpenDetails={onOpenDetails}
 								onDelete={onDelete}
+								onCreateDeal={onCreateDeal}
 								onEdit={onEdit}
 							/>
 						);

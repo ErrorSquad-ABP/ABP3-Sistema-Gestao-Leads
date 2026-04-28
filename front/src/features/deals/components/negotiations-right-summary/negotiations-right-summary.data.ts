@@ -9,6 +9,7 @@ type ActivityIcon = 'calendar' | 'phone' | 'message';
 type PipelineSummarySegment = {
 	stage: DealStage;
 	label: string;
+	amountLabel: string;
 	percentage: number;
 	color: string;
 };
@@ -69,6 +70,14 @@ function formatFunnelCenterValueBrl(total: number): string {
 	}).format(total);
 }
 
+function formatStageValueBrl(total: number): string {
+	return new Intl.NumberFormat('pt-BR', {
+		style: 'currency',
+		currency: 'BRL',
+		maximumFractionDigits: 0,
+	}).format(total);
+}
+
 const STAGE_DONUT_COLORS: Record<DealStage, string> = {
 	INITIAL_CONTACT: 'var(--brand-accent)',
 	NEGOTIATION: 'var(--brand-accent-soft)',
@@ -102,24 +111,28 @@ function buildPipelineSummaryFromDeals(deals: Deal[]): PipelineSummaryData {
 		{
 			stage: s0.key,
 			label: s0.label,
+			amountLabel: formatStageValueBrl(counts[0] ?? 0),
 			percentage: p0,
 			color: STAGE_DONUT_COLORS[s0.key],
 		},
 		{
 			stage: s1.key,
 			label: s1.label,
+			amountLabel: formatStageValueBrl(counts[1] ?? 0),
 			percentage: p1,
 			color: STAGE_DONUT_COLORS[s1.key],
 		},
 		{
 			stage: s2.key,
 			label: s2.label,
+			amountLabel: formatStageValueBrl(counts[2] ?? 0),
 			percentage: p2,
 			color: STAGE_DONUT_COLORS[s2.key],
 		},
 		{
 			stage: s3.key,
 			label: s3.label,
+			amountLabel: formatStageValueBrl(counts[3] ?? 0),
 			percentage: p3,
 			color: STAGE_DONUT_COLORS[s3.key],
 		},

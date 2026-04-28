@@ -1,23 +1,21 @@
 'use client';
 
-import type { Deal, DealStatus } from '@/features/deals/model/deals.model';
+import type { Deal } from '@/features/deals/model/deals.model';
 import { NegotiationsActions } from '@/features/deals/components/NegotiationsActions';
 import { NegotiationsHeader } from '@/features/deals/components/NegotiationsHeader';
 import { NegotiationsMetricsGrid } from '@/features/deals/components/NegotiationsMetricsGrid';
 
 type Props = {
 	search: string;
+	onCreateDeal: () => void;
 	onSearchChange: (value: string) => void;
-	statusFilter: 'ALL' | DealStatus;
-	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
 	deals: Deal[];
 };
 
 function NegotiationsPageTop({
 	search,
+	onCreateDeal,
 	onSearchChange,
-	statusFilter,
-	onStatusFilterChange,
 	deals,
 }: Props) {
 	return (
@@ -28,9 +26,8 @@ function NegotiationsPageTop({
 				</div>
 				<NegotiationsActions
 					search={search}
+					onCreateDeal={onCreateDeal}
 					onSearchChange={onSearchChange}
-					statusFilter={statusFilter}
-					onStatusFilterChange={onStatusFilterChange}
 				/>
 			</div>
 

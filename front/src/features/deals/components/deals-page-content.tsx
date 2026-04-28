@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Card, CardContent } from '@/components/ui/card';
+import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { ApiError } from '@/lib/http/api-error';
 
 import {
@@ -16,18 +17,20 @@ import {
 } from '../hooks/deals.mutations';
 import type {
 	Deal,
+	DealImportance,
 	DealPipelineStage,
 	DealStage,
 	DealStatus,
 	DealUpdateInput,
 } from '../model/deals.model';
 import { DealConfirmDialog } from './DealConfirmDialog';
+import { DealCreateDialog } from './DealCreateDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
 import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
 import { NegotiationsPageTop } from './NegotiationsPageTop';
 import { NegotiationsPipelineSection } from './pipeline/NegotiationsPipelineSection';
 
-const PIPELINE_PAGE_SIZE = 5;
+const PIPELINE_PAGE_SIZE = 3;
 const INVALID_STAGE_MOVE_MESSAGE = 'Não é possível pular etapas da negociação.';
 const STAGE_MOVE_SUCCESS_MESSAGE = 'Negociação movida com sucesso.';
 const STAGE_MOVE_ERROR_MESSAGE = 'Não foi possível atualizar a negociação.';
@@ -41,17 +44,28 @@ const darkToastOptions = {
 	},
 };
 
-function DealsPageContent() {
+type DealsPageContentProps = {
+	user: AuthenticatedUser;
+};
+
+function DealsPageContent({ user }: DealsPageContentProps) {
 	const [statusFilter, setStatusFilter] = useState<'ALL' | DealStatus>('ALL');
+	const [importanceFilter, setImportanceFilter] = useState<
+		'ALL' | DealImportance
+	>('ALL');
 	const [search, setSearch] = useState('');
 
 	const pipelineQuery = useMemo(
 		() => ({
 			pageSize: PIPELINE_PAGE_SIZE,
 			status: statusFilter === 'ALL' ? undefined : (statusFilter as DealStatus),
+			importance:
+				importanceFilter === 'ALL'
+					? undefined
+					: (importanceFilter as DealImportance),
 			search,
 		}),
-		[search, statusFilter],
+		[importanceFilter, search, statusFilter],
 	);
 	const query = useDealsPipelineQuery(pipelineQuery);
 	const loadMoreStageMutation = useLoadMorePipelineStageMutation(pipelineQuery);
@@ -60,6 +74,7 @@ function DealsPageContent() {
 	const updateDealMutation = useUpdateDealMutation();
 
 	const [detailsOpen, setDetailsOpen] = useState(false);
+	const [createOpen, setCreateOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
@@ -164,10 +179,17 @@ function DealsPageContent() {
 				dealId: targetDeal.id,
 				leadId: targetDeal.leadId,
 			});
+			toast.success('Negociação excluída com sucesso.', {
+				...darkToastOptions,
+			});
 			setDeleteOpen(false);
 			setTargetDeal(null);
 		} catch (error) {
-			setDialogError(getDealsErrorMessage(error));
+			const message = getDealsErrorMessage(error);
+			setDialogError(message);
+			toast.error(message, {
+				...darkToastOptions,
+			});
 		}
 	}
 
@@ -175,10 +197,9 @@ function DealsPageContent() {
 		<div className="space-y-6" aria-busy={query.isPending ? 'true' : 'false'}>
 			<NegotiationsPageTop
 				deals={visibleDeals}
+				onCreateDeal={() => setCreateOpen(true)}
 				onSearchChange={setSearch}
-				onStatusFilterChange={setStatusFilter}
 				search={search}
-				statusFilter={statusFilter}
 			/>
 
 			{query.isError ? (
@@ -202,6 +223,8 @@ function DealsPageContent() {
 
 					{query.isSuccess ? (
 						<NegotiationsPipelineSection
+							importanceFilter={importanceFilter}
+							statusFilter={statusFilter}
 							stages={stages}
 							summaryDeals={visibleDeals}
 							loadingStage={
@@ -214,6 +237,9 @@ function DealsPageContent() {
 							onLoadMoreStage={handleLoadMoreStage}
 							onMoveStage={handleMoveStage}
 							onInvalidStageMove={handleInvalidStageMove}
+							onImportanceFilterChange={setImportanceFilter}
+							onStatusFilterChange={setStatusFilter}
+							onCreateDeal={() => setCreateOpen(true)}
 							onOpenDetails={openDetails}
 							onDelete={canMutateInView ? openDelete : undefined}
 							onEdit={canMutateInView ? openEdit : undefined}
@@ -231,11 +257,23 @@ function DealsPageContent() {
 				open={detailsOpen}
 			/>
 
+			{createOpen ? (
+				<DealCreateDialog
+					onClose={() => setCreateOpen(false)}
+					open={createOpen}
+					user={user}
+				/>
+			) : null}
+
 			<DealFormDialog
 				isPending={updateDealMutation.isPending}
 				onClose={() => {
 					setEditOpen(false);
 					setTargetDeal(null);
+				}}
+				onDelete={(deal) => {
+					setEditOpen(false);
+					openDelete(deal);
 				}}
 				onSubmit={handleEditSubmit}
 				open={editOpen}

@@ -16,6 +16,7 @@ type Props = {
 	onOpenDetails: (deal: Deal) => void;
 	onEdit?: (deal: Deal) => void;
 	onDelete?: (deal: Deal) => void;
+	onCreateDeal: () => void;
 	draggedDealId?: string | null;
 	dragOverStage?: DealStage | null;
 	isDragTargetAllowed?: boolean;
@@ -38,6 +39,7 @@ function PipelineStageColumn({
 	onOpenDetails,
 	onEdit,
 	onDelete,
+	onCreateDeal,
 	draggedDealId,
 	dragOverStage,
 	isDragTargetAllowed = false,
@@ -123,6 +125,7 @@ function PipelineStageColumn({
 
 				<button
 					type="button"
+					onClick={onCreateDeal}
 					className={cn(
 						'mt-3 inline-flex h-7 w-full items-center justify-center gap-[7px] border-0 bg-transparent text-[13px] text-muted-foreground hover:text-foreground',
 					)}
