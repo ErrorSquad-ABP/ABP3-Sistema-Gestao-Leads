@@ -10,6 +10,8 @@ import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { LeadEventRepositoryFactory } from '../../infrastructure/persistence/factories/lead-event-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 import type { ReassignLeadDto } from '../dto/reassign-lead.dto.js';
 
@@ -20,6 +22,7 @@ class ReassignLeadUseCase {
 
 	constructor(
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
+		private readonly leadEventRepositoryFactory: LeadEventRepositoryFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly leadAccessPolicy: LeadAccessPolicy,
 	) {}
@@ -29,6 +32,8 @@ class ReassignLeadUseCase {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const users = this.userRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
+			const leadEvents =
+				this.leadEventRepositoryFactory.create(transactionContext);
 
 			const lead = await leads.findById(Uuid.parse(leadId));
 			if (!lead) {
@@ -48,10 +53,26 @@ class ReassignLeadUseCase {
 				dto.ownerUserId,
 			);
 
+			const previousOwnerUserId = lead.ownerUserId?.value ?? null;
+			const nextOwnerUserId = dto.ownerUserId;
 			lead.reassign(
-				dto.ownerUserId === null ? null : Uuid.parse(dto.ownerUserId),
+				nextOwnerUserId === null ? null : Uuid.parse(nextOwnerUserId),
 			);
-			return leads.update(lead);
+			const updated = await leads.update(lead);
+			if (previousOwnerUserId !== nextOwnerUserId) {
+				await leadEvents.append({
+					leadId: updated.id,
+					actorUserId: Uuid.parse(actor.userId),
+					type: 'REASSIGNED',
+					title: 'Lead reatribuído',
+					description: 'Responsável operacional do lead foi alterado.',
+					payload: {
+						fromOwnerUserId: previousOwnerUserId,
+						toOwnerUserId: nextOwnerUserId,
+					},
+				});
+			}
+			return updated;
 		});
 	}
 }

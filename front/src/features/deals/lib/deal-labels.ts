@@ -5,13 +5,13 @@ import type {
 } from '../model/deals.model';
 
 const dealStatusLabels: Record<DealStatus, string> = {
-	OPEN: 'Em aberto',
+	OPEN: 'Aberto',
 	WON: 'Ganha',
 	LOST: 'Perdida',
 };
 
 const dealStageLabels: Record<DealStage, string> = {
-	INITIAL_CONTACT: 'Contato inicial',
+	INITIAL_CONTACT: 'Contato Inicial',
 	NEGOTIATION: 'Negociação',
 	PROPOSAL: 'Proposta',
 	CLOSING: 'Fechamento',

@@ -18,7 +18,10 @@ import { ListOwnLeadsUseCase } from './application/use-cases/list-own-leads.use-
 import { ListTeamLeadsUseCase } from './application/use-cases/list-team-leads.use-case.js';
 import { ReassignLeadUseCase } from './application/use-cases/reassign-lead.use-case.js';
 import { UpdateLeadUseCase } from './application/use-cases/update-lead.use-case.js';
+import { GetLeadDetailUseCase } from './application/use-cases/get-lead-detail.use-case.js';
 import { LeadFactory } from './domain/factories/lead.factory.js';
+import { LeadDetailRepositoryFactory } from './infrastructure/persistence/factories/lead-detail-repository.factory.js';
+import { LeadEventRepositoryFactory } from './infrastructure/persistence/factories/lead-event-repository.factory.js';
 import { LeadRepositoryFactory } from './infrastructure/persistence/factories/lead-repository.factory.js';
 import { LeadController } from './presentation/controllers/lead.controller.js';
 
@@ -30,6 +33,8 @@ import { LeadController } from './presentation/controllers/lead.controller.js';
 		LeadAccessPolicy,
 		LeadFactory,
 		LeadRepositoryFactory,
+		LeadDetailRepositoryFactory,
+		LeadEventRepositoryFactory,
 		CustomerRepositoryFactory,
 		StoreRepositoryFactory,
 		TeamRepositoryFactory,
@@ -43,6 +48,7 @@ import { LeadController } from './presentation/controllers/lead.controller.js';
 		ListTeamLeadsUseCase,
 		ListAllLeadsUseCase,
 		ListManagerLeadsUseCase,
+		GetLeadDetailUseCase,
 		ReassignLeadUseCase,
 		ConvertLeadUseCase,
 		DeleteLeadUseCase,

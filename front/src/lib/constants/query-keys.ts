@@ -17,6 +17,7 @@ const queryKeys = {
 		listRoot: ['leads', 'list'] as const,
 		catalogRoot: ['leads', 'catalog'] as const,
 		detail: (leadId: string) => ['leads', 'detail', leadId] as const,
+		detailHub: (leadId: string) => ['leads', 'detail-hub', leadId] as const,
 		list: (
 			params:
 				| { scope: 'owner'; id: string; page: number }

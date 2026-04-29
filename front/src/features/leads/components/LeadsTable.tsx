@@ -2,6 +2,7 @@
 
 import {
 	CheckCheck,
+	Eye,
 	MoreHorizontal,
 	PencilLine,
 	Handshake,
@@ -39,6 +40,7 @@ type LeadsTableProps = {
 	leads: LeadListItem[];
 	onConvert?: (lead: LeadListItem) => void;
 	onDelete?: (lead: LeadListItem) => void;
+	onDetail?: (lead: LeadListItem) => void;
 	onDeals?: (lead: LeadListItem) => void;
 	onEdit?: (lead: LeadListItem) => void;
 	onReassign?: (lead: LeadListItem) => void;
@@ -69,6 +71,7 @@ function LeadsTable({
 	onConvert,
 	onDeals,
 	onDelete,
+	onDetail,
 	onEdit,
 	onReassign,
 	ownerLabelById,
@@ -146,6 +149,15 @@ function LeadsTable({
 										align="end"
 										className="w-44 rounded-xl bg-white"
 									>
+										{onDetail ? (
+											<DropdownMenuItem
+												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
+												onSelect={() => onDetail(lead)}
+											>
+												<Eye className="size-4" />
+												Ver detalhe
+											</DropdownMenuItem>
+										) : null}
 										{onDeals ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"

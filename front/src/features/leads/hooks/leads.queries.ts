@@ -8,6 +8,7 @@ import {
 	fetchLeadsAll,
 	fetchLeadsByOwner,
 	fetchLeadsManager,
+	findLeadDetailHub,
 	findLeadById,
 } from '../api/leads.service';
 import { type LeadsListScope, resolveLeadsListScope } from '../lib/leads-scope';
@@ -21,6 +22,18 @@ function useLeadDetailQuery(
 		queryKey: queryKeys.leads.detail(leadId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			findLeadById(leadId, signal),
+		enabled: options?.enabled,
+	});
+}
+
+function useLeadDetailHubQuery(
+	leadId: string,
+	options?: { readonly enabled?: boolean },
+) {
+	return useQuery({
+		queryKey: queryKeys.leads.detailHub(leadId),
+		queryFn: ({ signal }: { signal: AbortSignal }) =>
+			findLeadDetailHub(leadId, signal),
 		enabled: options?.enabled,
 	});
 }
@@ -116,6 +129,7 @@ function useLeadsListQuery(
 
 export {
 	buildLeadsListQueryKey,
+	useLeadDetailHubQuery,
 	useLeadDetailQuery,
 	isLeadsListQueryEnabled,
 	resolveLeadsListScope,
