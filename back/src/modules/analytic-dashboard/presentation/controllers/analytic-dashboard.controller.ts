@@ -20,7 +20,8 @@ import { AnalyticDashboardResponseDto } from '../../application/dto/analytic-das
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { GetAnalyticDashboardUseCase } from '../../application/use-cases/get-analytic-dashboard.use-case.js';
 import { AnalyticDashboardPresenter } from '../presenters/analytic-dashboard.presenter.js';
-import type { AnalyticDashboardQueryValidator } from '../validators/analytic-dashboard-query.validator.js';
+// biome-ignore lint/style/useImportType: ValidationPipe precisa da classe em runtime
+import { AnalyticDashboardQueryValidator } from '../validators/analytic-dashboard-query.validator.js';
 
 const BAD_REQUEST = {
 	description:
