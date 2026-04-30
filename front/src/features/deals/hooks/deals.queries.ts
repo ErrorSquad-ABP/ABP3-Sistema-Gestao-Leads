@@ -93,12 +93,20 @@ function useDealDetailQuery(dealId: string) {
 	});
 }
 
-function useDealHistoryQuery(dealId: string) {
+type DealHistoryQueryOptions = {
+	enabled?: boolean;
+};
+
+function useDealHistoryQuery(
+	dealId: string,
+	options?: DealHistoryQueryOptions,
+) {
+	const enabledByProp = options?.enabled !== false;
 	return useQuery({
 		queryKey: queryKeys.deals.history(dealId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			listDealHistory(dealId, signal),
-		enabled: Boolean(dealId),
+		enabled: enabledByProp && Boolean(dealId),
 	});
 }
 
