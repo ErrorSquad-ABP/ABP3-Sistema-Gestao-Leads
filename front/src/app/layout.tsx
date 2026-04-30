@@ -12,9 +12,19 @@ const metadata: Metadata = {
 	description:
 		'Aplicação web em Next.js para o Sistema de Gestão de Leads com Dashboard Analítico.',
 	icons: {
-		icon: '/assets/light-logo.png',
-		shortcut: '/assets/light-logo.png',
-		apple: '/assets/light-logo.png',
+		icon: [
+			{
+				url: '/assets/light-logo-removebg.png',
+				media: '(prefers-color-scheme: light)',
+			},
+			{
+				url: '/assets/dark-logo-removebg.png',
+				media: '(prefers-color-scheme: dark)',
+			},
+			'/assets/light-logo-removebg.png',
+		],
+		shortcut: '/assets/light-logo-removebg.png',
+		apple: '/assets/light-logo-removebg.png',
 	},
 };
 
