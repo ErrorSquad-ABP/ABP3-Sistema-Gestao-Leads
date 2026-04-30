@@ -41,7 +41,10 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
-import type { DealCreateFormInput, DealCreateInput } from '../model/deals.model';
+import type {
+	DealCreateFormInput,
+	DealCreateInput,
+} from '../model/deals.model';
 import { dealCreateSchema } from '../schemas/deal-management.schema';
 import { getDealsErrorMessage } from './DealFormDialog';
 
@@ -390,13 +393,16 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 									? vehiclesQuery.error.message
 									: 'Não foi possível carregar veículos disponíveis.'}
 							</p>
-						) : vehiclesQuery.isSuccess && leadId && availableVehicles.length === 0 ? (
+						) : vehiclesQuery.isSuccess &&
+							leadId &&
+							availableVehicles.length === 0 ? (
 							<p className="text-[11.5px] leading-4 text-[#6b7687]">
 								Nenhum veículo livre para negociação na loja deste lead.
 							</p>
 						) : (
 							<p className="text-[11.5px] leading-4 text-[#7a8494]">
-								Apenas veículos disponíveis e sem negociação aberta podem ser selecionados.
+								Apenas veículos disponíveis e sem negociação aberta podem ser
+								selecionados.
 							</p>
 						)}
 					</div>
@@ -437,7 +443,8 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								className="text-[12.5px] font-semibold text-[#1b2430]"
 								htmlFor="deal-create-value"
 							>
-								Valor <span className="text-[color:var(--brand-accent)]">*</span>
+								Valor{' '}
+								<span className="text-[color:var(--brand-accent)]">*</span>
 							</Label>
 							<div className={fieldShellClass}>
 								<span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-[#e5e9f0] text-[13px] font-medium text-[#4b5565]">

@@ -225,8 +225,7 @@ function getSummaryStageIconClass(
 	currentStage: DealStage | undefined,
 	stage: DealStage,
 ) {
-	const base =
-		'mx-auto flex size-7 items-center justify-center rounded-full';
+	const base = 'mx-auto flex size-7 items-center justify-center rounded-full';
 	if (currentStage !== stage) {
 		return `${base} bg-[#f4f6f8]`;
 	}
@@ -297,7 +296,6 @@ function DealFormDialog({
 	});
 
 	const titleValue = useWatch({ control: form.control, name: 'title' });
-	const vehicleValue = useWatch({ control: form.control, name: 'vehicleId' });
 	const stageValue = useWatch({ control: form.control, name: 'stage' });
 	const importanceValue = useWatch({
 		control: form.control,
@@ -415,8 +413,7 @@ function DealFormDialog({
 
 	async function handleSubmit() {
 		if (isReadOnly) {
-			const message =
-				'Negociação finalizada. Não é possível editar os campos.';
+			const message = 'Negociação finalizada. Não é possível editar os campos.';
 			setSubmitError(message);
 			toast.warning(message, {
 				id: 'deal-edit-readonly',
@@ -498,8 +495,8 @@ function DealFormDialog({
 								</span>
 								<p className="text-[12.5px] leading-5">
 									Ao alterar o veículo, as validações de disponibilidade serão
-									aplicadas. O veículo atual será liberado automaticamente caso a
-									troca seja realizada.
+									aplicadas. O veículo atual será liberado automaticamente caso
+									a troca seja realizada.
 								</p>
 							</div>
 							<Button
@@ -606,10 +603,14 @@ function DealFormDialog({
 										}}
 										onChange={(event) => {
 											setVehicleSearch(event.target.value);
-											form.setValue('vehicleId', '' as DealUpdateFormInput['vehicleId'], {
-												shouldDirty: true,
-												shouldValidate: true,
-											});
+											form.setValue(
+												'vehicleId',
+												'' as DealUpdateFormInput['vehicleId'],
+												{
+													shouldDirty: true,
+													shouldValidate: true,
+												},
+											);
 											setVehicleDropdownOpen(true);
 										}}
 										onFocus={() => setVehicleDropdownOpen(true)}
@@ -658,7 +659,8 @@ function DealFormDialog({
 									</p>
 								) : vehiclesQuery.isSuccess && vehicleOptions.length <= 1 ? (
 									<p className="text-[11.5px] leading-4 text-[#6b7687]">
-										Nenhum outro veículo livre para negociação na loja deste lead.
+										Nenhum outro veículo livre para negociação na loja deste
+										lead.
 									</p>
 								) : form.formState.errors.vehicleId ? (
 									<p className="text-[11.5px] leading-4 text-destructive">
@@ -666,7 +668,8 @@ function DealFormDialog({
 									</p>
 								) : (
 									<p className="text-[11.5px] leading-4 text-[#7a8494]">
-										Apenas veículos disponíveis e sem negociação aberta podem ser selecionados.
+										Apenas veículos disponíveis e sem negociação aberta podem
+										ser selecionados.
 									</p>
 								)}
 							</div>
@@ -807,7 +810,10 @@ function DealFormDialog({
 										disabled={isPending || isReadOnly}
 										id="deal-form-status"
 										onBlur={() => {
-											window.setTimeout(() => setStatusDropdownOpen(false), 120);
+											window.setTimeout(
+												() => setStatusDropdownOpen(false),
+												120,
+											);
 										}}
 										onClick={() => setStatusDropdownOpen((current) => !current)}
 										type="button"
@@ -877,7 +883,10 @@ function DealFormDialog({
 								</div>
 								<span className="h-px w-5 bg-[#e5e9f0]" />
 								<div
-									className={getSummaryStageTextClass(stageValue, 'NEGOTIATION')}
+									className={getSummaryStageTextClass(
+										stageValue,
+										'NEGOTIATION',
+									)}
 								>
 									<span
 										className={getSummaryStageIconClass(
@@ -890,7 +899,9 @@ function DealFormDialog({
 									<p>Negociação</p>
 								</div>
 								<span className="h-px w-5 bg-[#e5e9f0]" />
-								<div className={getSummaryStageTextClass(stageValue, 'PROPOSAL')}>
+								<div
+									className={getSummaryStageTextClass(stageValue, 'PROPOSAL')}
+								>
 									<span
 										className={getSummaryStageIconClass(stageValue, 'PROPOSAL')}
 									>
@@ -899,7 +910,9 @@ function DealFormDialog({
 									<p>Proposta</p>
 								</div>
 								<span className="h-px w-5 bg-[#e5e9f0]" />
-								<div className={getSummaryStageTextClass(stageValue, 'CLOSING')}>
+								<div
+									className={getSummaryStageTextClass(stageValue, 'CLOSING')}
+								>
 									<span
 										className={getSummaryStageIconClass(stageValue, 'CLOSING')}
 									>

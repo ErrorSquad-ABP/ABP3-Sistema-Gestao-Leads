@@ -72,7 +72,8 @@ function getStatusBadgeVisual(status: DealStatus) {
 		case 'OPEN':
 			return {
 				Icon: Activity,
-				wrapClassName: 'border border-emerald-100 bg-emerald-50 text-emerald-700',
+				wrapClassName:
+					'border border-emerald-100 bg-emerald-50 text-emerald-700',
 			};
 		case 'WON':
 			return {
@@ -135,20 +136,24 @@ function getStageBadgeVisual(stage: DealStage) {
 	}
 }
 
-const historyEventTitles: Record<string, string> = {
-	STAGE: 'Etapa alterada',
-	IMPORTANCE: 'Importância alterada',
-	VEHICLE: 'Veículo alterado',
-	STATUS: 'Status alterado',
-	TITLE: 'Título alterado',
-	VALUE: 'Valor alterado',
-};
-
 function getHistoryEventTitle(field: string): string {
 	const k = field.trim().toUpperCase();
-	return (
-		historyEventTitles[k] ?? `${formatDealHistoryFieldName(field)} alterado`
-	);
+	switch (k) {
+		case 'STAGE':
+			return 'Etapa alterada';
+		case 'IMPORTANCE':
+			return 'Importância alterada';
+		case 'VEHICLE':
+			return 'Veículo alterado';
+		case 'STATUS':
+			return 'Status alterado';
+		case 'TITLE':
+			return 'Título alterado';
+		case 'VALUE':
+			return 'Valor alterado';
+		default:
+			return `${formatDealHistoryFieldName(field)} alterado`;
+	}
 }
 
 function getHistoryTimelineVisual(field: string) {
@@ -313,7 +318,10 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									labelIcon={<Tag className={labelIconClass} />}
 								>
 									<div className="flex items-start gap-2 text-[13px] font-medium leading-snug text-[#1b2430]">
-										<Tag className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]" aria-hidden />
+										<Tag
+											className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]"
+											aria-hidden
+										/>
 										<span className="break-words">{deal.title}</span>
 									</div>
 								</DetailSlot>
@@ -323,9 +331,14 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									labelIcon={<Flag className={labelIconClass} />}
 								>
 									<div className="flex items-start gap-2 text-[13px] font-medium text-[#1b2430]">
-										<User className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]" aria-hidden />
+										<User
+											className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]"
+											aria-hidden
+										/>
 										<span>
-											{formatDealLeadCustomerDisplay(deal.leadCustomerName ?? '')}
+											{formatDealLeadCustomerDisplay(
+												deal.leadCustomerName ?? '',
+											)}
 										</span>
 									</div>
 								</DetailSlot>
@@ -335,7 +348,10 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									labelIcon={<Car className={labelIconClass} />}
 								>
 									<div className="flex items-start gap-2 text-[13px] font-medium text-[#1b2430]">
-										<Car className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]" aria-hidden />
+										<Car
+											className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]"
+											aria-hidden
+										/>
 										<span className="break-words">
 											<DealVehicleLabelText
 												serverLabel={deal.vehicleLabel}
@@ -375,7 +391,8 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 										Histórico
 									</h3>
 									<p className="mt-0.5 text-[12px] leading-4 text-[#7a8494]">
-										Acompanhe as principais alterações realizadas nesta negociação.
+										Acompanhe as principais alterações realizadas nesta
+										negociação.
 									</p>
 								</div>
 							</div>
@@ -401,72 +418,67 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 								) : null}
 
 								{historyQuery.isSuccess ? (
-									<>
-										{history.length === 0 ? (
-											<div className="rounded-xl border border-border/70 bg-muted/15 px-4 py-10 text-center text-[13px] text-[#7a8494]">
-												Nenhuma alteração registrada.
-											</div>
-										) : (
-											<ul className="space-y-4">
-												{history.map((item, index) => {
-													const visual = getHistoryTimelineVisual(item.field);
-													const HistIcon = visual.Icon;
-													const detailLineParts: string[] = [];
-													if (
-														item.fromValue != null &&
-														item.fromValue !== ''
-													) {
-														detailLineParts.push(
-															`De: ${formatDealHistoryValueDisplay(
-																item.field,
-																item.fromValue,
-															)}`,
-														);
-													}
+									history.length === 0 ? (
+										<div className="rounded-xl border border-border/70 bg-muted/15 px-4 py-10 text-center text-[13px] text-[#7a8494]">
+											Nenhuma alteração registrada.
+										</div>
+									) : (
+										<ul className="space-y-4">
+											{history.map((item, index) => {
+												const visual = getHistoryTimelineVisual(item.field);
+												const HistIcon = visual.Icon;
+												const detailLineParts: string[] = [];
+												if (item.fromValue != null && item.fromValue !== '') {
 													detailLineParts.push(
-														`Para: ${formatDealHistoryValueDisplay(
+														`De: ${formatDealHistoryValueDisplay(
 															item.field,
-															item.toValue,
+															item.fromValue,
 														)}`,
 													);
-													const connector =
-														index < history.length - 1 ? (
-															<div
-																aria-hidden
-																className="mx-auto mt-1 min-h-4 w-px shrink-0 bg-[#dfe4eb]"
-															/>
-														) : null;
-													return (
-														<li
-															className="flex gap-3"
-															key={item.id}
-														>
-															<div className="flex w-11 shrink-0 flex-col items-center pt-1">
-																<span
-																	className={`flex size-9 items-center justify-center rounded-full ${visual.wrapClassName}`}
-																>
-																	<HistIcon className="size-4" aria-hidden />
-																</span>
-																{connector}
-															</div>
-															<div className="min-w-0 flex-1 rounded-xl border border-[#e7ebf0] bg-[#fdfefe] px-4 py-3">
-																<p className="text-[13px] font-semibold text-[#1b2430]">
-																	{getHistoryEventTitle(item.field)}
-																</p>
-																<p className="mt-1 text-[12.5px] leading-[1.35] text-[#5c6570]">
-																	{detailLineParts.join(' · ')}
-																</p>
-																<p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#7a8494]">
-																	<Clock className="size-3 shrink-0" aria-hidden />
-																	<span>{formatDateTime(item.createdAt)}</span>
-																</p>
-															</div>
-														</li>
-													);
-												})}
-											</ul>
-										)}
-									</>
+												}
+												detailLineParts.push(
+													`Para: ${formatDealHistoryValueDisplay(
+														item.field,
+														item.toValue,
+													)}`,
+												);
+												const connector =
+													index < history.length - 1 ? (
+														<div
+															aria-hidden
+															className="mx-auto mt-1 min-h-4 w-px shrink-0 bg-[#dfe4eb]"
+														/>
+													) : null;
+												return (
+													<li className="flex gap-3" key={item.id}>
+														<div className="flex w-11 shrink-0 flex-col items-center pt-1">
+															<span
+																className={`flex size-9 items-center justify-center rounded-full ${visual.wrapClassName}`}
+															>
+																<HistIcon className="size-4" aria-hidden />
+															</span>
+															{connector}
+														</div>
+														<div className="min-w-0 flex-1 rounded-xl border border-[#e7ebf0] bg-[#fdfefe] px-4 py-3">
+															<p className="text-[13px] font-semibold text-[#1b2430]">
+																{getHistoryEventTitle(item.field)}
+															</p>
+															<p className="mt-1 text-[12.5px] leading-[1.35] text-[#5c6570]">
+																{detailLineParts.join(' · ')}
+															</p>
+															<p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#7a8494]">
+																<Clock
+																	className="size-3 shrink-0"
+																	aria-hidden
+																/>
+																<span>{formatDateTime(item.createdAt)}</span>
+															</p>
+														</div>
+													</li>
+												);
+											})}
+										</ul>
+									)
 								) : null}
 							</div>
 						</div>

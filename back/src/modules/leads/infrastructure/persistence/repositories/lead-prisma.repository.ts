@@ -11,7 +11,9 @@ import { LeadMapper } from '../mappers/lead.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
 
-function withoutOpenDealWhere(filters?: LeadListFilters): Prisma.LeadWhereInput {
+function withoutOpenDealWhere(
+	filters?: LeadListFilters,
+): Prisma.LeadWhereInput {
 	return filters?.withoutOpenDeal
 		? { deals: { none: { status: 'OPEN' } } }
 		: {};

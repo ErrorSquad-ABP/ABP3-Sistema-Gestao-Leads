@@ -44,7 +44,8 @@ const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
 
 function getImportanceLabel(value: ImportanceFilter) {
 	return (
-		IMPORTANCE_OPTIONS.find((option) => option.value === value)?.label ?? 'Todas'
+		IMPORTANCE_OPTIONS.find((option) => option.value === value)?.label ??
+		'Todas'
 	);
 }
 
@@ -85,7 +86,9 @@ function PipelineControls({
 				>
 					<DropdownMenuRadioGroup
 						value={statusFilter}
-						onValueChange={(value) => onStatusFilterChange(value as StatusFilter)}
+						onValueChange={(value) =>
+							onStatusFilterChange(value as StatusFilter)
+						}
 					>
 						{STATUS_OPTIONS.map((option) => (
 							<DropdownMenuRadioItem
