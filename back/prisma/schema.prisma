@@ -180,6 +180,9 @@ model Lead {
   deals       Deal[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  @@index([createdAt])
+  @@index([storeId, createdAt])
 }
 
 model Vehicle {

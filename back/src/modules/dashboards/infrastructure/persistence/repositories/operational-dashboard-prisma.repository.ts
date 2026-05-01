@@ -1,9 +1,9 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { LeadSource as PrismaLeadSource } from '../../../../../generated/prisma/enums.js';
+import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import { DEAL_IMPORTANCES } from '../../../../../shared/domain/enums/deal-importance.enum.js';
 import { LEAD_STATUSES } from '../../../../../shared/domain/enums/lead-status.enum.js';
 import { ALLOWED_LEAD_SOURCES } from '../../../../../shared/domain/value-objects/lead-source.value-object.js';
-import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type {
 	DashboardDistributionItem,
@@ -139,7 +139,11 @@ class OperationalDashboardPrismaRepository
 		keys: readonly string[],
 		raw: readonly DashboardDistributionItem[],
 	): DashboardDistributionItem[] {
-		const counts = new Map(raw.map((item) => [item.key, item.count]));
+		const counts = new Map<string, number>();
+		for (const item of raw) {
+			counts.set(item.key, (counts.get(item.key) ?? 0) + item.count);
+		}
+
 		return keys.map((key) => ({
 			key,
 			count: counts.get(key) ?? 0,
