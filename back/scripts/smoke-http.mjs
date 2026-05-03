@@ -167,10 +167,17 @@ async function main() {
 			`GET /dashboards/analytic sem JWT esperado 401, obteve ${res.status}`,
 		);
 		console.log('OK GET /dashboards/analytic (401 sem autenticação)');
+		const { res } = await req('GET', `/leads/${SAMPLE_UUID}/detail`);
+		assert(
+			res.status === 401,
+			`GET /leads/:id/detail sem JWT esperado 401, obteve ${res.status}`,
+		);
+		console.log('OK GET /leads/:id/detail (401 sem autenticação)');
 	}
 
 	let adminAuthHeader = null;
 	let adminCookie = null;
+	let sampleLeadIdFromList = null;
 
 	if (SMOKE_ADMIN_EMAIL && SMOKE_ADMIN_PASSWORD) {
 		const loginRes = await fetch(`${BASE.replace(/\/$/, '')}/auth/login`, {
@@ -334,6 +341,21 @@ async function main() {
 			assert(res.status === 401, 'GET /leads/:id sem auth → 401');
 		}
 	}
+	{
+		const { res, json } = await req('GET', `/leads/${SAMPLE_UUID}/detail`, {
+			headers: authHeaders,
+		});
+		if (adminAuthHeader) {
+			assert(
+				res.status === 404,
+				`GET /leads/:id/detail inexistente esperado 404, obteve ${res.status}`,
+			);
+			assert(json?.success === false, 'GET lead detail 404 envelope');
+			console.log('OK GET /leads/:id/detail (404 esperado)');
+		} else {
+			assert(res.status === 401, 'GET /leads/:id/detail sem auth → 401');
+		}
+	}
 
 	// UUID inválido → 400 (rota protegida: com Bearer inválido ainda 401 primeiro)
 	{
@@ -402,6 +424,10 @@ async function main() {
 		if (adminAuthHeader) {
 			assert(res.status === 200, `GET leads/all esperado 200`);
 			assert(Array.isArray(json?.data?.items), 'leads/all data.items array');
+			sampleLeadIdFromList =
+				typeof json.data.items[0]?.id === 'string'
+					? json.data.items[0].id
+					: null;
 			console.log('OK GET /leads/all');
 		}
 	}
@@ -487,6 +513,29 @@ async function main() {
 			'Dashboard analítico admin mantém escopo full',
 		);
 		console.log('OK GET /dashboards/analytic custom amplo (admin)');
+	if (adminAuthHeader && sampleLeadIdFromList) {
+		const { res, json } = await req(
+			'GET',
+			`/leads/${sampleLeadIdFromList}/detail`,
+			{
+				headers: adminAuthHeader,
+			},
+		);
+		assert(
+			res.status === 200,
+			`GET /leads/:id/detail autenticado esperado 200, obteve ${res.status}`,
+		);
+		assert(json?.success === true, 'GET lead detail envelope');
+		assert(
+			json?.data?.lead?.id === sampleLeadIdFromList,
+			'lead detail data.lead.id',
+		);
+		assert(Array.isArray(json?.data?.timeline), 'lead detail timeline array');
+		assert(
+			typeof json?.data?.permissions?.canManageDeals === 'boolean',
+			'lead detail permissions.canManageDeals boolean',
+		);
+		console.log('OK GET /leads/:id/detail (200 autenticado)');
 	}
 
 	if (!adminAuthHeader) {

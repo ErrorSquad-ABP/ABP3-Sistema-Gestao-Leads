@@ -71,6 +71,13 @@ enum VehicleStatus {
   INACTIVE
 }
 
+enum LeadEventType {
+  CREATED
+  UPDATED
+  REASSIGNED
+  CONVERTED
+}
+
 enum SupportedFuelType {
   GASOLINE
   ETHANOL
@@ -107,6 +114,7 @@ model User {
   managedTeams  Team[]       @relation("TeamManager")
 
   ownedLeads    Lead[]       @relation("LeadOwner")
+  leadEvents    LeadEvent[]  @relation("LeadEventActor")
   auditLogs     AuditLog[]
   authSessions  AuthSession[]
 
@@ -179,8 +187,25 @@ model Lead {
   store       Store       @relation(fields: [storeId], references: [id], onDelete: Restrict)
   owner       User?       @relation("LeadOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
   deals       Deal[]
+  events      LeadEvent[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+}
+
+model LeadEvent {
+  id          String        @id @default(uuid()) @db.Uuid
+  leadId      String        @db.Uuid
+  lead        Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  actorUserId String?       @db.Uuid
+  actorUser   User?         @relation("LeadEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  type        LeadEventType
+  title       String
+  description String
+  payload     Json?
+  createdAt   DateTime      @default(now())
+
+  @@index([leadId, createdAt])
+  @@index([actorUserId])
 }
 
 model Vehicle {
