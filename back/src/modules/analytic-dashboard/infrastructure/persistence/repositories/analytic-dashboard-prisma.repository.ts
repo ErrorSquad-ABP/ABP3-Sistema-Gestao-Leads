@@ -21,11 +21,8 @@ type PrismaLeadRow = Prisma.LeadGetPayload<{
 		};
 		deals: {
 			select: {
-				id: true;
-				importance: true;
 				status: true;
 				createdAt: true;
-				closedAt: true;
 			};
 		};
 	};
@@ -114,20 +111,23 @@ function toPerformanceItems(
 		});
 }
 
-function toDistributionItems(
-	source: Map<
-		string,
-		{ readonly key: string; readonly label: string; count: number }
-	>,
-): AnalyticDistributionItem[] {
-	return [...source.values()]
-		.map((item) => ({ key: item.key, label: item.label, count: item.count }))
-		.sort((left, right) => {
-			if (right.count !== left.count) {
-				return right.count - left.count;
-			}
-			return left.label.localeCompare(right.label);
-		});
+function emptyAnalyticsResult(): AnalyticDashboardResult {
+	return {
+		summary: {
+			totalLeads: 0,
+			convertedLeads: 0,
+			notConvertedLeads: 0,
+			conversionRate: 0,
+		},
+		byAttendant: [],
+		byTeam: [],
+		importanceDistribution: [],
+		finalizationReasons: [],
+		averageTimeToFirstInteraction: {
+			hours: null,
+			leadsWithInteraction: 0,
+		},
+	};
 }
 
 class AnalyticDashboardPrismaRepository
@@ -139,37 +139,69 @@ class AnalyticDashboardPrismaRepository
 		scope: AnalyticsScope,
 		timeRange: AnalyticsTimeRange,
 	): Promise<AnalyticDashboardResult> {
-		const where: Prisma.LeadWhereInput = {
-			createdAt: {
-				gte: timeRange.startAt,
-				lt: timeRange.endExclusive,
-			},
-			...this.buildScopeWhere(scope),
+		const leadWhere = this.buildLeadWhere(scope, timeRange);
+		const dealWhere: Prisma.DealWhereInput = {
+			lead: leadWhere,
 		};
 
-		const leads = await this.prisma.lead.findMany({
-			where,
-			orderBy: { createdAt: 'desc' },
-			include: {
-				owner: {
-					select: {
-						id: true,
-						name: true,
-						memberTeams: { select: { id: true, name: true, storeId: true } },
-						managedTeams: { select: { id: true, name: true, storeId: true } },
+		const [
+			totalLeads,
+			convertedLeads,
+			importanceGroups,
+			finalizationGroups,
+			leads,
+		] = await Promise.all([
+			this.prisma.lead.count({ where: leadWhere }),
+			this.prisma.lead.count({
+				where: {
+					...leadWhere,
+					status: 'CONVERTED',
+				},
+			}),
+			this.prisma.deal.groupBy({
+				by: ['importance'],
+				_count: { _all: true },
+				where: dealWhere,
+			}),
+			this.prisma.deal.groupBy({
+				by: ['status'],
+				_count: { _all: true },
+				where: {
+					...dealWhere,
+					status: { in: ['WON', 'LOST'] },
+				},
+			}),
+			// Team derivation still depends on owner/team/store relationships, so we keep
+			// a narrow in-memory projection only for ranking and first-interaction timing.
+			this.prisma.lead.findMany({
+				where: leadWhere,
+				orderBy: { createdAt: 'desc' },
+				include: {
+					owner: {
+						select: {
+							id: true,
+							name: true,
+							memberTeams: {
+								select: { id: true, name: true, storeId: true },
+							},
+							managedTeams: {
+								select: { id: true, name: true, storeId: true },
+							},
+						},
+					},
+					deals: {
+						select: {
+							status: true,
+							createdAt: true,
+						},
 					},
 				},
-				deals: {
-					select: {
-						id: true,
-						importance: true,
-						status: true,
-						createdAt: true,
-						closedAt: true,
-					},
-				},
-			},
-		});
+			}),
+		]);
+
+		if (totalLeads === 0) {
+			return emptyAnalyticsResult();
+		}
 
 		const attendantCounters = new Map<
 			string,
@@ -179,34 +211,16 @@ class AnalyticDashboardPrismaRepository
 			string,
 			{ readonly id: string; readonly name: string; counter: Counter }
 		>();
-		const importanceCounters = new Map<
-			string,
-			{ readonly key: string; readonly label: string; count: number }
-		>();
-		const finalizationCounters = new Map<
-			string,
-			{ readonly key: string; readonly label: string; count: number }
-		>();
 
 		const visibleTeamIds =
 			scope.kind === 'manager' ? new Set(scope.readTeamIds) : undefined;
 
-		let totalLeads = 0;
-		let convertedLeads = 0;
-		let notConvertedLeads = 0;
 		let interactionLeadCount = 0;
 		let interactionTotalHours = 0;
+		const notConvertedLeads = totalLeads - convertedLeads;
 
 		for (const lead of leads) {
-			totalLeads += 1;
-
 			const isConverted = lead.status === 'CONVERTED';
-			if (isConverted) {
-				convertedLeads += 1;
-			} else {
-				notConvertedLeads += 1;
-			}
-
 			const ownerId = lead.owner?.id ?? '__unassigned__';
 			const ownerName = lead.owner?.name ?? 'Sem responsavel';
 			const attendantEntry = attendantCounters.get(ownerId) ?? {
@@ -222,28 +236,6 @@ class AnalyticDashboardPrismaRepository
 				attendantEntry.counter.openDeals += deal.status === 'OPEN' ? 1 : 0;
 				attendantEntry.counter.wonDeals += deal.status === 'WON' ? 1 : 0;
 				attendantEntry.counter.lostDeals += deal.status === 'LOST' ? 1 : 0;
-
-				const importanceKey = deal.importance;
-				const importanceItem = importanceCounters.get(importanceKey) ?? {
-					key: importanceKey,
-					label: this.importanceLabel(importanceKey),
-					count: 0,
-				};
-				importanceItem.count += 1;
-				importanceCounters.set(importanceKey, importanceItem);
-
-				if (deal.status === 'WON' || deal.status === 'LOST') {
-					const reasonKey =
-						deal.status === 'WON' ? 'sale_completed' : 'closed_without_sale';
-					const reasonItem = finalizationCounters.get(reasonKey) ?? {
-						key: reasonKey,
-						label:
-							deal.status === 'WON' ? 'Venda concluida' : 'Encerrada sem venda',
-						count: 0,
-					};
-					reasonItem.count += 1;
-					finalizationCounters.set(reasonKey, reasonItem);
-				}
 			}
 			attendantCounters.set(ownerId, attendantEntry);
 
@@ -282,8 +274,8 @@ class AnalyticDashboardPrismaRepository
 			},
 			byAttendant: toPerformanceItems(attendantCounters),
 			byTeam: toPerformanceItems(teamCounters),
-			importanceDistribution: toDistributionItems(importanceCounters),
-			finalizationReasons: toDistributionItems(finalizationCounters),
+			importanceDistribution: this.toImportanceDistribution(importanceGroups),
+			finalizationReasons: this.toFinalizationReasons(finalizationGroups),
 			averageTimeToFirstInteraction: {
 				hours:
 					interactionLeadCount === 0
@@ -291,6 +283,19 @@ class AnalyticDashboardPrismaRepository
 						: round2(interactionTotalHours / interactionLeadCount),
 				leadsWithInteraction: interactionLeadCount,
 			},
+		};
+	}
+
+	private buildLeadWhere(
+		scope: AnalyticsScope,
+		timeRange: AnalyticsTimeRange,
+	): Prisma.LeadWhereInput {
+		return {
+			createdAt: {
+				gte: timeRange.startAt,
+				lt: timeRange.endExclusive,
+			},
+			...this.buildScopeWhere(scope),
 		};
 	}
 
@@ -337,6 +342,42 @@ class AnalyticDashboardPrismaRepository
 		return {
 			storeId: { in: [...scope.readStoreIds] },
 		};
+	}
+
+	private toImportanceDistribution(
+		groups: readonly { importance: string; _count: { _all: number } }[],
+	): AnalyticDistributionItem[] {
+		return groups
+			.map((group) => ({
+				key: group.importance,
+				label: this.importanceLabel(group.importance),
+				count: group._count._all,
+			}))
+			.sort((left, right) => {
+				if (right.count !== left.count) {
+					return right.count - left.count;
+				}
+				return left.label.localeCompare(right.label);
+			});
+	}
+
+	private toFinalizationReasons(
+		groups: readonly { status: string; _count: { _all: number } }[],
+	): AnalyticDistributionItem[] {
+		return groups
+			.map((group) => ({
+				key:
+					group.status === 'WON' ? 'sale_completed' : 'closed_without_sale',
+				label:
+					group.status === 'WON' ? 'Venda concluida' : 'Encerrada sem venda',
+				count: group._count._all,
+			}))
+			.sort((left, right) => {
+				if (right.count !== left.count) {
+					return right.count - left.count;
+				}
+				return left.label.localeCompare(right.label);
+			});
 	}
 
 	private importanceLabel(importance: string): string {

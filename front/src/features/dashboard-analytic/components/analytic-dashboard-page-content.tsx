@@ -59,12 +59,21 @@ const PRIMARY_COLOR = '#ff7a45';
 const SECONDARY_COLOR = '#2d3648';
 const MUTED_COLOR = '#cfd8e3';
 
+function toLocalDateInputValue(date: Date) {
+	const year = String(date.getFullYear());
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+}
+
 function isoToday() {
-	return new Date().toISOString().slice(0, 10);
+	return toLocalDateInputValue(new Date());
 }
 
 function isoThirtyDaysAgo() {
-	return new Date(Date.now() - 29 * 86_400_000).toISOString().slice(0, 10);
+	const date = new Date();
+	date.setDate(date.getDate() - 29);
+	return toLocalDateInputValue(date);
 }
 
 function formatPercent(value: number) {
