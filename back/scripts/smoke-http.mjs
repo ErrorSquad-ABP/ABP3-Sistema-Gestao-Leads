@@ -167,6 +167,9 @@ async function main() {
 			`GET /dashboards/analytic sem JWT esperado 401, obteve ${res.status}`,
 		);
 		console.log('OK GET /dashboards/analytic (401 sem autenticação)');
+	}
+
+	{
 		const { res } = await req('GET', `/leads/${SAMPLE_UUID}/detail`);
 		assert(
 			res.status === 401,
@@ -503,39 +506,52 @@ async function main() {
 				},
 			},
 		);
+
 		assert(
 			res.status === 200,
 			`GET /dashboards/analytic custom amplo para admin esperado 200, obteve ${res.status}`,
 		);
+
 		assert(json?.success === true, 'Dashboard analítico custom amplo envelope');
+
 		assert(
 			json?.data?.filter?.scope === 'full',
 			'Dashboard analítico admin mantém escopo full',
 		);
+
 		console.log('OK GET /dashboards/analytic custom amplo (admin)');
-	if (adminAuthHeader && sampleLeadIdFromList) {
-		const { res, json } = await req(
-			'GET',
-			`/leads/${sampleLeadIdFromList}/detail`,
-			{
-				headers: adminAuthHeader,
-			},
-		);
-		assert(
-			res.status === 200,
-			`GET /leads/:id/detail autenticado esperado 200, obteve ${res.status}`,
-		);
-		assert(json?.success === true, 'GET lead detail envelope');
-		assert(
-			json?.data?.lead?.id === sampleLeadIdFromList,
-			'lead detail data.lead.id',
-		);
-		assert(Array.isArray(json?.data?.timeline), 'lead detail timeline array');
-		assert(
-			typeof json?.data?.permissions?.canManageDeals === 'boolean',
-			'lead detail permissions.canManageDeals boolean',
-		);
-		console.log('OK GET /leads/:id/detail (200 autenticado)');
+
+		// 👉 ESTE BLOCO ESTAVA DENTRO MAS MAL FECHADO
+		if (sampleLeadIdFromList) {
+			const { res, json } = await req(
+				'GET',
+				`/leads/${sampleLeadIdFromList}/detail`,
+				{
+					headers: adminAuthHeader,
+				},
+			);
+
+			assert(
+				res.status === 200,
+				`GET /leads/:id/detail autenticado esperado 200, obteve ${res.status}`,
+			);
+
+			assert(json?.success === true, 'GET lead detail envelope');
+
+			assert(
+				json?.data?.lead?.id === sampleLeadIdFromList,
+				'lead detail data.lead.id',
+			);
+
+			assert(Array.isArray(json?.data?.timeline), 'lead detail timeline array');
+
+			assert(
+				typeof json?.data?.permissions?.canManageDeals === 'boolean',
+				'lead detail permissions.canManageDeals boolean',
+			);
+
+			console.log('OK GET /leads/:id/detail (200 autenticado)');
+		}
 	}
 
 	if (!adminAuthHeader) {
@@ -549,6 +565,7 @@ async function main() {
 
 main().catch((e) => {
 	const cause = e?.cause;
+
 	if (cause?.code === 'ECONNREFUSED') {
 		console.error(
 			'Não foi possível conectar à API. Suba o back (com Postgres e DATABASE_URL) e tente de novo.',
@@ -557,5 +574,6 @@ main().catch((e) => {
 	} else {
 		console.error(e);
 	}
+
 	process.exit(1);
 });

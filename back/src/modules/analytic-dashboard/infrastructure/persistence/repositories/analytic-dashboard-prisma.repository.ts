@@ -366,8 +366,7 @@ class AnalyticDashboardPrismaRepository
 	): AnalyticDistributionItem[] {
 		return groups
 			.map((group) => ({
-				key:
-					group.status === 'WON' ? 'sale_completed' : 'closed_without_sale',
+				key: group.status === 'WON' ? 'sale_completed' : 'closed_without_sale',
 				label:
 					group.status === 'WON' ? 'Venda concluida' : 'Encerrada sem venda',
 				count: group._count._all,
