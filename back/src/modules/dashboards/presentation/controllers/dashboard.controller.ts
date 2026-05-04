@@ -17,7 +17,8 @@ import {
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import { OperationalDashboardResponseDto } from '../../application/dto/operational-dashboard-response.dto.js';
 import { GetOperationalDashboardUseCase } from '../../application/use-cases/get-operational-dashboard.use-case.js';
-import type { OperationalDashboardQueryValidator } from '../validators/operational-dashboard-query.validator.js';
+// biome-ignore lint/style/useImportType: necessario em runtime para metadata de validacao do Nest
+import { OperationalDashboardQueryValidator } from '../validators/operational-dashboard-query.validator.js';
 
 const BAD_REQUEST = {
 	description:
