@@ -11,4 +11,9 @@ function getDealFormEditBlockReason(deal: Deal): string | null {
 	return null;
 }
 
-export { getDealFormEditBlockReason };
+/** Critério alinhado à edição: só permite arrastar no funil quando o formulário também poderia abrir para edição. */
+function dealAllowsKanbanStageDrag(deal: Deal): boolean {
+	return getDealFormEditBlockReason(deal) === null;
+}
+
+export { getDealFormEditBlockReason, dealAllowsKanbanStageDrag };

@@ -5,6 +5,7 @@ import type { DragEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { dealAllowsKanbanStageDrag } from '@/features/deals/lib/deal-edit-guard';
 import type { Deal, DealStage } from '@/features/deals/model/deals.model';
 import { NegotiationPipelineDealCard } from '@/features/deals/components/pipeline/NegotiationPipelineDealCard';
 
@@ -99,7 +100,7 @@ function PipelineStageColumn({
 						key={deal.id}
 						deal={deal}
 						showValues={showValues}
-						draggable={deal.canMutate}
+						draggable={dealAllowsKanbanStageDrag(deal)}
 						isDragging={draggedDealId === deal.id}
 						isStageUpdating={updatingDealId === deal.id}
 						onDragStart={onCardDragStart}

@@ -12,6 +12,7 @@ import type {
 	DealStage,
 	DealStatus,
 } from '@/features/deals/model/deals.model';
+import { getDealFormEditBlockReason } from '@/features/deals/lib/deal-edit-guard';
 import { PIPELINE_STAGES } from '@/features/deals/lib/pipeline';
 import { PipelineControls } from '@/features/deals/components/pipeline/PipelineControls';
 import { PipelineMotivationBanner } from '@/features/deals/components/pipeline/PipelineMotivationBanner';
@@ -28,6 +29,7 @@ type Props = {
 	onCreateDeal: () => void;
 	onMoveStage?: (deal: Deal, targetStage: DealStage) => void;
 	onInvalidStageMove?: () => void;
+	onPipelineMoveBlocked?: (reason: string) => void;
 	onImportanceFilterChange: (value: 'ALL' | DealImportance) => void;
 	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
 	pipelineSortMode: DealPipelineSortMode;
@@ -35,10 +37,7 @@ type Props = {
 	onLoadMoreStage?: (stage: DealPipelineStage) => void;
 	loadingStage?: DealStage | null;
 	updatingDealId?: string | null;
-	stageMoveError?: string | null;
 };
-
-const INVALID_STAGE_MOVE_MESSAGE = 'Não é possível pular etapas da negociação.';
 
 function stageIndex(stage: DealStage) {
 	return PIPELINE_STAGES.findIndex((item) => item.key === stage);
@@ -60,6 +59,7 @@ function NegotiationsPipelineCard({
 	onCreateDeal,
 	onMoveStage,
 	onInvalidStageMove,
+	onPipelineMoveBlocked,
 	onImportanceFilterChange,
 	onStatusFilterChange,
 	pipelineSortMode,
@@ -67,14 +67,10 @@ function NegotiationsPipelineCard({
 	onLoadMoreStage,
 	loadingStage,
 	updatingDealId,
-	stageMoveError,
 }: Props) {
 	const [showValues, setShowValues] = useState(true);
 	const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
 	const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null);
-	const [localStageMoveError, setLocalStageMoveError] = useState<string | null>(
-		null,
-	);
 
 	function clearDragState() {
 		setDraggedDeal(null);
@@ -100,12 +96,16 @@ function NegotiationsPipelineCard({
 			return;
 		}
 		if (!isAdjacentStageMove(draggedDeal.stage, stage)) {
-			setLocalStageMoveError(INVALID_STAGE_MOVE_MESSAGE);
 			onInvalidStageMove?.();
 			clearDragState();
 			return;
 		}
-		setLocalStageMoveError(null);
+		const editBlock = getDealFormEditBlockReason(draggedDeal);
+		if (editBlock) {
+			onPipelineMoveBlocked?.(editBlock);
+			clearDragState();
+			return;
+		}
 		onMoveStage?.(draggedDeal, stage);
 		clearDragState();
 	}
@@ -140,12 +140,6 @@ function NegotiationsPipelineCard({
 
 				<PipelineStageRibbon stages={stages} />
 
-				{localStageMoveError || stageMoveError ? (
-					<div className="mb-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-[12px] font-medium text-destructive">
-						{localStageMoveError ?? stageMoveError}
-					</div>
-				) : null}
-
 				<div className="grid grid-cols-4 gap-x-3">
 					{PIPELINE_STAGES.map((stage) => {
 						const pipelineStage = stages.find((item) => item.key === stage.key);
@@ -162,7 +156,6 @@ function NegotiationsPipelineCard({
 								isDragTargetAllowed={canDropOnStage(stageKey)}
 								updatingDealId={updatingDealId}
 								onCardDragStart={(deal) => {
-									setLocalStageMoveError(null);
 									setDraggedDeal(deal);
 								}}
 								onCardDragEnd={clearDragState}

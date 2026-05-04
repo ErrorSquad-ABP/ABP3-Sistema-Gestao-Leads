@@ -16,6 +16,8 @@ import {
 	useUpdateDealMutation,
 } from '../hooks/deals.mutations';
 import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
+import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from '../lib/deal-invalid-stage-transition-user-message';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealImportance,
@@ -33,18 +35,8 @@ import { NegotiationsPageTop } from './NegotiationsPageTop';
 import { NegotiationsPipelineSection } from './pipeline/NegotiationsPipelineSection';
 
 const PIPELINE_PAGE_SIZE = 3;
-const INVALID_STAGE_MOVE_MESSAGE = 'Não é possível pular etapas da negociação.';
 const STAGE_MOVE_SUCCESS_MESSAGE = 'Negociação movida com sucesso.';
-const STAGE_MOVE_ERROR_MESSAGE = 'Não foi possível atualizar a negociação.';
 const STAGE_MOVE_LOADING_MESSAGE = 'Atualizando negociação...';
-
-const darkToastOptions = {
-	style: {
-		background: 'var(--sidebar)',
-		color: 'var(--sidebar-foreground)',
-		border: '1px solid var(--sidebar-border)',
-	},
-};
 
 type DealsPageContentProps = {
 	user: AuthenticatedUser;
@@ -87,7 +79,6 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
-	const [stageMoveError, setStageMoveError] = useState<string | null>(null);
 	const [updatingStageDealId, setUpdatingStageDealId] = useState<string | null>(
 		null,
 	);
@@ -117,17 +108,32 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 	}
 
 	function handleInvalidStageMove() {
-		toast.warning(INVALID_STAGE_MOVE_MESSAGE, {
+		toast.error(DEAL_INVALID_STAGE_SKIP_USER_MESSAGE, {
 			id: 'deal-stage-invalid-move',
-			...darkToastOptions,
+			...dealDarkSidebarToast,
+		});
+	}
+
+	function handlePipelineMoveBlocked(reason: string) {
+		toast.error(reason, {
+			id: 'deal-edit-blocked',
+			...dealDarkSidebarToast,
 		});
 	}
 
 	async function handleMoveStage(deal: Deal, targetStage: DealStage) {
-		setStageMoveError(null);
+		const editBlockReason = getDealFormEditBlockReason(deal);
+		if (editBlockReason) {
+			toast.error(editBlockReason, {
+				id: 'deal-edit-blocked',
+				...dealDarkSidebarToast,
+			});
+			return;
+		}
+
 		setUpdatingStageDealId(deal.id);
 		const toastId = toast.loading(STAGE_MOVE_LOADING_MESSAGE, {
-			...darkToastOptions,
+			...dealDarkSidebarToast,
 		});
 		try {
 			await updateDealMutation.mutateAsync({
@@ -136,13 +142,13 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 			});
 			toast.success(STAGE_MOVE_SUCCESS_MESSAGE, {
 				id: toastId,
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 		} catch (error) {
-			setStageMoveError(getDealsErrorMessage(error));
-			toast.error(STAGE_MOVE_ERROR_MESSAGE, {
+			const message = getDealsErrorMessage(error);
+			toast.error(message, {
 				id: toastId,
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 		} finally {
 			setUpdatingStageDealId(null);
@@ -159,7 +165,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 		if (blockReason) {
 			toast.error(blockReason, {
 				id: 'deal-edit-blocked',
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 			return;
 		}
@@ -194,7 +200,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 				leadId: targetDeal.leadId,
 			});
 			toast.success('Negociação excluída com sucesso.', {
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 			setDeleteOpen(false);
 			setTargetDeal(null);
@@ -202,7 +208,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 			const message = getDealsErrorMessage(error);
 			setDialogError(message);
 			toast.error(message, {
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 		}
 	}
@@ -247,10 +253,10 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 									: null
 							}
 							updatingDealId={updatingStageDealId}
-							stageMoveError={stageMoveError}
 							onLoadMoreStage={handleLoadMoreStage}
 							onMoveStage={handleMoveStage}
 							onInvalidStageMove={handleInvalidStageMove}
+							onPipelineMoveBlocked={handlePipelineMoveBlocked}
 							onImportanceFilterChange={setImportanceFilter}
 							onStatusFilterChange={setStatusFilter}
 							pipelineSortMode={pipelineSortMode}
@@ -286,10 +292,6 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 				onClose={() => {
 					setEditOpen(false);
 					setTargetDeal(null);
-				}}
-				onDelete={(deal) => {
-					setEditOpen(false);
-					openDelete(deal);
 				}}
 				onSubmit={handleEditSubmit}
 				open={editOpen}

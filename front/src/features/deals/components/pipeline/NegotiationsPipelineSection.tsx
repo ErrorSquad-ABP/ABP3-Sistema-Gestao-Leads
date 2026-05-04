@@ -24,6 +24,7 @@ type Props = {
 	onCreateDeal: () => void;
 	onMoveStage?: (deal: Deal, targetStage: DealStage) => void;
 	onInvalidStageMove?: () => void;
+	onPipelineMoveBlocked?: (reason: string) => void;
 	onImportanceFilterChange: (value: 'ALL' | DealImportance) => void;
 	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
 	pipelineSortMode: DealPipelineSortMode;
@@ -31,7 +32,6 @@ type Props = {
 	onLoadMoreStage?: (stage: DealPipelineStage) => void;
 	loadingStage?: DealStage | null;
 	updatingDealId?: string | null;
-	stageMoveError?: string | null;
 };
 
 function NegotiationsPipelineSection({
@@ -45,6 +45,7 @@ function NegotiationsPipelineSection({
 	onCreateDeal,
 	onMoveStage,
 	onInvalidStageMove,
+	onPipelineMoveBlocked,
 	onImportanceFilterChange,
 	onStatusFilterChange,
 	pipelineSortMode,
@@ -52,7 +53,6 @@ function NegotiationsPipelineSection({
 	onLoadMoreStage,
 	loadingStage,
 	updatingDealId,
-	stageMoveError,
 }: Props) {
 	const { state } = useSidebar();
 	const isCollapsed = state === 'collapsed';
@@ -73,7 +73,7 @@ function NegotiationsPipelineSection({
 					stages={stages}
 					loadingStage={loadingStage}
 					updatingDealId={updatingDealId}
-					stageMoveError={stageMoveError}
+					onPipelineMoveBlocked={onPipelineMoveBlocked}
 					onDelete={onDelete}
 					onCreateDeal={onCreateDeal}
 					onEdit={onEdit}

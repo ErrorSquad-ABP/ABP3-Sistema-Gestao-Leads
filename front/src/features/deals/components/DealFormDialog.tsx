@@ -21,7 +21,6 @@ import {
 	Snowflake,
 	SunMedium,
 	Tag,
-	Trash2,
 	Trophy,
 	User,
 } from 'lucide-react';
@@ -43,7 +42,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLeadDetailQuery } from '@/features/leads/hooks/leads.queries';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
-import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
+import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 import { isApiError } from '@/lib/http/api-error';
 import {
 	dealImportanceOptions,
@@ -57,6 +56,8 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from '../lib/deal-invalid-stage-transition-user-message';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealImportance,
@@ -70,7 +71,6 @@ import { dealUpdateSchema } from '../schemas/deal-management.schema';
 type DealFormDialogProps = {
 	isPending: boolean;
 	onClose: () => void;
-	onDelete?: (deal: Deal) => void;
 	onSubmit: (values: DealUpdateInput) => Promise<void>;
 	open: boolean;
 	targetDeal: Deal | null;
@@ -94,26 +94,13 @@ const dropdownPanelClass =
 const dropdownItemClass =
 	'w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35';
 
-const darkToastOptions = {
-	style: {
-		background: 'var(--sidebar)',
-		color: 'var(--sidebar-foreground)',
-		border: '1px solid var(--sidebar-border)',
-	},
-};
-
 const DEAL_INVALID_STAGE_TRANSITION_CODE = 'deal.invalid_stage_transition';
 
 function getFriendlyMessageForInvalidStageTransition(apiMessage: string) {
 	if (/negociac[aã]o nova|nova deve iniciar/i.test(apiMessage)) {
 		return 'Negociações novas começam na primeira etapa do funil. Ajuste a etapa e tente de novo.';
 	}
-	return 'Não é possível pular etapas. Avance ou volte somente uma etapa por vez no funil.';
-}
-
-function formatVehicleOptionLabel(vehicle: Vehicle) {
-	const plate = vehicle.plate ? vehicle.plate.trim() : '';
-	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
+	return DEAL_INVALID_STAGE_SKIP_USER_MESSAGE;
 }
 
 function normalizeSearch(value: string) {
@@ -275,7 +262,6 @@ function getDealsErrorMessage(error: unknown) {
 function DealFormDialog({
 	isPending,
 	onClose,
-	onDelete,
 	onSubmit,
 	open,
 	targetDeal,
@@ -342,7 +328,7 @@ function DealFormDialog({
 
 		const fromAvailable = availableVehicles.map((v) => ({
 			id: v.id,
-			label: formatVehicleOptionLabel(v),
+			label: formatVehicleDealSelectLabel(v),
 		}));
 
 		if (!current) return fromAvailable;
@@ -409,6 +395,11 @@ function DealFormDialog({
 		});
 		setVehicleSearch(option.label);
 		setVehicleDropdownOpen(false);
+
+		const picked = availableVehicles.find((v) => v.id === option.id);
+		if (picked) {
+			setValueCentsDigits(apiDecimalStringToCentsDigits(picked.price));
+		}
 	}
 
 	async function handleSubmit() {
@@ -417,7 +408,7 @@ function DealFormDialog({
 			setSubmitError(message);
 			toast.warning(message, {
 				id: 'deal-edit-readonly',
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 			return;
 		}
@@ -431,14 +422,14 @@ function DealFormDialog({
 			} satisfies DealUpdateFormInput);
 			await onSubmit(parsed as DealUpdateInput);
 			toast.success('Negociação alterada com sucesso.', {
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 			onClose();
 		} catch (error) {
 			const message = getDealsErrorMessage(error);
 			setSubmitError(message);
 			toast.error(message, {
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 		}
 	}
@@ -925,21 +916,6 @@ function DealFormDialog({
 					</div>
 
 					<DialogFooter className="shrink-0 px-8 py-4">
-						<Button
-							className="mr-auto h-10 rounded-xl border-destructive/20 bg-white px-4 font-semibold text-destructive shadow-none hover:bg-destructive/5 hover:text-destructive"
-							disabled={isPending || isReadOnly || !targetDeal || !onDelete}
-							onClick={() => {
-								if (!targetDeal || !onDelete) return;
-								setSubmitError(null);
-								onClose();
-								onDelete(targetDeal);
-							}}
-							type="button"
-							variant="outline"
-						>
-							<Trash2 className="size-4" />
-							Excluir negociação
-						</Button>
 						<Button
 							className="h-10 rounded-xl px-5 font-semibold shadow-none"
 							onClick={onClose}
