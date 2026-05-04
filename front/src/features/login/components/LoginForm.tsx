@@ -110,7 +110,7 @@ function LoginForm() {
 				icon: (
 					<LoaderCircle
 						aria-hidden="true"
-						className="size-4 animate-spin text-[#2d3648]"
+						className="size-4 animate-spin text-primary"
 					/>
 				),
 				label: 'Status da sessão',
@@ -121,7 +121,10 @@ function LoginForm() {
 			? {
 					id: 'session-unavailable',
 					icon: (
-						<WifiOff aria-hidden="true" className="size-4 text-[#D96C3F]" />
+						<WifiOff
+							aria-hidden="true"
+							className="size-4 text-[color:var(--brand-accent)]"
+						/>
 					),
 					label: 'Sessão indisponível',
 					message:
