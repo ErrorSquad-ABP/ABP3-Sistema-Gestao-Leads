@@ -1,4 +1,8 @@
-import type { SupportedFuelType, VehicleStatus } from '../model/vehicles.model';
+import type {
+	SupportedFuelType,
+	Vehicle,
+	VehicleStatus,
+} from '../model/vehicles.model';
 import {
 	formatSupportedFuelTypeLabel,
 	formatVehicleStatusLabel,
@@ -27,9 +31,16 @@ function formatFuelType(value: SupportedFuelType) {
 	return formatSupportedFuelTypeLabel(value);
 }
 
+/** Uma linha legível para selects de negociação (criar/editar, hook de etiqueta). */
+function formatVehicleDealSelectLabel(vehicle: Vehicle) {
+	const plate = vehicle.plate ? vehicle.plate.trim() : '';
+	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
+}
+
 export {
 	formatFuelType,
 	formatMileage,
+	formatVehicleDealSelectLabel,
 	formatVehiclePriceBRL,
 	formatVehicleStatus,
 };
