@@ -16,6 +16,8 @@ import type {
 	dealPipelineStageSchema,
 } from '../schemas/deal-list.schema';
 
+type DealPipelineSortMode = 'recent' | 'value_asc' | 'value_desc';
+
 type Deal = z.infer<typeof dealSchema>;
 type DealHistoryItem = z.infer<typeof dealHistoryItemSchema>;
 
@@ -34,6 +36,8 @@ type DealPipelineQuery = {
 	importance?: DealImportance;
 	search?: string;
 	pageSize: number;
+	/** Presente na query string quando o modo de ordenação do funil não é “recent”. */
+	valueSort?: 'asc' | 'desc';
 };
 type DealPipelineStageQuery = DealPipelineQuery & {
 	stage: DealStage;
@@ -48,6 +52,7 @@ export type {
 	DealImportance,
 	DealPipelineQuery,
 	DealPipelineResponse,
+	DealPipelineSortMode,
 	DealPipelineStage,
 	DealPipelineStageQuery,
 	DealStage,

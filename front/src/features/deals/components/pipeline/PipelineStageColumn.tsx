@@ -75,7 +75,7 @@ function PipelineStageColumn({
 	return (
 		<div
 			className={cn(
-				'min-w-0 border-r border-[#eef2f6] pb-2 transition-all duration-200 ease-out last:border-r-0',
+				'min-w-0 pb-2 transition-all duration-200 ease-out',
 				isDragOver && isDragTargetAllowed
 					? 'bg-muted/20 ring-1 ring-border/80'
 					: '',

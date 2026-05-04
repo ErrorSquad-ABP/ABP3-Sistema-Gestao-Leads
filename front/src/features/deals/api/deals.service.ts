@@ -57,6 +57,9 @@ function dealsPipelineQuery(
 	if (query.importance) {
 		params.set('importance', query.importance);
 	}
+	if (query.valueSort) {
+		params.set('valueSort', query.valueSort);
+	}
 	const search = query.search?.trim();
 	if (search) {
 		params.set('search', search);

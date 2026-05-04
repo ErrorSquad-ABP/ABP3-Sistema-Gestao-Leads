@@ -15,10 +15,12 @@ import {
 	useDeleteDealMutation,
 	useUpdateDealMutation,
 } from '../hooks/deals.mutations';
+import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
 import type {
 	Deal,
 	DealImportance,
 	DealPipelineStage,
+	DealPipelineSortMode,
 	DealStage,
 	DealStatus,
 	DealUpdateInput,
@@ -54,9 +56,11 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 		'ALL' | DealImportance
 	>('ALL');
 	const [search, setSearch] = useState('');
+	const [pipelineSortMode, setPipelineSortMode] =
+		useState<DealPipelineSortMode>('recent');
 
-	const pipelineQuery = useMemo(
-		() => ({
+	const pipelineQuery = useMemo(() => {
+		const base = {
 			pageSize: PIPELINE_PAGE_SIZE,
 			status: statusFilter === 'ALL' ? undefined : (statusFilter as DealStatus),
 			importance:
@@ -64,9 +68,14 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 					? undefined
 					: (importanceFilter as DealImportance),
 			search,
-		}),
-		[importanceFilter, search, statusFilter],
-	);
+			...(pipelineSortMode === 'value_asc'
+				? { valueSort: 'asc' as const }
+				: pipelineSortMode === 'value_desc'
+					? { valueSort: 'desc' as const }
+					: {}),
+		};
+		return base;
+	}, [importanceFilter, pipelineSortMode, search, statusFilter]);
 	const query = useDealsPipelineQuery(pipelineQuery);
 	const loadMoreStageMutation = useLoadMorePipelineStageMutation(pipelineQuery);
 
@@ -146,7 +155,12 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 	}
 
 	function openEdit(deal: Deal) {
-		if (!deal.canMutate) {
+		const blockReason = getDealFormEditBlockReason(deal);
+		if (blockReason) {
+			toast.error(blockReason, {
+				id: 'deal-edit-blocked',
+				...darkToastOptions,
+			});
 			return;
 		}
 		setDialogError(null);
@@ -239,6 +253,8 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 							onInvalidStageMove={handleInvalidStageMove}
 							onImportanceFilterChange={setImportanceFilter}
 							onStatusFilterChange={setStatusFilter}
+							pipelineSortMode={pipelineSortMode}
+							onPipelineSortModeChange={setPipelineSortMode}
 							onCreateDeal={() => setCreateOpen(true)}
 							onOpenDetails={openDetails}
 							onDelete={canMutateInView ? openDelete : undefined}

@@ -2,6 +2,7 @@
 
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,7 @@ import {
 	useDeleteDealMutation,
 	useUpdateDealMutation,
 } from '../hooks/deals.mutations';
+import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
 import {
 	centsDigitsToApiDecimalString,
 	formatCentsDigitsToBrlDisplay,
@@ -44,6 +46,14 @@ type LeadDealsDialogProps = {
 	leadStoreId?: string | null;
 	onClose: () => void;
 	open: boolean;
+};
+
+const darkToastOptions = {
+	style: {
+		background: 'var(--sidebar)',
+		color: 'var(--sidebar-foreground)',
+		border: '1px solid var(--sidebar-border)',
+	},
 };
 
 function formatVehicleOptionLabel(vehicle: Vehicle) {
@@ -143,7 +153,12 @@ function LeadDealsDialog({
 	}
 
 	function openEdit(deal: Deal) {
-		if (!deal.canMutate) {
+		const blockReason = getDealFormEditBlockReason(deal);
+		if (blockReason) {
+			toast.error(blockReason, {
+				id: 'deal-edit-blocked',
+				...darkToastOptions,
+			});
 			return;
 		}
 		setTargetDeal(deal);

@@ -179,6 +179,14 @@ function formatDealLeadCustomerDisplay(leadCustomerName: string) {
 	return 'Cliente não informado';
 }
 
+function formatDealLeadOwnerDisplay(leadOwnerName: string | null) {
+	const n = (leadOwnerName ?? '').trim();
+	if (n) {
+		return n;
+	}
+	return 'Sem responsável';
+}
+
 export {
 	dealImportanceOptions,
 	dealStageOptions,
@@ -187,6 +195,7 @@ export {
 	formatDealHistoryValueDisplay,
 	formatDealImportanceLabel,
 	formatDealLeadCustomerDisplay,
+	formatDealLeadOwnerDisplay,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,

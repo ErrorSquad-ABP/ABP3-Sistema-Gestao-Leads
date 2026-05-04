@@ -20,6 +20,7 @@ import {
 	SunMedium,
 	Tag,
 	User,
+	UserCircle,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
@@ -42,6 +43,7 @@ import {
 	formatDealHistoryValueDisplay,
 	formatDealImportanceLabel,
 	formatDealLeadCustomerDisplay,
+	formatDealLeadOwnerDisplay,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
@@ -339,6 +341,21 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 											{formatDealLeadCustomerDisplay(
 												deal.leadCustomerName ?? '',
 											)}
+										</span>
+									</div>
+								</DetailSlot>
+
+								<DetailSlot
+									label="Responsável pelo lead"
+									labelIcon={<UserCircle className={labelIconClass} />}
+								>
+									<div className="flex items-start gap-2 text-[13px] font-medium text-[#1b2430]">
+										<UserCircle
+											className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]"
+											aria-hidden
+										/>
+										<span>
+											{formatDealLeadOwnerDisplay(deal.leadOwnerName)}
 										</span>
 									</div>
 								</DetailSlot>

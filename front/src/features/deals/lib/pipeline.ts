@@ -2,7 +2,10 @@ import type {
 	Deal,
 	DealImportance,
 	DealStage,
+	DealStatus,
 } from '@/features/deals/model/deals.model';
+
+import { formatDealStatusLabel } from './deal-labels';
 
 type PipelineStageKey = DealStage;
 
@@ -81,6 +84,33 @@ function mapImportanceUi(importance: DealImportance): ImportanceUi {
 	}
 }
 
+type StatusUi = {
+	label: string;
+	badgeClassName: string;
+};
+
+function mapDealStatusUi(status: DealStatus): StatusUi {
+	const label = formatDealStatusLabel(status);
+	switch (status) {
+		case 'OPEN':
+			return {
+				label,
+				badgeClassName:
+					'bg-emerald-50 text-emerald-700 border border-emerald-100/80',
+			};
+		case 'WON':
+			return {
+				label,
+				badgeClassName: 'bg-teal-50 text-teal-700 border border-teal-100/80',
+			};
+		case 'LOST':
+			return {
+				label,
+				badgeClassName: 'bg-rose-50 text-rose-700 border border-rose-100/80',
+			};
+	}
+}
+
 function initialsFromName(name: string) {
 	return name
 		.trim()
@@ -95,6 +125,7 @@ export {
 	formatDealValueBrl,
 	groupDealsByStage,
 	initialsFromName,
+	mapDealStatusUi,
 	mapImportanceUi,
 	sumDealsValueBrl,
 };

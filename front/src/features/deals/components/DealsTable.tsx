@@ -22,6 +22,7 @@ import {
 import {
 	formatDealImportanceLabel,
 	formatDealLeadCustomerDisplay,
+	formatDealLeadOwnerDisplay,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
@@ -31,8 +32,9 @@ import type { Deal } from '../model/deals.model';
 
 type DealsTableProps = {
 	deals: Deal[];
-	/** Só passar quando a vista tem pelo menos uma linha mutável; o menu continua a filtrar com `deal.canMutate` por negociação. */
+	/** Só passar `onDelete` quando há linhas mutáveis na vista atual; cada linha só excluirá se `deal.canMutate`. */
 	onDelete?: (deal: Deal) => void;
+	/** Quando definido, oferece “Editar”; o callback deve validar permissão/status (ex.: toast se bloqueado). */
 	onEdit?: (deal: Deal) => void;
 	onOpenDetails?: (deal: Deal) => void;
 };
@@ -62,6 +64,7 @@ function DealsTable({
 						<TableHead>Título</TableHead>
 						<TableHead>Valor</TableHead>
 						<TableHead>Lead</TableHead>
+						<TableHead>Responsável</TableHead>
 						<TableHead>Veículo</TableHead>
 						<TableHead className="w-18 text-right">Ações</TableHead>
 					</TableRow>
@@ -97,6 +100,9 @@ function DealsTable({
 								{formatDealLeadCustomerDisplay(deal.leadCustomerName ?? '')}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
+								{formatDealLeadOwnerDisplay(deal.leadOwnerName)}
+							</TableCell>
+							<TableCell className="text-sm text-[#6b7687]">
 								<DealVehicleLabelText
 									serverLabel={deal.vehicleLabel}
 									vehicleId={deal.vehicleId}
@@ -108,7 +114,7 @@ function DealsTable({
 										asChild
 										disabled={
 											!onOpenDetails &&
-											!((onEdit || onDelete) && deal.canMutate)
+											!((onDelete && deal.canMutate) || onEdit)
 										}
 									>
 										<Button
@@ -133,7 +139,7 @@ function DealsTable({
 												Detalhes
 											</DropdownMenuItem>
 										) : null}
-										{onEdit && deal.canMutate ? (
+										{onEdit ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
 												onSelect={() => onEdit(deal)}

@@ -4,6 +4,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import type {
 	Deal,
 	DealImportance,
+	DealPipelineSortMode,
 	DealPipelineStage,
 	DealStage,
 	DealStatus,
@@ -25,6 +26,8 @@ type Props = {
 	onInvalidStageMove?: () => void;
 	onImportanceFilterChange: (value: 'ALL' | DealImportance) => void;
 	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
+	pipelineSortMode: DealPipelineSortMode;
+	onPipelineSortModeChange: (value: DealPipelineSortMode) => void;
 	onLoadMoreStage?: (stage: DealPipelineStage) => void;
 	loadingStage?: DealStage | null;
 	updatingDealId?: string | null;
@@ -44,6 +47,8 @@ function NegotiationsPipelineSection({
 	onInvalidStageMove,
 	onImportanceFilterChange,
 	onStatusFilterChange,
+	pipelineSortMode,
+	onPipelineSortModeChange,
 	onLoadMoreStage,
 	loadingStage,
 	updatingDealId,
@@ -75,6 +80,8 @@ function NegotiationsPipelineSection({
 					onInvalidStageMove={onInvalidStageMove}
 					onImportanceFilterChange={onImportanceFilterChange}
 					onStatusFilterChange={onStatusFilterChange}
+					pipelineSortMode={pipelineSortMode}
+					onPipelineSortModeChange={onPipelineSortModeChange}
 					onLoadMoreStage={onLoadMoreStage}
 					onMoveStage={onMoveStage}
 					onOpenDetails={onOpenDetails}

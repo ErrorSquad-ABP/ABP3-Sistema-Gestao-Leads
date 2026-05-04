@@ -83,6 +83,7 @@ const queryKeys = {
 			importance?: string;
 			search?: string;
 			pageSize: number;
+			valueSort?: string;
 		}) =>
 			[
 				'deals',
@@ -91,6 +92,7 @@ const queryKeys = {
 				params.importance ?? 'all-importances',
 				params.search?.trim() ?? '',
 				params.pageSize,
+				params.valueSort ?? 'recent',
 			] as const,
 		pipelineStage: (params: {
 			stage: string;
@@ -99,6 +101,7 @@ const queryKeys = {
 			search?: string;
 			page: number;
 			pageSize: number;
+			valueSort?: string;
 		}) =>
 			[
 				'deals',
@@ -109,6 +112,7 @@ const queryKeys = {
 				params.search?.trim() ?? '',
 				params.page,
 				params.pageSize,
+				params.valueSort ?? 'recent',
 			] as const,
 	},
 };

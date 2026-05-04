@@ -1,8 +1,7 @@
 'use client';
 
-import { ChevronDown, Ellipsis, SlidersHorizontal } from 'lucide-react';
+import { ArrowDownUp, ChevronDown, SlidersHorizontal } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -12,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type {
 	DealImportance,
+	DealPipelineSortMode,
 	DealStatus,
 } from '@/features/deals/model/deals.model';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,8 @@ type Props = {
 	showValues: boolean;
 	onImportanceFilterChange: (next: ImportanceFilter) => void;
 	onStatusFilterChange: (next: StatusFilter) => void;
+	pipelineSortMode: DealPipelineSortMode;
+	onPipelineSortModeChange: (next: DealPipelineSortMode) => void;
 	onShowValuesChange: (next: boolean) => void;
 };
 
@@ -55,12 +57,27 @@ function getStatusLabel(value: StatusFilter) {
 	);
 }
 
+const SORT_OPTIONS: { label: string; value: DealPipelineSortMode }[] = [
+	{ label: 'Mais recentes', value: 'recent' },
+	{ label: 'Valor crescente', value: 'value_asc' },
+	{ label: 'Valor decrescente', value: 'value_desc' },
+];
+
+function getPipelineSortTriggerLabel(mode: DealPipelineSortMode) {
+	return (
+		SORT_OPTIONS.find((option) => option.value === mode)?.label ??
+		'Mais recentes'
+	);
+}
+
 function PipelineControls({
 	importanceFilter,
 	statusFilter,
 	showValues,
 	onImportanceFilterChange,
 	onStatusFilterChange,
+	pipelineSortMode,
+	onPipelineSortModeChange,
 	onShowValuesChange,
 }: Props) {
 	return (
@@ -141,6 +158,46 @@ function PipelineControls({
 				</DropdownMenuContent>
 			</DropdownMenu>
 
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<button
+						type="button"
+						className={cn(
+							'inline-flex h-9 max-w-[min(100%,220px)] items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
+							pipelineSortMode !== 'recent' &&
+								'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent-soft)]/25 text-[color:var(--brand-accent)]',
+						)}
+					>
+						<ArrowDownUp className="size-4 shrink-0 text-muted-foreground" />
+						<span className="min-w-0 truncate">
+							Ordem: {getPipelineSortTriggerLabel(pipelineSortMode)}
+						</span>
+						<ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+					</button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent
+					align="start"
+					className="w-[min(96vw,15rem)] rounded-lg border border-border bg-white p-1 text-foreground shadow-lg"
+				>
+					<DropdownMenuRadioGroup
+						value={pipelineSortMode}
+						onValueChange={(value) =>
+							onPipelineSortModeChange(value as DealPipelineSortMode)
+						}
+					>
+						{SORT_OPTIONS.map((option) => (
+							<DropdownMenuRadioItem
+								key={option.value}
+								value={option.value}
+								className="rounded-md text-[13px]"
+							>
+								{option.label}
+							</DropdownMenuRadioItem>
+						))}
+					</DropdownMenuRadioGroup>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
 			<button
 				type="button"
 				onClick={() => onShowValuesChange(!showValues)}
@@ -168,15 +225,6 @@ function PipelineControls({
 					/>
 				</span>
 			</button>
-
-			<Button
-				variant="outline"
-				size="icon-sm"
-				className="h-9 w-9 rounded-[9px] bg-white text-muted-foreground shadow-none"
-				aria-label="Mais opções"
-			>
-				<Ellipsis className="size-4 text-muted-foreground" />
-			</Button>
 		</div>
 	);
 }

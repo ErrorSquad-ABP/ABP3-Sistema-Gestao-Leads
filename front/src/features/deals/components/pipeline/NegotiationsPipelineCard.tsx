@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import type {
 	Deal,
 	DealImportance,
+	DealPipelineSortMode,
 	DealPipelineStage,
 	DealStage,
 	DealStatus,
@@ -29,6 +30,8 @@ type Props = {
 	onInvalidStageMove?: () => void;
 	onImportanceFilterChange: (value: 'ALL' | DealImportance) => void;
 	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
+	pipelineSortMode: DealPipelineSortMode;
+	onPipelineSortModeChange: (value: DealPipelineSortMode) => void;
 	onLoadMoreStage?: (stage: DealPipelineStage) => void;
 	loadingStage?: DealStage | null;
 	updatingDealId?: string | null;
@@ -59,6 +62,8 @@ function NegotiationsPipelineCard({
 	onInvalidStageMove,
 	onImportanceFilterChange,
 	onStatusFilterChange,
+	pipelineSortMode,
+	onPipelineSortModeChange,
 	onLoadMoreStage,
 	loadingStage,
 	updatingDealId,
@@ -125,6 +130,8 @@ function NegotiationsPipelineCard({
 						importanceFilter={importanceFilter}
 						statusFilter={statusFilter}
 						showValues={showValues}
+						pipelineSortMode={pipelineSortMode}
+						onPipelineSortModeChange={onPipelineSortModeChange}
 						onImportanceFilterChange={onImportanceFilterChange}
 						onStatusFilterChange={onStatusFilterChange}
 						onShowValuesChange={setShowValues}
