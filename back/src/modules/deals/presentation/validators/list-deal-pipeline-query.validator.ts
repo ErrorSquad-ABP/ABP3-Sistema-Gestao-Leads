@@ -17,6 +17,8 @@ const DEFAULT_PIPELINE_PAGE_SIZE = 5;
 const MAX_PIPELINE_PAGE_SIZE = 50;
 const MAX_SEARCH_LENGTH = 120;
 
+const VALUE_SORT_OPTS = ['asc', 'desc'] as const;
+
 class ListDealPipelineQueryValidator {
 	@ApiPropertyOptional({ enum: DEAL_STATUSES })
 	@IsOptional()
@@ -38,6 +40,16 @@ class ListDealPipelineQueryValidator {
 	@IsString()
 	@MaxLength(MAX_SEARCH_LENGTH)
 	search?: string;
+
+	@ApiPropertyOptional({
+		description:
+			'Ordenação por valor dentro de cada etapa: asc (menor primeiro) ou desc (maior primeiro). Sem este parâmetro, ordena por data de criação (mais recentes primeiro).',
+		enum: [...VALUE_SORT_OPTS],
+	})
+	@IsOptional()
+	@IsString()
+	@IsIn([...VALUE_SORT_OPTS])
+	valueSort?: string;
 
 	@ApiPropertyOptional({
 		description: 'Itens por etapa no snapshot inicial.',

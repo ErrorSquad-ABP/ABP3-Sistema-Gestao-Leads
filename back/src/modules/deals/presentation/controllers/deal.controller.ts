@@ -227,6 +227,10 @@ class DealController {
 				importance: query.importance as DealImportance | undefined,
 				search: query.search,
 				pageSize: query.pageSize,
+				valueSort:
+					query.valueSort === 'asc' || query.valueSort === 'desc'
+						? query.valueSort
+						: undefined,
 			},
 		);
 
@@ -261,6 +265,10 @@ class DealController {
 				search: query.search,
 				page: query.page,
 				pageSize: query.pageSize,
+				valueSort:
+					query.valueSort === 'asc' || query.valueSort === 'desc'
+						? query.valueSort
+						: undefined,
 			},
 		);
 

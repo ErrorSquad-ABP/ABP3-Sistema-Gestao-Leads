@@ -14,6 +14,8 @@ type DealListScopedFilters = {
 	readonly importance?: DealImportance;
 	readonly stage?: DealStage;
 	readonly search?: string;
+	/** Apenas `listPipelineStageEnriched`: ordena por valor; ausente mantém `createdAt` desc. */
+	readonly valueSort?: 'asc' | 'desc';
 };
 
 interface IDealRepository {
@@ -60,6 +62,7 @@ type DealEnrichedRow = {
 		readonly storeId: string;
 		readonly ownerUserId: string | null;
 		readonly customer: { readonly name: string } | null;
+		readonly owner: { readonly name: string } | null;
 	} | null;
 	readonly vehicle: {
 		readonly brand: string;

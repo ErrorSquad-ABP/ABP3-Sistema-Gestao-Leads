@@ -21,6 +21,7 @@ type DealPipelineQuery = {
 	readonly importance?: DealImportance;
 	readonly search?: string;
 	readonly pageSize: number;
+	readonly valueSort?: 'asc' | 'desc';
 };
 
 type DealPipelineStageQuery = DealPipelineQuery & {
@@ -65,13 +66,21 @@ class ListDealPipelineUseCase {
 
 	private async resolveScopedFilters(
 		actor: LeadActor,
-		query: Pick<DealPipelineQuery, 'importance' | 'search' | 'status'>,
+		query: Pick<
+			DealPipelineQuery,
+			'importance' | 'search' | 'status' | 'valueSort'
+		>,
 	): Promise<DealListScopedFilters> {
 		const scope = await this.leadAccessPolicy.resolveCatalogScope(actor);
 		const search = query.search?.trim() || undefined;
 
 		if (scope.kind === 'full') {
-			return { importance: query.importance, status: query.status, search };
+			return {
+				importance: query.importance,
+				status: query.status,
+				search,
+				valueSort: query.valueSort,
+			};
 		}
 
 		if (scope.kind === 'attendant') {
@@ -80,6 +89,7 @@ class ListDealPipelineUseCase {
 				importance: query.importance,
 				status: query.status,
 				search,
+				valueSort: query.valueSort,
 			};
 		}
 
@@ -88,6 +98,7 @@ class ListDealPipelineUseCase {
 			importance: query.importance,
 			status: query.status,
 			search,
+			valueSort: query.valueSort,
 		};
 	}
 

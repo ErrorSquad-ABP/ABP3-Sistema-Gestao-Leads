@@ -19,6 +19,14 @@ import { DealMapper } from '../mappers/deal.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
 
+/** Campos comuns do lead em consultas enriquecidas (cliente + owner). */
+const DEAL_LEAD_ENRICHMENT_SELECT = {
+	storeId: true,
+	ownerUserId: true,
+	customer: { select: { name: true } },
+	owner: { select: { name: true } },
+} as const;
+
 const UUID_PATTERN =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -41,6 +49,15 @@ class DealPrismaRepository implements IDealRepository {
 					lead: {
 						is: {
 							customer: {
+								is: { name: { contains: search, mode: 'insensitive' } },
+							},
+						},
+					},
+				},
+				{
+					lead: {
+						is: {
+							owner: {
 								is: { name: { contains: search, mode: 'insensitive' } },
 							},
 						},
@@ -78,6 +95,21 @@ class DealPrismaRepository implements IDealRepository {
 				},
 			},
 		};
+	}
+
+	private pipelineOrderBy(
+		filters: DealListScopedFilters,
+	): Prisma.DealOrderByWithRelationInput[] {
+		if (filters.valueSort === 'asc') {
+			return [{ value: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }];
+		}
+		if (filters.valueSort === 'desc') {
+			return [
+				{ value: { sort: 'desc', nulls: 'last' } },
+				{ createdAt: 'desc' },
+			];
+		}
+		return [{ createdAt: 'desc' }];
 	}
 
 	async create(deal: Deal): Promise<Deal> {
@@ -146,11 +178,7 @@ class DealPrismaRepository implements IDealRepository {
 					select: { brand: true, model: true, modelYear: true, plate: true },
 				},
 				lead: {
-					select: {
-						storeId: true,
-						ownerUserId: true,
-						customer: { select: { name: true } },
-					},
+					select: DEAL_LEAD_ENRICHMENT_SELECT,
 				},
 			},
 		});
@@ -190,11 +218,7 @@ class DealPrismaRepository implements IDealRepository {
 					select: { brand: true, model: true, modelYear: true, plate: true },
 				},
 				lead: {
-					select: {
-						storeId: true,
-						ownerUserId: true,
-						customer: { select: { name: true } },
-					},
+					select: DEAL_LEAD_ENRICHMENT_SELECT,
 				},
 			},
 		});
@@ -245,11 +269,7 @@ class DealPrismaRepository implements IDealRepository {
 						select: { brand: true, model: true, modelYear: true, plate: true },
 					},
 					lead: {
-						select: {
-							storeId: true,
-							ownerUserId: true,
-							customer: { select: { name: true } },
-						},
+						select: DEAL_LEAD_ENRICHMENT_SELECT,
 					},
 				},
 			}),
@@ -288,7 +308,7 @@ class DealPrismaRepository implements IDealRepository {
 		const [rows, total, aggregate] = await Promise.all([
 			this.client.deal.findMany({
 				where,
-				orderBy: { createdAt: 'desc' },
+				orderBy: this.pipelineOrderBy(filters),
 				skip,
 				take: pagination.limit,
 				include: {
@@ -296,11 +316,7 @@ class DealPrismaRepository implements IDealRepository {
 						select: { brand: true, model: true, modelYear: true, plate: true },
 					},
 					lead: {
-						select: {
-							storeId: true,
-							ownerUserId: true,
-							customer: { select: { name: true } },
-						},
+						select: DEAL_LEAD_ENRICHMENT_SELECT,
 					},
 				},
 			}),
