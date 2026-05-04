@@ -9,6 +9,21 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+	dealImportanceOptions,
+	dealPipelineFilterImportanceAllLabel,
+	dealPipelineFilterImportanceLegendLabel,
+	dealPipelineFilterStatusAllLabel,
+	dealPipelineFilterStatusLegendLabel,
+	dealPipelineSortLegendLabel,
+	getDealPipelineFilterStatusOptionLabel,
+	getDealPipelineSortDropdownLabel,
+} from '@/features/deals/lib/deal-labels';
+import {
+	getPipelineImportanceFilterTriggerAccentClass,
+	getPipelineSortFilterTriggerAccentClass,
+	getPipelineStatusFilterTriggerAccentClass,
+} from '@/features/deals/lib/pipeline';
 import type {
 	DealImportance,
 	DealPipelineSortMode,
@@ -31,43 +46,66 @@ type Props = {
 };
 
 const IMPORTANCE_OPTIONS: { label: string; value: ImportanceFilter }[] = [
-	{ label: 'Todas', value: 'ALL' },
-	{ label: 'Fria', value: 'COLD' },
-	{ label: 'Morna', value: 'WARM' },
-	{ label: 'Quente', value: 'HOT' },
+	{ label: dealPipelineFilterImportanceAllLabel, value: 'ALL' },
+	...dealImportanceOptions.map((option) => ({
+		label: option.label,
+		value: option.value,
+	})),
 ];
 
 const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
-	{ label: 'Todos', value: 'ALL' },
-	{ label: 'Abertas', value: 'OPEN' },
-	{ label: 'Ganhas', value: 'WON' },
-	{ label: 'Perdidas', value: 'LOST' },
+	{ label: dealPipelineFilterStatusAllLabel, value: 'ALL' },
+	...(['OPEN', 'WON', 'LOST'] as const).map((status) => ({
+		value: status,
+		label: getDealPipelineFilterStatusOptionLabel(status),
+	})),
 ];
+
+const SORT_OPTIONS: { label: string; value: DealPipelineSortMode }[] = (
+	['recent', 'value_asc', 'value_desc'] as const
+).map((mode) => ({
+	value: mode,
+	label: getDealPipelineSortDropdownLabel(mode),
+}));
 
 function getImportanceLabel(value: ImportanceFilter) {
 	return (
 		IMPORTANCE_OPTIONS.find((option) => option.value === value)?.label ??
-		'Todas'
+		dealPipelineFilterImportanceLegendLabel
 	);
 }
 
 function getStatusLabel(value: StatusFilter) {
 	return (
-		STATUS_OPTIONS.find((option) => option.value === value)?.label ?? 'Todos'
+		STATUS_OPTIONS.find((option) => option.value === value)?.label ??
+		dealPipelineFilterStatusLegendLabel
 	);
 }
-
-const SORT_OPTIONS: { label: string; value: DealPipelineSortMode }[] = [
-	{ label: 'Mais recentes', value: 'recent' },
-	{ label: 'Valor crescente', value: 'value_asc' },
-	{ label: 'Valor decrescente', value: 'value_desc' },
-];
 
 function getPipelineSortTriggerLabel(mode: DealPipelineSortMode) {
 	return (
 		SORT_OPTIONS.find((option) => option.value === mode)?.label ??
-		'Mais recentes'
+		dealPipelineSortLegendLabel
 	);
+}
+
+/** Texto do trigger: legenda quando “sem filtro”, senão valor escolhido. */
+function getStatusTriggerDisplay(value: StatusFilter) {
+	return value === 'ALL'
+		? dealPipelineFilterStatusLegendLabel
+		: getStatusLabel(value);
+}
+
+function getImportanceTriggerDisplay(value: ImportanceFilter) {
+	return value === 'ALL'
+		? dealPipelineFilterImportanceLegendLabel
+		: getImportanceLabel(value);
+}
+
+function getSortTriggerDisplay(mode: DealPipelineSortMode) {
+	return mode === 'recent'
+		? dealPipelineSortLegendLabel
+		: getPipelineSortTriggerLabel(mode);
 }
 
 function PipelineControls({
@@ -80,21 +118,51 @@ function PipelineControls({
 	onPipelineSortModeChange,
 	onShowValuesChange,
 }: Props) {
+	const statusAria =
+		statusFilter === 'ALL'
+			? 'todos os status'
+			: getStatusTriggerDisplay(statusFilter);
+	const importanceAria =
+		importanceFilter === 'ALL'
+			? 'todas as importâncias'
+			: getImportanceTriggerDisplay(importanceFilter);
+	const sortAria =
+		pipelineSortMode === 'recent'
+			? 'mais recentes'
+			: getSortTriggerDisplay(pipelineSortMode);
+
+	const statusAccent = getPipelineStatusFilterTriggerAccentClass(statusFilter);
+	const importanceAccent =
+		getPipelineImportanceFilterTriggerAccentClass(importanceFilter);
+	const sortAccent = getPipelineSortFilterTriggerAccentClass(pipelineSortMode);
+
+	const neutralTriggerBase =
+		'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30';
+
 	return (
-		<div className="flex items-center gap-[10px] pt-0.5">
+		<div className="flex flex-wrap items-center gap-x-[10px] gap-y-2 pt-0.5">
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<button
 						type="button"
-						className={cn(
-							'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
-							statusFilter !== 'ALL' &&
-								'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent-soft)]/25 text-[color:var(--brand-accent)]',
-						)}
+						aria-label={`Filtro de status (${statusAria})`}
+						className={cn(neutralTriggerBase, 'min-w-[8.25rem]', statusAccent)}
 					>
-						<SlidersHorizontal className="size-4 text-muted-foreground" />
-						Status: {getStatusLabel(statusFilter)}
-						<ChevronDown className="size-4 text-muted-foreground" />
+						<SlidersHorizontal
+							className={cn(
+								'size-4 shrink-0',
+								!statusAccent && 'text-muted-foreground',
+							)}
+						/>
+						<span className="min-w-0 flex-1 truncate text-left">
+							{getStatusTriggerDisplay(statusFilter)}
+						</span>
+						<ChevronDown
+							className={cn(
+								'size-4 shrink-0',
+								!statusAccent && 'text-muted-foreground',
+							)}
+						/>
 					</button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
@@ -124,15 +192,28 @@ function PipelineControls({
 				<DropdownMenuTrigger asChild>
 					<button
 						type="button"
+						aria-label={`Filtro de importância (${importanceAria})`}
 						className={cn(
-							'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
-							importanceFilter !== 'ALL' &&
-								'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent-soft)]/25 text-[color:var(--brand-accent)]',
+							neutralTriggerBase,
+							'min-w-[8.25rem]',
+							importanceAccent,
 						)}
 					>
-						<SlidersHorizontal className="size-4 text-muted-foreground" />
-						Importância: {getImportanceLabel(importanceFilter)}
-						<ChevronDown className="size-4 text-muted-foreground" />
+						<SlidersHorizontal
+							className={cn(
+								'size-4 shrink-0',
+								!importanceAccent && 'text-muted-foreground',
+							)}
+						/>
+						<span className="min-w-0 flex-1 truncate text-left">
+							{getImportanceTriggerDisplay(importanceFilter)}
+						</span>
+						<ChevronDown
+							className={cn(
+								'size-4 shrink-0',
+								!importanceAccent && 'text-muted-foreground',
+							)}
+						/>
 					</button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
@@ -162,17 +243,28 @@ function PipelineControls({
 				<DropdownMenuTrigger asChild>
 					<button
 						type="button"
+						aria-label={`Ordenação (${sortAria})`}
 						className={cn(
-							'inline-flex h-9 max-w-[min(100%,220px)] items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
-							pipelineSortMode !== 'recent' &&
-								'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent-soft)]/25 text-[color:var(--brand-accent)]',
+							neutralTriggerBase,
+							'max-w-[min(100%,220px)] min-w-[9.5rem]',
+							sortAccent,
 						)}
 					>
-						<ArrowDownUp className="size-4 shrink-0 text-muted-foreground" />
-						<span className="min-w-0 truncate">
-							Ordem: {getPipelineSortTriggerLabel(pipelineSortMode)}
+						<ArrowDownUp
+							className={cn(
+								'size-4 shrink-0',
+								!sortAccent && 'text-muted-foreground',
+							)}
+						/>
+						<span className="min-w-0 flex-1 truncate text-left">
+							{getSortTriggerDisplay(pipelineSortMode)}
 						</span>
-						<ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+						<ChevronDown
+							className={cn(
+								'size-4 shrink-0',
+								!sortAccent && 'text-muted-foreground',
+							)}
+						/>
 					</button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
