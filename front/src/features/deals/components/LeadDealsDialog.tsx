@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
-import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
+import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 import { ApiError } from '@/lib/http/api-error';
 import { useDealsByLeadQuery } from '../hooks/deals.queries';
 import {
@@ -30,6 +30,7 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealCreateFormInput,
@@ -47,19 +48,6 @@ type LeadDealsDialogProps = {
 	onClose: () => void;
 	open: boolean;
 };
-
-const darkToastOptions = {
-	style: {
-		background: 'var(--sidebar)',
-		color: 'var(--sidebar-foreground)',
-		border: '1px solid var(--sidebar-border)',
-	},
-};
-
-function formatVehicleOptionLabel(vehicle: Vehicle) {
-	const plate = vehicle.plate ? vehicle.plate.trim() : '';
-	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
-}
 
 function LeadDealsDialog({
 	leadId,
@@ -157,7 +145,7 @@ function LeadDealsDialog({
 		if (blockReason) {
 			toast.error(blockReason, {
 				id: 'deal-edit-blocked',
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 			return;
 		}
@@ -335,7 +323,7 @@ function LeadDealsDialog({
 								</option>
 								{availableVehicles.map((vehicle) => (
 									<option key={vehicle.id} value={vehicle.id}>
-										{formatVehicleOptionLabel(vehicle)}
+										{formatVehicleDealSelectLabel(vehicle)}
 									</option>
 								))}
 							</select>
@@ -419,10 +407,6 @@ function LeadDealsDialog({
 				onClose={() => {
 					setEditOpen(false);
 					setTargetDeal(null);
-				}}
-				onDelete={(deal) => {
-					setEditOpen(false);
-					openDelete(deal);
 				}}
 				onSubmit={async (values) => {
 					if (!targetDeal) return;

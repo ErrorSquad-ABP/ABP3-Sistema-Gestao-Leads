@@ -32,6 +32,7 @@ import { useLeadsListQuery } from '@/features/leads/hooks/leads.queries';
 import type { LeadListItem } from '@/features/leads/model/leads.model';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
+import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
 import { ApiError } from '@/lib/http/api-error';
 import { useCreateDealForLeadMutation } from '../hooks/deals.mutations';
@@ -41,6 +42,7 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	DealCreateFormInput,
 	DealCreateInput,
@@ -53,11 +55,6 @@ type DealCreateDialogProps = {
 	open: boolean;
 	user: AuthenticatedUser;
 };
-
-function formatVehicleOptionLabel(vehicle: Vehicle) {
-	const plate = vehicle.plate ? vehicle.plate.trim() : '';
-	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
-}
 
 function getLeadOptionLabel(
 	lead: LeadListItem,
@@ -87,14 +84,6 @@ const dropdownPanelClass =
 
 const dropdownItemClass =
 	'w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35';
-
-const darkToastOptions = {
-	style: {
-		background: 'var(--sidebar)',
-		color: 'var(--sidebar-foreground)',
-		border: '1px solid var(--sidebar-border)',
-	},
-};
 
 function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 	const leadsQuery = useLeadsListQuery(user, 1, { withoutOpenDeal: true });
@@ -151,7 +140,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 			return availableVehicles;
 		}
 		return availableVehicles.filter((vehicle) =>
-			normalizeSearch(formatVehicleOptionLabel(vehicle)).includes(search),
+			normalizeSearch(formatVehicleDealSelectLabel(vehicle)).includes(search),
 		);
 	}, [availableVehicles, vehicleSearch]);
 
@@ -178,7 +167,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 
 	function handleSelectVehicle(vehicle: Vehicle) {
 		setVehicleId(vehicle.id);
-		setVehicleSearch(formatVehicleOptionLabel(vehicle));
+		setVehicleSearch(formatVehicleDealSelectLabel(vehicle));
 		setValueCentsDigits(apiDecimalStringToCentsDigits(vehicle.price));
 		setVehicleDropdownOpen(false);
 	}
@@ -189,7 +178,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 			setDialogError(message);
 			toast.warning(message, {
 				id: 'deal-create-missing-lead',
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 			return;
 		}
@@ -204,7 +193,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 			} satisfies DealCreateFormInput) as DealCreateInput;
 			await createMutation.mutateAsync(parsed);
 			toast.success('Negociação criada com sucesso.', {
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 			resetForm();
 			onClose();
@@ -212,7 +201,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 			const message = getDealsErrorMessage(error);
 			setDialogError(message);
 			toast.error(message, {
-				...darkToastOptions,
+				...dealDarkSidebarToast,
 			});
 		}
 	}
@@ -376,7 +365,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 												}}
 												type="button"
 											>
-												{formatVehicleOptionLabel(vehicle)}
+												{formatVehicleDealSelectLabel(vehicle)}
 											</button>
 										))
 									) : (
