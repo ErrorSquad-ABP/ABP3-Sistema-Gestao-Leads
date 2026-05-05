@@ -102,25 +102,13 @@ class ListDealPipelineUseCase {
 		};
 	}
 
-	private async attachMutateFlags(
-		actor: LeadActor,
+	private toPipelineStageResult(
 		stagePage: DealPipelineStagePage,
-	): Promise<DealPipelineStageResult> {
-		const items = await Promise.all(
-			stagePage.items.map(async (row) => {
-				const lead = row.lead;
-				if (!lead) {
-					return { row, canMutate: false as const };
-				}
-				const canMutate =
-					await this.leadAccessPolicy.canActorMutateLeadOnSnapshot(
-						actor,
-						lead.storeId,
-						lead.ownerUserId,
-					);
-				return { row, canMutate };
-			}),
-		);
+		items: readonly {
+			readonly row: DealEnrichedRow;
+			readonly canMutate: boolean;
+		}[],
+	): DealPipelineStageResult {
 		const key = assertCanonicalDealStage(stagePage.stage);
 
 		return {
@@ -136,6 +124,78 @@ class ListDealPipelineUseCase {
 		};
 	}
 
+	private async attachMutateFlags(
+		actor: LeadActor,
+		stagePage: DealPipelineStagePage,
+	): Promise<DealPipelineStageResult> {
+		const snapshots = stagePage.items.map((row) =>
+			row.lead
+				? {
+						storeId: row.lead.storeId,
+						ownerUserId: row.lead.ownerUserId,
+					}
+				: null,
+		);
+		const batchInput = snapshots.filter(
+			(s): s is { storeId: string; ownerUserId: string | null } => s !== null,
+		);
+		const batchResults =
+			await this.leadAccessPolicy.batchCanMutateLeadSnapshots(
+				actor,
+				batchInput,
+			);
+		let batchIndex = 0;
+		const items = stagePage.items.map((row, idx) => {
+			if (!snapshots[idx]) {
+				return { row, canMutate: false as const };
+			}
+			const canMutate = batchResults[batchIndex]!;
+			batchIndex += 1;
+			return { row, canMutate };
+		});
+		return this.toPipelineStageResult(stagePage, items);
+	}
+
+	private async attachMutateFlagsForStages(
+		actor: LeadActor,
+		stagePages: readonly DealPipelineStagePage[],
+	): Promise<DealPipelineStageResult[]> {
+		const flatSnapshots = stagePages.flatMap((stagePage) =>
+			stagePage.items.map((row) =>
+				row.lead
+					? {
+							storeId: row.lead.storeId,
+							ownerUserId: row.lead.ownerUserId,
+						}
+					: null,
+			),
+		);
+		const batchInput = flatSnapshots.filter(
+			(s): s is { storeId: string; ownerUserId: string | null } => s !== null,
+		);
+		const batchResults =
+			await this.leadAccessPolicy.batchCanMutateLeadSnapshots(
+				actor,
+				batchInput,
+			);
+		let batchIndex = 0;
+		const flatCanMutate = flatSnapshots.map((snapshot) =>
+			snapshot === null ? false : batchResults[batchIndex++]!,
+		);
+
+		let offset = 0;
+		return stagePages.map((stagePage) => {
+			const n = stagePage.items.length;
+			const slice = flatCanMutate.slice(offset, offset + n);
+			offset += n;
+			const items = stagePage.items.map((row, idx) => ({
+				row,
+				canMutate: slice[idx]!,
+			}));
+			return this.toPipelineStageResult(stagePage, items);
+		});
+	}
+
 	async execute(actor: LeadActor, query: DealPipelineQuery) {
 		const filters = await this.resolveScopedFilters(actor, query);
 		const deals = this.dealRepositoryFactory.create();
@@ -145,9 +205,7 @@ class ListDealPipelineUseCase {
 		});
 
 		return {
-			stages: await Promise.all(
-				stages.map((stagePage) => this.attachMutateFlags(actor, stagePage)),
-			),
+			stages: await this.attachMutateFlagsForStages(actor, stages),
 		};
 	}
 

@@ -362,3 +362,98 @@ describe('LeadAccessPolicy.assertCanListOwner', () => {
 		);
 	});
 });
+
+describe('LeadAccessPolicy.batchCanMutateLeadSnapshots', () => {
+	it('ADMINISTRATOR marca todos como mutaveis', async () => {
+		const policy = new LeadAccessPolicy(
+			{ create: () => ({}) } as never,
+			{ create: () => ({}) } as never,
+		);
+		const out = await policy.batchCanMutateLeadSnapshots(
+			{ userId: ACTOR_ID, role: 'ADMINISTRATOR' },
+			[
+				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
+				{ storeId: '00000000-0000-4000-8000-0000000000c2', ownerUserId: null },
+			],
+		);
+		assert.deepEqual(out, [true, true]);
+	});
+
+	it('ATTENDANT so muta proprio ownerUserId', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor);
+		const out = await policy.batchCanMutateLeadSnapshots(
+			{ userId: ACTOR_ID, role: 'ATTENDANT' },
+			[
+				{ storeId: STORE_ID, ownerUserId: ACTOR_ID },
+				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
+			],
+		);
+		assert.deepEqual(out, [true, false]);
+	});
+
+	it('MANAGER pode mutar lead sem dono na loja gerida', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'MANAGER',
+			memberTeamIds: [],
+			managedTeamIds: [TEAM_A],
+		});
+		const policy = policyFor(actor);
+		const out = await policy.batchCanMutateLeadSnapshots(
+			{ userId: ACTOR_ID, role: 'MANAGER' },
+			[{ storeId: STORE_ID, ownerUserId: null }],
+		);
+		assert.deepEqual(out, [true]);
+	});
+
+	it('MANAGER pode mutar lead de outro quando equipas geridas intersectam', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'MANAGER',
+			memberTeamIds: [],
+			managedTeamIds: [TEAM_A],
+		});
+		const owner = userFixture({
+			id: OWNER_OTHER_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor, [owner]);
+		const out = await policy.batchCanMutateLeadSnapshots(
+			{ userId: ACTOR_ID, role: 'MANAGER' },
+			[
+				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
+				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
+			],
+		);
+		assert.deepEqual(out, [true, true]);
+	});
+
+	it('GENERAL_MANAGER nao muta lead de outro usuario', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'GENERAL_MANAGER',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const owner = userFixture({
+			id: OWNER_OTHER_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor, [owner]);
+		const out = await policy.batchCanMutateLeadSnapshots(
+			{ userId: ACTOR_ID, role: 'GENERAL_MANAGER' },
+			[{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID }],
+		);
+		assert.deepEqual(out, [false]);
+	});
+});
