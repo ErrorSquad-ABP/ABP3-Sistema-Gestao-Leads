@@ -289,11 +289,69 @@ class DealPrismaRepository implements IDealRepository {
 		filters: DealListScopedFilters,
 		pagination: { readonly page: number; readonly limit: number },
 	): Promise<readonly DealPipelineStagePage[]> {
-		return Promise.all(
-			DEAL_STAGES.map((stage) =>
-				this.listPipelineStageEnriched({ ...filters, stage }, pagination),
+		const pipelineWhereBase = this.buildScopedWhere({
+			...filters,
+			stage: undefined,
+		});
+		const skip = (pagination.page - 1) * pagination.limit;
+		const take = pagination.limit;
+
+		const metricsByStage = new Map<
+			(typeof DEAL_STAGES)[number],
+			{ total: number; totalValue: string | null }
+		>(DEAL_STAGES.map((stage) => [stage, { total: 0, totalValue: null }]));
+
+		const [groups, ...rowsPerStage] = await Promise.all([
+			this.client.deal.groupBy({
+				by: ['stage'],
+				where: pipelineWhereBase,
+				_count: { _all: true },
+				_sum: { value: true },
+			}),
+			...DEAL_STAGES.map((stage) =>
+				this.client.deal.findMany({
+					where: this.buildScopedWhere({ ...filters, stage }),
+					orderBy: this.pipelineOrderBy({ ...filters, stage }),
+					skip,
+					take,
+					include: {
+						vehicle: {
+							select: {
+								brand: true,
+								model: true,
+								modelYear: true,
+								plate: true,
+							},
+						},
+						lead: {
+							select: DEAL_LEAD_ENRICHMENT_SELECT,
+						},
+					},
+				}),
 			),
-		);
+		]);
+
+		for (const g of groups) {
+			metricsByStage.set(g.stage, {
+				total: g._count._all,
+				totalValue: g._sum.value?.toString() ?? null,
+			});
+		}
+
+		return DEAL_STAGES.map((stage, index) => {
+			const rows = rowsPerStage[index] as DealEnrichedRow[];
+			const metric = metricsByStage.get(stage)!;
+			const { total, totalValue } = metric;
+			return {
+				stage,
+				items: rows,
+				page: pagination.page,
+				limit: pagination.limit,
+				total,
+				totalPages: computeTotalPages(total, pagination.limit),
+				totalValue,
+			};
+		});
 	}
 
 	async listPipelineStageEnriched(
