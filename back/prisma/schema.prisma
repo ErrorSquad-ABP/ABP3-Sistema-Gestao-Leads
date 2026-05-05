@@ -190,6 +190,9 @@ model Lead {
   events      LeadEvent[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  @@index([createdAt])
+  @@index([storeId, createdAt])
 }
 
 model LeadEvent {

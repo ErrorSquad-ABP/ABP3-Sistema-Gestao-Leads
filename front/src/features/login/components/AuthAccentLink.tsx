@@ -22,8 +22,8 @@ function AuthAccentLink({ children, className, href }: AuthAccentLinkProps) {
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 			style={{
-				color: '#D96C3F',
-				textDecorationColor: '#D96C3F',
+				color: 'var(--brand-accent)',
+				textDecorationColor: 'var(--brand-accent)',
 				textDecorationLine: isHovered ? 'underline' : 'none',
 				textUnderlineOffset: '4px',
 			}}

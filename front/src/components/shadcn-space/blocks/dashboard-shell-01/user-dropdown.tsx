@@ -48,7 +48,7 @@ const LOGOUT_ITEM: MenuItem = {
 };
 
 const itemClass =
-	'cursor-pointer gap-2 rounded-xl bg-transparent p-2 text-sm font-medium text-popover-foreground data-[highlighted]:!bg-transparent focus:!bg-transparent';
+	'cursor-pointer gap-2 rounded-xl bg-transparent p-2 text-sm font-medium text-slate-100 data-[highlighted]:!bg-transparent focus:!bg-transparent';
 
 function getInitials(name: string) {
 	return name
@@ -92,10 +92,10 @@ const UserDropdown = ({
 	return (
 		<div className="flex items-center justify-center">
 			<DropdownMenu defaultOpen={defaultOpen}>
-				<DropdownMenuTrigger>{trigger}</DropdownMenuTrigger>
+				<DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align={align}
-					className="w-3xs rounded-2xl data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:bg-transparent!"
+					className="w-3xs rounded-2xl border-white/10 bg-sidebar p-1 text-sidebar-foreground data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:bg-transparent!"
 				>
 					{/* User Info */}
 					<DropdownMenuGroup>
@@ -110,10 +110,10 @@ const UserDropdown = ({
 							</div>
 
 							<div className="flex flex-col">
-								<span className="text-popover-foreground text-sm font-medium">
+								<span className="text-sm font-medium text-white">
 									{currentUser.name}
 								</span>
-								<span className="text-muted-foreground text-sm">
+								<span className="text-sm text-slate-300">
 									{currentUser.email}
 								</span>
 							</div>

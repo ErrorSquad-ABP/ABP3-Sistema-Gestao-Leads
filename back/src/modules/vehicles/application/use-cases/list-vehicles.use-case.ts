@@ -10,6 +10,7 @@ import { VehicleRepositoryFactory } from '../../infrastructure/persistence/facto
 type ListVehiclesFilters = {
 	readonly storeId?: string;
 	readonly status?: string;
+	readonly withoutOpenDeal?: boolean;
 };
 
 @Injectable()
@@ -31,6 +32,7 @@ class ListVehiclesUseCase {
 				status: filters?.status
 					? assertCanonicalVehicleStatus(filters.status)
 					: undefined,
+				withoutOpenDeal: filters?.withoutOpenDeal,
 			});
 		});
 	}

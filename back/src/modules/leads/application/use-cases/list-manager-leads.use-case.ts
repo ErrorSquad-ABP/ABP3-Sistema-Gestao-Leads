@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
+import type { LeadListFilters } from '../../domain/repositories/lead.repository.js';
 import type { LeadListPagination } from '../../domain/types/lead-list-page.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
@@ -14,11 +15,15 @@ class ListManagerLeadsUseCase {
 		private readonly leadAccessPolicy: LeadAccessPolicy,
 	) {}
 
-	async execute(actor: LeadActor, pagination: LeadListPagination) {
+	async execute(
+		actor: LeadActor,
+		pagination: LeadListPagination,
+		filters?: LeadListFilters,
+	) {
 		const teamIds =
 			await this.leadAccessPolicy.resolveManagerListTeamIds(actor);
 		const leads = this.leadRepositoryFactory.create();
-		return leads.listByReadableTeams(teamIds, pagination);
+		return leads.listByReadableTeams(teamIds, pagination, filters);
 	}
 }
 

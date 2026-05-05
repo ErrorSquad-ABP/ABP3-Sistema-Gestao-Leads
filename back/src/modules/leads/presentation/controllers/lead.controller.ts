@@ -98,6 +98,12 @@ function toLeadActor(user: JwtUser): LeadActor {
 	};
 }
 
+function toLeadListFilters(query: ListLeadsQueryValidator) {
+	return {
+		withoutOpenDeal: query.withoutOpenDeal === 'true',
+	};
+}
+
 @ApiBearerAuth()
 @ApiTags('leads')
 @Controller('leads')
@@ -154,6 +160,7 @@ class LeadController {
 			toLeadActor(user),
 			ownerUserId,
 			{ page: query.page, limit: query.limit },
+			toLeadListFilters(query),
 		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),
@@ -181,10 +188,14 @@ class LeadController {
 		@CurrentUser() user: JwtUser,
 		@Query() query: ListLeadsQueryValidator,
 	) {
-		const leadPage = await this.listAllLeadsUseCase.execute(toLeadActor(user), {
-			page: query.page,
-			limit: query.limit,
-		});
+		const leadPage = await this.listAllLeadsUseCase.execute(
+			toLeadActor(user),
+			{
+				page: query.page,
+				limit: query.limit,
+			},
+			toLeadListFilters(query),
+		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),
 			page: leadPage.page,
@@ -247,6 +258,7 @@ class LeadController {
 			toLeadActor(user),
 			teamId,
 			{ page: query.page, limit: query.limit },
+			toLeadListFilters(query),
 		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),
@@ -280,6 +292,7 @@ class LeadController {
 				page: query.page,
 				limit: query.limit,
 			},
+			toLeadListFilters(query),
 		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),

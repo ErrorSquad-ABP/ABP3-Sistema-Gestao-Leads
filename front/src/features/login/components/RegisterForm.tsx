@@ -17,6 +17,9 @@ import { AuthAccentLink } from './AuthAccentLink';
 import { AuthScreenLayout } from './AuthScreenLayout';
 import { AuthToast } from './AuthToast';
 
+const registerFieldClass =
+	'h-10 rounded-md border-border bg-card px-3 text-[0.85rem] text-foreground shadow-none placeholder:text-muted-foreground/80 focus-visible:border-primary/45';
+
 function RegisterForm() {
 	const [toastVisible, setToastVisible] = useState(false);
 	const form = useForm<RegisterInput>({
@@ -53,7 +56,7 @@ function RegisterForm() {
 				<div className="space-y-4">
 					<div className="space-y-1.5">
 						<Label
-							className="text-[0.82rem] font-normal text-[#6b7687]"
+							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="name"
 						>
 							Nome completo*
@@ -61,7 +64,7 @@ function RegisterForm() {
 						<Input
 							autoComplete="name"
 							className={cn(
-								'h-10 rounded-md border-[#d6dce5] bg-white px-3 text-[0.85rem] text-[#1b2430] shadow-none placeholder:text-[#97a2b1] focus-visible:border-[#2d3648]/45',
+								registerFieldClass,
 								form.formState.errors.name
 									? 'border-destructive focus-visible:border-destructive'
 									: null,
@@ -81,7 +84,7 @@ function RegisterForm() {
 
 					<div className="space-y-1.5">
 						<Label
-							className="text-[0.82rem] font-normal text-[#6b7687]"
+							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="email"
 						>
 							E-mail*
@@ -89,7 +92,7 @@ function RegisterForm() {
 						<Input
 							autoComplete="email"
 							className={cn(
-								'h-10 rounded-md border-[#d6dce5] bg-white px-3 text-[0.85rem] text-[#1b2430] shadow-none placeholder:text-[#97a2b1] focus-visible:border-[#2d3648]/45',
+								registerFieldClass,
 								form.formState.errors.email
 									? 'border-destructive focus-visible:border-destructive'
 									: null,
@@ -110,7 +113,7 @@ function RegisterForm() {
 
 					<div className="space-y-1.5">
 						<Label
-							className="text-[0.82rem] font-normal text-[#6b7687]"
+							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="password"
 						>
 							Senha*
@@ -118,7 +121,7 @@ function RegisterForm() {
 						<Input
 							autoComplete="new-password"
 							className={cn(
-								'h-10 rounded-md border-[#d6dce5] bg-white px-3 text-[0.85rem] text-[#1b2430] shadow-none placeholder:text-[#97a2b1] focus-visible:border-[#2d3648]/45',
+								registerFieldClass,
 								form.formState.errors.password
 									? 'border-destructive focus-visible:border-destructive'
 									: null,
@@ -138,7 +141,7 @@ function RegisterForm() {
 
 					<div className="space-y-1.5">
 						<Label
-							className="text-[0.82rem] font-normal text-[#6b7687]"
+							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="confirmPassword"
 						>
 							Confirmar senha*
@@ -146,7 +149,7 @@ function RegisterForm() {
 						<Input
 							autoComplete="new-password"
 							className={cn(
-								'h-10 rounded-md border-[#d6dce5] bg-white px-3 text-[0.85rem] text-[#1b2430] shadow-none placeholder:text-[#97a2b1] focus-visible:border-[#2d3648]/45',
+								registerFieldClass,
 								form.formState.errors.confirmPassword
 									? 'border-destructive focus-visible:border-destructive'
 									: null,
@@ -166,14 +169,14 @@ function RegisterForm() {
 				</div>
 
 				<Button
-					className="h-9 w-full rounded-md bg-[#2D3648] text-[0.85rem] font-medium text-white shadow-none hover:bg-[#232B3B]"
+					className="h-9 w-full rounded-md bg-primary text-[0.85rem] font-medium text-primary-foreground shadow-none hover:bg-primary/90"
 					type="submit"
 				>
 					Solicitar acesso
 				</Button>
 
 				<p className="text-center text-[0.82rem]">
-					<span className="text-[#6b7687]">Já tem uma conta? </span>
+					<span className="text-muted-foreground">Já tem uma conta? </span>
 					<AuthAccentLink
 						className="inline-block whitespace-nowrap text-[0.82rem] font-medium"
 						href={appRoutes.auth.login}
