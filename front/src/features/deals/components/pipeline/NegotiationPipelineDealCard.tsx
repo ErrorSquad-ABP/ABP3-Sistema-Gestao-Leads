@@ -144,9 +144,7 @@ function NegotiationPipelineDealCard({
 						Detalhes
 					</DropdownMenuItem>
 					<DropdownMenuItem
-						disabled={
-							!onEdit || getDealFormEditBlockReason(deal) !== null
-						}
+						disabled={!onEdit || getDealFormEditBlockReason(deal) !== null}
 						className="cursor-pointer rounded-xl px-3 py-2 text-sm"
 						onSelect={() => onEdit?.(deal)}
 					>

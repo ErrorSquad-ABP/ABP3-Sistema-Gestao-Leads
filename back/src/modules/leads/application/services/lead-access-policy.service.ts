@@ -195,10 +195,7 @@ class LeadAccessPolicy {
 				await Promise.all(
 					[...uniqueOwners].map(
 						async (ownerUserId) =>
-							[
-								ownerUserId,
-								await this.targetUserTeamIds(ownerUserId),
-							] as const,
+							[ownerUserId, await this.targetUserTeamIds(ownerUserId)] as const,
 					),
 				),
 			);

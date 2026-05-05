@@ -339,8 +339,17 @@ class DealPrismaRepository implements IDealRepository {
 		}
 
 		return DEAL_STAGES.map((stage, index) => {
-			const rows = rowsPerStage[index] as DealEnrichedRow[];
-			const metric = metricsByStage.get(stage)!;
+			const rowsBundle = rowsPerStage.at(index);
+			if (rowsBundle === undefined) {
+				throw new Error('Deal pipeline: linhas por estágio fora de sincronia');
+			}
+			const rows = rowsBundle as DealEnrichedRow[];
+			const metric = metricsByStage.get(stage);
+			if (!metric) {
+				throw new Error(
+					`Deal pipeline: métricas ausentes para estágio ${stage}`,
+				);
+			}
 			const { total, totalValue } = metric;
 			return {
 				stage,

@@ -128,29 +128,32 @@ class ListDealPipelineUseCase {
 		actor: LeadActor,
 		stagePage: DealPipelineStagePage,
 	): Promise<DealPipelineStageResult> {
-		const snapshots = stagePage.items.map((row) =>
-			row.lead
+		const rowsWithSnap = stagePage.items.map((row) => ({
+			row,
+			snap: row.lead
 				? {
 						storeId: row.lead.storeId,
 						ownerUserId: row.lead.ownerUserId,
 					}
 				: null,
-		);
-		const batchInput = snapshots.filter(
-			(s): s is { storeId: string; ownerUserId: string | null } => s !== null,
-		);
+		}));
+		const batchInput = rowsWithSnap
+			.map(({ snap }) => snap)
+			.filter(
+				(s): s is { storeId: string; ownerUserId: string | null } => s !== null,
+			);
 		const batchResults =
 			await this.leadAccessPolicy.batchCanMutateLeadSnapshots(
 				actor,
 				batchInput,
 			);
-		let batchIndex = 0;
-		const items = stagePage.items.map((row, idx) => {
-			if (!snapshots[idx]) {
+		const batchIter = batchResults.values();
+		const items = rowsWithSnap.map(({ row, snap }) => {
+			if (!snap) {
 				return { row, canMutate: false as const };
 			}
-			const canMutate = batchResults[batchIndex]!;
-			batchIndex += 1;
+			const next = batchIter.next();
+			const canMutate = next.done ? false : Boolean(next.value);
 			return { row, canMutate };
 		});
 		return this.toPipelineStageResult(stagePage, items);
@@ -178,10 +181,14 @@ class ListDealPipelineUseCase {
 				actor,
 				batchInput,
 			);
-		let batchIndex = 0;
-		const flatCanMutate = flatSnapshots.map((snapshot) =>
-			snapshot === null ? false : batchResults[batchIndex++]!,
-		);
+		const batchIter = batchResults.values();
+		const flatCanMutate = flatSnapshots.map((snapshot) => {
+			if (snapshot === null) {
+				return false;
+			}
+			const next = batchIter.next();
+			return next.done ? false : Boolean(next.value);
+		});
 
 		let offset = 0;
 		return stagePages.map((stagePage) => {
@@ -190,7 +197,7 @@ class ListDealPipelineUseCase {
 			offset += n;
 			const items = stagePage.items.map((row, idx) => ({
 				row,
-				canMutate: slice[idx]!,
+				canMutate: slice.at(idx) ?? false,
 			}));
 			return this.toPipelineStageResult(stagePage, items);
 		});
