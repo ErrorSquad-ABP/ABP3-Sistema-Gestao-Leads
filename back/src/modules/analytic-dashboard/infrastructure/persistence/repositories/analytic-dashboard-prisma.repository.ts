@@ -4,13 +4,19 @@ import type {
 	AnalyticDashboardResult,
 	AnalyticDistributionItem,
 	AnalyticPerformanceItem,
+	AnalyticsRankingOptions,
 	AnalyticsScope,
 	AnalyticsTimeRange,
 	IAnalyticDashboardRepository,
 } from '../../../domain/repositories/analytic-dashboard.repository.js';
 
 type PrismaLeadRow = Prisma.LeadGetPayload<{
-	include: {
+	select: {
+		id: true;
+		storeId: true;
+		status: true;
+		createdAt: true;
+		updatedAt: true;
 		owner: {
 			select: {
 				id: true;
@@ -19,14 +25,17 @@ type PrismaLeadRow = Prisma.LeadGetPayload<{
 				managedTeams: { select: { id: true; name: true; storeId: true } };
 			};
 		};
-		deals: {
-			select: {
-				status: true;
-				createdAt: true;
-			};
-		};
 	};
 }>;
+
+type DealCountsByLead = {
+	openDeals: number;
+	wonDeals: number;
+	lostDeals: number;
+};
+
+const FIRST_INTERACTION_METHODOLOGY =
+	'Aproximacao baseada no primeiro evento operacional registrado, na primeira negociacao criada ou, sem esses registros, em updatedAt do lead.';
 
 type Counter = {
 	totalLeads: number;
@@ -84,8 +93,9 @@ function toPerformanceItems(
 		string,
 		{ readonly id: string; readonly name: string; counter: Counter }
 	>,
+	limit?: number,
 ): AnalyticPerformanceItem[] {
-	return [...source.values()]
+	const items = [...source.values()]
 		.map((item) => ({
 			id: item.id,
 			name: item.name,
@@ -109,6 +119,53 @@ function toPerformanceItems(
 			}
 			return left.name.localeCompare(right.name);
 		});
+
+	return limit === undefined ? items : items.slice(0, limit);
+}
+
+function buildDealCountsByLead(
+	groups: readonly {
+		leadId: string;
+		status: string;
+		_count: { _all: number };
+	}[],
+): Map<string, DealCountsByLead> {
+	const counters = new Map<string, DealCountsByLead>();
+
+	for (const group of groups) {
+		const counter = counters.get(group.leadId) ?? {
+			openDeals: 0,
+			wonDeals: 0,
+			lostDeals: 0,
+		};
+
+		if (group.status === 'OPEN') {
+			counter.openDeals = group._count._all;
+		}
+		if (group.status === 'WON') {
+			counter.wonDeals = group._count._all;
+		}
+		if (group.status === 'LOST') {
+			counter.lostDeals = group._count._all;
+		}
+
+		counters.set(group.leadId, counter);
+	}
+
+	return counters;
+}
+
+function buildFirstInteractionMap(
+	groups: readonly { leadId: string; _min: { createdAt: Date | null } }[],
+): Map<string, Date> {
+	return new Map(
+		groups
+			.filter(
+				(group): group is { leadId: string; _min: { createdAt: Date } } =>
+					group._min.createdAt instanceof Date,
+			)
+			.map((group) => [group.leadId, group._min.createdAt] as const),
+	);
 }
 
 function emptyAnalyticsResult(): AnalyticDashboardResult {
@@ -126,6 +183,8 @@ function emptyAnalyticsResult(): AnalyticDashboardResult {
 		averageTimeToFirstInteraction: {
 			hours: null,
 			leadsWithInteraction: 0,
+			isApproximate: true,
+			methodology: FIRST_INTERACTION_METHODOLOGY,
 		},
 	};
 }
@@ -138,6 +197,7 @@ class AnalyticDashboardPrismaRepository
 	async getAnalyticDashboard(
 		scope: AnalyticsScope,
 		timeRange: AnalyticsTimeRange,
+		options?: AnalyticsRankingOptions,
 	): Promise<AnalyticDashboardResult> {
 		const leadWhere = this.buildLeadWhere(scope, timeRange);
 		const dealWhere: Prisma.DealWhereInput = {
@@ -149,6 +209,9 @@ class AnalyticDashboardPrismaRepository
 			convertedLeads,
 			importanceGroups,
 			finalizationGroups,
+			dealStatusByLead,
+			firstDealByLead,
+			firstLeadEventByLead,
 			leads,
 		] = await Promise.all([
 			this.prisma.lead.count({ where: leadWhere }),
@@ -171,12 +234,34 @@ class AnalyticDashboardPrismaRepository
 					status: { in: ['WON', 'LOST'] },
 				},
 			}),
+			this.prisma.deal.groupBy({
+				by: ['leadId', 'status'],
+				_count: { _all: true },
+				where: dealWhere,
+			}),
+			this.prisma.deal.groupBy({
+				by: ['leadId'],
+				_min: { createdAt: true },
+				where: dealWhere,
+			}),
+			this.prisma.leadEvent.groupBy({
+				by: ['leadId'],
+				_min: { createdAt: true },
+				where: {
+					lead: leadWhere,
+					type: { in: ['UPDATED', 'REASSIGNED', 'CONVERTED'] },
+				},
+			}),
 			// Team derivation still depends on owner/team/store relationships, so we keep
-			// a narrow in-memory projection only for ranking and first-interaction timing.
+			// only the minimal lead projection needed for ranking and interaction timing.
 			this.prisma.lead.findMany({
 				where: leadWhere,
-				orderBy: { createdAt: 'desc' },
-				include: {
+				select: {
+					id: true,
+					storeId: true,
+					status: true,
+					createdAt: true,
+					updatedAt: true,
 					owner: {
 						select: {
 							id: true,
@@ -187,12 +272,6 @@ class AnalyticDashboardPrismaRepository
 							managedTeams: {
 								select: { id: true, name: true, storeId: true },
 							},
-						},
-					},
-					deals: {
-						select: {
-							status: true,
-							createdAt: true,
 						},
 					},
 				},
@@ -214,6 +293,10 @@ class AnalyticDashboardPrismaRepository
 
 		const visibleTeamIds =
 			scope.kind === 'manager' ? new Set(scope.readTeamIds) : undefined;
+		const dealCountsByLead = buildDealCountsByLead(dealStatusByLead);
+		const firstDealAtByLead = buildFirstInteractionMap(firstDealByLead);
+		const firstLeadEventAtByLead =
+			buildFirstInteractionMap(firstLeadEventByLead);
 
 		let interactionLeadCount = 0;
 		let interactionTotalHours = 0;
@@ -231,12 +314,10 @@ class AnalyticDashboardPrismaRepository
 			attendantEntry.counter.totalLeads += 1;
 			attendantEntry.counter.convertedLeads += isConverted ? 1 : 0;
 			attendantEntry.counter.notConvertedLeads += isConverted ? 0 : 1;
-
-			for (const deal of lead.deals) {
-				attendantEntry.counter.openDeals += deal.status === 'OPEN' ? 1 : 0;
-				attendantEntry.counter.wonDeals += deal.status === 'WON' ? 1 : 0;
-				attendantEntry.counter.lostDeals += deal.status === 'LOST' ? 1 : 0;
-			}
+			const dealCounts = dealCountsByLead.get(lead.id);
+			attendantEntry.counter.openDeals += dealCounts?.openDeals ?? 0;
+			attendantEntry.counter.wonDeals += dealCounts?.wonDeals ?? 0;
+			attendantEntry.counter.lostDeals += dealCounts?.lostDeals ?? 0;
 			attendantCounters.set(ownerId, attendantEntry);
 
 			const primaryTeam = resolvePrimaryTeam(lead, visibleTeamIds);
@@ -250,14 +331,16 @@ class AnalyticDashboardPrismaRepository
 			teamEntry.counter.totalLeads += 1;
 			teamEntry.counter.convertedLeads += isConverted ? 1 : 0;
 			teamEntry.counter.notConvertedLeads += isConverted ? 0 : 1;
-			for (const deal of lead.deals) {
-				teamEntry.counter.openDeals += deal.status === 'OPEN' ? 1 : 0;
-				teamEntry.counter.wonDeals += deal.status === 'WON' ? 1 : 0;
-				teamEntry.counter.lostDeals += deal.status === 'LOST' ? 1 : 0;
-			}
+			teamEntry.counter.openDeals += dealCounts?.openDeals ?? 0;
+			teamEntry.counter.wonDeals += dealCounts?.wonDeals ?? 0;
+			teamEntry.counter.lostDeals += dealCounts?.lostDeals ?? 0;
 			teamCounters.set(teamId, teamEntry);
 
-			const interactionAt = this.resolveFirstInteractionAt(lead);
+			const interactionAt = this.resolveFirstInteractionAt({
+				lead,
+				firstDealAt: firstDealAtByLead.get(lead.id) ?? null,
+				firstLeadEventAt: firstLeadEventAtByLead.get(lead.id) ?? null,
+			});
 			if (interactionAt !== null) {
 				interactionLeadCount += 1;
 				interactionTotalHours +=
@@ -272,8 +355,8 @@ class AnalyticDashboardPrismaRepository
 				notConvertedLeads,
 				conversionRate: toRate(convertedLeads, totalLeads),
 			},
-			byAttendant: toPerformanceItems(attendantCounters),
-			byTeam: toPerformanceItems(teamCounters),
+			byAttendant: toPerformanceItems(attendantCounters, options?.top),
+			byTeam: toPerformanceItems(teamCounters, options?.top),
 			importanceDistribution: this.toImportanceDistribution(importanceGroups),
 			finalizationReasons: this.toFinalizationReasons(finalizationGroups),
 			averageTimeToFirstInteraction: {
@@ -282,6 +365,8 @@ class AnalyticDashboardPrismaRepository
 						? null
 						: round2(interactionTotalHours / interactionLeadCount),
 				leadsWithInteraction: interactionLeadCount,
+				isApproximate: true,
+				methodology: FIRST_INTERACTION_METHODOLOGY,
 			},
 		};
 	}
@@ -392,17 +477,33 @@ class AnalyticDashboardPrismaRepository
 		}
 	}
 
-	private resolveFirstInteractionAt(lead: PrismaLeadRow): Date | null {
+	private resolveFirstInteractionAt(input: {
+		readonly lead: PrismaLeadRow;
+		readonly firstDealAt: Date | null;
+		readonly firstLeadEventAt: Date | null;
+	}): Date | null {
 		const candidates: Date[] = [];
+		const { lead, firstDealAt, firstLeadEventAt } = input;
 
-		if (lead.updatedAt.getTime() > lead.createdAt.getTime()) {
-			candidates.push(lead.updatedAt);
+		if (
+			firstLeadEventAt !== null &&
+			firstLeadEventAt.getTime() >= lead.createdAt.getTime()
+		) {
+			candidates.push(firstLeadEventAt);
 		}
 
-		for (const deal of lead.deals) {
-			if (deal.createdAt.getTime() >= lead.createdAt.getTime()) {
-				candidates.push(deal.createdAt);
-			}
+		if (
+			firstDealAt !== null &&
+			firstDealAt.getTime() >= lead.createdAt.getTime()
+		) {
+			candidates.push(firstDealAt);
+		}
+
+		if (
+			candidates.length === 0 &&
+			lead.updatedAt.getTime() > lead.createdAt.getTime()
+		) {
+			candidates.push(lead.updatedAt);
 		}
 
 		if (candidates.length === 0) {

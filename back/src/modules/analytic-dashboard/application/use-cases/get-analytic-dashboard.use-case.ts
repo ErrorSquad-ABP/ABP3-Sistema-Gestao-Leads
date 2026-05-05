@@ -14,6 +14,7 @@ type GetAnalyticDashboardInput = {
 	readonly referenceDate?: string;
 	readonly startDate?: string;
 	readonly endDate?: string;
+	readonly top?: number;
 };
 
 @Injectable()
@@ -28,7 +29,9 @@ class GetAnalyticDashboardUseCase {
 		const timeRange = this.analyticTimeRangeService.resolve(input, actor.role);
 		const scope = await this.analyticScopeService.resolve(actor);
 		const repository = this.analyticDashboardRepositoryFactory.create();
-		const dashboard = await repository.getAnalyticDashboard(scope, timeRange);
+		const dashboard = await repository.getAnalyticDashboard(scope, timeRange, {
+			top: input.top,
+		});
 
 		return {
 			filter: {
@@ -36,6 +39,7 @@ class GetAnalyticDashboardUseCase {
 				startDate: timeRange.startDate,
 				endDate: timeRange.endDate,
 				scope: scope.kind,
+				top: input.top ?? null,
 			},
 			...dashboard,
 		};

@@ -11,12 +11,14 @@ function normalizeAnalyticDashboardQuery(
 			mode: 'custom',
 			startDate: query.startDate,
 			endDate: query.endDate,
+			top: query.top,
 		};
 	}
 
 	return {
 		mode: query.mode,
 		referenceDate: query.referenceDate,
+		top: query.top,
 	};
 }
 
@@ -34,6 +36,9 @@ function buildAnalyticDashboardQuery(query: AnalyticDashboardQuery) {
 	}
 	if (normalized.endDate) {
 		params.set('endDate', normalized.endDate);
+	}
+	if (typeof normalized.top === 'number') {
+		params.set('top', String(normalized.top));
 	}
 
 	return params.toString();

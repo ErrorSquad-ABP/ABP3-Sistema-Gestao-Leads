@@ -21,6 +21,7 @@ const analyticDashboardFilterSchema = z.object({
 	startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 	endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 	scope: z.enum(analyticDashboardScopeValues),
+	top: z.number().int().min(1).nullable(),
 });
 
 const analyticDashboardSummarySchema = z.object({
@@ -51,6 +52,8 @@ const analyticDashboardDistributionItemSchema = z.object({
 const analyticDashboardAverageTimeSchema = z.object({
 	hours: z.number().min(0).nullable(),
 	leadsWithInteraction: z.number().int().min(0),
+	isApproximate: z.boolean(),
+	methodology: z.string().min(1),
 });
 
 const analyticDashboardSchema = z.object({

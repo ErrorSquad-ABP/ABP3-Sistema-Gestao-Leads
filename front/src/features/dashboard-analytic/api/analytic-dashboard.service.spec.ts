@@ -14,11 +14,13 @@ describe('normalizeAnalyticDashboardQuery', () => {
 				referenceDate: '2026-04-28',
 				startDate: '2026-04-01',
 				endDate: '2026-04-28',
+				top: 6,
 			}),
 			{
 				mode: 'custom',
 				startDate: '2026-04-01',
 				endDate: '2026-04-28',
+				top: 6,
 			},
 		);
 	});
@@ -30,10 +32,12 @@ describe('normalizeAnalyticDashboardQuery', () => {
 				referenceDate: '2026-04-28',
 				startDate: '2026-04-01',
 				endDate: '2026-04-28',
+				top: 6,
 			}),
 			{
 				mode: 'month',
 				referenceDate: '2026-04-28',
+				top: 6,
 			},
 		);
 	});
@@ -47,8 +51,9 @@ describe('buildAnalyticDashboardQuery', () => {
 				referenceDate: '2026-04-28',
 				startDate: '2026-04-01',
 				endDate: '2026-04-28',
+				top: 6,
 			}),
-			'mode=month&referenceDate=2026-04-28',
+			'mode=month&referenceDate=2026-04-28&top=6',
 		);
 	});
 
@@ -59,8 +64,9 @@ describe('buildAnalyticDashboardQuery', () => {
 				referenceDate: '2026-04-28',
 				startDate: '2026-04-01',
 				endDate: '2026-04-28',
+				top: 6,
 			}),
-			'mode=custom&startDate=2026-04-01&endDate=2026-04-28',
+			'mode=custom&startDate=2026-04-01&endDate=2026-04-28&top=6',
 		);
 	});
 });

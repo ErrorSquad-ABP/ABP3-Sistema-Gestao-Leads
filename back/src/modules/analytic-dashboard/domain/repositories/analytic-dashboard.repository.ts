@@ -8,6 +8,10 @@ type AnalyticsTimeRange = {
 	readonly endExclusive: Date;
 };
 
+type AnalyticsRankingOptions = {
+	readonly top?: number;
+};
+
 type AnalyticsScope =
 	| { readonly kind: 'full' }
 	| {
@@ -55,6 +59,8 @@ type AnalyticDistributionItem = {
 type AverageTimeToFirstInteraction = {
 	readonly hours: number | null;
 	readonly leadsWithInteraction: number;
+	readonly isApproximate: boolean;
+	readonly methodology: string;
 };
 
 type AnalyticDashboardResult = {
@@ -70,6 +76,7 @@ interface IAnalyticDashboardRepository {
 	getAnalyticDashboard(
 		scope: AnalyticsScope,
 		timeRange: AnalyticsTimeRange,
+		options?: AnalyticsRankingOptions,
 	): Promise<AnalyticDashboardResult>;
 }
 
@@ -77,6 +84,7 @@ export type {
 	AnalyticDashboardResult,
 	AnalyticDistributionItem,
 	AnalyticPerformanceItem,
+	AnalyticsRankingOptions,
 	AnalyticsScope,
 	AnalyticsTimeMode,
 	AnalyticsTimeRange,

@@ -13,6 +13,7 @@ describe('parseAnalyticDashboardResponse', () => {
 				startDate: '2026-04-01',
 				endDate: '2026-04-30',
 				scope: 'manager',
+				top: 6,
 			},
 			summary: {
 				totalLeads: 20,
@@ -56,6 +57,8 @@ describe('parseAnalyticDashboardResponse', () => {
 			averageTimeToFirstInteraction: {
 				hours: 14.5,
 				leadsWithInteraction: 18,
+				isApproximate: true,
+				methodology: 'Aproximacao operacional.',
 			},
 		});
 
@@ -73,6 +76,7 @@ describe('parseAnalyticDashboardResponse', () => {
 						startDate: '2026-04-01',
 						endDate: '2026-04-30',
 						scope: 'manager',
+						top: null,
 					},
 					summary: {
 						totalLeads: '20',
@@ -87,6 +91,8 @@ describe('parseAnalyticDashboardResponse', () => {
 					averageTimeToFirstInteraction: {
 						hours: null,
 						leadsWithInteraction: 0,
+						isApproximate: true,
+						methodology: 'Aproximacao operacional.',
 					},
 				}),
 			(error: unknown) =>

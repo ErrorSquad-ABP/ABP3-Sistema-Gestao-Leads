@@ -14,6 +14,9 @@ class AnalyticDashboardFilterDto {
 		enum: ['attendant', 'manager', 'general_manager', 'full'],
 	})
 	scope!: 'attendant' | 'manager' | 'general_manager' | 'full';
+
+	@ApiProperty({ nullable: true, example: 6 })
+	top!: number | null;
 }
 
 class AnalyticDashboardSummaryDto {
@@ -76,6 +79,19 @@ class AverageTimeToFirstInteractionDto {
 
 	@ApiProperty()
 	leadsWithInteraction!: number;
+
+	@ApiProperty({
+		example: true,
+		description:
+			'Indica que a metrica pode representar uma aproximacao operacional, e nao necessariamente a primeira interacao comercial efetiva.',
+	})
+	isApproximate!: boolean;
+
+	@ApiProperty({
+		example:
+			'Aproximacao baseada no primeiro evento operacional registrado, na primeira negociacao criada ou, sem esses registros, em updatedAt do lead.',
+	})
+	methodology!: string;
 }
 
 class AnalyticDashboardResponseDto {

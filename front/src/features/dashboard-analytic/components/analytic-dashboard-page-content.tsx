@@ -231,6 +231,7 @@ function AnalyticDashboardPageContent({
 	const [appliedQuery, setAppliedQuery] = useState<AnalyticDashboardQuery>({
 		mode: 'month',
 		referenceDate: initialReferenceDate,
+		top: 6,
 	});
 
 	const dashboardQuery = useAnalyticDashboardQuery(appliedQuery);
@@ -290,6 +291,7 @@ function AnalyticDashboardPageContent({
 				mode: draftMode,
 				startDate: draftStartDate,
 				endDate: draftEndDate,
+				top: 6,
 			});
 			return;
 		}
@@ -297,6 +299,7 @@ function AnalyticDashboardPageContent({
 		setAppliedQuery({
 			mode: draftMode,
 			referenceDate: draftReferenceDate,
+			top: 6,
 		});
 	}
 
@@ -309,6 +312,7 @@ function AnalyticDashboardPageContent({
 		setAppliedQuery({
 			mode: 'month',
 			referenceDate: initialReferenceDate,
+			top: 6,
 		});
 	}
 

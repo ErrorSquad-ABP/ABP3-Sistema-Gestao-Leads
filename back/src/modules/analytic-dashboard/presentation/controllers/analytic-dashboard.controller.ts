@@ -78,6 +78,7 @@ class AnalyticDashboardController {
 				referenceDate: query.referenceDate,
 				startDate: query.startDate,
 				endDate: query.endDate,
+				top: query.top,
 			},
 		);
 

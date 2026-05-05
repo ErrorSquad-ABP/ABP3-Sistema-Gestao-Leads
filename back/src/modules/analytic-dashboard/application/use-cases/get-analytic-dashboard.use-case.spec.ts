@@ -8,6 +8,7 @@ describe('GetAnalyticDashboardUseCase', () => {
 		const calls: {
 			scope?: unknown;
 			timeRange?: unknown;
+			options?: unknown;
 		} = {};
 
 		const useCase = new GetAnalyticDashboardUseCase(
@@ -17,9 +18,11 @@ describe('GetAnalyticDashboardUseCase', () => {
 						getAnalyticDashboard: async (
 							scope: unknown,
 							timeRange: unknown,
+							options: unknown,
 						) => {
 							calls.scope = scope;
 							calls.timeRange = timeRange;
+							calls.options = options;
 							return {
 								summary: {
 									totalLeads: 10,
@@ -34,6 +37,8 @@ describe('GetAnalyticDashboardUseCase', () => {
 								averageTimeToFirstInteraction: {
 									hours: 8.5,
 									leadsWithInteraction: 9,
+									isApproximate: true,
+									methodology: 'Aproximacao operacional.',
 								},
 							};
 						},
@@ -60,7 +65,7 @@ describe('GetAnalyticDashboardUseCase', () => {
 
 		const result = await useCase.execute(
 			{ userId: 'user-1', role: 'MANAGER' },
-			{ mode: 'month', referenceDate: '2026-04-25' },
+			{ mode: 'month', referenceDate: '2026-04-25', top: 6 },
 		);
 
 		assert.deepEqual(calls.scope, {
@@ -76,11 +81,13 @@ describe('GetAnalyticDashboardUseCase', () => {
 			startAt: new Date('2026-04-01T00:00:00.000Z'),
 			endExclusive: new Date('2026-05-01T00:00:00.000Z'),
 		});
+		assert.deepEqual(calls.options, { top: 6 });
 		assert.deepEqual(result.filter, {
 			mode: 'month',
 			startDate: '2026-04-01',
 			endDate: '2026-04-30',
 			scope: 'manager',
+			top: 6,
 		});
 		assert.equal(result.summary.conversionRate, 40);
 	});
@@ -106,6 +113,8 @@ describe('GetAnalyticDashboardUseCase', () => {
 								averageTimeToFirstInteraction: {
 									hours: null,
 									leadsWithInteraction: 0,
+									isApproximate: true,
+									methodology: 'Aproximacao operacional.',
 								},
 							};
 						},
@@ -130,5 +139,6 @@ describe('GetAnalyticDashboardUseCase', () => {
 
 		assert.equal(result.filter.scope, 'full');
 		assert.equal(result.filter.mode, 'year');
+		assert.equal(result.filter.top, null);
 	});
 });

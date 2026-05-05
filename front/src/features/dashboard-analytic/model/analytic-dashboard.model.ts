@@ -14,6 +14,7 @@ type AnalyticDashboardQuery = {
 	referenceDate?: string;
 	startDate?: string;
 	endDate?: string;
+	top?: number;
 };
 
 export type {
