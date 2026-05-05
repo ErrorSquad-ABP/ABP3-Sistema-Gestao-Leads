@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-O `back` é a API do sistema. Ele concentra autenticação, autorização, persistência, contratos REST e as regras de negócio do domínio.
+O `back` e a API do sistema. Ele concentra autenticacao, autorizacao, persistencia, contratos REST e regras de negocio do dominio.
 
 ## Stack
 
@@ -13,21 +13,21 @@ O `back` é a API do sistema. Ele concentra autenticação, autorização, persi
 - Argon2
 - JWT `RS256`
 
-## Organização
+## Organizacao
 
 ```text
 back/
-├── src/
-│   ├── modules/
-│   ├── shared/
-│   ├── app.module.ts
-│   └── main.ts
-├── prisma/
-├── scripts/
-└── package.json
+|-- src/
+|   |-- modules/
+|   |-- shared/
+|   |-- app.module.ts
+|   `-- main.ts
+|-- prisma/
+|-- scripts/
+`-- package.json
 ```
 
-## Módulos ativos
+## Modulos ativos
 
 - `auth`
 - `users`
@@ -35,14 +35,14 @@ back/
 - `stores`
 - `customers`
 - `leads`
+- `dashboards` (operational)
 
-## Módulos ainda não fechados como produto
+## Modulos ainda nao fechados como produto
 
 - `negotiations`
-- `dashboards`
 - `audit-logs`
 
-## Auth e sessão
+## Auth e sessao
 
 O backend hoje opera com:
 
@@ -52,7 +52,7 @@ O backend hoje opera com:
 - cookies HttpOnly de auth;
 - suporte a `Authorization: Bearer` para consumo do frontend.
 
-## Variáveis críticas
+## Variaveis criticas
 
 - `DATABASE_URL`
 - `JWT_ACCESS_PRIVATE_KEY`
@@ -77,24 +77,25 @@ npm run prisma:seed
 
 Modos:
 
-- padrão: `minimal`
-- analítico: `SEED_MODE=dashboard`
+- padrao: `minimal`
+- analitico: `SEED_MODE=dashboard`
 
 ## Estado atual
 
-Hoje o backend já entrega:
+Hoje o backend ja entrega:
 
-- autenticação funcional;
+- autenticacao funcional;
 - `RBAC` no backend;
 - modelo multi-team para escopo;
 - CRUD de utilizadores;
 - CRUD de equipas;
 - CRUD de lojas;
 - CRUD de clientes;
-- CRUD de leads.
+- CRUD de leads;
+- dashboard operacional (`RF04`) com agregacoes por status, origem, loja e importancia.
 
 O que ainda falta como recorte de produto:
 
-- negociações completas;
-- dashboards com dados reais;
+- negociacoes completas no frontend;
+- dashboard analitico (`RF05`) e filtros avancados (`RF06`);
 - logs administrativos completos.

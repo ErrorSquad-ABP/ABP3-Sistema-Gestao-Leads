@@ -1,12 +1,10 @@
-import { AppRoutePlaceholder } from '@/components/shared/AppRoutePlaceholder';
+import { OperationalDashboardPageContent } from '@/features/dashboard-operational/components/operational-dashboard-page-content';
+import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
-function OperationalDashboardPage() {
-	return (
-		<AppRoutePlaceholder
-			description="Destino inicial previsto para gerentes após autenticação."
-			title="Dashboard Operacional"
-		/>
-	);
+async function OperationalDashboardPage() {
+	const user = await requireUserWithRouteAccess('dashboardOperational');
+
+	return <OperationalDashboardPageContent user={user} />;
 }
 
 export default OperationalDashboardPage;

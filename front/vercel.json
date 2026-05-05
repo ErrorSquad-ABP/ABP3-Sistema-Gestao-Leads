@@ -1,7 +1,5 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"installCommand": "npm install --workspaces=false",
-	"buildCommand": "npm run build",
 	"git": {
 		"deploymentEnabled": {
 			"*": false,
