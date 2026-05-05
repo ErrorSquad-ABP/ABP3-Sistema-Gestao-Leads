@@ -124,8 +124,6 @@ const queryKeys = {
 				params.startDate ?? 'default',
 				params.endDate ?? 'default',
 			] as const,
-	},
-	dashboards: {
 		analytic: (params: {
 			mode: string;
 			referenceDate?: string;
