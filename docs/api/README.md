@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Registrar o contrato macro e o inventário real da API no estado atual da `main`.
+Registrar o contrato macro e o inventario real da API no estado atual da `main`.
 
 ## Prefixo atual
 
@@ -10,7 +10,7 @@ Registrar o contrato macro e o inventário real da API no estado atual da `main`
 /api
 ```
 
-Não há versionamento por `/v1` na implementação atual.
+Nao ha versionamento por `/v1` na implementacao atual.
 
 ## Recursos ativos
 
@@ -20,39 +20,39 @@ Não há versionamento por `/v1` na implementação atual.
 - `/stores`
 - `/customers`
 - `/leads`
+- `/dashboards`
 
-## Recursos ainda não fechados como produto
+## Recursos ainda nao fechados como produto
 
 - `negotiations`
-- `dashboards`
 - `audit-logs`
 
 ## Regras operacionais
 
-- JWT obrigatório para rotas protegidas.
+- JWT obrigatorio para rotas protegidas.
 - `RBAC` aplicado exclusivamente no backend.
 - Escopo organizacional resolvido com `memberTeamIds` e `managedTeamIds`.
 - `teamId` permanece apenas como compatibilidade legada.
-- Paginação e filtros seguem query params explícitos.
+- Paginacao e filtros seguem query params explicitos.
 - Respostas usam envelope de sucesso/erro consistente.
 
 ## Auth
 
 ### Endpoints relevantes
 
-| Método | Caminho | Estado |
+| Metodo | Caminho | Estado |
 | --- | --- | --- |
 | `POST` | `/api/auth/login` | Funcional |
 | `POST` | `/api/auth/refresh` | Funcional |
 | `POST` | `/api/auth/logout` | Funcional |
-| `GET` | `/api/auth/session` | Funcional, opcional, retorna `data: null` sem sessão |
-| `GET` | `/api/auth/me` | Funcional, estrito, retorna `401` sem autenticação |
+| `GET` | `/api/auth/session` | Funcional, opcional, retorna `data: null` sem sessao |
+| `GET` | `/api/auth/me` | Funcional, estrito, retorna `401` sem autenticacao |
 | `PATCH` | `/api/auth/me/email` | Funcional |
 | `PATCH` | `/api/auth/me/password` | Funcional |
 
 ## Contrato atual de utilizador
 
-Campos canônicos de vínculo organizacional:
+Campos canonicos de vinculo organizacional:
 
 - `memberTeamIds`
 - `managedTeamIds`
@@ -70,14 +70,14 @@ Campo legado:
 
 Rotas de listagem consumidas pelo frontend:
 
-| Método | Caminho | Uso |
+| Metodo | Caminho | Uso |
 | --- | --- | --- |
-| `GET` | `/api/leads/owner/:ownerUserId?page=&limit=` | Escopo por responsável |
+| `GET` | `/api/leads/owner/:ownerUserId?page=&limit=` | Escopo por responsavel |
 | `GET` | `/api/leads/manager?page=&limit=` | Escopo consolidado gerencial |
 | `GET` | `/api/leads/team/:teamId?page=&limit=` | Listagem por equipa |
 | `GET` | `/api/leads/all?page=&limit=` | Listagem global |
 
-O frontend também já usa rotas transacionais de lead para:
+O frontend tambem ja usa rotas transacionais de lead para:
 
 - criar;
 - editar;
@@ -85,8 +85,20 @@ O frontend também já usa rotas transacionais de lead para:
 - converter;
 - excluir.
 
-## Observações de estado
+## Dashboards
 
-- o backend já suporta o núcleo transacional de Sprint 1;
-- dashboards e analytics ainda não devem ser documentados como endpoints de produto concluídos;
-- logs administrativos ainda não devem ser tratados como recurso publicado para o frontend.
+Rotas publicadas:
+
+| Metodo | Caminho | Uso |
+| --- | --- | --- |
+| `GET` | `/api/dashboards/operational?startDate=&endDate=` | Indicadores operacionais (`RF04`) |
+
+Contrato detalhado:
+
+- [Dashboard Operacional - Contrato Backend](./dashboard-operational-contract.md)
+
+## Observacoes de estado
+
+- o backend ja suporta o nucleo transacional de Sprint 1;
+- dashboard operacional ja esta publicado para consumo de frontend;
+- analytics e logs administrativos ainda nao devem ser tratados como recursos concluidos.

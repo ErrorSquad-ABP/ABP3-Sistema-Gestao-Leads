@@ -363,23 +363,19 @@ describe('LeadAccessPolicy.assertCanListOwner', () => {
 	});
 });
 
-describe('LeadAccessPolicy.batchCanMutateLeadSnapshots', () => {
-	it('ADMINISTRATOR marca todos como mutaveis', async () => {
+describe('LeadAccessPolicy.assertCanReadLeadSnapshot', () => {
+	it('permite ADMINISTRATOR em qualquer lead', async () => {
 		const policy = new LeadAccessPolicy(
 			{ create: () => ({}) } as never,
 			{ create: () => ({}) } as never,
 		);
-		const out = await policy.batchCanMutateLeadSnapshots(
+		await policy.assertCanReadLeadSnapshot(
 			{ userId: ACTOR_ID, role: 'ADMINISTRATOR' },
-			[
-				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
-				{ storeId: '00000000-0000-4000-8000-0000000000c2', ownerUserId: null },
-			],
+			{ storeId: 'fora-do-escopo', ownerUserId: OWNER_OTHER_ID },
 		);
-		assert.deepEqual(out, [true, true]);
 	});
 
-	it('ATTENDANT so muta proprio ownerUserId', async () => {
+	it('permite ATTENDANT quando e dono do lead', async () => {
 		const actor = userFixture({
 			id: ACTOR_ID,
 			role: 'ATTENDANT',
@@ -387,37 +383,36 @@ describe('LeadAccessPolicy.batchCanMutateLeadSnapshots', () => {
 			managedTeamIds: [],
 		});
 		const policy = policyFor(actor);
-		const out = await policy.batchCanMutateLeadSnapshots(
+		await policy.assertCanReadLeadSnapshot(
 			{ userId: ACTOR_ID, role: 'ATTENDANT' },
-			[
-				{ storeId: STORE_ID, ownerUserId: ACTOR_ID },
-				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
-			],
+			{ storeId: STORE_ID, ownerUserId: ACTOR_ID },
 		);
-		assert.deepEqual(out, [true, false]);
 	});
 
-	it('MANAGER pode mutar lead sem dono na loja gerida', async () => {
+	it('rejeita ATTENDANT quando o lead pertence a outro usuario', async () => {
 		const actor = userFixture({
 			id: ACTOR_ID,
-			role: 'MANAGER',
-			memberTeamIds: [],
-			managedTeamIds: [TEAM_A],
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
 		});
 		const policy = policyFor(actor);
-		const out = await policy.batchCanMutateLeadSnapshots(
-			{ userId: ACTOR_ID, role: 'MANAGER' },
-			[{ storeId: STORE_ID, ownerUserId: null }],
+		await assert.rejects(
+			() =>
+				policy.assertCanReadLeadSnapshot(
+					{ userId: ACTOR_ID, role: 'ATTENDANT' },
+					{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
+				),
+			LeadAccessDeniedError,
 		);
-		assert.deepEqual(out, [true]);
 	});
 
-	it('MANAGER pode mutar lead de outro quando equipas geridas intersectam', async () => {
+	it('permite MANAGER quando o dono esta em equipe legivel', async () => {
 		const actor = userFixture({
 			id: ACTOR_ID,
 			role: 'MANAGER',
-			memberTeamIds: [],
-			managedTeamIds: [TEAM_A],
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
 		});
 		const owner = userFixture({
 			id: OWNER_OTHER_ID,
@@ -426,17 +421,13 @@ describe('LeadAccessPolicy.batchCanMutateLeadSnapshots', () => {
 			managedTeamIds: [],
 		});
 		const policy = policyFor(actor, [owner]);
-		const out = await policy.batchCanMutateLeadSnapshots(
+		await policy.assertCanReadLeadSnapshot(
 			{ userId: ACTOR_ID, role: 'MANAGER' },
-			[
-				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
-				{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
-			],
+			{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
 		);
-		assert.deepEqual(out, [true, true]);
 	});
 
-	it('GENERAL_MANAGER nao muta lead de outro usuario', async () => {
+	it('permite GENERAL_MANAGER quando o dono esta em equipe legivel', async () => {
 		const actor = userFixture({
 			id: ACTOR_ID,
 			role: 'GENERAL_MANAGER',
@@ -450,10 +441,179 @@ describe('LeadAccessPolicy.batchCanMutateLeadSnapshots', () => {
 			managedTeamIds: [],
 		});
 		const policy = policyFor(actor, [owner]);
-		const out = await policy.batchCanMutateLeadSnapshots(
+		await policy.assertCanReadLeadSnapshot(
 			{ userId: ACTOR_ID, role: 'GENERAL_MANAGER' },
-			[{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID }],
+			{ storeId: STORE_ID, ownerUserId: OWNER_OTHER_ID },
 		);
-		assert.deepEqual(out, [false]);
+	});
+
+	it('permite lead sem responsavel quando a loja esta no escopo', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'MANAGER',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor);
+		await policy.assertCanReadLeadSnapshot(
+			{ userId: ACTOR_ID, role: 'MANAGER' },
+			{ storeId: STORE_ID, ownerUserId: null },
+		);
+	});
+
+	it('rejeita lead sem responsavel quando a loja esta fora do escopo', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'MANAGER',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor);
+		await assert.rejects(
+			() =>
+				policy.assertCanReadLeadSnapshot(
+					{ userId: ACTOR_ID, role: 'MANAGER' },
+					{
+						storeId: '00000000-0000-4000-8000-0000000000c2',
+						ownerUserId: null,
+					},
+				),
+			LeadAccessDeniedError,
+		);
+	});
+});
+
+describe('LeadAccessPolicy.canActorMutateLeadOnSnapshot', () => {
+	it('permite ADMINISTRATOR', async () => {
+		const policy = new LeadAccessPolicy(
+			{ create: () => ({}) } as never,
+			{ create: () => ({}) } as never,
+		);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'ADMINISTRATOR' },
+				STORE_ID,
+				OWNER_OTHER_ID,
+			),
+			true,
+		);
+	});
+
+	it('permite ATTENDANT apenas quando e dono', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'ATTENDANT' },
+				STORE_ID,
+				ACTOR_ID,
+			),
+			true,
+		);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'ATTENDANT' },
+				STORE_ID,
+				OWNER_OTHER_ID,
+			),
+			false,
+		);
+	});
+
+	it('permite MANAGER quando a equipe mutavel contem o dono', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'MANAGER',
+			memberTeamIds: [],
+			managedTeamIds: [TEAM_A],
+		});
+		const owner = userFixture({
+			id: OWNER_OTHER_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor, [owner]);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'MANAGER' },
+				STORE_ID,
+				OWNER_OTHER_ID,
+			),
+			true,
+		);
+	});
+
+	it('rejeita MANAGER quando apenas le a equipe do dono', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'MANAGER',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const owner = userFixture({
+			id: OWNER_OTHER_ID,
+			role: 'ATTENDANT',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor, [owner]);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'MANAGER' },
+				STORE_ID,
+				OWNER_OTHER_ID,
+			),
+			false,
+		);
+	});
+
+	it('permite MANAGER em lead sem dono apenas na loja mutavel', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'MANAGER',
+			memberTeamIds: [],
+			managedTeamIds: [TEAM_A],
+		});
+		const policy = policyFor(actor);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'MANAGER' },
+				STORE_ID,
+				null,
+			),
+			true,
+		);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'MANAGER' },
+				'00000000-0000-4000-8000-0000000000c2',
+				null,
+			),
+			false,
+		);
+	});
+
+	it('rejeita GENERAL_MANAGER para mutacao fora do proprio ownership', async () => {
+		const actor = userFixture({
+			id: ACTOR_ID,
+			role: 'GENERAL_MANAGER',
+			memberTeamIds: [TEAM_A],
+			managedTeamIds: [],
+		});
+		const policy = policyFor(actor);
+		assert.equal(
+			await policy.canActorMutateLeadOnSnapshot(
+				{ userId: ACTOR_ID, role: 'GENERAL_MANAGER' },
+				STORE_ID,
+				OWNER_OTHER_ID,
+			),
+			false,
+		);
 	});
 });

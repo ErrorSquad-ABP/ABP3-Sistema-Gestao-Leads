@@ -202,7 +202,7 @@ function LeadDealsDialog({
 								<DialogTitle>Negociações do lead</DialogTitle>
 								<DialogDescription className="max-w-2xl">
 									{listQuery.isSuccess && !canMutateLead
-										? 'Acompanhe as negociações deste lead. O seu perfil só tem permissão de leitura neste contexto.'
+										? 'Acompanhe as negociações deste lead. Seu perfil permite apenas consulta neste atendimento.'
 										: 'Crie e acompanhe negociações relacionadas ao lead selecionado.'}
 								</DialogDescription>
 							</div>
@@ -216,10 +216,10 @@ function LeadDealsDialog({
 								}}
 								title={(() => {
 									if (listQuery.isPending) {
-										return 'A carregar negociações e a verificar permissões…';
+										return 'Carregando negociações e verificando permissões...';
 									}
 									if (listQuery.isError) {
-										return 'Não foi possível carregar as negociações. Corrija o erro antes de criar.';
+										return 'Não foi possível carregar as negociações. Tente novamente antes de criar.';
 									}
 									if (listQuery.isSuccess && !canMutateLead) {
 										return 'Sem permissão para criar ou alterar negociações deste lead.';
@@ -240,9 +240,19 @@ function LeadDealsDialog({
 								className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 								role="alert"
 							>
-								{listQuery.error instanceof ApiError
-									? listQuery.error.message
-									: 'Não foi possível carregar as negociações do lead.'}
+								<p>
+									{listQuery.error instanceof ApiError
+										? listQuery.error.message
+										: 'Não foi possível carregar as negociações do lead.'}
+								</p>
+								<Button
+									className="mt-3 rounded-md shadow-none"
+									onClick={() => void listQuery.refetch()}
+									type="button"
+									variant="outline"
+								>
+									Tentar novamente
+								</Button>
 							</div>
 						) : null}
 
@@ -295,8 +305,8 @@ function LeadDealsDialog({
 					<DialogHeader>
 						<DialogTitle>Nova negociação</DialogTitle>
 						<DialogDescription>
-							Informe veículo, título e valor. O backend valida disponibilidade
-							e escopo.
+							Informe veículo, título e valor para registrar uma nova
+							oportunidade comercial deste lead.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6 py-5">
@@ -423,7 +433,7 @@ function LeadDealsDialog({
 				confirmLabel="Confirmar exclusão"
 				description={
 					targetDeal
-						? `A negociação «${targetDeal.title}» será removida permanentemente.`
+						? `A negociação "${targetDeal.title}" será removida permanentemente.`
 						: 'Confirme a exclusão da negociação selecionada.'
 				}
 				error={dialogError}

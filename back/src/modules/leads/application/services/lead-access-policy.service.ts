@@ -278,11 +278,21 @@ class LeadAccessPolicy {
 	}
 
 	async assertCanReadLead(actor: LeadActor, lead: Lead): Promise<void> {
+		await this.assertCanReadLeadSnapshot(actor, {
+			storeId: lead.storeId.value,
+			ownerUserId: lead.ownerUserId?.value ?? null,
+		});
+	}
+
+	async assertCanReadLeadSnapshot(
+		actor: LeadActor,
+		input: { readonly storeId: string; readonly ownerUserId: string | null },
+	): Promise<void> {
 		const scope = await this.resolveScope(actor);
 		if (scope.kind === 'full') {
 			return;
 		}
-		if (lead.ownerUserId?.value === scope.actorUserId) {
+		if (input.ownerUserId === scope.actorUserId) {
 			return;
 		}
 		if (scope.kind === 'attendant') {
@@ -290,15 +300,15 @@ class LeadAccessPolicy {
 				'Atendentes podem acessar apenas os proprios leads.',
 			);
 		}
-		if (lead.ownerUserId === null) {
-			if (!scope.readStoreIds.has(lead.storeId.value)) {
+		if (input.ownerUserId === null) {
+			if (!scope.readStoreIds.has(input.storeId)) {
 				throw new LeadAccessDeniedError();
 			}
 			return;
 		}
 		if (
 			!(await this.targetUserIntersectsTeams(
-				lead.ownerUserId.value,
+				input.ownerUserId,
 				scope.readTeamIds,
 			))
 		) {

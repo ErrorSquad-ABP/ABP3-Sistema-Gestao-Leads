@@ -5,7 +5,10 @@ import {
 	leadListItemSchema,
 	parseLeadListPagedResponse,
 } from '../schemas/lead-list.schema';
-import { parseLeadDetailResponse } from '../schemas/lead-detail.schema';
+import {
+	parseLeadDetailHubResponse,
+	parseLeadDetailResponse,
+} from '../schemas/lead-detail.schema';
 import {
 	parseLeadCustomerResponse,
 	parseLeadCustomersResponse,
@@ -114,6 +117,13 @@ async function fetchLeadsAll(
 async function findLeadById(leadId: string, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/leads/${leadId}`, { signal });
 	return parseLeadDetailResponse(raw);
+}
+
+async function findLeadDetailHub(leadId: string, signal?: AbortSignal) {
+	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/detail`, {
+		signal,
+	});
+	return parseLeadDetailHubResponse(raw);
 }
 
 async function createLead(input: CreateLeadInput): Promise<LeadListItem> {
@@ -282,6 +292,7 @@ export {
 	deleteCustomer,
 	deleteLead,
 	deleteStore,
+	findLeadDetailHub,
 	findLeadById,
 	fetchLeadsAll,
 	fetchLeadsByOwner,

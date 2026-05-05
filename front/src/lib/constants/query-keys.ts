@@ -17,6 +17,7 @@ const queryKeys = {
 		listRoot: ['leads', 'list'] as const,
 		catalogRoot: ['leads', 'catalog'] as const,
 		detail: (leadId: string) => ['leads', 'detail', leadId] as const,
+		detailHub: (leadId: string) => ['leads', 'detail-hub', leadId] as const,
 		list: (
 			params:
 				| { scope: 'owner'; id: string; page: number }
@@ -113,6 +114,15 @@ const queryKeys = {
 				params.page,
 				params.pageSize,
 				params.valueSort ?? 'recent',
+			] as const,
+	},
+	dashboards: {
+		operational: (params: { startDate?: string; endDate?: string } = {}) =>
+			[
+				'dashboards',
+				'operational',
+				params.startDate ?? 'default',
+				params.endDate ?? 'default',
 			] as const,
 	},
 };
