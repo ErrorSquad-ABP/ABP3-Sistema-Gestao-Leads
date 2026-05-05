@@ -2,6 +2,7 @@
 
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
-import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
+import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 import { ApiError } from '@/lib/http/api-error';
 import { useDealsByLeadQuery } from '../hooks/deals.queries';
 import {
@@ -23,11 +24,13 @@ import {
 	useDeleteDealMutation,
 	useUpdateDealMutation,
 } from '../hooks/deals.mutations';
+import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
 import {
 	centsDigitsToApiDecimalString,
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealCreateFormInput,
@@ -45,11 +48,6 @@ type LeadDealsDialogProps = {
 	onClose: () => void;
 	open: boolean;
 };
-
-function formatVehicleOptionLabel(vehicle: Vehicle) {
-	const plate = vehicle.plate ? vehicle.plate.trim() : '';
-	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
-}
 
 function LeadDealsDialog({
 	leadId,
@@ -102,10 +100,12 @@ function LeadDealsDialog({
 		if (!open || !listQuery.isSuccess || canMutateLead) {
 			return;
 		}
-		setCreateOpen(false);
-		setEditOpen(false);
-		setDeleteOpen(false);
-		setDialogError(null);
+		queueMicrotask(() => {
+			setCreateOpen(false);
+			setEditOpen(false);
+			setDeleteOpen(false);
+			setDialogError(null);
+		});
 	}, [open, listQuery.isSuccess, canMutateLead]);
 
 	function resetCreateForm() {
@@ -141,7 +141,12 @@ function LeadDealsDialog({
 	}
 
 	function openEdit(deal: Deal) {
-		if (!deal.canMutate) {
+		const blockReason = getDealFormEditBlockReason(deal);
+		if (blockReason) {
+			toast.error(blockReason, {
+				id: 'deal-edit-blocked',
+				...dealDarkSidebarToast,
+			});
 			return;
 		}
 		setTargetDeal(deal);
@@ -328,7 +333,7 @@ function LeadDealsDialog({
 								</option>
 								{availableVehicles.map((vehicle) => (
 									<option key={vehicle.id} value={vehicle.id}>
-										{formatVehicleOptionLabel(vehicle)}
+										{formatVehicleDealSelectLabel(vehicle)}
 									</option>
 								))}
 							</select>

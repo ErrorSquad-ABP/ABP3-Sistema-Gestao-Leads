@@ -17,6 +17,14 @@ class DealResponseDto {
 	})
 	leadCustomerName!: string;
 
+	@ApiPropertyOptional({
+		nullable: true,
+		description:
+			'Nome do utilizador responsável pelo lead (owner). Ausente quando não há responsável atribuído.',
+		example: 'Maria Souza',
+	})
+	leadOwnerName!: string | null;
+
 	@ApiProperty({ format: 'uuid' })
 	vehicleId!: string;
 

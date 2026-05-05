@@ -34,6 +34,7 @@ class DealPresenter {
 			id: deal.id.value,
 			leadId: deal.leadId.value,
 			leadCustomerName: 'Cliente não encontrado',
+			leadOwnerName: null,
 			vehicleId: deal.vehicleId.value,
 			vehicleLabel: 'Veículo não encontrado',
 			title: deal.title,
@@ -60,6 +61,9 @@ class DealPresenter {
 			id: row.id,
 			leadId: row.leadId,
 			leadCustomerName: row.lead?.customer?.name ?? 'Cliente não encontrado',
+			leadOwnerName: row.lead?.owner?.name?.trim()
+				? row.lead.owner.name.trim()
+				: null,
 			vehicleId: row.vehicleId,
 			vehicleLabel: formatVehicleLabelFromRow(row),
 			title: row.title,

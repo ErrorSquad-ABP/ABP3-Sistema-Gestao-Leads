@@ -130,47 +130,53 @@ function VehicleFormDialog({
 
 	useEffect(() => {
 		if (!open) {
-			setPriceCentsDigits('');
-			form.reset();
+			queueMicrotask(() => {
+				setPriceCentsDigits('');
+				form.reset();
+			});
 			return;
 		}
 
 		if (isEditMode && targetVehicle) {
 			const priceAsApi = targetVehicle.price;
-			setPriceCentsDigits(apiDecimalStringToCentsDigits(priceAsApi));
-			form.reset({
-				storeId: targetVehicle.storeId,
-				brand: targetVehicle.brand,
-				model: targetVehicle.model,
-				version: targetVehicle.version,
-				modelYear: targetVehicle.modelYear,
-				manufactureYear: targetVehicle.manufactureYear,
-				color: targetVehicle.color,
-				mileage: targetVehicle.mileage,
-				supportedFuelType: targetVehicle.supportedFuelType,
-				price: priceAsApi,
-				status: targetVehicle.status,
-				plate: targetVehicle.plate,
-				vin: targetVehicle.vin,
+			queueMicrotask(() => {
+				setPriceCentsDigits(apiDecimalStringToCentsDigits(priceAsApi));
+				form.reset({
+					storeId: targetVehicle.storeId,
+					brand: targetVehicle.brand,
+					model: targetVehicle.model,
+					version: targetVehicle.version,
+					modelYear: targetVehicle.modelYear,
+					manufactureYear: targetVehicle.manufactureYear,
+					color: targetVehicle.color,
+					mileage: targetVehicle.mileage,
+					supportedFuelType: targetVehicle.supportedFuelType,
+					price: priceAsApi,
+					status: targetVehicle.status,
+					plate: targetVehicle.plate,
+					vin: targetVehicle.vin,
+				});
 			});
 			return;
 		}
 
-		setPriceCentsDigits('0');
-		form.reset({
-			storeId: stores[0]?.id ?? '',
-			brand: '',
-			model: '',
-			version: null,
-			modelYear: new Date().getFullYear(),
-			manufactureYear: null,
-			color: null,
-			mileage: 0,
-			supportedFuelType: 'FLEX',
-			price: '0.00',
-			status: 'AVAILABLE',
-			plate: null,
-			vin: null,
+		queueMicrotask(() => {
+			setPriceCentsDigits('0');
+			form.reset({
+				storeId: stores[0]?.id ?? '',
+				brand: '',
+				model: '',
+				version: null,
+				modelYear: new Date().getFullYear(),
+				manufactureYear: null,
+				color: null,
+				mileage: 0,
+				supportedFuelType: 'FLEX',
+				price: '0.00',
+				status: 'AVAILABLE',
+				plate: null,
+				vin: null,
+			});
 		});
 	}, [form, isEditMode, open, stores, targetVehicle]);
 

@@ -1,4 +1,6 @@
 import type { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import type { DealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
+import type { DealStage } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import type { Deal } from '../entities/deal.entity.js';
 import type {
 	DealListPage,
@@ -9,6 +11,11 @@ type DealListScopedFilters = {
 	readonly storeIds?: readonly string[];
 	readonly ownerUserId?: string;
 	readonly status?: 'OPEN' | 'WON' | 'LOST';
+	readonly importance?: DealImportance;
+	readonly stage?: DealStage;
+	readonly search?: string;
+	/** Apenas `listPipelineStageEnriched`: ordena por valor; ausente mantém `createdAt` desc. */
+	readonly valueSort?: 'asc' | 'desc';
 };
 
 interface IDealRepository {
@@ -29,6 +36,14 @@ interface IDealRepository {
 		filters: DealListScopedFilters,
 		pagination: DealListPagination,
 	): Promise<DealEnrichedListPage>;
+	listPipelineStagesEnriched(
+		filters: DealListScopedFilters,
+		pagination: DealListPagination,
+	): Promise<readonly DealPipelineStagePage[]>;
+	listPipelineStageEnriched(
+		filters: DealListScopedFilters & { readonly stage: DealStage },
+		pagination: DealListPagination,
+	): Promise<DealPipelineStagePage>;
 }
 
 type DealEnrichedRow = {
@@ -47,6 +62,7 @@ type DealEnrichedRow = {
 		readonly storeId: string;
 		readonly ownerUserId: string | null;
 		readonly customer: { readonly name: string } | null;
+		readonly owner: { readonly name: string } | null;
 	} | null;
 	readonly vehicle: {
 		readonly brand: string;
@@ -64,9 +80,20 @@ type DealEnrichedListPage = {
 	readonly totalPages: number;
 };
 
+type DealPipelineStagePage = {
+	readonly stage: DealStage;
+	readonly items: readonly DealEnrichedRow[];
+	readonly page: number;
+	readonly limit: number;
+	readonly total: number;
+	readonly totalPages: number;
+	readonly totalValue: string | null;
+};
+
 export type {
 	DealEnrichedListPage,
 	DealEnrichedRow,
 	DealListScopedFilters,
+	DealPipelineStagePage,
 	IDealRepository,
 };

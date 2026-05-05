@@ -29,11 +29,16 @@ import {
 	ApiOkResponseEnvelopeArray,
 	ApiOkResponseEnvelopePaged,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
+import type { DealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
 import {
 	CurrentUser,
 	type JwtUser,
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
+import {
+	DealPipelineResponseDto,
+	DealPipelineStageDto,
+} from '../../application/dto/deal-pipeline-response.dto.js';
 import { DealsByLeadListDto } from '../../application/dto/deals-by-lead-list.dto.js';
 import { DealHistoryItemDto } from '../../application/dto/deal-history-response.dto.js';
 import { DealResponseDto } from '../../application/dto/deal-response.dto.js';
@@ -46,6 +51,9 @@ import { FindDealUseCase } from '../../application/use-cases/find-deal.use-case.
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListDealHistoryUseCase } from '../../application/use-cases/list-deal-history.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListDealPipelineUseCase } from '../../application/use-cases/list-deal-pipeline.use-case.js';
+import type { DealPipelineStageResult } from '../../application/use-cases/list-deal-pipeline.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListDealsUseCase } from '../../application/use-cases/list-deals.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListDealsByLeadUseCase } from '../../application/use-cases/list-deals-by-lead.use-case.js';
@@ -54,6 +62,10 @@ import { UpdateDealUseCase } from '../../application/use-cases/update-deal.use-c
 import { DealPresenter } from '../presenters/deal.presenter.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
 import { CreateDealValidator } from '../validators/create-deal.validator.js';
+// biome-ignore lint/style/useImportType: validators usados em runtime
+import { ListDealPipelineQueryValidator } from '../validators/list-deal-pipeline-query.validator.js';
+// biome-ignore lint/style/useImportType: validators usados em runtime
+import { ListDealPipelineStageQueryValidator } from '../validators/list-deal-pipeline-stage-query.validator.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
 import { ListDealsQueryValidator } from '../validators/list-deals-query.validator.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
@@ -81,6 +93,22 @@ function toLeadActor(user: JwtUser): LeadActor {
 	};
 }
 
+function toPipelineStageResponse(
+	stage: DealPipelineStageResult,
+): DealPipelineStageDto {
+	return {
+		key: stage.key,
+		label: stage.label,
+		count: stage.count,
+		totalValue: stage.totalValue,
+		page: stage.page,
+		pageSize: stage.pageSize,
+		totalPages: stage.totalPages,
+		hasNextPage: stage.hasNextPage,
+		items: DealPresenter.toResponseListEnriched([...stage.items]),
+	};
+}
+
 @ApiBearerAuth()
 @ApiTags('deals')
 @Controller()
@@ -92,6 +120,7 @@ class DealController {
 		private readonly listDealsUseCase: ListDealsUseCase,
 		private readonly listDealsByLeadUseCase: ListDealsByLeadUseCase,
 		private readonly listDealHistoryUseCase: ListDealHistoryUseCase,
+		private readonly listDealPipelineUseCase: ListDealPipelineUseCase,
 		private readonly deleteDealUseCase: DeleteDealUseCase,
 	) {}
 
@@ -175,6 +204,75 @@ class DealController {
 			total: page.total,
 			totalPages: page.totalPages,
 		};
+	}
+
+	@Get('deals/pipeline')
+	@ApiOperation({
+		summary: 'Listar pipeline de negociações paginado por etapa',
+		description:
+			'Retorna as etapas do funil com a primeira página de itens, total de negociações e soma total por etapa.',
+	})
+	@ApiOkResponseEnvelope(DealPipelineResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async pipeline(
+		@CurrentUser() user: JwtUser,
+		@Query() query: ListDealPipelineQueryValidator,
+	): Promise<DealPipelineResponseDto> {
+		const result = await this.listDealPipelineUseCase.execute(
+			toLeadActor(user),
+			{
+				status: query.status as 'OPEN' | 'WON' | 'LOST' | undefined,
+				importance: query.importance as DealImportance | undefined,
+				search: query.search,
+				pageSize: query.pageSize,
+				valueSort:
+					query.valueSort === 'asc' || query.valueSort === 'desc'
+						? query.valueSort
+						: undefined,
+			},
+		);
+
+		return {
+			stages: result.stages.map(toPipelineStageResponse),
+		};
+	}
+
+	@Get('deals/pipeline/stages/:stage')
+	@ApiOperation({
+		summary: 'Listar página de uma etapa do pipeline de negociações',
+	})
+	@ApiParam({
+		name: 'stage',
+		enum: ['INITIAL_CONTACT', 'NEGOTIATION', 'PROPOSAL', 'CLOSING'],
+	})
+	@ApiOkResponseEnvelope(DealPipelineStageDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async pipelineStage(
+		@CurrentUser() user: JwtUser,
+		@Param('stage') stage: string,
+		@Query() query: ListDealPipelineStageQueryValidator,
+	): Promise<DealPipelineStageDto> {
+		const result = await this.listDealPipelineUseCase.executeStage(
+			toLeadActor(user),
+			{
+				stage,
+				status: query.status as 'OPEN' | 'WON' | 'LOST' | undefined,
+				importance: query.importance as DealImportance | undefined,
+				search: query.search,
+				page: query.page,
+				pageSize: query.pageSize,
+				valueSort:
+					query.valueSort === 'asc' || query.valueSort === 'desc'
+						? query.valueSort
+						: undefined,
+			},
+		);
+
+		return toPipelineStageResponse(result);
 	}
 
 	@Get('deals/:id/history')

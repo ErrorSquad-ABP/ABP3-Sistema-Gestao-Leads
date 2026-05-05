@@ -1,5 +1,6 @@
 import type {
 	DealImportance,
+	DealPipelineSortMode,
 	DealStage,
 	DealStatus,
 } from '../model/deals.model';
@@ -22,6 +23,55 @@ const dealImportanceLabels: Record<DealImportance, string> = {
 	WARM: 'Morna',
 	HOT: 'Quente',
 };
+
+/** Status no filtro do pipeline (lista/kanban): plural. Detalhe de um negócio: `dealStatusLabels`. */
+const dealPipelineFilterStatusLabels: Record<DealStatus, string> = {
+	OPEN: 'Abertas',
+	WON: 'Ganhas',
+	LOST: 'Perdidas',
+};
+
+const dealPipelineFilterStatusAllLabel = 'Todos';
+
+/** Texto do botão quando não há filtro por status. */
+const dealPipelineFilterStatusLegendLabel = 'Status';
+
+const dealPipelineFilterImportanceAllLabel = 'Todas';
+
+/** Texto do botão quando não há filtro por importância. */
+const dealPipelineFilterImportanceLegendLabel = 'Importância';
+
+/** Ordenação: rótulos do dropdown do funil. */
+const dealPipelineSortDropdownLabels: Record<DealPipelineSortMode, string> = {
+	recent: 'Mais recentes',
+	value_asc: 'Valor crescente',
+	value_desc: 'Valor decrescente',
+};
+
+/** Texto do botão quando a ordenação é o padrão “recentes”. */
+const dealPipelineSortLegendLabel = 'Ordem';
+
+function getDealPipelineFilterStatusOptionLabel(status: DealStatus): string {
+	switch (status) {
+		case 'OPEN':
+			return dealPipelineFilterStatusLabels.OPEN;
+		case 'WON':
+			return dealPipelineFilterStatusLabels.WON;
+		case 'LOST':
+			return dealPipelineFilterStatusLabels.LOST;
+	}
+}
+
+function getDealPipelineSortDropdownLabel(mode: DealPipelineSortMode): string {
+	switch (mode) {
+		case 'recent':
+			return dealPipelineSortDropdownLabels.recent;
+		case 'value_asc':
+			return dealPipelineSortDropdownLabels.value_asc;
+		case 'value_desc':
+			return dealPipelineSortDropdownLabels.value_desc;
+	}
+}
 
 const dealStatusLabelsByKey: Record<string, string> = dealStatusLabels;
 const dealStageLabelsByKey: Record<string, string> = dealStageLabels;
@@ -179,17 +229,33 @@ function formatDealLeadCustomerDisplay(leadCustomerName: string) {
 	return 'Cliente não informado';
 }
 
+function formatDealLeadOwnerDisplay(leadOwnerName: string | null) {
+	const n = (leadOwnerName ?? '').trim();
+	if (n) {
+		return n;
+	}
+	return 'Sem responsável';
+}
+
 export {
 	dealImportanceOptions,
+	dealPipelineFilterImportanceAllLabel,
+	dealPipelineFilterImportanceLegendLabel,
+	dealPipelineFilterStatusAllLabel,
+	dealPipelineFilterStatusLegendLabel,
+	dealPipelineSortLegendLabel,
 	dealStageOptions,
 	dealStatusOptions,
 	formatDealHistoryFieldName,
 	formatDealHistoryValueDisplay,
 	formatDealImportanceLabel,
 	formatDealLeadCustomerDisplay,
+	formatDealLeadOwnerDisplay,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
+	getDealPipelineFilterStatusOptionLabel,
+	getDealPipelineSortDropdownLabel,
 	isLikelyUuid,
 	shortenInternalId,
 };

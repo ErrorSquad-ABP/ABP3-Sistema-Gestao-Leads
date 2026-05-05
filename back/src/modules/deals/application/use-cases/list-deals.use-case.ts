@@ -39,21 +39,34 @@ class ListDealsUseCase {
 		readonly total: number;
 		readonly totalPages: number;
 	}> {
-		const items = await Promise.all(
-			page.items.map(async (row) => {
-				const lead = row.lead;
-				if (!lead) {
-					return { row, canMutate: false as const };
-				}
-				const canMutate =
-					await this.leadAccessPolicy.canActorMutateLeadOnSnapshot(
-						actor,
-						lead.storeId,
-						lead.ownerUserId,
-					);
-				return { row, canMutate };
-			}),
-		);
+		const rowsWithSnap = page.items.map((row) => ({
+			row,
+			snap: row.lead
+				? {
+						storeId: row.lead.storeId,
+						ownerUserId: row.lead.ownerUserId,
+					}
+				: null,
+		}));
+		const batchInput = rowsWithSnap
+			.map(({ snap }) => snap)
+			.filter(
+				(s): s is { storeId: string; ownerUserId: string | null } => s !== null,
+			);
+		const batchResults =
+			await this.leadAccessPolicy.batchCanMutateLeadSnapshots(
+				actor,
+				batchInput,
+			);
+		const batchIter = batchResults.values();
+		const items = rowsWithSnap.map(({ row, snap }) => {
+			if (!snap) {
+				return { row, canMutate: false as const };
+			}
+			const next = batchIter.next();
+			const canMutate = next.done ? false : Boolean(next.value);
+			return { row, canMutate };
+		});
 		return { ...page, items };
 	}
 

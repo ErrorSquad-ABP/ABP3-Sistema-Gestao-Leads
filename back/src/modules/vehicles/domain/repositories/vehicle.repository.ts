@@ -8,6 +8,7 @@ import type { Vehicle } from '../entities/vehicle.entity.js';
 type VehicleListFilters = {
 	readonly storeId?: StoreId;
 	readonly status?: VehicleStatus;
+	readonly withoutOpenDeal?: boolean;
 };
 
 interface IVehicleRepository {

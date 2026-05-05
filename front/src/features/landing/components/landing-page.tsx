@@ -80,7 +80,7 @@ function LandingPage({ apiStatus }: LandingPageProps) {
 		<main className="shell">
 			<section className="hero">
 				<div className="hero__eyebrow">
-					ABP 2026-1 • FATEC Jacareí • ErrorSquad-ABP
+					ABP 2026-1 • FATEC Jacareí • Quantum
 				</div>
 				<h1>Sistema de Gestão de Leads com Dashboard Analítico</h1>
 				<p className="hero__summary">

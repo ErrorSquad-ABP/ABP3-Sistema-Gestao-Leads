@@ -93,6 +93,20 @@ describe('CreateDealUseCase', () => {
 			async listScopedEnriched() {
 				return { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
 			},
+			async listPipelineStagesEnriched() {
+				return [];
+			},
+			async listPipelineStageEnriched() {
+				return {
+					stage: 'INITIAL_CONTACT',
+					items: [],
+					page: 1,
+					limit: 20,
+					total: 0,
+					totalPages: 0,
+					totalValue: null,
+				};
+			},
 		};
 
 		const vehicles: IVehicleRepository = {

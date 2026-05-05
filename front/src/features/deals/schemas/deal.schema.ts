@@ -17,6 +17,7 @@ const dealSchema = z.object({
 	id: z.string().uuid(),
 	leadId: z.string().uuid(),
 	leadCustomerName: z.string(),
+	leadOwnerName: z.string().nullable(),
 	vehicleId: z.string().uuid(),
 	vehicleLabel: z.string(),
 	title: z.string(),
