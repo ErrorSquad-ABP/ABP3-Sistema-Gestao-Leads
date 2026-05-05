@@ -18,7 +18,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Deal } from '@/features/deals/model/deals.model';
+import { getDealFormEditBlockReason } from '@/features/deals/lib/deal-edit-guard';
 import { formatDealLeadOwnerDisplay } from '@/features/deals/lib/deal-labels';
 import {
 	formatDealValueBrl,
@@ -26,6 +26,7 @@ import {
 	mapDealStatusUi,
 	mapImportanceUi,
 } from '@/features/deals/lib/pipeline';
+import type { Deal } from '@/features/deals/model/deals.model';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -143,7 +144,9 @@ function NegotiationPipelineDealCard({
 						Detalhes
 					</DropdownMenuItem>
 					<DropdownMenuItem
-						disabled={!onEdit}
+						disabled={
+							!onEdit || getDealFormEditBlockReason(deal) !== null
+						}
 						className="cursor-pointer rounded-xl px-3 py-2 text-sm"
 						onSelect={() => onEdit?.(deal)}
 					>
