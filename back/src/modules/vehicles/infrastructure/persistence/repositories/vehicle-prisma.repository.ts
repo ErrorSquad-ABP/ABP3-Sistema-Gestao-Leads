@@ -15,6 +15,7 @@ import type { Vehicle } from '../../../domain/entities/vehicle.entity.js';
 import { VehicleMapper } from '../mappers/vehicle.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
+type VehicleIdRow = { readonly id: string };
 type VehicleCatalogRow = Prisma.VehicleGetPayload<{
 	include: {
 		store: { select: { name: true } };
@@ -43,6 +44,36 @@ function catalogOrderBy(
 		default:
 			return [{ createdAt: 'desc' }];
 	}
+}
+
+function buildCatalogSqlWhere(
+	filters: VehicleCatalogFilters,
+	options: { readonly includeStatus: boolean },
+): Prisma.Sql {
+	const conditions: Prisma.Sql[] = [];
+	if (filters.storeId) {
+		conditions.push(Prisma.sql`v."storeId" = ${filters.storeId.value}`);
+	}
+	if (options.includeStatus && filters.status) {
+		conditions.push(Prisma.sql`v."status" = ${filters.status}`);
+	}
+	const search = filters.search?.trim();
+	if (search) {
+		const pattern = `%${search}%`;
+		conditions.push(
+			Prisma.sql`(
+				v."brand" ILIKE ${pattern}
+				OR v."model" ILIKE ${pattern}
+				OR v."version" ILIKE ${pattern}
+				OR v."plate" ILIKE ${pattern}
+				OR v."vin" ILIKE ${pattern}
+			)`,
+		);
+	}
+	if (conditions.length === 0) {
+		return Prisma.empty;
+	}
+	return Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`;
 }
 
 class VehiclePrismaRepository implements IVehicleRepository {
@@ -190,23 +221,12 @@ class VehiclePrismaRepository implements IVehicleRepository {
 		let total: number;
 
 		if (filters.sort === 'interest_desc') {
-			const candidates = await this.client.vehicle.findMany({
-				where,
-				select: {
-					id: true,
-					createdAt: true,
-					_count: { select: { deals: { where: { status: 'OPEN' } } } },
-				},
-			});
-			total = candidates.length;
-			const pageIds = candidates
-				.sort((a, b) => {
-					const countDiff = b._count.deals - a._count.deals;
-					if (countDiff !== 0) return countDiff;
-					return b.createdAt.getTime() - a.createdAt.getTime();
-				})
-				.slice(skip, skip + pagination.limit)
-				.map((row) => row.id);
+			const [matchingTotal, orderedIds] = await Promise.all([
+				this.client.vehicle.count({ where }),
+				this.listInterestSortedVehicleIds(filters, pagination),
+			]);
+			total = matchingTotal;
+			const pageIds = orderedIds.map((row) => row.id);
 			const unorderedRows =
 				pageIds.length > 0
 					? await this.client.vehicle.findMany({
@@ -374,6 +394,26 @@ class VehiclePrismaRepository implements IVehicleRepository {
 			(this.transactionContext?.client as Prisma.TransactionClient) ??
 			this.prisma
 		);
+	}
+
+	private async listInterestSortedVehicleIds(
+		filters: VehicleCatalogFilters,
+		pagination: { readonly page: number; readonly limit: number },
+	): Promise<readonly VehicleIdRow[]> {
+		const skip = (pagination.page - 1) * pagination.limit;
+		const whereSql = buildCatalogSqlWhere(filters, { includeStatus: true });
+		return this.client.$queryRaw<VehicleIdRow[]>(Prisma.sql`
+			SELECT v.id
+			FROM "Vehicle" AS v
+			LEFT JOIN "Deal" AS d
+				ON d."vehicleId" = v.id
+				AND d."status" = 'OPEN'
+			${whereSql}
+			GROUP BY v.id, v."createdAt"
+			ORDER BY COUNT(d.id) DESC, v."createdAt" DESC
+			LIMIT ${pagination.limit}
+			OFFSET ${skip}
+		`);
 	}
 }
 

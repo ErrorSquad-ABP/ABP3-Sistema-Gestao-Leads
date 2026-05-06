@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
@@ -28,6 +28,7 @@ const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 50;
 const IMAGE_REFRESH_MARGIN_MS = 5 * 60 * 1000;
 const IMAGE_FAILURE_BACKOFF_MS = 30 * 60 * 1000;
+const IMAGE_ENRICH_BATCH_SIZE = 4;
 
 function shouldResolveImage(vehicle: Vehicle, now: Date): boolean {
 	if (vehicle.imageUrl && vehicle.imageExpiresAt) {
@@ -62,6 +63,7 @@ function failedImageLookupMetadata(now: Date): VehicleImageMetadata {
 class ListVehicleCatalogUseCase {
 	@Inject(UNIT_OF_WORK)
 	private readonly unitOfWork!: IUnitOfWork;
+	private readonly logger = new Logger(ListVehicleCatalogUseCase.name);
 
 	constructor(
 		private readonly vehicleRepositoryFactory: VehicleRepositoryFactory,
@@ -94,26 +96,52 @@ class ListVehicleCatalogUseCase {
 
 		const now = new Date();
 
-		for (const item of catalog.items) {
-			if (!shouldResolveImage(item.vehicle, now)) {
-				continue;
-			}
+		const itemsNeedingImageRefresh = catalog.items.filter((item) =>
+			shouldResolveImage(item.vehicle, now),
+		);
 
-			const imageMetadata = await this.imageProvider.resolve({
-				brand: item.vehicle.brand,
-				model: item.vehicle.model,
-				modelYear: item.vehicle.modelYear,
-			});
-			item.vehicle.changeImageMetadata(
-				imageMetadata ?? failedImageLookupMetadata(new Date()),
+		for (
+			let offset = 0;
+			offset < itemsNeedingImageRefresh.length;
+			offset += IMAGE_ENRICH_BATCH_SIZE
+		) {
+			const batch = itemsNeedingImageRefresh.slice(
+				offset,
+				offset + IMAGE_ENRICH_BATCH_SIZE,
 			);
 
-			await this.unitOfWork.run(async () => {
-				const transactionContext = this.unitOfWork.getTransactionContext();
-				const vehicles =
-					this.vehicleRepositoryFactory.create(transactionContext);
-				await vehicles.update(item.vehicle);
-			});
+			const settled = await Promise.allSettled(
+				batch.map(async (item) => {
+					const imageMetadata = await this.imageProvider.resolve({
+						brand: item.vehicle.brand,
+						model: item.vehicle.model,
+						modelYear: item.vehicle.modelYear,
+					});
+					item.vehicle.changeImageMetadata(
+						imageMetadata ?? failedImageLookupMetadata(new Date()),
+					);
+
+					await this.unitOfWork.run(async () => {
+						const transactionContext = this.unitOfWork.getTransactionContext();
+						const vehicles =
+							this.vehicleRepositoryFactory.create(transactionContext);
+						await vehicles.update(item.vehicle);
+					});
+				}),
+			);
+
+			for (const [index, result] of settled.entries()) {
+				if (result.status === 'rejected') {
+					const item = batch[index];
+					this.logger.warn(
+						`Falha ao enriquecer/persistir imagem para veículo ${item?.vehicle.id.value ?? 'unknown'}: ${
+							result.reason instanceof Error
+								? result.reason.message
+								: String(result.reason)
+						}`,
+					);
+				}
+			}
 		}
 
 		return catalog;
