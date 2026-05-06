@@ -110,34 +110,43 @@ class ListVehicleCatalogUseCase {
 				offset + IMAGE_ENRICH_BATCH_SIZE,
 			);
 
-			const settled = await Promise.allSettled(
+			const outcomes = await Promise.all(
 				batch.map(async (item) => {
-					const imageMetadata = await this.imageProvider.resolve({
-						brand: item.vehicle.brand,
-						model: item.vehicle.model,
-						modelYear: item.vehicle.modelYear,
-					});
-					item.vehicle.changeImageMetadata(
-						imageMetadata ?? failedImageLookupMetadata(new Date()),
-					);
+					try {
+						const imageMetadata = await this.imageProvider.resolve({
+							brand: item.vehicle.brand,
+							model: item.vehicle.model,
+							modelYear: item.vehicle.modelYear,
+						});
+						item.vehicle.changeImageMetadata(
+							imageMetadata ?? failedImageLookupMetadata(new Date()),
+						);
 
-					await this.unitOfWork.run(async () => {
-						const transactionContext = this.unitOfWork.getTransactionContext();
-						const vehicles =
-							this.vehicleRepositoryFactory.create(transactionContext);
-						await vehicles.update(item.vehicle);
-					});
+						await this.unitOfWork.run(async () => {
+							const transactionContext =
+								this.unitOfWork.getTransactionContext();
+							const vehicles =
+								this.vehicleRepositoryFactory.create(transactionContext);
+							await vehicles.update(item.vehicle);
+						});
+						return { ok: true as const };
+					} catch (reason) {
+						return {
+							ok: false as const,
+							reason,
+							vehicleId: item.vehicle.id.value,
+						};
+					}
 				}),
 			);
 
-			for (const [index, result] of settled.entries()) {
-				if (result.status === 'rejected') {
-					const item = batch[index];
+			for (const outcome of outcomes) {
+				if (!outcome.ok) {
 					this.logger.warn(
-						`Falha ao enriquecer/persistir imagem para veículo ${item?.vehicle.id.value ?? 'unknown'}: ${
-							result.reason instanceof Error
-								? result.reason.message
-								: String(result.reason)
+						`Falha ao enriquecer/persistir imagem para veículo ${outcome.vehicleId}: ${
+							outcome.reason instanceof Error
+								? outcome.reason.message
+								: String(outcome.reason)
 						}`,
 					);
 				}
