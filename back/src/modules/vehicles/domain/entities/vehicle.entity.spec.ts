@@ -24,6 +24,17 @@ describe('Vehicle entity', () => {
 			'AVAILABLE',
 			null,
 			null,
+			{
+				imageUrl: null,
+				imageAlt: null,
+				imageProvider: null,
+				imageProviderPhotoId: null,
+				imagePhotographerName: null,
+				imagePhotographerUrl: null,
+				imageSourceUrl: null,
+				imageResolvedAt: null,
+				imageExpiresAt: null,
+			},
 			now,
 			now,
 		);

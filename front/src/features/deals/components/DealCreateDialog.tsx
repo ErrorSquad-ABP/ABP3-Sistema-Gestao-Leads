@@ -97,10 +97,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 	);
 	const createMutation = useCreateDealForLeadMutation(leadId);
 	const vehiclesQuery = useVehiclesListQuery(
-		{
-			status: 'AVAILABLE',
-			withoutOpenDeal: true,
-		},
+		{ status: 'AVAILABLE' },
 		{
 			enabled: Boolean(open && selectedLead),
 		},
@@ -108,7 +105,9 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 	const availableVehicles = useMemo(
 		() =>
 			(vehiclesQuery.data ?? []).filter(
-				(vehicle) => vehicle.storeId === selectedLead?.storeId,
+				(vehicle) =>
+					vehicle.storeId === selectedLead?.storeId &&
+					vehicle.status === 'AVAILABLE',
 			),
 		[selectedLead?.storeId, vehiclesQuery.data],
 	);

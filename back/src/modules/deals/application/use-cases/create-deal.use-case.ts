@@ -11,7 +11,6 @@ import { LeadRepositoryFactory } from '../../../leads/infrastructure/persistence
 import { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import { ActiveDealAlreadyExistsError } from '../../domain/errors/active-deal-already-exists.error.js';
-import { ActiveDealForVehicleAlreadyExistsError } from '../../domain/errors/active-deal-for-vehicle-already-exists.error.js';
 import { DealVehicleNotAvailableError } from '../../domain/errors/deal-vehicle-not-available.error.js';
 import { DealVehicleStoreMismatchError } from '../../domain/errors/deal-vehicle-store-mismatch.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
@@ -74,13 +73,6 @@ class CreateDealUseCase {
 				throw new DealVehicleNotAvailableError(dto.vehicleId, vehicle.status);
 			}
 
-			const existingVehicleOpen = await deals.findOpenByVehicleId(
-				Uuid.parse(dto.vehicleId),
-			);
-			if (existingVehicleOpen) {
-				throw new ActiveDealForVehicleAlreadyExistsError(dto.vehicleId);
-			}
-
 			const deal = this.dealFactory.create({
 				leadId,
 				vehicleId: dto.vehicleId,
@@ -91,9 +83,6 @@ class CreateDealUseCase {
 			});
 
 			const created = await deals.create(deal);
-
-			vehicle.changeStatus('RESERVED');
-			await vehicles.update(vehicle);
 
 			const actorUuid = Uuid.parse(actor.userId);
 			await history.appendMany(initialDealHistory(created, actorUuid));

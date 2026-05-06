@@ -9,6 +9,7 @@ import { TeamInvalidManagerError } from '../../../modules/teams/domain/errors/te
 import { TeamInvalidStoreError } from '../../../modules/teams/domain/errors/team-invalid-store.error.js';
 import { TeamAccessDeniedError } from '../../../modules/teams/domain/errors/team-access-denied.error.js';
 import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not-found.error.js';
+import { VehicleDeleteBlockedError } from '../../../modules/vehicles/domain/errors/vehicle-delete-blocked.error.js';
 import { DomainErrorFilter } from './domain-error.filter.js';
 
 function mapDomainException(filter: DomainErrorFilter, exception: unknown) {
@@ -124,6 +125,20 @@ describe('DomainErrorFilter', () => {
 			deleteBlockedMapped?.body.errors?.[0]?.code,
 			'store.delete_blocked',
 		);
+	});
+
+	it('maps blocked vehicle delete to 409', () => {
+		const filter = new DomainErrorFilter();
+		const mapped = mapDomainException(
+			filter,
+			VehicleDeleteBlockedError.withCounts(
+				'66666666-6666-4666-8666-666666666666',
+				2,
+			),
+		);
+
+		assert.equal(mapped?.status, 409);
+		assert.equal(mapped?.body.errors?.[0]?.code, 'vehicle.delete_blocked');
 	});
 
 	it('catch() aplica status HTTP correto para erros de stores e teams (ciclo completo)', () => {

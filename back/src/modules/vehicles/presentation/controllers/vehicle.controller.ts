@@ -14,6 +14,7 @@ import {
 import {
 	ApiBadRequestResponse,
 	ApiBearerAuth,
+	ApiConflictResponse,
 	ApiForbiddenResponse,
 	ApiInternalServerErrorResponse,
 	ApiNoContentResponse,
@@ -30,22 +31,30 @@ import {
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
+import { VehicleCatalogResponseDto } from '../../application/dto/vehicle-catalog-response.dto.js';
 import { VehicleResponseDto } from '../../application/dto/vehicle-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { CreateVehicleUseCase } from '../../application/use-cases/create-vehicle.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { DeactivateVehicleUseCase } from '../../application/use-cases/deactivate-vehicle.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { DeleteVehicleUseCase } from '../../application/use-cases/delete-vehicle.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { FindVehicleUseCase } from '../../application/use-cases/find-vehicle.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListVehiclesUseCase } from '../../application/use-cases/list-vehicles.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListVehicleCatalogUseCase } from '../../application/use-cases/list-vehicle-catalog.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { UpdateVehicleUseCase } from '../../application/use-cases/update-vehicle.use-case.js';
+import { VehicleCatalogPresenter } from '../presenters/vehicle-catalog.presenter.js';
 import { VehiclePresenter } from '../presenters/vehicle.presenter.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
 import { CreateVehicleValidator } from '../validators/create-vehicle.validator.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
 import { ListVehiclesQueryValidator } from '../validators/list-vehicles-query.validator.js';
+// biome-ignore lint/style/useImportType: validators usados em runtime
+import { ListVehicleCatalogQueryValidator } from '../validators/list-vehicle-catalog-query.validator.js';
 // biome-ignore lint/style/useImportType: validators usados em runtime
 import { UpdateVehicleValidator } from '../validators/update-vehicle.validator.js';
 
@@ -80,7 +89,9 @@ class VehicleController {
 		private readonly updateVehicleUseCase: UpdateVehicleUseCase,
 		private readonly findVehicleUseCase: FindVehicleUseCase,
 		private readonly listVehiclesUseCase: ListVehiclesUseCase,
+		private readonly listVehicleCatalogUseCase: ListVehicleCatalogUseCase,
 		private readonly deactivateVehicleUseCase: DeactivateVehicleUseCase,
+		private readonly deleteVehicleUseCase: DeleteVehicleUseCase,
 	) {}
 
 	@Post()
@@ -105,6 +116,16 @@ class VehicleController {
 			withoutOpenDeal: query.withoutOpenDeal === 'true',
 		});
 		return VehiclePresenter.toResponseList([...vehicles]);
+	}
+
+	@Get('catalog')
+	@ApiOperation({ summary: 'Listar catálogo enriquecido de veículos' })
+	@ApiOkResponseEnvelope(VehicleCatalogResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async catalog(@Query() query: ListVehicleCatalogQueryValidator) {
+		const page = await this.listVehicleCatalogUseCase.execute(query);
+		return VehicleCatalogPresenter.toResponse(page);
 	}
 
 	@Get(':id')
@@ -136,6 +157,30 @@ class VehicleController {
 	) {
 		const vehicle = await this.updateVehicleUseCase.execute(id, body);
 		return VehiclePresenter.toResponse(vehicle);
+	}
+
+	@Delete(':id/permanent')
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@ApiOperation({
+		summary: 'Excluir veículo permanentemente',
+		description:
+			'Exclui apenas veículos sem negociações vinculadas. Use inativação para preservar histórico de veículos já negociados.',
+	})
+	@ApiParam({ name: 'id', format: 'uuid' })
+	@ApiNoContentResponse({
+		description: 'Veículo excluído permanentemente.',
+	})
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiNotFoundResponse({ description: 'Veículo não encontrado.' })
+	@ApiConflictResponse({
+		description:
+			'Veículo possui negociações vinculadas e não pode ser excluído.',
+	})
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async deletePermanently(
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteVehicleUseCase.execute(id);
 	}
 
 	@Delete(':id')

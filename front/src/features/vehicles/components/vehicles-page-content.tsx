@@ -1,45 +1,105 @@
 'use client';
 
-import { LayoutList, Plus, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import {
+	Archive,
+	Car,
+	CheckCircle2,
+	ChevronLeft,
+	ChevronRight,
+	Download,
+	Grid2X2,
+	Plus,
+	Search,
+	ShieldCheck,
+	Table2,
+	Timer,
+} from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-	Card,
-	CardAction,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError } from '@/lib/http/api-error';
 import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
+import { ApiError } from '@/lib/http/api-error';
 
-import { useVehiclesListQuery } from '../hooks/vehicles.queries';
+import { useVehicleCatalogQuery } from '../hooks/vehicles.queries';
 import {
 	useCreateVehicleMutation,
 	useDeactivateVehicleMutation,
+	useDeleteVehicleMutation,
 	useUpdateVehicleMutation,
 } from '../hooks/vehicles.mutations';
 import { vehicleStatusOptions } from '../lib/vehicle-labels';
 import type {
 	Vehicle,
+	VehicleCatalogItem,
+	VehicleCatalogSort,
 	VehicleFormOutput,
 	VehicleStatus,
 } from '../model/vehicles.model';
+import { VehicleCatalogCards } from './VehicleCatalogCards';
+import { VehicleCatalogTable } from './VehicleCatalogTable';
 import { VehicleConfirmDialog } from './VehicleConfirmDialog';
 import { VehicleDetailsDialog } from './VehicleDetailsDialog';
 import { VehicleFormDialog, getVehiclesErrorMessage } from './VehicleForm';
-import { VehiclesTable } from './VehiclesTable';
 
-function normalizeSearchValue(value: string) {
-	return value.trim().toLowerCase();
-}
+const CATALOG_PAGE_SIZE = 8;
 
 type VehiclesPageContentProps = {
 	user: AuthenticatedUser;
 };
+
+type ViewMode = 'cards' | 'table';
+
+const sortOptions: {
+	readonly value: VehicleCatalogSort;
+	readonly label: string;
+}[] = [
+	{ value: 'recent', label: 'Mais recentes' },
+	{ value: 'interest_desc', label: 'Maior interesse' },
+	{ value: 'price_desc', label: 'Maior preço' },
+	{ value: 'price_asc', label: 'Menor preço' },
+	{ value: 'mileage_asc', label: 'Menor KM' },
+	{ value: 'mileage_desc', label: 'Maior KM' },
+];
+
+function formatCount(value: number) {
+	return value.toLocaleString('pt-BR');
+}
+
+function buildCsv(items: readonly VehicleCatalogItem[]) {
+	const rows = [
+		[
+			'Marca',
+			'Modelo',
+			'Versão',
+			'Ano',
+			'Loja',
+			'Status',
+			'Preço',
+			'KM',
+			'Interesse',
+		],
+		...items.map((item) => [
+			item.vehicle.brand,
+			item.vehicle.model,
+			item.vehicle.version ?? '',
+			String(item.vehicle.modelYear),
+			item.storeName,
+			item.vehicle.status,
+			item.vehicle.price,
+			String(item.vehicle.mileage),
+			String(item.dealCount),
+		]),
+	];
+
+	return rows
+		.map((row) =>
+			row.map((value) => `"${value.replaceAll('"', '""')}"`).join(','),
+		)
+		.join('\n');
+}
 
 function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 	const storesQuery = useStoresQuery();
@@ -54,56 +114,83 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 	const [statusFilter, setStatusFilter] = useState<'ALL' | VehicleStatus>(
 		'ALL',
 	);
+	const [sort, setSort] = useState<VehicleCatalogSort>('recent');
+	const [viewMode, setViewMode] = useState<ViewMode>('cards');
+	const [page, setPage] = useState(1);
+	const filtersRef = useRef<HTMLDivElement>(null);
 
-	const vehiclesQuery = useVehiclesListQuery({
+	const catalogQuery = useVehicleCatalogQuery({
 		storeId: storeFilter === 'ALL' ? undefined : storeFilter,
 		status: statusFilter === 'ALL' ? undefined : statusFilter,
+		search,
+		sort,
+		page,
+		limit: CATALOG_PAGE_SIZE,
 	});
 
 	const createVehicleMutation = useCreateVehicleMutation();
 	const updateVehicleMutation = useUpdateVehicleMutation();
 	const deactivateVehicleMutation = useDeactivateVehicleMutation();
+	const deleteVehicleMutation = useDeleteVehicleMutation();
 
 	const [vehicleFormMode, setVehicleFormMode] = useState<'create' | 'edit'>(
 		'create',
 	);
 	const [vehicleFormOpen, setVehicleFormOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
+	const [hardDeleteOpen, setHardDeleteOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [targetVehicle, setTargetVehicle] = useState<Vehicle | null>(null);
 	const [detailsOpen, setDetailsOpen] = useState(false);
 
-	const vehicles = useMemo(
-		() => vehiclesQuery.data ?? [],
-		[vehiclesQuery.data],
-	);
+	const catalog = catalogQuery.data;
+	const items = catalog?.items ?? [];
+	const summary = catalog?.summary ?? {
+		total: 0,
+		available: 0,
+		reserved: 0,
+		sold: 0,
+		inactive: 0,
+		highInterest: 0,
+	};
 
-	const normalizedSearch = normalizeSearchValue(search);
-	const filteredVehicles = useMemo(() => {
-		if (!normalizedSearch) {
-			return vehicles;
-		}
-
-		return vehicles.filter((vehicle) => {
-			const haystack = [
-				vehicle.id,
-				storeLabelById[vehicle.storeId] ?? vehicle.storeId,
-				vehicle.brand,
-				vehicle.model,
-				vehicle.version ?? '',
-				vehicle.plate ?? '',
-				vehicle.vin ?? '',
-				vehicle.status,
-				vehicle.supportedFuelType,
-				vehicle.price,
-				String(vehicle.modelYear),
-			]
-				.join(' ')
-				.toLowerCase();
-
-			return haystack.includes(normalizedSearch);
-		});
-	}, [normalizedSearch, storeLabelById, vehicles]);
+	const metrics = [
+		{
+			label: 'Total de veículos',
+			value: summary.total,
+			helper: 'Em todas as lojas',
+			icon: Car,
+			className: 'bg-sky-50 text-sky-700',
+		},
+		{
+			label: 'Disponíveis',
+			value: summary.available,
+			helper: `${summary.total > 0 ? Math.round((summary.available / summary.total) * 100) : 0}% do total`,
+			icon: CheckCircle2,
+			className: 'bg-emerald-50 text-emerald-700',
+		},
+		{
+			label: 'Reservados',
+			value: summary.reserved,
+			helper: `${summary.total > 0 ? Math.round((summary.reserved / summary.total) * 100) : 0}% do total`,
+			icon: Timer,
+			className: 'bg-orange-50 text-orange-700',
+		},
+		{
+			label: 'Vendidos',
+			value: summary.sold,
+			helper: `${summary.total > 0 ? Math.round((summary.sold / summary.total) * 100) : 0}% do total`,
+			icon: ShieldCheck,
+			className: 'bg-violet-50 text-violet-700',
+		},
+		{
+			label: 'Inativos',
+			value: summary.inactive,
+			helper: `${summary.total > 0 ? Math.round((summary.inactive / summary.total) * 100) : 0}% do total`,
+			icon: Archive,
+			className: 'bg-slate-100 text-slate-600',
+		},
+	];
 
 	function openCreateDialog() {
 		setDialogError(null);
@@ -123,6 +210,12 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 		setDialogError(null);
 		setTargetVehicle(vehicle);
 		setDeleteOpen(true);
+	}
+
+	function openHardDeleteDialog(vehicle: Vehicle) {
+		setDialogError(null);
+		setTargetVehicle(vehicle);
+		setHardDeleteOpen(true);
 	}
 
 	function openDetailsDialog(vehicle: Vehicle) {
@@ -177,42 +270,96 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 		}
 	}
 
-	const title = 'Gestão de veículos';
-	const subtitle =
-		'Cadastre e mantenha o catálogo de veículos por loja e status operacional.';
+	async function handleHardDeleteConfirm() {
+		if (!targetVehicle) {
+			return;
+		}
+
+		setDialogError(null);
+		try {
+			await deleteVehicleMutation.mutateAsync(targetVehicle.id);
+			setHardDeleteOpen(false);
+			setTargetVehicle(null);
+		} catch (error) {
+			setDialogError(getVehiclesErrorMessage(error));
+		}
+	}
+
+	function handleExport() {
+		const csv = buildCsv(items);
+		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = 'veiculos.csv';
+		anchor.click();
+		URL.revokeObjectURL(url);
+	}
+
+	const isPending = catalogQuery.isPending || storesQuery.isPending;
 
 	return (
-		<div
-			className="space-y-6"
-			aria-busy={vehiclesQuery.isPending ? 'true' : 'false'}
-		>
-			<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
-				<CardHeader className="gap-5 border-none pb-6">
-					<div className="flex items-start justify-between gap-4">
-						<div className="space-y-3">
-							<div className="flex size-12 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
-								<LayoutList className="size-5" />
-							</div>
-							<div className="space-y-2">
-								<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
-									Workspace
-								</p>
-								<CardTitle className="text-[1.9rem] font-semibold tracking-tight">
-									{title}
-								</CardTitle>
-								<p className="max-w-3xl text-[0.95rem] leading-7 text-muted-foreground">
-									{subtitle}
-								</p>
-							</div>
-						</div>
+		<div className="space-y-6" aria-busy={isPending ? 'true' : 'false'}>
+			<section className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+				<div>
+					<h1 className="text-3xl font-semibold text-[#101828]">Veículos</h1>
+					<p className="mt-1 text-sm text-[#667085]">
+						Gerencie o catálogo de veículos da sua loja.
+					</p>
+				</div>
+				<div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
+					<div className="relative min-w-0 flex-1 xl:w-[28rem]">
+						<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#667085]" />
+						<Input
+							className="h-11 rounded-lg border-[#d6dce5] bg-white pl-9 shadow-none"
+							onChange={(event) => {
+								setSearch(event.target.value);
+								setPage(1);
+							}}
+							placeholder="Buscar por marca, modelo, placa ou VIN..."
+							value={search}
+						/>
 					</div>
-				</CardHeader>
-				<CardContent className="pt-0" />
-			</Card>
+					<Button
+						className="h-11 rounded-lg bg-[#f05a28] px-5 shadow-none hover:bg-[#de4f20]"
+						onClick={openCreateDialog}
+					>
+						<Plus className="size-4" />
+						Novo veículo
+					</Button>
+				</div>
+			</section>
+
+			<section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+				{metrics.map((metric) => {
+					const Icon = metric.icon;
+					return (
+						<Card
+							key={metric.label}
+							className="rounded-xl border-[#dde4ed] bg-white shadow-sm"
+						>
+							<CardContent className="flex items-center gap-4 p-5">
+								<div
+									className={`flex size-14 items-center justify-center rounded-full ${metric.className}`}
+								>
+									<Icon className="size-6" />
+								</div>
+								<div>
+									<p className="text-sm text-[#667085]">{metric.label}</p>
+									<p className="mt-1 text-2xl font-semibold text-[#101828]">
+										{formatCount(metric.value)}
+									</p>
+									<p className="mt-1 text-xs text-[#667085]">{metric.helper}</p>
+								</div>
+							</CardContent>
+						</Card>
+					);
+				})}
+			</section>
 
 			{storesQuery.isError ? (
 				<div
-					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+					className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 					role="alert"
 				>
 					{storesQuery.error instanceof ApiError
@@ -221,61 +368,30 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 				</div>
 			) : null}
 
-			{vehiclesQuery.isError ? (
+			{catalogQuery.isError ? (
 				<div
-					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+					className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 					role="alert"
-					aria-live="polite"
 				>
-					{vehiclesQuery.error instanceof ApiError
-						? vehiclesQuery.error.message
+					{catalogQuery.error instanceof ApiError
+						? catalogQuery.error.message
 						: 'Não foi possível carregar os veículos.'}
 				</div>
 			) : null}
 
-			<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
-				<CardHeader className="gap-5 border-none pb-6">
-					<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-						<div className="space-y-2">
-							<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
-								Catálogo
-							</p>
-							<CardTitle className="text-[1.45rem] font-semibold tracking-tight">
-								Lista de veículos
-							</CardTitle>
-							<p className="max-w-3xl text-[0.95rem] leading-7 text-muted-foreground">
-								Crie, atualize e inative veículos do catálogo.
-							</p>
-						</div>
-						<CardAction className="static self-start">
-							<div className="flex flex-wrap gap-2">
-								<Button
-									className="rounded-md shadow-none bg-[#2D3648] hover:bg-[#232B3B]"
-									onClick={openCreateDialog}
-									type="button"
-								>
-									<Plus className="size-4" />
-									Novo veículo
-								</Button>
-							</div>
-						</CardAction>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-5 pt-0">
-					<div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-						<div className="relative w-full lg:max-w-md">
-							<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
-							<Input
-								className="h-10 rounded-md border-[#d6dce5] bg-[#f8fafc] pl-9 shadow-none focus-visible:border-[#2d3648]/45"
-								onChange={(event) => setSearch(event.target.value)}
-								placeholder="Pesquisar por loja, marca, modelo, placa ou VIN"
-								value={search}
-							/>
-						</div>
-						<div className="flex flex-col gap-3 sm:flex-row">
+			<Card className="rounded-xl border-[#dde4ed] bg-white shadow-sm">
+				<CardContent className="space-y-5 p-4">
+					<div
+						className="grid gap-4 xl:grid-cols-[1fr_auto_1fr] xl:items-center"
+						ref={filtersRef}
+					>
+						<div className="flex flex-col gap-3 sm:flex-row xl:justify-self-start">
 							<select
-								className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
-								onChange={(event) => setStoreFilter(event.target.value)}
+								className="h-10 rounded-lg border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] outline-none"
+								onChange={(event) => {
+									setStoreFilter(event.target.value);
+									setPage(1);
+								}}
 								value={storeFilter}
 							>
 								<option value="ALL">Todas as lojas</option>
@@ -286,10 +402,11 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 								))}
 							</select>
 							<select
-								className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
-								onChange={(event) =>
-									setStatusFilter(event.target.value as 'ALL' | VehicleStatus)
-								}
+								className="h-10 rounded-lg border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] outline-none"
+								onChange={(event) => {
+									setStatusFilter(event.target.value as 'ALL' | VehicleStatus);
+									setPage(1);
+								}}
 								value={statusFilter}
 							>
 								<option value="ALL">Todos os status</option>
@@ -300,15 +417,121 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 								))}
 							</select>
 						</div>
+
+						<div className="inline-flex justify-self-start rounded-lg border border-[#d6dce5] bg-white p-1 sm:justify-self-center">
+							<Button
+								className={
+									viewMode === 'cards'
+										? 'bg-orange-50 text-[#f05a28] hover:bg-orange-50'
+										: ''
+								}
+								onClick={() => setViewMode('cards')}
+								size="sm"
+								variant="ghost"
+							>
+								<Grid2X2 className="size-4" />
+								Cards
+							</Button>
+							<Button
+								className={
+									viewMode === 'table'
+										? 'bg-orange-50 text-[#f05a28] hover:bg-orange-50'
+										: ''
+								}
+								onClick={() => setViewMode('table')}
+								size="sm"
+								variant="ghost"
+							>
+								<Table2 className="size-4" />
+								Tabela
+							</Button>
+						</div>
+
+						<div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:justify-self-end">
+							{viewMode === 'table' ? (
+								<Button
+									className="rounded-lg border-[#d6dce5]"
+									onClick={handleExport}
+									variant="outline"
+								>
+									<Download className="size-4" />
+									Exportar
+								</Button>
+							) : null}
+							<div className="flex items-center gap-2">
+								<span className="text-sm text-[#667085]">Ordenar por</span>
+								<select
+									className="h-10 rounded-lg border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] outline-none"
+									onChange={(event) => {
+										setSort(event.target.value as VehicleCatalogSort);
+										setPage(1);
+									}}
+									value={sort}
+								>
+									{sortOptions.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
+								</select>
+							</div>
+						</div>
 					</div>
 
-					<VehiclesTable
-						onDeactivate={openDeactivateDialog}
-						onEdit={openEditDialog}
-						onOpenDetails={openDetailsDialog}
-						storeLabelById={storeLabelById}
-						vehicles={filteredVehicles}
-					/>
+					{isPending ? (
+						<div className="rounded-xl border border-[#dde4ed] bg-[#f8fafc] px-4 py-12 text-center text-sm text-[#667085]">
+							Carregando veículos...
+						</div>
+					) : viewMode === 'cards' ? (
+						<VehicleCatalogCards
+							items={items}
+							onDeactivate={openDeactivateDialog}
+							onDelete={openHardDeleteDialog}
+							onEdit={openEditDialog}
+							onOpenDetails={openDetailsDialog}
+						/>
+					) : (
+						<VehicleCatalogTable
+							items={items}
+							onDeactivate={openDeactivateDialog}
+							onDelete={openHardDeleteDialog}
+							onEdit={openEditDialog}
+							onOpenDetails={openDetailsDialog}
+						/>
+					)}
+
+					<div className="flex flex-col gap-3 border-t border-[#edf1f5] pt-4 text-sm text-[#667085] md:flex-row md:items-center md:justify-between">
+						<p>
+							Mostrando{' '}
+							{items.length > 0 ? (page - 1) * CATALOG_PAGE_SIZE + 1 : 0} a{' '}
+							{(page - 1) * CATALOG_PAGE_SIZE + items.length} de{' '}
+							{catalog?.total ?? 0} veículos
+						</p>
+						<div className="flex items-center justify-center gap-2">
+							<Button
+								disabled={page <= 1}
+								onClick={() => setPage((current) => Math.max(1, current - 1))}
+								size="icon-sm"
+								variant="outline"
+							>
+								<ChevronLeft className="size-4" />
+								<span className="sr-only">Página anterior</span>
+							</Button>
+							<span className="rounded-lg bg-orange-50 px-3 py-1.5 font-semibold text-[#f05a28]">
+								{page}
+							</span>
+							<span>de {catalog?.totalPages ?? 1}</span>
+							<Button
+								disabled={page >= (catalog?.totalPages ?? 1)}
+								onClick={() => setPage((current) => current + 1)}
+								size="icon-sm"
+								variant="outline"
+							>
+								<ChevronRight className="size-4" />
+								<span className="sr-only">Próxima página</span>
+							</Button>
+						</div>
+					</div>
 				</CardContent>
 			</Card>
 
@@ -346,6 +569,25 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 				onConfirm={handleDeactivateConfirm}
 				open={deleteOpen}
 				title="Inativar veículo"
+			/>
+
+			<VehicleConfirmDialog
+				confirmLabel="Excluir permanentemente"
+				description={
+					targetVehicle
+						? `O veículo «${targetVehicle.brand} ${targetVehicle.model}» será excluído definitivamente. Essa ação só é permitida quando não há negociações vinculadas.`
+						: 'Confirme a exclusão permanente do veículo selecionado.'
+				}
+				error={dialogError}
+				isPending={deleteVehicleMutation.isPending}
+				onClose={() => {
+					setHardDeleteOpen(false);
+					setTargetVehicle(null);
+					setDialogError(null);
+				}}
+				onConfirm={handleHardDeleteConfirm}
+				open={hardDeleteOpen}
+				title="Excluir veículo"
 			/>
 
 			<VehicleDetailsDialog

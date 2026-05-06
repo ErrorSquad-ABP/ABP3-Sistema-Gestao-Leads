@@ -21,7 +21,7 @@ class UpdateVehicleUseCase {
 	) {}
 
 	async execute(vehicleId: string, dto: UpdateVehicleDto) {
-		return this.unitOfWork.run(async () => {
+		const result = await this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const vehicles = this.vehicleRepositoryFactory.create(transactionContext);
 
@@ -43,6 +43,11 @@ class UpdateVehicleUseCase {
 				dto.status !== undefined ||
 				dto.plate !== undefined ||
 				dto.vin !== undefined;
+
+			const imageIdentityChanged =
+				(dto.brand !== undefined && dto.brand !== vehicle.brand) ||
+				(dto.model !== undefined && dto.model !== vehicle.model) ||
+				(dto.modelYear !== undefined && dto.modelYear !== vehicle.modelYear);
 
 			if (!hasInput) {
 				return vehicle;
@@ -86,9 +91,13 @@ class UpdateVehicleUseCase {
 			if (dto.vin !== undefined) {
 				vehicle.changeVin(dto.vin);
 			}
+			if (imageIdentityChanged) {
+				vehicle.changeImageMetadata(null);
+			}
 
 			return vehicles.update(vehicle);
 		});
+		return result;
 	}
 }
 
