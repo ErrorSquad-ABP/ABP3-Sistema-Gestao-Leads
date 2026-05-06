@@ -5,6 +5,7 @@ import { queryKeys } from '@/lib/constants/query-keys';
 import {
 	createVehicle,
 	deactivateVehicle,
+	deleteVehiclePermanently,
 	updateVehicle,
 } from '../api/vehicles.service';
 import type {
@@ -18,9 +19,14 @@ function useCreateVehicleMutation() {
 	return useMutation({
 		mutationFn: (input: CreateVehicleInput) => createVehicle(input),
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({
-				queryKey: queryKeys.vehicles.listRoot,
-			});
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.listRoot,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.catalogRoot,
+				}),
+			]);
 		},
 	});
 }
@@ -32,9 +38,14 @@ function useUpdateVehicleMutation() {
 		mutationFn: (input: { vehicleId: string; payload: UpdateVehicleInput }) =>
 			updateVehicle(input.vehicleId, input.payload),
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({
-				queryKey: queryKeys.vehicles.listRoot,
-			});
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.listRoot,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.catalogRoot,
+				}),
+			]);
 		},
 	});
 }
@@ -45,9 +56,32 @@ function useDeactivateVehicleMutation() {
 	return useMutation({
 		mutationFn: (vehicleId: string) => deactivateVehicle(vehicleId),
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({
-				queryKey: queryKeys.vehicles.listRoot,
-			});
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.listRoot,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.catalogRoot,
+				}),
+			]);
+		},
+	});
+}
+
+function useDeleteVehicleMutation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (vehicleId: string) => deleteVehiclePermanently(vehicleId),
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.listRoot,
+				}),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.vehicles.catalogRoot,
+				}),
+			]);
 		},
 	});
 }
@@ -55,5 +89,6 @@ function useDeactivateVehicleMutation() {
 export {
 	useCreateVehicleMutation,
 	useDeactivateVehicleMutation,
+	useDeleteVehicleMutation,
 	useUpdateVehicleMutation,
 };

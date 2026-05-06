@@ -97,10 +97,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 	);
 	const createMutation = useCreateDealForLeadMutation(leadId);
 	const vehiclesQuery = useVehiclesListQuery(
-		{
-			status: 'AVAILABLE',
-			withoutOpenDeal: true,
-		},
+		{ status: 'AVAILABLE' },
 		{
 			enabled: Boolean(open && selectedLead),
 		},
@@ -108,7 +105,9 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 	const availableVehicles = useMemo(
 		() =>
 			(vehiclesQuery.data ?? []).filter(
-				(vehicle) => vehicle.storeId === selectedLead?.storeId,
+				(vehicle) =>
+					vehicle.storeId === selectedLead?.storeId &&
+					vehicle.status === 'AVAILABLE',
 			),
 		[selectedLead?.storeId, vehiclesQuery.data],
 	);
@@ -390,8 +389,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 							</p>
 						) : (
 							<p className="text-[11.5px] leading-4 text-[#7a8494]">
-								Apenas veículos disponíveis e sem negociação aberta podem ser
-								selecionados.
+								Apenas veículos disponíveis podem ser selecionados.
 							</p>
 						)}
 					</div>
@@ -400,8 +398,8 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 							<Info className="size-4" />
 						</span>
 						<p className="text-[11.5px] leading-4">
-							Ao criar a negociação, o veículo selecionado será reservado
-							automaticamente e ficará indisponível para outras negociações.
+							O veículo selecionado precisa estar disponível no momento da
+							criação da negociação.
 						</p>
 					</div>
 					<div className="grid gap-3 sm:grid-cols-2">

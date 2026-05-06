@@ -1,18 +1,29 @@
 import { apiFetch } from '@/lib/http/api-client';
 
 import {
+	parseVehicleCatalogResponse,
 	parseVehicleResponse,
 	parseVehiclesResponse,
 } from '../schemas/vehicle.schema';
 import type {
 	CreateVehicleInput,
 	UpdateVehicleInput,
+	VehicleCatalogSort,
 } from '../model/vehicles.model';
 
 type ListVehiclesFilters = {
 	storeId?: string;
 	status?: string;
 	withoutOpenDeal?: boolean;
+};
+
+type VehicleCatalogFilters = {
+	storeId?: string;
+	status?: string;
+	search?: string;
+	sort?: VehicleCatalogSort;
+	page: number;
+	limit: number;
 };
 
 function vehiclesListQuery(filters: ListVehiclesFilters) {
@@ -29,6 +40,25 @@ function vehiclesListQuery(filters: ListVehiclesFilters) {
 	return params.toString();
 }
 
+function vehicleCatalogQuery(filters: VehicleCatalogFilters) {
+	const params = new URLSearchParams();
+	if (filters.storeId) {
+		params.set('storeId', filters.storeId);
+	}
+	if (filters.status) {
+		params.set('status', filters.status);
+	}
+	if (filters.search?.trim()) {
+		params.set('search', filters.search.trim());
+	}
+	if (filters.sort) {
+		params.set('sort', filters.sort);
+	}
+	params.set('page', String(filters.page));
+	params.set('limit', String(filters.limit));
+	return params.toString();
+}
+
 async function listVehicles(
 	filters: ListVehiclesFilters,
 	signal?: AbortSignal,
@@ -41,6 +71,17 @@ async function listVehicles(
 		},
 	);
 	return parseVehiclesResponse(raw);
+}
+
+async function listVehicleCatalog(
+	filters: VehicleCatalogFilters,
+	signal?: AbortSignal,
+) {
+	const query = vehicleCatalogQuery(filters);
+	const raw = await apiFetch<unknown>(`/api/vehicles/catalog?${query}`, {
+		signal,
+	});
+	return parseVehicleCatalogResponse(raw);
 }
 
 async function createVehicle(input: CreateVehicleInput) {
@@ -72,11 +113,19 @@ async function deactivateVehicle(vehicleId: string) {
 	});
 }
 
+async function deleteVehiclePermanently(vehicleId: string) {
+	await apiFetch(`/api/vehicles/${vehicleId}/permanent`, {
+		method: 'DELETE',
+	});
+}
+
 export {
 	createVehicle,
 	deactivateVehicle,
+	deleteVehiclePermanently,
 	findVehicle,
+	listVehicleCatalog,
 	listVehicles,
 	updateVehicle,
 };
-export type { ListVehiclesFilters };
+export type { ListVehiclesFilters, VehicleCatalogFilters };

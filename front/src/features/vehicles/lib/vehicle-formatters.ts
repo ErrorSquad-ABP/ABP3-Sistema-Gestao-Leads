@@ -1,6 +1,7 @@
 import type {
 	SupportedFuelType,
 	Vehicle,
+	VehicleCatalogItem,
 	VehicleStatus,
 } from '../model/vehicles.model';
 import {
@@ -31,6 +32,35 @@ function formatFuelType(value: SupportedFuelType) {
 	return formatSupportedFuelTypeLabel(value);
 }
 
+function formatDaysInStock(value: number) {
+	if (value <= 0) {
+		return 'Hoje';
+	}
+	if (value === 1) {
+		return '1 dia';
+	}
+	return `${value} dias`;
+}
+
+function formatVehiclePriceComparison(
+	value: VehicleCatalogItem['priceComparison'],
+) {
+	switch (value) {
+		case 'ABOVE_AVERAGE':
+			return 'acima da média';
+		case 'BELOW_AVERAGE':
+			return 'abaixo da média';
+		case 'AT_AVERAGE':
+			return 'na média';
+		case null:
+			return 'sem comparação';
+		default: {
+			const _exhaustive: never = value;
+			return _exhaustive;
+		}
+	}
+}
+
 /** Uma linha legível para selects de negociação (criar/editar, hook de etiqueta). */
 function formatVehicleDealSelectLabel(vehicle: Vehicle) {
 	const plate = vehicle.plate ? vehicle.plate.trim() : '';
@@ -38,9 +68,11 @@ function formatVehicleDealSelectLabel(vehicle: Vehicle) {
 }
 
 export {
+	formatDaysInStock,
 	formatFuelType,
 	formatMileage,
 	formatVehicleDealSelectLabel,
 	formatVehiclePriceBRL,
+	formatVehiclePriceComparison,
 	formatVehicleStatus,
 };

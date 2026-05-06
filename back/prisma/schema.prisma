@@ -110,16 +110,16 @@ model User {
   accessGroupId String?      @db.Uuid
   accessGroup   AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
 
-  memberTeams   Team[]       @relation("TeamMembers")
-  managedTeams  Team[]       @relation("TeamManager")
+  memberTeams  Team[] @relation("TeamMembers")
+  managedTeams Team[] @relation("TeamManager")
 
-  ownedLeads    Lead[]       @relation("LeadOwner")
-  leadEvents    LeadEvent[]  @relation("LeadEventActor")
-  auditLogs     AuditLog[]
-  authSessions  AuthSession[]
+  ownedLeads   Lead[]        @relation("LeadOwner")
+  leadEvents   LeadEvent[]   @relation("LeadEventActor")
+  auditLogs    AuditLog[]
+  authSessions AuthSession[]
 
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AuthSession {
@@ -140,56 +140,56 @@ model AuthSession {
 }
 
 model Team {
-  id          String     @id @default(uuid()) @db.Uuid
-  name        String
+  id   String @id @default(uuid()) @db.Uuid
+  name String
 
-  storeId     String     @db.Uuid
-  store       Store      @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  storeId String @db.Uuid
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Restrict)
 
-  members     User[]     @relation("TeamMembers")
-  managerId   String?    @db.Uuid
-  manager     User?      @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
+  members   User[]  @relation("TeamMembers")
+  managerId String? @db.Uuid
+  manager   User?   @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Store {
-  id          String     @id @default(uuid()) @db.Uuid
-  name        String
-  teams       Team[]
-  leads       Lead[]
-  vehicles    Vehicle[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  teams     Team[]
+  leads     Lead[]
+  vehicles  Vehicle[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Customer {
-  id         String   @id @default(uuid()) @db.Uuid
-  name       String
-  email      String?  @unique
-  phone      String?
-  cpf        String?  @unique @db.VarChar(11)
-  leads      Lead[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String?  @unique
+  phone     String?
+  cpf       String?  @unique @db.VarChar(11)
+  leads     Lead[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Lead {
-  id          String      @id @default(uuid()) @db.Uuid
-  customerId  String      @db.Uuid
-  storeId     String      @db.Uuid
-  ownerUserId String?     @db.Uuid
-  source      LeadSource
-  status      LeadStatus  @default(NEW)
+  id                  String      @id @default(uuid()) @db.Uuid
+  customerId          String      @db.Uuid
+  storeId             String      @db.Uuid
+  ownerUserId         String?     @db.Uuid
+  source              LeadSource
+  status              LeadStatus  @default(NEW)
   vehicleInterestText String?
-  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  store       Store       @relation(fields: [storeId], references: [id], onDelete: Restrict)
-  owner       User?       @relation("LeadOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
-  deals       Deal[]
-  events      LeadEvent[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  customer            Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  store               Store       @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  owner               User?       @relation("LeadOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  deals               Deal[]
+  events              LeadEvent[]
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
   @@index([createdAt])
   @@index([storeId, createdAt])
@@ -212,43 +212,53 @@ model LeadEvent {
 }
 
 model Vehicle {
-  id                String            @id @default(uuid()) @db.Uuid
-  storeId            String            @db.Uuid
-  brand              String
-  model              String
-  version            String?
-  modelYear          Int
-  manufactureYear    Int?
-  color              String?
-  mileage            Int
-  supportedFuelType  SupportedFuelType
-  price              Decimal           @db.Decimal(12, 2)
-  status             VehicleStatus
-  plate              String?
-  vin                String?
-  store              Store             @relation(fields: [storeId], references: [id], onDelete: Restrict)
-  deals              Deal[]
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  id                    String            @id @default(uuid()) @db.Uuid
+  storeId               String            @db.Uuid
+  brand                 String
+  model                 String
+  version               String?
+  modelYear             Int
+  manufactureYear       Int?
+  color                 String?
+  mileage               Int
+  supportedFuelType     SupportedFuelType
+  price                 Decimal           @db.Decimal(12, 2)
+  status                VehicleStatus
+  plate                 String?
+  vin                   String?
+  imageUrl              String?
+  imageAlt              String?
+  imageProvider         String?
+  imageProviderPhotoId  String?
+  imagePhotographerName String?
+  imagePhotographerUrl  String?
+  imageSourceUrl        String?
+  imageResolvedAt       DateTime?
+  imageExpiresAt        DateTime?
+  store                 Store             @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  deals                 Deal[]
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 
   @@index([storeId])
+  @@index([status, createdAt])
 }
 
 model Deal {
-  id          String          @id @default(uuid()) @db.Uuid
-  leadId      String          @db.Uuid
-  vehicleId   String          @db.Uuid
-  title       String
-  value       Decimal?        @db.Decimal(12, 2)
-  importance  DealImportance
-  stage       DealStage
-  status      DealStatus
-  closedAt    DateTime?
-  lead        Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
-  history     DealHistory[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id         String         @id @default(uuid()) @db.Uuid
+  leadId     String         @db.Uuid
+  vehicleId  String         @db.Uuid
+  title      String
+  value      Decimal?       @db.Decimal(12, 2)
+  importance DealImportance
+  stage      DealStage
+  status     DealStatus
+  closedAt   DateTime?
+  lead       Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  history    DealHistory[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   @@index([leadId])
   @@index([vehicleId])

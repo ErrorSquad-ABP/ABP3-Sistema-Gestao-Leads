@@ -299,16 +299,14 @@ function DealFormDialog({
 	const leadStoreId = leadQuery.data?.storeId ?? null;
 
 	const vehiclesQuery = useVehiclesListQuery(
-		{
-			status: 'AVAILABLE',
-			withoutOpenDeal: true,
-		},
+		{ status: 'AVAILABLE' },
 		{ enabled: Boolean(open && leadStoreId && !isReadOnly) },
 	);
 	const availableVehicles = useMemo(
 		() =>
 			(vehiclesQuery.data ?? []).filter(
-				(vehicle) => vehicle.storeId === leadStoreId,
+				(vehicle) =>
+					vehicle.storeId === leadStoreId && vehicle.status === 'AVAILABLE',
 			),
 		[leadStoreId, vehiclesQuery.data],
 	);
@@ -659,8 +657,7 @@ function DealFormDialog({
 									</p>
 								) : (
 									<p className="text-[11.5px] leading-4 text-[#7a8494]">
-										Apenas veículos disponíveis e sem negociação aberta podem
-										ser selecionados.
+										Apenas veículos disponíveis podem ser selecionados.
 									</p>
 								)}
 							</div>

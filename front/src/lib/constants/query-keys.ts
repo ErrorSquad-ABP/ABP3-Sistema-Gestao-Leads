@@ -39,6 +39,7 @@ const queryKeys = {
 	},
 	vehicles: {
 		listRoot: ['vehicles', 'list'] as const,
+		catalogRoot: ['vehicles', 'catalog'] as const,
 		list: (params: {
 			storeId?: string;
 			status?: string;
@@ -50,6 +51,24 @@ const queryKeys = {
 				params.storeId ?? 'all-stores',
 				params.status ?? 'all-statuses',
 				params.withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+			] as const,
+		catalog: (params: {
+			storeId?: string;
+			status?: string;
+			search?: string;
+			sort?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'vehicles',
+				'catalog',
+				params.storeId ?? 'all-stores',
+				params.status ?? 'all-statuses',
+				params.search?.trim() ?? '',
+				params.sort ?? 'recent',
+				params.page,
+				params.limit,
 			] as const,
 		detail: (vehicleId: string) => ['vehicles', 'detail', vehicleId] as const,
 	},

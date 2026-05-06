@@ -4,8 +4,10 @@ import { queryKeys } from '@/lib/constants/query-keys';
 
 import {
 	findVehicle,
+	listVehicleCatalog,
 	listVehicles,
 	type ListVehiclesFilters,
+	type VehicleCatalogFilters,
 } from '../api/vehicles.service';
 
 function useVehiclesListQuery(
@@ -16,6 +18,18 @@ function useVehiclesListQuery(
 		queryKey: queryKeys.vehicles.list(filters),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			listVehicles(filters, signal),
+		enabled: options?.enabled,
+	});
+}
+
+function useVehicleCatalogQuery(
+	filters: VehicleCatalogFilters,
+	options?: { readonly enabled?: boolean },
+) {
+	return useQuery({
+		queryKey: queryKeys.vehicles.catalog(filters),
+		queryFn: ({ signal }: { signal: AbortSignal }) =>
+			listVehicleCatalog(filters, signal),
 		enabled: options?.enabled,
 	});
 }
@@ -31,4 +45,4 @@ function useVehicleByIdQuery(
 	});
 }
 
-export { useVehicleByIdQuery, useVehiclesListQuery };
+export { useVehicleByIdQuery, useVehicleCatalogQuery, useVehiclesListQuery };

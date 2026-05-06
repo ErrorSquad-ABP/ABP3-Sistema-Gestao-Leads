@@ -3,11 +3,16 @@ import type { z } from 'zod';
 import type { vehicleFormSchema } from '../schemas/vehicle-management.schema';
 import type {
 	supportedFuelTypes,
+	vehicleCatalogSchema,
+	vehicleCatalogSorts,
 	vehicleSchema,
 	vehicleStatuses,
 } from '../schemas/vehicle.schema';
 
 type Vehicle = z.infer<typeof vehicleSchema>;
+type VehicleCatalog = z.infer<typeof vehicleCatalogSchema>;
+type VehicleCatalogItem = VehicleCatalog['items'][number];
+type VehicleCatalogSort = (typeof vehicleCatalogSorts)[number];
 type VehicleFormInput = z.input<typeof vehicleFormSchema>;
 type VehicleFormOutput = z.output<typeof vehicleFormSchema>;
 type VehicleStatus = (typeof vehicleStatuses)[number];
@@ -37,6 +42,9 @@ export type {
 	SupportedFuelType,
 	UpdateVehicleInput,
 	Vehicle,
+	VehicleCatalog,
+	VehicleCatalogItem,
+	VehicleCatalogSort,
 	VehicleFormInput,
 	VehicleFormOutput,
 	VehicleStatus,

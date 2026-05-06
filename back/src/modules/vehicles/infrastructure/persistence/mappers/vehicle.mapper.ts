@@ -22,6 +22,17 @@ class VehicleMapper {
 			assertCanonicalVehicleStatus(record.status),
 			record.plate ?? null,
 			record.vin ?? null,
+			{
+				imageUrl: record.imageUrl ?? null,
+				imageAlt: record.imageAlt ?? null,
+				imageProvider: record.imageProvider ?? null,
+				imageProviderPhotoId: record.imageProviderPhotoId ?? null,
+				imagePhotographerName: record.imagePhotographerName ?? null,
+				imagePhotographerUrl: record.imagePhotographerUrl ?? null,
+				imageSourceUrl: record.imageSourceUrl ?? null,
+				imageResolvedAt: record.imageResolvedAt ?? null,
+				imageExpiresAt: record.imageExpiresAt ?? null,
+			},
 			record.createdAt,
 			record.updatedAt,
 		);
@@ -42,6 +53,15 @@ class VehicleMapper {
 		readonly status: PrismaVehicle['status'];
 		readonly plate: string | null;
 		readonly vin: string | null;
+		readonly imageUrl: string | null;
+		readonly imageAlt: string | null;
+		readonly imageProvider: string | null;
+		readonly imageProviderPhotoId: string | null;
+		readonly imagePhotographerName: string | null;
+		readonly imagePhotographerUrl: string | null;
+		readonly imageSourceUrl: string | null;
+		readonly imageResolvedAt: Date | null;
+		readonly imageExpiresAt: Date | null;
 	} {
 		return {
 			id: vehicle.id.value,
@@ -58,6 +78,15 @@ class VehicleMapper {
 			status: vehicle.status,
 			plate: vehicle.plate,
 			vin: vehicle.vin,
+			imageUrl: vehicle.imageUrl,
+			imageAlt: vehicle.imageAlt,
+			imageProvider: vehicle.imageProvider,
+			imageProviderPhotoId: vehicle.imageProviderPhotoId,
+			imagePhotographerName: vehicle.imagePhotographerName,
+			imagePhotographerUrl: vehicle.imagePhotographerUrl,
+			imageSourceUrl: vehicle.imageSourceUrl,
+			imageResolvedAt: vehicle.imageResolvedAt,
+			imageExpiresAt: vehicle.imageExpiresAt,
 		};
 	}
 }
