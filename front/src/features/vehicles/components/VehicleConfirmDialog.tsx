@@ -3,14 +3,13 @@
 import { Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	VehicleModalHeader,
+	VehicleModalInfoBanner,
+	VehicleModalSection,
+	vehicleModalContentClass,
+} from './VehicleModalLayout';
 
 type VehicleConfirmDialogProps = {
 	confirmLabel: string;
@@ -35,25 +34,32 @@ function VehicleConfirmDialog({
 }: VehicleConfirmDialogProps) {
 	return (
 		<Dialog onOpenChange={(next) => (!next ? onClose() : null)} open={open}>
-			<DialogContent className="max-w-xl">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
-				</DialogHeader>
-				<div className="space-y-4 px-6 py-5">
-					<div className="flex items-start gap-3 rounded-xl border border-border/75 bg-[#f8fafc] px-4 py-4 text-sm text-[#6b7687]">
-						<Trash2 className="mt-0.5 size-4 text-destructive" />
-						<p>{description}</p>
-					</div>
+			<DialogContent className={`${vehicleModalContentClass} max-w-xl`}>
+				<VehicleModalHeader
+					description={description}
+					icon={Trash2}
+					title={title}
+				/>
+				<div className="space-y-4 px-7 pb-5 pt-3">
+					<VehicleModalInfoBanner>{description}</VehicleModalInfoBanner>
+					<VehicleModalSection
+						description="Confirme a ação para aplicar a alteração no catálogo."
+						title="Confirmação"
+					>
+						<div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50/60 px-4 py-4 text-sm text-[#6b7687]">
+							<Trash2 className="mt-0.5 size-4 shrink-0 text-red-600" />
+							<p>{description}</p>
+						</div>
+					</VehicleModalSection>
 					{error ? (
 						<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
 							{error}
 						</div>
 					) : null}
 				</div>
-				<DialogFooter>
+				<DialogFooter className="border-t-0 px-7 pb-6 pt-1">
 					<Button
-						className="rounded-md"
+						className="rounded-lg"
 						onClick={onClose}
 						type="button"
 						variant="outline"
@@ -61,7 +67,7 @@ function VehicleConfirmDialog({
 						Cancelar
 					</Button>
 					<Button
-						className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+						className="rounded-lg bg-[#172033] hover:bg-[#111827]"
 						disabled={isPending}
 						onClick={() => void onConfirm()}
 						type="button"

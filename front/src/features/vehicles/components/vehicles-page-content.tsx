@@ -212,6 +212,13 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 		setDeleteOpen(true);
 	}
 
+	function openDeactivateFromForm(vehicle: Vehicle) {
+		setDialogError(null);
+		setVehicleFormOpen(false);
+		setTargetVehicle(vehicle);
+		setDeleteOpen(true);
+	}
+
 	function openHardDeleteDialog(vehicle: Vehicle) {
 		setDialogError(null);
 		setTargetVehicle(vehicle);
@@ -546,6 +553,7 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 					setVehicleFormOpen(false);
 					setTargetVehicle(null);
 				}}
+				onRequestDeactivate={openDeactivateFromForm}
 				onSubmit={handleVehicleFormSubmit}
 				open={vehicleFormOpen}
 				stores={stores}
