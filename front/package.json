@@ -10,7 +10,8 @@
 		"lint": "eslint",
 		"format": "prettier --write \"**/*.{ts,tsx}\"",
 		"typecheck": "tsc --noEmit",
-		"test": "tsx --test \"src/**/*.spec.ts\""
+		"test": "tsx --test \"src/**/*.spec.ts\"",
+		"smoke:analytic": "tsx scripts/smoke-analytic-dashboard.ts"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",

@@ -65,11 +65,40 @@ function isPrismaKnownRequest(
 	);
 }
 
+function isTransientPrismaError(error: unknown): boolean {
+	return (
+		isPrismaKnownRequest(error) &&
+		['ETIMEDOUT', 'ECONNRESET', 'P1001'].includes(error.code)
+	);
+}
+
+function delay(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 class UserPrismaRepository implements IUserRepository {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly transactionContext?: TransactionContext,
 	) {}
+
+	private async withTransientRetry<T>(operation: () => Promise<T>): Promise<T> {
+		const maxAttempts = 3;
+
+		for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+			try {
+				return await operation();
+			} catch (error) {
+				if (!isTransientPrismaError(error) || attempt === maxAttempts) {
+					throw error;
+				}
+
+				await delay(250 * attempt);
+			}
+		}
+
+		throw new Error('Unreachable retry branch in UserPrismaRepository.');
+	}
 
 	async create(user: User): Promise<User> {
 		try {
@@ -125,19 +154,23 @@ class UserPrismaRepository implements IUserRepository {
 	async findById(
 		id: Parameters<IUserRepository['findById']>[0],
 	): Promise<User | null> {
-		const user = await this.client.user.findUnique({
-			where: { id: id.value },
-			include: userRelationsInclude,
-		});
+		const user = await this.withTransientRetry(() =>
+			this.client.user.findUnique({
+				where: { id: id.value },
+				include: userRelationsInclude,
+			}),
+		);
 		return user ? this.toDomain(user) : null;
 	}
 
 	async findByEmail(email: string): Promise<User | null> {
 		const normalized = Email.create(email).value;
-		const user = await this.client.user.findUnique({
-			where: { email: normalized },
-			include: userRelationsInclude,
-		});
+		const user = await this.withTransientRetry(() =>
+			this.client.user.findUnique({
+				where: { email: normalized },
+				include: userRelationsInclude,
+			}),
+		);
 		return user ? this.toDomain(user) : null;
 	}
 
