@@ -11,7 +11,6 @@ import {
 	Fuel,
 	MoreHorizontal,
 	PencilLine,
-	PlusCircle,
 	Trash2,
 	UsersRound,
 } from 'lucide-react';
@@ -363,38 +362,6 @@ function VehicleCatalogTable({
 								</TableCell>
 								<TableCell className="text-right">
 									<div className="flex justify-end gap-1">
-										{item.vehicle.status !== 'INACTIVE' ? (
-											<>
-												<Button
-													className="rounded-md border-[#d6dce5]"
-													size="icon-sm"
-													variant="outline"
-													onClick={() => onOpenDetails(item.vehicle)}
-												>
-													<PlusCircle className="size-4" />
-													<span className="sr-only">Abrir veículo</span>
-												</Button>
-												<Button
-													className="rounded-md border-[#d6dce5]"
-													size="icon-sm"
-													variant="outline"
-													onClick={() => onEdit(item.vehicle)}
-												>
-													<PencilLine className="size-4" />
-													<span className="sr-only">Editar veículo</span>
-												</Button>
-											</>
-										) : (
-											<Button
-												className="rounded-md border-[#d6dce5]"
-												size="icon-sm"
-												variant="outline"
-												onClick={() => onOpenDetails(item.vehicle)}
-											>
-												<Eye className="size-4" />
-												<span className="sr-only">Ver veículo</span>
-											</Button>
-										)}
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button

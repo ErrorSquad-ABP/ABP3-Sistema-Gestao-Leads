@@ -50,7 +50,6 @@ import type {
 } from '../model/vehicles.model';
 import {
 	VehicleModalHeader,
-	VehicleModalInfoBanner,
 	VehicleModalSection,
 	VehicleStatusSummary,
 	vehicleModalContentClass,
@@ -286,12 +285,6 @@ function VehicleFormDialog({
 								{submitError}
 							</div>
 						) : null}
-
-						<VehicleModalInfoBanner actionLabel="Ver regras">
-							{isEditMode
-								? 'A loja é fixa após o cadastro e não pode ser alterada nesta tela.'
-								: 'A loja define o catálogo operacional e o status inicial do veículo.'}
-						</VehicleModalInfoBanner>
 
 						<VehicleModalSection
 							description={
