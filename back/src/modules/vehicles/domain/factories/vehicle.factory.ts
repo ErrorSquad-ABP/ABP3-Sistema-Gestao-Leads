@@ -2,7 +2,10 @@ import { assertCanonicalSupportedFuelType } from '../../../../shared/domain/enum
 import { assertCanonicalVehicleStatus } from '../../../../shared/domain/enums/vehicle-status.enum.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Money } from '../../../../shared/domain/value-objects/money.value-object.js';
-import { Vehicle } from '../entities/vehicle.entity.js';
+import {
+	Vehicle,
+	type VehicleImageMetadata,
+} from '../entities/vehicle.entity.js';
 
 type CreateVehicleParams = {
 	readonly storeId: string;
@@ -18,6 +21,7 @@ type CreateVehicleParams = {
 	readonly status?: string;
 	readonly plate?: string | null;
 	readonly vin?: string | null;
+	readonly imageMetadata?: VehicleImageMetadata | null;
 };
 
 class VehicleFactory {
@@ -42,6 +46,17 @@ class VehicleFactory {
 			status,
 			params.plate ?? null,
 			params.vin ?? null,
+			params.imageMetadata ?? {
+				imageUrl: null,
+				imageAlt: null,
+				imageProvider: null,
+				imageProviderPhotoId: null,
+				imagePhotographerName: null,
+				imagePhotographerUrl: null,
+				imageSourceUrl: null,
+				imageResolvedAt: null,
+				imageExpiresAt: null,
+			},
 			now,
 			now,
 		);

@@ -160,9 +160,27 @@ async function main() {
 		);
 		console.log('OK GET /leads/:id (401 sem autenticação)');
 	}
+	{
+		const { res } = await req('GET', '/dashboards/analytic?mode=month');
+		assert(
+			res.status === 401,
+			`GET /dashboards/analytic sem JWT esperado 401, obteve ${res.status}`,
+		);
+		console.log('OK GET /dashboards/analytic (401 sem autenticação)');
+	}
+
+	{
+		const { res } = await req('GET', `/leads/${SAMPLE_UUID}/detail`);
+		assert(
+			res.status === 401,
+			`GET /leads/:id/detail sem JWT esperado 401, obteve ${res.status}`,
+		);
+		console.log('OK GET /leads/:id/detail (401 sem autenticação)');
+	}
 
 	let adminAuthHeader = null;
 	let adminCookie = null;
+	let sampleLeadIdFromList = null;
 
 	if (SMOKE_ADMIN_EMAIL && SMOKE_ADMIN_PASSWORD) {
 		const loginRes = await fetch(`${BASE.replace(/\/$/, '')}/auth/login`, {
@@ -326,6 +344,21 @@ async function main() {
 			assert(res.status === 401, 'GET /leads/:id sem auth → 401');
 		}
 	}
+	{
+		const { res, json } = await req('GET', `/leads/${SAMPLE_UUID}/detail`, {
+			headers: authHeaders,
+		});
+		if (adminAuthHeader) {
+			assert(
+				res.status === 404,
+				`GET /leads/:id/detail inexistente esperado 404, obteve ${res.status}`,
+			);
+			assert(json?.success === false, 'GET lead detail 404 envelope');
+			console.log('OK GET /leads/:id/detail (404 esperado)');
+		} else {
+			assert(res.status === 401, 'GET /leads/:id/detail sem auth → 401');
+		}
+	}
 
 	// UUID inválido → 400 (rota protegida: com Bearer inválido ainda 401 primeiro)
 	{
@@ -394,13 +427,136 @@ async function main() {
 		if (adminAuthHeader) {
 			assert(res.status === 200, `GET leads/all esperado 200`);
 			assert(Array.isArray(json?.data?.items), 'leads/all data.items array');
+			sampleLeadIdFromList =
+				typeof json.data.items[0]?.id === 'string'
+					? json.data.items[0].id
+					: null;
 			console.log('OK GET /leads/all');
+		}
+	}
+
+	if (adminAuthHeader) {
+		const { res, json } = await req('GET', '/dashboards/analytic?mode=month', {
+			headers: {
+				...adminAuthHeader,
+				...(adminCookie ? { Cookie: adminCookie } : {}),
+			},
+		});
+		assert(
+			res.status === 200,
+			`GET /dashboards/analytic?mode=month esperado 200, obteve ${res.status}`,
+		);
+		assert(json?.success === true, 'Dashboard analítico envelope success');
+		assert(
+			json?.data?.filter?.mode === 'month',
+			'Dashboard analítico preserva mode=month',
+		);
+		assert(
+			typeof json?.data?.summary?.totalLeads === 'number',
+			'Dashboard analítico retorna summary.totalLeads',
+		);
+		assert(
+			json?.data?.summary?.convertedLeads +
+				json?.data?.summary?.notConvertedLeads ===
+				json?.data?.summary?.totalLeads,
+			'Dashboard analítico mantém consistência entre total, convertidos e não convertidos',
+		);
+		assert(
+			Array.isArray(json?.data?.byAttendant),
+			'Dashboard analítico retorna byAttendant',
+		);
+		assert(
+			Array.isArray(json?.data?.importanceDistribution),
+			'Dashboard analítico retorna importanceDistribution',
+		);
+		console.log('OK GET /dashboards/analytic?mode=month (contrato básico)');
+	}
+
+	if (adminAuthHeader) {
+		const { res, json } = await req(
+			'GET',
+			'/dashboards/analytic?mode=custom&startDate=2026-04-10&endDate=2026-04-01',
+			{
+				headers: {
+					...adminAuthHeader,
+					...(adminCookie ? { Cookie: adminCookie } : {}),
+				},
+			},
+		);
+		assert(
+			res.status === 400,
+			`GET /dashboards/analytic custom inválido esperado 400, obteve ${res.status}`,
+		);
+		assert(json?.success === false, 'Dashboard analítico erro envelope');
+		assert(
+			json?.errors?.[0]?.code === 'dashboard.time_range.invalid_bounds',
+			`Dashboard analítico custom inválido esperado dashboard.time_range.invalid_bounds, obteve ${json?.errors?.[0]?.code}`,
+		);
+		console.log('OK GET /dashboards/analytic custom inválido (400 esperado)');
+	}
+
+	if (adminAuthHeader) {
+		const { res, json } = await req(
+			'GET',
+			'/dashboards/analytic?mode=custom&startDate=2024-01-01&endDate=2025-12-31',
+			{
+				headers: {
+					...adminAuthHeader,
+					...(adminCookie ? { Cookie: adminCookie } : {}),
+				},
+			},
+		);
+
+		assert(
+			res.status === 200,
+			`GET /dashboards/analytic custom amplo para admin esperado 200, obteve ${res.status}`,
+		);
+
+		assert(json?.success === true, 'Dashboard analítico custom amplo envelope');
+
+		assert(
+			json?.data?.filter?.scope === 'full',
+			'Dashboard analítico admin mantém escopo full',
+		);
+
+		console.log('OK GET /dashboards/analytic custom amplo (admin)');
+
+		// 👉 ESTE BLOCO ESTAVA DENTRO MAS MAL FECHADO
+		if (sampleLeadIdFromList) {
+			const { res, json } = await req(
+				'GET',
+				`/leads/${sampleLeadIdFromList}/detail`,
+				{
+					headers: adminAuthHeader,
+				},
+			);
+
+			assert(
+				res.status === 200,
+				`GET /leads/:id/detail autenticado esperado 200, obteve ${res.status}`,
+			);
+
+			assert(json?.success === true, 'GET lead detail envelope');
+
+			assert(
+				json?.data?.lead?.id === sampleLeadIdFromList,
+				'lead detail data.lead.id',
+			);
+
+			assert(Array.isArray(json?.data?.timeline), 'lead detail timeline array');
+
+			assert(
+				typeof json?.data?.permissions?.canManageDeals === 'boolean',
+				'lead detail permissions.canManageDeals boolean',
+			);
+
+			console.log('OK GET /leads/:id/detail (200 autenticado)');
 		}
 	}
 
 	if (!adminAuthHeader) {
 		console.log(
-			'\nNota: defina SMOKE_ADMIN_EMAIL e SMOKE_ADMIN_PASSWORD (admin no DB) para exercitar CRUD/listagens autenticadas.',
+			'\nNota: defina SMOKE_ADMIN_EMAIL e SMOKE_ADMIN_PASSWORD (admin no DB) para exercitar CRUD/listagens autenticadas e o dashboard analítico.',
 		);
 	}
 
@@ -409,6 +565,7 @@ async function main() {
 
 main().catch((e) => {
 	const cause = e?.cause;
+
 	if (cause?.code === 'ECONNREFUSED') {
 		console.error(
 			'Não foi possível conectar à API. Suba o back (com Postgres e DATABASE_URL) e tente de novo.',
@@ -417,5 +574,6 @@ main().catch((e) => {
 	} else {
 		console.error(e);
 	}
+
 	process.exit(1);
 });

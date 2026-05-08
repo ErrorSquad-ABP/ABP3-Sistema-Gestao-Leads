@@ -1,12 +1,7 @@
 import { useVehicleByIdQuery } from '@/features/vehicles/hooks/vehicles.queries';
-import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
+import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 
 import { isLikelyUuid, shortenInternalId } from '../lib/deal-labels';
-
-function formatVehicleLine(v: Vehicle) {
-	const plate = v.plate ? v.plate.trim() : '';
-	return `${v.brand} ${v.model} ${v.modelYear} · ${plate || 'Sem placa'}`;
-}
 
 /**
  * Garante abertura de `GET /api/vehicles/:id` quando a listagem de negociação
@@ -52,7 +47,7 @@ function useResolvedVehicleLabel(
 
 	if (query.data) {
 		return {
-			displayLabel: formatVehicleLine(query.data),
+			displayLabel: formatVehicleDealSelectLabel(query.data),
 			isPending: false,
 		} as const;
 	}

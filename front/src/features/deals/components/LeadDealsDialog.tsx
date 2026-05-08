@@ -2,6 +2,7 @@
 
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
-import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
+import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 import { ApiError } from '@/lib/http/api-error';
 import { useDealsByLeadQuery } from '../hooks/deals.queries';
 import {
@@ -23,11 +24,13 @@ import {
 	useDeleteDealMutation,
 	useUpdateDealMutation,
 } from '../hooks/deals.mutations';
+import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
 import {
 	centsDigitsToApiDecimalString,
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealCreateFormInput,
@@ -45,11 +48,6 @@ type LeadDealsDialogProps = {
 	onClose: () => void;
 	open: boolean;
 };
-
-function formatVehicleOptionLabel(vehicle: Vehicle) {
-	const plate = vehicle.plate ? vehicle.plate.trim() : '';
-	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
-}
 
 function LeadDealsDialog({
 	leadId,
@@ -102,10 +100,12 @@ function LeadDealsDialog({
 		if (!open || !listQuery.isSuccess || canMutateLead) {
 			return;
 		}
-		setCreateOpen(false);
-		setEditOpen(false);
-		setDeleteOpen(false);
-		setDialogError(null);
+		queueMicrotask(() => {
+			setCreateOpen(false);
+			setEditOpen(false);
+			setDeleteOpen(false);
+			setDialogError(null);
+		});
 	}, [open, listQuery.isSuccess, canMutateLead]);
 
 	function resetCreateForm() {
@@ -141,7 +141,12 @@ function LeadDealsDialog({
 	}
 
 	function openEdit(deal: Deal) {
-		if (!deal.canMutate) {
+		const blockReason = getDealFormEditBlockReason(deal);
+		if (blockReason) {
+			toast.error(blockReason, {
+				id: 'deal-edit-blocked',
+				...dealDarkSidebarToast,
+			});
 			return;
 		}
 		setTargetDeal(deal);
@@ -197,7 +202,7 @@ function LeadDealsDialog({
 								<DialogTitle>Negociações do lead</DialogTitle>
 								<DialogDescription className="max-w-2xl">
 									{listQuery.isSuccess && !canMutateLead
-										? 'Acompanhe as negociações deste lead. O seu perfil só tem permissão de leitura neste contexto.'
+										? 'Acompanhe as negociações deste lead. Seu perfil permite apenas consulta neste atendimento.'
 										: 'Crie e acompanhe negociações relacionadas ao lead selecionado.'}
 								</DialogDescription>
 							</div>
@@ -211,10 +216,10 @@ function LeadDealsDialog({
 								}}
 								title={(() => {
 									if (listQuery.isPending) {
-										return 'A carregar negociações e a verificar permissões…';
+										return 'Carregando negociações e verificando permissões...';
 									}
 									if (listQuery.isError) {
-										return 'Não foi possível carregar as negociações. Corrija o erro antes de criar.';
+										return 'Não foi possível carregar as negociações. Tente novamente antes de criar.';
 									}
 									if (listQuery.isSuccess && !canMutateLead) {
 										return 'Sem permissão para criar ou alterar negociações deste lead.';
@@ -235,9 +240,19 @@ function LeadDealsDialog({
 								className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 								role="alert"
 							>
-								{listQuery.error instanceof ApiError
-									? listQuery.error.message
-									: 'Não foi possível carregar as negociações do lead.'}
+								<p>
+									{listQuery.error instanceof ApiError
+										? listQuery.error.message
+										: 'Não foi possível carregar as negociações do lead.'}
+								</p>
+								<Button
+									className="mt-3 rounded-md shadow-none"
+									onClick={() => void listQuery.refetch()}
+									type="button"
+									variant="outline"
+								>
+									Tentar novamente
+								</Button>
 							</div>
 						) : null}
 
@@ -290,8 +305,8 @@ function LeadDealsDialog({
 					<DialogHeader>
 						<DialogTitle>Nova negociação</DialogTitle>
 						<DialogDescription>
-							Informe veículo, título e valor. O backend valida disponibilidade
-							e escopo.
+							Informe veículo, título e valor para registrar uma nova
+							oportunidade comercial deste lead.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6 py-5">
@@ -318,7 +333,7 @@ function LeadDealsDialog({
 								</option>
 								{availableVehicles.map((vehicle) => (
 									<option key={vehicle.id} value={vehicle.id}>
-										{formatVehicleOptionLabel(vehicle)}
+										{formatVehicleDealSelectLabel(vehicle)}
 									</option>
 								))}
 							</select>
@@ -418,7 +433,7 @@ function LeadDealsDialog({
 				confirmLabel="Confirmar exclusão"
 				description={
 					targetDeal
-						? `A negociação «${targetDeal.title}» será removida permanentemente.`
+						? `A negociação "${targetDeal.title}" será removida permanentemente.`
 						: 'Confirme a exclusão da negociação selecionada.'
 				}
 				error={dialogError}

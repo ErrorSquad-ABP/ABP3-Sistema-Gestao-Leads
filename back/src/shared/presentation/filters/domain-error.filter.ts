@@ -35,6 +35,7 @@ import { TeamNotFoundError } from '../../../modules/teams/domain/errors/team-not
 import { UserEmailAlreadyExistsError } from '../../../modules/users/domain/errors/user-email-already-exists.error.js';
 import { UserInvalidAccessGroupError } from '../../../modules/users/domain/errors/user-invalid-access-group.error.js';
 import { UserNotFoundError } from '../../../modules/users/domain/errors/user-not-found.error.js';
+import { VehicleDeleteBlockedError } from '../../../modules/vehicles/domain/errors/vehicle-delete-blocked.error.js';
 import { VehicleInactiveError } from '../../../modules/vehicles/domain/errors/vehicle-inactive.error.js';
 import { VehicleNotFoundError } from '../../../modules/vehicles/domain/errors/vehicle-not-found.error.js';
 import { DomainValidationError } from '../../domain/errors/domain-validation.error.js';
@@ -295,6 +296,18 @@ class DomainErrorFilter implements ExceptionFilter {
 		}
 		if (exception instanceof VehicleNotFoundError) {
 			return this.envelopeForCodedError(exception, HttpStatus.NOT_FOUND);
+		}
+		if (exception instanceof VehicleDeleteBlockedError) {
+			return {
+				status: HttpStatus.CONFLICT,
+				body: this.toErrorEnvelope(exception.message, [
+					{
+						code: exception.code,
+						message: exception.message,
+						details: { deals: exception.deals },
+					},
+				]),
+			};
 		}
 		if (exception instanceof VehicleInactiveError) {
 			return this.envelopeForCodedError(exception, HttpStatus.CONFLICT);

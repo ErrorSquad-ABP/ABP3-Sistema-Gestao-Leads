@@ -19,6 +19,9 @@ function useCreateDealForLeadMutation(leadId: string) {
 				queryKey: queryKeys.deals.listRoot,
 			});
 			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.pipelineRoot,
+			});
+			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.byLead(leadId),
 			});
 			await queryClient.invalidateQueries({
@@ -35,6 +38,9 @@ function useCreateDealForLeadMutation(leadId: string) {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(leadId),
 			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detailHub(leadId),
+			});
 		},
 	});
 }
@@ -48,6 +54,9 @@ function useUpdateDealMutation() {
 		onSuccess: async (data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.pipelineRoot,
 			});
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.detail(variables.dealId),
@@ -77,6 +86,9 @@ function useUpdateDealMutation() {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(data.leadId),
 			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detailHub(data.leadId),
+			});
 		},
 	});
 }
@@ -92,6 +104,9 @@ function useDeleteDealMutation() {
 				queryKey: queryKeys.deals.listRoot,
 			});
 			await queryClient.invalidateQueries({
+				queryKey: queryKeys.deals.pipelineRoot,
+			});
+			await queryClient.invalidateQueries({
 				queryKey: queryKeys.deals.byLead(variables.leadId),
 			});
 			await queryClient.invalidateQueries({
@@ -102,6 +117,9 @@ function useDeleteDealMutation() {
 			});
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(variables.leadId),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detailHub(variables.leadId),
 			});
 		},
 	});

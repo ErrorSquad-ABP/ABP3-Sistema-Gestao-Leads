@@ -17,6 +17,7 @@ const queryKeys = {
 		listRoot: ['leads', 'list'] as const,
 		catalogRoot: ['leads', 'catalog'] as const,
 		detail: (leadId: string) => ['leads', 'detail', leadId] as const,
+		detailHub: (leadId: string) => ['leads', 'detail-hub', leadId] as const,
 		list: (
 			params:
 				| { scope: 'owner'; id: string; page: number }
@@ -38,17 +39,42 @@ const queryKeys = {
 	},
 	vehicles: {
 		listRoot: ['vehicles', 'list'] as const,
-		list: (params: { storeId?: string; status?: string }) =>
+		catalogRoot: ['vehicles', 'catalog'] as const,
+		list: (params: {
+			storeId?: string;
+			status?: string;
+			withoutOpenDeal?: boolean;
+		}) =>
 			[
 				'vehicles',
 				'list',
 				params.storeId ?? 'all-stores',
 				params.status ?? 'all-statuses',
+				params.withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+			] as const,
+		catalog: (params: {
+			storeId?: string;
+			status?: string;
+			search?: string;
+			sort?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'vehicles',
+				'catalog',
+				params.storeId ?? 'all-stores',
+				params.status ?? 'all-statuses',
+				params.search?.trim() ?? '',
+				params.sort ?? 'recent',
+				params.page,
+				params.limit,
 			] as const,
 		detail: (vehicleId: string) => ['vehicles', 'detail', vehicleId] as const,
 	},
 	deals: {
 		listRoot: ['deals', 'list'] as const,
+		pipelineRoot: ['deals', 'pipeline'] as const,
 		/**
 		 * Lista de negociações por lead (`useDealsByLeadQuery`). Após mutação,
 		 * invalidar com `queryKeys.deals.byLead(leadId)`.
@@ -71,6 +97,65 @@ const queryKeys = {
 				params.status ?? 'all-statuses',
 				params.page,
 				params.limit,
+			] as const,
+		pipeline: (params: {
+			status?: string;
+			importance?: string;
+			search?: string;
+			pageSize: number;
+			valueSort?: string;
+		}) =>
+			[
+				'deals',
+				'pipeline',
+				params.status ?? 'all-statuses',
+				params.importance ?? 'all-importances',
+				params.search?.trim() ?? '',
+				params.pageSize,
+				params.valueSort ?? 'recent',
+			] as const,
+		pipelineStage: (params: {
+			stage: string;
+			status?: string;
+			importance?: string;
+			search?: string;
+			page: number;
+			pageSize: number;
+			valueSort?: string;
+		}) =>
+			[
+				'deals',
+				'pipeline-stage',
+				params.stage,
+				params.status ?? 'all-statuses',
+				params.importance ?? 'all-importances',
+				params.search?.trim() ?? '',
+				params.page,
+				params.pageSize,
+				params.valueSort ?? 'recent',
+			] as const,
+	},
+	dashboards: {
+		operational: (params: { startDate?: string; endDate?: string } = {}) =>
+			[
+				'dashboards',
+				'operational',
+				params.startDate ?? 'default',
+				params.endDate ?? 'default',
+			] as const,
+		analytic: (params: {
+			mode: string;
+			referenceDate?: string;
+			startDate?: string;
+			endDate?: string;
+		}) =>
+			[
+				'dashboards',
+				'analytic',
+				params.mode,
+				params.referenceDate ?? 'no-reference-date',
+				params.startDate ?? 'no-start-date',
+				params.endDate ?? 'no-end-date',
 			] as const,
 	},
 };

@@ -35,6 +35,11 @@ const env = {
 	appUrl: process.env.APP_URL ?? 'http://localhost:3001',
 	databaseUrl: process.env.DATABASE_URL ?? '',
 	hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+	carImagesApiKey:
+		process.env.CAR_IMAGES_API_KEY?.trim() ??
+		process.env.NEXT_PUBLIC_CAR_IMAGES_API_KEY?.trim() ??
+		'',
+	carImagesApiSecret: process.env.CAR_IMAGES_API_SECRET?.trim() ?? '',
 	/** Segredo para validar JWT Bearer; fallback apenas para desenvolvimento local. */
 	jwtSecret: process.env.JWT_SECRET ?? '',
 	hasJwtSecret: Boolean(process.env.JWT_SECRET),

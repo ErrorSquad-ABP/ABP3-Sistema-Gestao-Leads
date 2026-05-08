@@ -75,4 +75,44 @@ class LeadMapper {
 	}
 }
 
-export { LeadMapper };
+function mapPrismaLeadSourceToDomain(source: PrismaLeadSource): string {
+	switch (source) {
+		case 'FACEBOOK':
+			return 'facebook';
+		case 'INDICATION':
+			return 'indication';
+		case 'INSTAGRAM':
+			return 'instagram';
+		case 'MERCADO_LIVRE':
+			return 'mercado-livre';
+		case 'PHONE':
+			return 'phone-call';
+		case 'WALK_IN':
+			return 'store-visit';
+		case 'WEBSITE':
+			return 'digital-form';
+		case 'WHATSAPP':
+			return 'whatsapp';
+		case 'OTHER':
+			return 'other';
+	}
+}
+
+function mapPrismaLeadStatusToDomain(status: PrismaLeadStatus): string {
+	switch (status) {
+		case 'CONTACTED':
+			return 'CONTACTED';
+		case 'CONVERTED':
+			return 'CONVERTED';
+		case 'LOST':
+			return 'DISQUALIFIED';
+		case 'NEGOTIATING':
+			return 'QUALIFIED';
+		case 'QUALIFIED':
+			return 'QUALIFIED';
+		case 'NEW':
+			return 'NEW';
+	}
+}
+
+export { LeadMapper, mapPrismaLeadSourceToDomain, mapPrismaLeadStatusToDomain };

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import type { LeadListFilters } from '../../domain/repositories/lead.repository.js';
 import type { LeadListPagination } from '../../domain/types/lead-list-page.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
@@ -19,10 +20,11 @@ class ListTeamLeadsUseCase {
 		actor: LeadActor,
 		teamId: string,
 		pagination: LeadListPagination,
+		filters?: LeadListFilters,
 	) {
 		await this.leadAccessPolicy.assertCanListTeam(actor, teamId);
 		const leads = this.leadRepositoryFactory.create();
-		return leads.listByTeam(Uuid.parse(teamId), pagination);
+		return leads.listByTeam(Uuid.parse(teamId), pagination, filters);
 	}
 }
 

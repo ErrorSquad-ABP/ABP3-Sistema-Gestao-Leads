@@ -36,6 +36,7 @@ import {
 import { StoreResponseDto } from '../../../stores/application/dto/store-response.dto.js';
 import { StorePresenter } from '../../../stores/presentation/presenters/store.presenter.js';
 import { LeadCatalogOwnerDto } from '../../application/dto/lead-catalog-owner.dto.js';
+import { LeadDetailResponseDto } from '../../application/dto/lead-detail-response.dto.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
 import type { LeadActor } from '../../application/types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -46,6 +47,8 @@ import { CreateLeadUseCase } from '../../application/use-cases/create-lead.use-c
 import { DeleteLeadUseCase } from '../../application/use-cases/delete-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { FindLeadUseCase } from '../../application/use-cases/find-lead.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { GetLeadDetailUseCase } from '../../application/use-cases/get-lead-detail.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListLeadCatalogOwnersUseCase } from '../../application/use-cases/list-lead-catalog-owners.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -62,6 +65,7 @@ import { ListTeamLeadsUseCase } from '../../application/use-cases/list-team-lead
 import { ReassignLeadUseCase } from '../../application/use-cases/reassign-lead.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { UpdateLeadUseCase } from '../../application/use-cases/update-lead.use-case.js';
+import { LeadDetailPresenter } from '../presenters/lead-detail.presenter.js';
 import { LeadPresenter } from '../presenters/lead.presenter.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateLeadValidator } from '../validators/create-lead.validator.js';
@@ -94,6 +98,12 @@ function toLeadActor(user: JwtUser): LeadActor {
 	};
 }
 
+function toLeadListFilters(query: ListLeadsQueryValidator) {
+	return {
+		withoutOpenDeal: query.withoutOpenDeal === 'true',
+	};
+}
+
 @ApiBearerAuth()
 @ApiTags('leads')
 @Controller('leads')
@@ -102,6 +112,7 @@ class LeadController {
 		private readonly createLeadUseCase: CreateLeadUseCase,
 		private readonly updateLeadUseCase: UpdateLeadUseCase,
 		private readonly findLeadUseCase: FindLeadUseCase,
+		private readonly getLeadDetailUseCase: GetLeadDetailUseCase,
 		private readonly listLeadCatalogStoresUseCase: ListLeadCatalogStoresUseCase,
 		private readonly listLeadCatalogOwnersUseCase: ListLeadCatalogOwnersUseCase,
 		private readonly listOwnLeadsUseCase: ListOwnLeadsUseCase,
@@ -149,6 +160,7 @@ class LeadController {
 			toLeadActor(user),
 			ownerUserId,
 			{ page: query.page, limit: query.limit },
+			toLeadListFilters(query),
 		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),
@@ -176,10 +188,14 @@ class LeadController {
 		@CurrentUser() user: JwtUser,
 		@Query() query: ListLeadsQueryValidator,
 	) {
-		const leadPage = await this.listAllLeadsUseCase.execute(toLeadActor(user), {
-			page: query.page,
-			limit: query.limit,
-		});
+		const leadPage = await this.listAllLeadsUseCase.execute(
+			toLeadActor(user),
+			{
+				page: query.page,
+				limit: query.limit,
+			},
+			toLeadListFilters(query),
+		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),
 			page: leadPage.page,
@@ -242,6 +258,7 @@ class LeadController {
 			toLeadActor(user),
 			teamId,
 			{ page: query.page, limit: query.limit },
+			toLeadListFilters(query),
 		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),
@@ -275,6 +292,7 @@ class LeadController {
 				page: query.page,
 				limit: query.limit,
 			},
+			toLeadListFilters(query),
 		);
 		return {
 			items: LeadPresenter.toResponseList([...leadPage.items]),
@@ -283,6 +301,27 @@ class LeadController {
 			total: leadPage.total,
 			totalPages: leadPage.totalPages,
 		};
+	}
+
+	@Get(':id/detail')
+	@ApiOperation({
+		summary: 'Buscar detalhe operacional do lead',
+		description:
+			'Retorna o lead enriquecido com cliente, loja, responsável, negociações, permissões e timeline operacional.',
+	})
+	@ApiParam({ name: 'id', format: 'uuid' })
+	@ApiOkResponseEnvelope(LeadDetailResponseDto)
+	@ApiBadRequestResponse({
+		description: 'UUID inválido no parâmetro de rota.',
+	})
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async findDetail(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	) {
+		const view = await this.getLeadDetailUseCase.execute(toLeadActor(user), id);
+		return LeadDetailPresenter.toResponse(view);
 	}
 
 	@Get(':id')

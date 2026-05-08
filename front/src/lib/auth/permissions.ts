@@ -190,6 +190,18 @@ function getNavigationItemsForUser(user: AuthenticatedUser) {
 }
 
 function resolveDefaultAppRoute(user: AuthenticatedUser) {
+	if (user.role === 'MANAGER' || user.role === 'GENERAL_MANAGER') {
+		return appRoutes.app.dashboard.operational;
+	}
+
+	if (user.role === 'ADMINISTRATOR') {
+		return appRoutes.app.dashboard.operational;
+	}
+
+	if (user.role === 'ATTENDANT') {
+		return appRoutes.app.leads;
+	}
+
 	const firstAllowed = getNavigationItemsForUser(user)[0];
 	return firstAllowed?.href ?? appRoutes.system.forbidden;
 }

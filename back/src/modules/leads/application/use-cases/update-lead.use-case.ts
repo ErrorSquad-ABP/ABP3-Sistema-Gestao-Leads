@@ -18,8 +18,58 @@ import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { LeadEventRepositoryFactory } from '../../infrastructure/persistence/factories/lead-event-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 import type { UpdateLeadDto } from '../dto/update-lead.dto.js';
+
+type LeadUpdateChange = {
+	readonly field: string;
+	readonly fromValue: string | null;
+	readonly toValue: string | null;
+};
+
+function collectLeadUpdateChanges(
+	existing: {
+		readonly customerId: { readonly value: string };
+		readonly storeId: { readonly value: string };
+		readonly ownerUserId: { readonly value: string } | null;
+		readonly source: { readonly value: string };
+		readonly status: string;
+		readonly vehicleInterestText: string | null;
+	},
+	dto: UpdateLeadDto,
+	nextStatus: string,
+): LeadUpdateChange[] {
+	const changes: LeadUpdateChange[] = [];
+	const pushIfChanged = (
+		field: string,
+		fromValue: string | null,
+		toValue: string | null,
+	) => {
+		if (fromValue === toValue) {
+			return;
+		}
+		changes.push({ field, fromValue, toValue });
+	};
+	pushIfChanged('customerId', existing.customerId.value, dto.customerId);
+	pushIfChanged('storeId', existing.storeId.value, dto.storeId);
+	pushIfChanged(
+		'ownerUserId',
+		existing.ownerUserId?.value ?? null,
+		dto.ownerUserId,
+	);
+	pushIfChanged('source', existing.source.value, dto.source);
+	pushIfChanged('status', existing.status, nextStatus);
+	if (dto.vehicleInterestText !== undefined) {
+		pushIfChanged(
+			'vehicleInterestText',
+			existing.vehicleInterestText,
+			dto.vehicleInterestText ?? null,
+		);
+	}
+	return changes;
+}
 
 @Injectable()
 class UpdateLeadUseCase {
@@ -28,6 +78,7 @@ class UpdateLeadUseCase {
 
 	constructor(
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
+		private readonly leadEventRepositoryFactory: LeadEventRepositoryFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
@@ -42,6 +93,8 @@ class UpdateLeadUseCase {
 				this.customerRepositoryFactory.create(transactionContext);
 			const stores = this.storeRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
+			const leadEvents =
+				this.leadEventRepositoryFactory.create(transactionContext);
 
 			const existing = await leads.findById(Uuid.parse(leadId));
 			if (!existing) {
@@ -70,10 +123,12 @@ class UpdateLeadUseCase {
 				ownerUserId: dto.ownerUserId,
 			});
 
+			const nextStatus = parseLeadStatus(dto.status);
+			const changes = collectLeadUpdateChanges(existing, dto, nextStatus);
 			existing.changeCustomer(Uuid.parse(dto.customerId));
 			existing.changeStore(Uuid.parse(dto.storeId));
 			existing.changeSource(LeadSource.create(dto.source));
-			existing.changeStatus(parseLeadStatus(dto.status));
+			existing.changeStatus(nextStatus);
 			existing.reassign(
 				dto.ownerUserId === null ? null : Uuid.parse(dto.ownerUserId),
 			);
@@ -81,7 +136,18 @@ class UpdateLeadUseCase {
 				existing.changeVehicleInterestText(dto.vehicleInterestText ?? null);
 			}
 
-			return leads.update(existing);
+			const updated = await leads.update(existing);
+			if (changes.length > 0) {
+				await leadEvents.append({
+					leadId: updated.id,
+					actorUserId: Uuid.parse(actor.userId),
+					type: 'UPDATED',
+					title: 'Lead atualizado',
+					description: 'Dados operacionais do lead foram atualizados.',
+					payload: { changes },
+				});
+			}
+			return updated;
 		});
 	}
 }

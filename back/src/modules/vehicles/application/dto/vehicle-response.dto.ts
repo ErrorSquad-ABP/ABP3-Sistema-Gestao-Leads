@@ -49,6 +49,33 @@ class VehicleResponseDto {
 	@ApiPropertyOptional({ nullable: true })
 	vin!: string | null;
 
+	@ApiPropertyOptional({ nullable: true })
+	imageUrl!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	imageAlt!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	imageProvider!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	imageProviderPhotoId!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	imagePhotographerName!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	imagePhotographerUrl!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	imageSourceUrl!: string | null;
+
+	@ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
+	imageResolvedAt!: Date | null;
+
+	@ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
+	imageExpiresAt!: Date | null;
+
 	@ApiProperty({ type: String, format: 'date-time' })
 	createdAt!: Date;
 

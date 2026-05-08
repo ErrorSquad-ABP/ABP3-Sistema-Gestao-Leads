@@ -24,7 +24,8 @@ describe('ListDealsUseCase', () => {
 					readTeamIds: new Set(),
 					readStoreIds: new Set(['s1']),
 				}),
-				canActorMutateLeadOnSnapshot: async () => true,
+				batchCanMutateLeadSnapshots: async (_actor, snapshots) =>
+					snapshots.map(() => true),
 			} as never,
 		);
 
@@ -56,7 +57,8 @@ describe('ListDealsUseCase', () => {
 					readStoreIds: new Set(['s1', 's2']),
 					mutateStoreIds: new Set(['s1']),
 				}),
-				canActorMutateLeadOnSnapshot: async () => true,
+				batchCanMutateLeadSnapshots: async (_actor, snapshots) =>
+					snapshots.map(() => true),
 			} as never,
 		);
 
@@ -94,7 +96,8 @@ describe('ListDealsUseCase', () => {
 					readStoreIds: new Set(),
 					mutateStoreIds: new Set(),
 				}),
-				canActorMutateLeadOnSnapshot: async () => true,
+				batchCanMutateLeadSnapshots: async (_actor, snapshots) =>
+					snapshots.map(() => true),
 			} as never,
 		);
 
@@ -128,7 +131,8 @@ describe('ListDealsUseCase', () => {
 					readTeamIds: new Set(['t1']),
 					readStoreIds: new Set(['s1']),
 				}),
-				canActorMutateLeadOnSnapshot: async () => true,
+				batchCanMutateLeadSnapshots: async (_actor, snapshots) =>
+					snapshots.map(() => true),
 			} as never,
 		);
 
@@ -156,7 +160,8 @@ describe('ListDealsUseCase', () => {
 			} as never,
 			{
 				resolveCatalogScope: async () => ({ kind: 'full' }),
-				canActorMutateLeadOnSnapshot: async () => true,
+				batchCanMutateLeadSnapshots: async (_actor, snapshots) =>
+					snapshots.map(() => true),
 			} as never,
 		);
 

@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
 				hostname: 'images.shadcnspace.com',
 				pathname: '/**',
 			},
+			{
+				protocol: 'https',
+				hostname: 'carimagesapi.com',
+				pathname: '/**',
+			},
 		],
 	},
 	async rewrites() {

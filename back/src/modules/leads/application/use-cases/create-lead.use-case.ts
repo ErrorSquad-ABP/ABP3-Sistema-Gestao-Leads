@@ -17,6 +17,8 @@ import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadFactory } from '../../domain/factories/lead.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { LeadEventRepositoryFactory } from '../../infrastructure/persistence/factories/lead-event-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 import type { CreateLeadDto } from '../dto/create-lead.dto.js';
 
@@ -28,6 +30,7 @@ class CreateLeadUseCase {
 	constructor(
 		private readonly leadFactory: LeadFactory,
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
+		private readonly leadEventRepositoryFactory: LeadEventRepositoryFactory,
 		private readonly userRepositoryFactory: UserRepositoryFactory,
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
@@ -42,6 +45,8 @@ class CreateLeadUseCase {
 				this.customerRepositoryFactory.create(transactionContext);
 			const stores = this.storeRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
+			const leadEvents =
+				this.leadEventRepositoryFactory.create(transactionContext);
 
 			const customer = await customers.findById(Uuid.parse(dto.customerId));
 			if (!customer) {
@@ -65,7 +70,22 @@ class CreateLeadUseCase {
 			});
 
 			const lead = this.leadFactory.create(dto);
-			return leads.create(lead);
+			const created = await leads.create(lead);
+			await leadEvents.append({
+				leadId: created.id,
+				actorUserId: Uuid.parse(actor.userId),
+				type: 'CREATED',
+				title: 'Lead criado',
+				description: 'Lead registrado no fluxo operacional.',
+				payload: {
+					customerId: dto.customerId,
+					storeId: dto.storeId,
+					ownerUserId: dto.ownerUserId,
+					source: dto.source,
+					vehicleInterestText: dto.vehicleInterestText ?? null,
+				},
+			});
+			return created;
 		});
 	}
 }

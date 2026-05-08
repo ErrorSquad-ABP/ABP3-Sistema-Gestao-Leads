@@ -8,6 +8,7 @@ import {
 	fetchLeadsAll,
 	fetchLeadsByOwner,
 	fetchLeadsManager,
+	findLeadDetailHub,
 	findLeadById,
 } from '../api/leads.service';
 import { type LeadsListScope, resolveLeadsListScope } from '../lib/leads-scope';
@@ -21,6 +22,18 @@ function useLeadDetailQuery(
 		queryKey: queryKeys.leads.detail(leadId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			findLeadById(leadId, signal),
+		enabled: options?.enabled,
+	});
+}
+
+function useLeadDetailHubQuery(
+	leadId: string,
+	options?: { readonly enabled?: boolean },
+) {
+	return useQuery({
+		queryKey: queryKeys.leads.detailHub(leadId),
+		queryFn: ({ signal }: { signal: AbortSignal }) =>
+			findLeadDetailHub(leadId, signal),
 		enabled: options?.enabled,
 	});
 }
@@ -43,6 +56,10 @@ function buildLeadsListQueryKey(user: AuthenticatedUser, page: number) {
 	return queryKeys.leads.list({ scope: 'owner', id: s.id, page });
 }
 
+type UseLeadsListQueryOptions = {
+	withoutOpenDeal?: boolean;
+};
+
 type UseLeadsListQueryResult = {
 	scope: ReturnType<typeof resolveLeadsListScope> | null;
 	data: LeadListItem[] | undefined;
@@ -60,29 +77,40 @@ type UseLeadsListQueryResult = {
 function useLeadsListQuery(
 	user: AuthenticatedUser,
 	page: number,
+	options?: UseLeadsListQueryOptions,
 ): UseLeadsListQueryResult {
 	const scope = useMemo(() => resolveLeadsListScope(user), [user]);
+	const withoutOpenDeal = options?.withoutOpenDeal === true;
 
 	const enabled = scope !== null && scope.kind !== 'none';
 
 	const listQuery = useQuery({
 		queryKey:
 			scope?.kind === 'owner'
-				? queryKeys.leads.list({ scope: 'owner', id: scope.id, page })
+				? [
+						...queryKeys.leads.list({ scope: 'owner', id: scope.id, page }),
+						withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+					]
 				: scope?.kind === 'all'
-					? queryKeys.leads.list({ scope: 'all', page })
+					? [
+							...queryKeys.leads.list({ scope: 'all', page }),
+							withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+						]
 					: scope?.kind === 'manager'
-						? queryKeys.leads.list({ scope: 'manager', page })
+						? [
+								...queryKeys.leads.list({ scope: 'manager', page }),
+								withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+							]
 						: queryKeys.leads.inactive(user.id),
 		queryFn: ({ signal }: { signal: AbortSignal }) => {
 			if (scope?.kind === 'owner') {
-				return fetchLeadsByOwner(scope.id, page, signal);
+				return fetchLeadsByOwner(scope.id, page, signal, { withoutOpenDeal });
 			}
 			if (scope?.kind === 'all') {
-				return fetchLeadsAll(page, signal);
+				return fetchLeadsAll(page, signal, { withoutOpenDeal });
 			}
 			if (scope?.kind === 'manager') {
-				return fetchLeadsManager(page, signal);
+				return fetchLeadsManager(page, signal, { withoutOpenDeal });
 			}
 			return Promise.resolve({
 				items: [],
@@ -116,6 +144,7 @@ function useLeadsListQuery(
 
 export {
 	buildLeadsListQueryKey,
+	useLeadDetailHubQuery,
 	useLeadDetailQuery,
 	isLeadsListQueryEnabled,
 	resolveLeadsListScope,

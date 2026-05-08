@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsBooleanString, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
@@ -32,6 +32,14 @@ class ListLeadsQueryValidator {
 	@Min(1)
 	@Max(MAX_LIMIT)
 	limit: number = DEFAULT_LIMIT;
+
+	@ApiPropertyOptional({
+		description: 'Quando true, retorna apenas leads sem negociação aberta.',
+		example: 'true',
+	})
+	@IsOptional()
+	@IsBooleanString()
+	withoutOpenDeal?: string;
 }
 
 export { ListLeadsQueryValidator };

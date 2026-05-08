@@ -304,11 +304,25 @@ function parseDate(value: string) {
 	return new Date(normalized.replace(' ', 'T'));
 }
 
+function shiftDate(date: Date | null, offsetMs: number) {
+	return date ? new Date(date.getTime() + offsetMs) : null;
+}
+
 function buildStoreName(teamName: string) {
 	const normalized = teamName.trim();
 	return normalized.startsWith('Equipe ')
 		? `Loja ${normalized.slice('Equipe '.length)}`
 		: `Loja ${normalized}`;
+}
+
+function buildManagerEmail(teamName: string) {
+	const slug = normalizeLabel(teamName)
+		.toLowerCase()
+		.replace(/^equipe\s+/, '')
+		.replace(/[^a-z0-9]+/g, '.')
+		.replace(/^\.+|\.+$/g, '');
+
+	return `gerente.${slug || 'operacional'}@crm.com`;
 }
 
 function mapLeadSource(source: string) {
@@ -350,19 +364,48 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const csvContent = await readFile(CSV_FILE_PATH, 'utf-8');
 	const rows = parseCsv(csvContent);
 	const passwordHash = await hashPassword(DEFAULT_PASSWORD);
-
-	const stores = Array.from(
+	const teamNames = Array.from(
 		new Set(rows.map((row) => row.team_name.trim())),
-	).map((teamName) => ({
+	);
+	const latestLeadDate = rows
+		.map((row) => parseDate(row.lead_created_at))
+		.filter((date): date is Date => date !== null)
+		.reduce<Date | null>(
+			(latest, date) =>
+				latest === null || date.getTime() > latest.getTime() ? date : latest,
+			null,
+		);
+	const demoLatestDate = new Date();
+	demoLatestDate.setDate(demoLatestDate.getDate() - 1);
+	const dateOffsetMs =
+		latestLeadDate === null
+			? 0
+			: demoLatestDate.getTime() - latestLeadDate.getTime();
+
+	const stores = teamNames.map((teamName) => ({
 		id: deterministicUuid(`store:${teamName}`),
 		name: buildStoreName(teamName),
 	}));
 
 	const storeIdByOriginalTeamName = new Map(
-		Array.from(new Set(rows.map((row) => row.team_name.trim()))).map(
-			(teamName) => [teamName, deterministicUuid(`store:${teamName}`)],
-		),
+		teamNames.map((teamName) => [
+			teamName,
+			deterministicUuid(`store:${teamName}`),
+		]),
 	);
+
+	const managerUsers = teamNames.map((teamName) => {
+		const email = buildManagerEmail(teamName);
+
+		return {
+			id: deterministicUuid(`user:${email}`),
+			name: `Gerente ${buildStoreName(teamName).replace(/^Loja\s+/, '')}`,
+			email,
+			password: passwordHash,
+			role: UserRole.MANAGER,
+			accessGroupId: deterministicUuid('access-group:manager'),
+		};
+	});
 
 	const csvUsers = Array.from(
 		new Map(
@@ -389,6 +432,7 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 			role: user.role,
 			accessGroupId: user.accessGroupId,
 		})),
+		...managerUsers,
 		...csvUsers,
 	];
 
@@ -408,14 +452,18 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 		const teamName = row.team_name.trim();
 		const ownerId =
 			userIdByEmail.get(row.user_email.trim().toLowerCase()) ?? null;
+		const managerId = userIdByEmail.get(buildManagerEmail(teamName)) ?? null;
+		const generalManagerId = userIdByEmail.get('geral@crm.com') ?? null;
 		const existing = teamsByName.get(teamName) ?? {
 			id: deterministicUuid(`team:${teamName}`),
 			name: teamName,
 			storeId:
 				storeIdByOriginalTeamName.get(teamName) ??
 				deterministicUuid(`store:${teamName}`),
-			managerId: null,
-			memberIds: [],
+			managerId,
+			memberIds: [managerId, generalManagerId].filter(
+				(id): id is string => id !== null,
+			),
 		};
 
 		if (ownerId !== null && !existing.memberIds.includes(ownerId)) {
@@ -455,10 +503,11 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const leads = rows.map((row) => {
 		const customerKey = buildCustomerKey(row);
 		const leadId = deterministicUuid(`lead:${row.lead_id.trim()}`);
-		const createdAt = parseDate(row.lead_created_at) ?? new Date();
+		const createdAt =
+			shiftDate(parseDate(row.lead_created_at), dateOffsetMs) ?? new Date();
 		const updatedAt =
-			parseDate(row.negotiation_updated_at) ??
-			parseDate(row.first_interaction_at) ??
+			shiftDate(parseDate(row.negotiation_updated_at), dateOffsetMs) ??
+			shiftDate(parseDate(row.first_interaction_at), dateOffsetMs) ??
 			createdAt;
 
 		return {
@@ -481,8 +530,12 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const deals = rows.map((row, index) => {
 		const leadId = deterministicUuid(`lead:${row.lead_id.trim()}`);
 		const vehicleId = deterministicUuid(`vehicle:${row.lead_id.trim()}`);
-		const createdAt = parseDate(row.negotiation_created_at) ?? new Date();
-		const updatedAt = parseDate(row.negotiation_updated_at) ?? createdAt;
+		const createdAt =
+			shiftDate(parseDate(row.negotiation_created_at), dateOffsetMs) ??
+			new Date();
+		const updatedAt =
+			shiftDate(parseDate(row.negotiation_updated_at), dateOffsetMs) ??
+			createdAt;
 		const isClosed = row.is_open.trim().toUpperCase() === 'FALSE';
 		const lead = leads[index];
 		const leadStatus = lead?.status;

@@ -10,18 +10,107 @@ import type {
 	DealEnrichedListPage,
 	DealEnrichedRow,
 	DealListScopedFilters,
+	DealPipelineStagePage,
 	IDealRepository,
 } from '../../../domain/repositories/deal.repository.js';
 import { computeTotalPages } from '../../../domain/types/deal-list-page.js';
+import { DEAL_STAGES } from '../../../../../shared/domain/enums/deal-stage.enum.js';
 import { DealMapper } from '../mappers/deal.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
+
+/** Campos comuns do lead em consultas enriquecidas (cliente + owner). */
+const DEAL_LEAD_ENRICHMENT_SELECT = {
+	storeId: true,
+	ownerUserId: true,
+	customer: { select: { name: true } },
+	owner: { select: { name: true } },
+} as const;
+
+const UUID_PATTERN =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 class DealPrismaRepository implements IDealRepository {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly transactionContext?: TransactionContext,
 	) {}
+
+	private buildScopedWhere(
+		filters: DealListScopedFilters,
+	): Prisma.DealWhereInput {
+		const search = filters.search?.trim();
+		const searchOr: Prisma.DealWhereInput[] = [];
+
+		if (search) {
+			searchOr.push(
+				{ title: { contains: search, mode: 'insensitive' } },
+				{
+					lead: {
+						is: {
+							customer: {
+								is: { name: { contains: search, mode: 'insensitive' } },
+							},
+						},
+					},
+				},
+				{
+					lead: {
+						is: {
+							owner: {
+								is: { name: { contains: search, mode: 'insensitive' } },
+							},
+						},
+					},
+				},
+				{
+					vehicle: { is: { brand: { contains: search, mode: 'insensitive' } } },
+				},
+				{
+					vehicle: { is: { model: { contains: search, mode: 'insensitive' } } },
+				},
+				{
+					vehicle: { is: { plate: { contains: search, mode: 'insensitive' } } },
+				},
+			);
+
+			if (UUID_PATTERN.test(search)) {
+				searchOr.push(
+					{ id: search },
+					{ leadId: search },
+					{ vehicleId: search },
+				);
+			}
+		}
+
+		return {
+			status: filters.status,
+			importance: filters.importance,
+			stage: filters.stage,
+			OR: searchOr.length > 0 ? searchOr : undefined,
+			lead: {
+				is: {
+					storeId: filters.storeIds ? { in: [...filters.storeIds] } : undefined,
+					ownerUserId: filters.ownerUserId,
+				},
+			},
+		};
+	}
+
+	private pipelineOrderBy(
+		filters: DealListScopedFilters,
+	): Prisma.DealOrderByWithRelationInput[] {
+		if (filters.valueSort === 'asc') {
+			return [{ value: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }];
+		}
+		if (filters.valueSort === 'desc') {
+			return [
+				{ value: { sort: 'desc', nulls: 'last' } },
+				{ createdAt: 'desc' },
+			];
+		}
+		return [{ createdAt: 'desc' }];
+	}
 
 	async create(deal: Deal): Promise<Deal> {
 		const row = DealMapper.toPersistence(deal);
@@ -89,11 +178,7 @@ class DealPrismaRepository implements IDealRepository {
 					select: { brand: true, model: true, modelYear: true, plate: true },
 				},
 				lead: {
-					select: {
-						storeId: true,
-						ownerUserId: true,
-						customer: { select: { name: true } },
-					},
+					select: DEAL_LEAD_ENRICHMENT_SELECT,
 				},
 			},
 		});
@@ -133,11 +218,7 @@ class DealPrismaRepository implements IDealRepository {
 					select: { brand: true, model: true, modelYear: true, plate: true },
 				},
 				lead: {
-					select: {
-						storeId: true,
-						ownerUserId: true,
-						customer: { select: { name: true } },
-					},
+					select: DEAL_LEAD_ENRICHMENT_SELECT,
 				},
 			},
 		});
@@ -149,16 +230,7 @@ class DealPrismaRepository implements IDealRepository {
 		pagination: { readonly page: number; readonly limit: number },
 	) {
 		const skip = (pagination.page - 1) * pagination.limit;
-
-		const where: Prisma.DealWhereInput = {
-			status: filters.status,
-			lead: {
-				is: {
-					storeId: filters.storeIds ? { in: [...filters.storeIds] } : undefined,
-					ownerUserId: filters.ownerUserId,
-				},
-			},
-		};
+		const where = this.buildScopedWhere(filters);
 
 		const [rows, total] = await Promise.all([
 			this.client.deal.findMany({
@@ -184,16 +256,7 @@ class DealPrismaRepository implements IDealRepository {
 		pagination: { readonly page: number; readonly limit: number },
 	): Promise<DealEnrichedListPage> {
 		const skip = (pagination.page - 1) * pagination.limit;
-
-		const where: Prisma.DealWhereInput = {
-			status: filters.status,
-			lead: {
-				is: {
-					storeId: filters.storeIds ? { in: [...filters.storeIds] } : undefined,
-					ownerUserId: filters.ownerUserId,
-				},
-			},
-		};
+		const where = this.buildScopedWhere(filters);
 
 		const [rows, total] = await Promise.all([
 			this.client.deal.findMany({
@@ -206,11 +269,7 @@ class DealPrismaRepository implements IDealRepository {
 						select: { brand: true, model: true, modelYear: true, plate: true },
 					},
 					lead: {
-						select: {
-							storeId: true,
-							ownerUserId: true,
-							customer: { select: { name: true } },
-						},
+						select: DEAL_LEAD_ENRICHMENT_SELECT,
 					},
 				},
 			}),
@@ -223,6 +282,126 @@ class DealPrismaRepository implements IDealRepository {
 			limit: pagination.limit,
 			total,
 			totalPages: computeTotalPages(total, pagination.limit),
+		};
+	}
+
+	async listPipelineStagesEnriched(
+		filters: DealListScopedFilters,
+		pagination: { readonly page: number; readonly limit: number },
+	): Promise<readonly DealPipelineStagePage[]> {
+		const pipelineWhereBase = this.buildScopedWhere({
+			...filters,
+			stage: undefined,
+		});
+		const skip = (pagination.page - 1) * pagination.limit;
+		const take = pagination.limit;
+
+		const metricsByStage = new Map<
+			(typeof DEAL_STAGES)[number],
+			{ total: number; totalValue: string | null }
+		>(DEAL_STAGES.map((stage) => [stage, { total: 0, totalValue: null }]));
+
+		const [groups, ...rowsPerStage] = await Promise.all([
+			this.client.deal.groupBy({
+				by: ['stage'],
+				where: pipelineWhereBase,
+				_count: { _all: true },
+				_sum: { value: true },
+			}),
+			...DEAL_STAGES.map((stage) =>
+				this.client.deal.findMany({
+					where: this.buildScopedWhere({ ...filters, stage }),
+					orderBy: this.pipelineOrderBy({ ...filters, stage }),
+					skip,
+					take,
+					include: {
+						vehicle: {
+							select: {
+								brand: true,
+								model: true,
+								modelYear: true,
+								plate: true,
+							},
+						},
+						lead: {
+							select: DEAL_LEAD_ENRICHMENT_SELECT,
+						},
+					},
+				}),
+			),
+		]);
+
+		for (const g of groups) {
+			metricsByStage.set(g.stage, {
+				total: g._count._all,
+				totalValue: g._sum.value?.toString() ?? null,
+			});
+		}
+
+		return DEAL_STAGES.map((stage, index) => {
+			const rowsBundle = rowsPerStage.at(index);
+			if (rowsBundle === undefined) {
+				throw new Error('Deal pipeline: linhas por estágio fora de sincronia');
+			}
+			const rows = rowsBundle as DealEnrichedRow[];
+			const metric = metricsByStage.get(stage);
+			if (!metric) {
+				throw new Error(
+					`Deal pipeline: métricas ausentes para estágio ${stage}`,
+				);
+			}
+			const { total, totalValue } = metric;
+			return {
+				stage,
+				items: rows,
+				page: pagination.page,
+				limit: pagination.limit,
+				total,
+				totalPages: computeTotalPages(total, pagination.limit),
+				totalValue,
+			};
+		});
+	}
+
+	async listPipelineStageEnriched(
+		filters: DealListScopedFilters & {
+			readonly stage: (typeof DEAL_STAGES)[number];
+		},
+		pagination: { readonly page: number; readonly limit: number },
+	): Promise<DealPipelineStagePage> {
+		const skip = (pagination.page - 1) * pagination.limit;
+		const where = this.buildScopedWhere(filters);
+
+		const [rows, total, aggregate] = await Promise.all([
+			this.client.deal.findMany({
+				where,
+				orderBy: this.pipelineOrderBy(filters),
+				skip,
+				take: pagination.limit,
+				include: {
+					vehicle: {
+						select: { brand: true, model: true, modelYear: true, plate: true },
+					},
+					lead: {
+						select: DEAL_LEAD_ENRICHMENT_SELECT,
+					},
+				},
+			}),
+			this.client.deal.count({ where }),
+			this.client.deal.aggregate({
+				where,
+				_sum: { value: true },
+			}),
+		]);
+
+		return {
+			stage: filters.stage,
+			items: rows as DealEnrichedRow[],
+			page: pagination.page,
+			limit: pagination.limit,
+			total,
+			totalPages: computeTotalPages(total, pagination.limit),
+			totalValue: aggregate._sum.value?.toString() ?? null,
 		};
 	}
 

@@ -7,6 +7,8 @@ import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
 import type { LeadActor } from '../types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { LeadEventRepositoryFactory } from '../../infrastructure/persistence/factories/lead-event-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadRepositoryFactory } from '../../infrastructure/persistence/factories/lead-repository.factory.js';
 
 @Injectable()
@@ -16,6 +18,7 @@ class ConvertLeadUseCase {
 
 	constructor(
 		private readonly leadRepositoryFactory: LeadRepositoryFactory,
+		private readonly leadEventRepositoryFactory: LeadEventRepositoryFactory,
 		private readonly leadAccessPolicy: LeadAccessPolicy,
 	) {}
 
@@ -23,6 +26,8 @@ class ConvertLeadUseCase {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
 			const leads = this.leadRepositoryFactory.create(transactionContext);
+			const leadEvents =
+				this.leadEventRepositoryFactory.create(transactionContext);
 
 			const lead = await leads.findById(Uuid.parse(leadId));
 			if (!lead) {
@@ -31,7 +36,16 @@ class ConvertLeadUseCase {
 			await this.leadAccessPolicy.assertCanMutateLead(actor, lead);
 
 			lead.convert();
-			return leads.update(lead);
+			const updated = await leads.update(lead);
+			await leadEvents.append({
+				leadId: updated.id,
+				actorUserId: Uuid.parse(actor.userId),
+				type: 'CONVERTED',
+				title: 'Lead convertido',
+				description: 'Lead marcado como convertido no fluxo comercial.',
+				payload: { status: 'CONVERTED' },
+			});
+			return updated;
 		});
 	}
 }

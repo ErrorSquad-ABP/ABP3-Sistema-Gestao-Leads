@@ -1,17 +1,19 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 import {
-	BarChart3,
 	Building2,
 	Car,
 	ClipboardList,
-	ContactRound,
+	ChartColumn,
+	ChevronDown,
 	Handshake,
-	LayoutPanelTop,
+	Home,
 	type LucideIcon,
-	ShieldCheck,
 	Users,
+	UserCog,
+	UserRound,
 } from 'lucide-react';
 import SimpleBar from 'simplebar-react';
 
@@ -19,15 +21,18 @@ import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarHeader,
 	SidebarProvider,
+	useSidebar,
 } from '@/components/ui/sidebar';
 import {
-	getNavigationItemsForUser,
-	type AppNavigationItem,
+	type AppRouteAccessKey,
+	hasFeatureAccess,
 } from '@/lib/auth/permissions';
-import { SiteHeader } from '@/components/shadcn-space/blocks/dashboard-shell-01/site-header';
 import { NavMain } from '@/components/shadcn-space/blocks/dashboard-shell-01/nav-main';
+import UserDropdown from '@/components/shadcn-space/blocks/dashboard-shell-01/user-dropdown';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import 'simplebar-react/dist/simplebar.min.css';
 
 export type NavItem = {
@@ -40,51 +45,149 @@ export type NavItem = {
 	isActive?: boolean;
 };
 
-const iconByLabel: Record<AppNavigationItem['key'], LucideIcon> = {
-	customers: ContactRound,
-	dashboardAnalytic: BarChart3,
-	dashboardOperational: LayoutPanelTop,
-	leads: ClipboardList,
-	deals: Handshake,
-	vehicles: Car,
-	stores: Building2,
-	teams: Users,
-	users: ShieldCheck,
+type VisualNavItem = {
+	title: string;
+	href: string;
+	icon: LucideIcon;
+	accessKey?: AppRouteAccessKey;
 };
 
-const sectionByKey: Record<AppNavigationItem['key'], string> = {
-	customers: 'Workspace',
-	dashboardAnalytic: 'Dashboards',
-	dashboardOperational: 'Dashboards',
-	leads: 'Workspace',
-	deals: 'Workspace',
-	vehicles: 'Workspace',
-	stores: 'Administração',
-	teams: 'Administração',
-	users: 'Administração',
-};
+const NAV_DASHBOARD: VisualNavItem[] = [
+	{
+		title: 'Dashboard',
+		href: '/app/dashboard/operational',
+		icon: Home,
+		accessKey: 'dashboardOperational',
+	},
+];
+
+const NAV_WORKSPACE: VisualNavItem[] = [
+	{
+		title: 'Clientes',
+		href: '/app/customers',
+		icon: UserRound,
+		accessKey: 'customers',
+	},
+	{
+		title: 'Leads',
+		href: '/app/leads',
+		icon: ClipboardList,
+		accessKey: 'leads',
+	},
+	{
+		title: 'Negociações',
+		href: '/app/deals',
+		icon: Handshake,
+		accessKey: 'deals',
+	},
+	{
+		title: 'Veículos',
+		href: '/app/vehicles',
+		icon: Car,
+		accessKey: 'vehicles',
+	},
+];
+
+const NAV_ADMIN: VisualNavItem[] = [
+	{
+		title: 'Lojas',
+		href: '/app/stores',
+		icon: Building2,
+		accessKey: 'stores',
+	},
+	{
+		title: 'Equipes',
+		href: '/app/teams',
+		icon: Users,
+		accessKey: 'teams',
+	},
+	{
+		title: 'Usuários',
+		href: '/app/users',
+		icon: UserCog,
+		accessKey: 'users',
+	},
+	{
+		title: 'Relatórios',
+		href: '/app/operations',
+		icon: ChartColumn,
+	},
+];
 
 function buildNavData(currentUser: AuthenticatedUser): NavItem[] {
-	const items = getNavigationItemsForUser(currentUser);
-	const grouped = new Map<string, NavItem[]>();
+	const dashboardItems = NAV_DASHBOARD.filter((item) =>
+		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true,
+	);
 
-	for (const item of items) {
-		const section = sectionByKey[item.key];
-		const sectionItems = grouped.get(section) ?? [];
+	const workspaceItems = NAV_WORKSPACE.filter((item) =>
+		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true,
+	);
 
-		sectionItems.push({
-			href: item.href,
-			icon: iconByLabel[item.key],
-			title: item.label,
-		});
+	const adminItems = NAV_ADMIN.filter((item) =>
+		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true,
+	);
 
-		grouped.set(section, sectionItems);
+	const rows: NavItem[] = [];
+
+	for (const item of dashboardItems) {
+		rows.push({ href: item.href, icon: item.icon, title: item.title });
 	}
 
-	return Array.from(grouped.entries()).flatMap(([label, sectionItems]) => [
-		{ isSection: true, label },
-		...sectionItems,
-	]);
+	if (workspaceItems.length) {
+		rows.push({ isSection: true, label: 'WORKSPACE' });
+		for (const item of workspaceItems) {
+			rows.push({ href: item.href, icon: item.icon, title: item.title });
+		}
+	}
+
+	if (adminItems.length) {
+		rows.push({ isSection: true, label: 'ADMINISTRAÇÃO' });
+		for (const item of adminItems) {
+			rows.push({ href: item.href, icon: item.icon, title: item.title });
+		}
+	}
+
+	return rows;
+}
+
+function getInitials(name: string) {
+	return name
+		.trim()
+		.split(/\s+/)
+		.slice(0, 2)
+		.map((part) => part.at(0)?.toUpperCase() ?? '')
+		.join('');
+}
+
+function SidebarLogo() {
+	const { toggleSidebar } = useSidebar();
+
+	return (
+		<button
+			type="button"
+			onClick={toggleSidebar}
+			className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left hover:bg-white/5 group-data-[collapsible=icon]:justify-center"
+			aria-label="Alternar sidebar"
+		>
+			<div className="relative size-10 shrink-0">
+				<Image
+					src="/assets/dark-logo-removebg.png"
+					alt="Quantum"
+					fill
+					className="object-contain"
+					priority
+				/>
+			</div>
+			<div className="leading-tight group-data-[collapsible=icon]:hidden">
+				<p className="text-base font-semibold tracking-tight text-white">
+					Quantum
+				</p>
+				<p className="text-xs font-medium tracking-[0.22em] text-slate-300">
+					CRM
+				</p>
+			</div>
+		</button>
+	);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -101,45 +204,68 @@ const AppSidebar = ({
 	const navData = buildNavData(currentUser);
 
 	return (
-		<SidebarProvider>
-			<Sidebar className="border-r border-r-border/75 bg-background px-0 py-4">
-				<div className="flex flex-col gap-4 bg-background">
+		<SidebarProvider
+			style={
+				{
+					'--sidebar-width-icon': '4.5rem',
+				} as React.CSSProperties
+			}
+		>
+			<Sidebar
+				collapsible="icon"
+				className="border-r-0 bg-sidebar px-0 py-0 text-sidebar-foreground"
+			>
+				<div className="flex h-full flex-col">
 					{/* ---------------- Header ---------------- */}
-					<SidebarHeader className="py-0 px-4">
-						<div className="flex items-center gap-3 px-1 py-1.5">
-							<div className="flex size-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-[0_0_0_6px_rgba(241,226,218,0.24)]">
-								lc
-							</div>
-							<div className="space-y-0.5">
-								<p className="text-[0.7rem] font-medium uppercase tracking-[0.26em] text-[#D96C3F]">
-									Lead CRM
-								</p>
-								<p className="text-sm text-muted-foreground">Dashboard Shell</p>
-							</div>
-						</div>
+					<SidebarHeader className="px-5 pt-6 pb-4 group-data-[collapsible=icon]:px-2">
+						<SidebarLogo />
 					</SidebarHeader>
 
 					{/* ---------------- Content ---------------- */}
 					<SidebarContent className="overflow-hidden gap-0 px-0">
 						<SimpleBar
 							autoHide={true}
-							className="h-[calc(100vh-112px)] [&_.simplebar-content-wrapper]:overflow-x-hidden [&_.simplebar-track.simplebar-horizontal]:hidden"
+							className="h-[calc(100vh-220px)] [&_.simplebar-content-wrapper]:overflow-x-hidden [&_.simplebar-track.simplebar-horizontal]:hidden"
 						>
-							<div className="px-4">
+							<div className="px-5 group-data-[collapsible=icon]:px-2">
 								<NavMain items={navData} />
 							</div>
 						</SimpleBar>
 					</SidebarContent>
+
+					{/* ---------------- Footer ---------------- */}
+					<SidebarFooter className="mt-auto gap-3 px-4 pb-4 group-data-[collapsible=icon]:px-2">
+						<UserDropdown
+							currentUser={currentUser}
+							defaultOpen={false}
+							align="start"
+							trigger={
+								<div className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 hover:bg-white/5 group-data-[collapsible=icon]:justify-center">
+									<Avatar className="size-10 shrink-0 cursor-pointer bg-[#0e223b]">
+										<AvatarFallback className="bg-transparent text-sm font-semibold text-white">
+											{getInitials(currentUser.name)}
+										</AvatarFallback>
+									</Avatar>
+									<div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+										<p className="truncate text-sm font-semibold text-white">
+											{currentUser.name}
+										</p>
+										<p className="truncate text-xs text-slate-300">
+											{currentUser.email}
+										</p>
+									</div>
+									<ChevronDown className="size-4 text-slate-300 group-data-[collapsible=icon]:hidden" />
+								</div>
+							}
+						/>
+					</SidebarFooter>
 				</div>
 			</Sidebar>
 
 			{/* ---------------- Main ---------------- */}
 			<div className="flex flex-1 flex-col">
-				<header className="sticky top-0 z-50 flex items-center border-b border-border/75 bg-background px-6 py-3">
-					<SiteHeader currentUser={currentUser} />
-				</header>
-				<main className="flex-1">
-					<div className="mx-auto grid max-w-7xl grid-cols-12 gap-6 p-6">
+				<main className="relative flex-1">
+					<div className="grid w-full grid-cols-12 gap-4 px-3 py-4 md:px-4 lg:px-5">
 						<div className="col-span-12">{children}</div>
 					</div>
 				</main>

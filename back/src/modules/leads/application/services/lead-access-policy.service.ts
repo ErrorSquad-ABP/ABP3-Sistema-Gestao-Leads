@@ -36,6 +36,11 @@ function unionTeamIds(ids: readonly { value: string }[]): string[] {
 	return [...new Set(ids.map((id) => id.value))];
 }
 
+type LeadMutateLeadSnapshot = {
+	readonly storeId: string;
+	readonly ownerUserId: string | null;
+};
+
 @Injectable()
 class LeadAccessPolicy {
 	constructor(
@@ -134,7 +139,75 @@ class LeadAccessPolicy {
 		allowedTeamIds: ReadonlySet<string>,
 	): Promise<boolean> {
 		const teamIds = await this.targetUserTeamIds(userId);
+		return this.teamIdsIntersectAllowed(teamIds, allowedTeamIds);
+	}
+
+	private teamIdsIntersectAllowed(
+		teamIds: readonly string[],
+		allowedTeamIds: ReadonlySet<string>,
+	): boolean {
 		return teamIds.some((teamId) => allowedTeamIds.has(teamId));
+	}
+
+	private mutationAllowedByLeadSnapshotWithScope(
+		scope: LeadScope,
+		leadStoreId: string,
+		leadOwnerUserId: string | null,
+		ownerTeamsCache: ReadonlyMap<string, readonly string[]> | null,
+	): boolean {
+		if (scope.kind === 'full') {
+			return true;
+		}
+		if (leadOwnerUserId === scope.actorUserId) {
+			return true;
+		}
+		if (scope.kind === 'attendant') {
+			return false;
+		}
+		if (scope.kind === 'general_manager') {
+			return false;
+		}
+		if (scope.kind === 'manager') {
+			if (leadOwnerUserId === null) {
+				return scope.mutateStoreIds.has(leadStoreId);
+			}
+			const teamIds = ownerTeamsCache?.get(leadOwnerUserId) ?? [];
+			return this.teamIdsIntersectAllowed(teamIds, scope.mutateTeamIds);
+		}
+		return false;
+	}
+
+	async batchCanMutateLeadSnapshots(
+		actor: LeadActor,
+		snapshots: readonly LeadMutateLeadSnapshot[],
+	): Promise<boolean[]> {
+		const scope = await this.resolveScope(actor);
+		let ownerTeamsCache: Map<string, readonly string[]> | null = null;
+		if (scope.kind === 'manager') {
+			const uniqueOwners = new Set<string>();
+			for (const snapshot of snapshots) {
+				const ownerId = snapshot.ownerUserId;
+				if (ownerId !== null && ownerId !== scope.actorUserId) {
+					uniqueOwners.add(ownerId);
+				}
+			}
+			ownerTeamsCache = new Map(
+				await Promise.all(
+					[...uniqueOwners].map(
+						async (ownerUserId) =>
+							[ownerUserId, await this.targetUserTeamIds(ownerUserId)] as const,
+					),
+				),
+			);
+		}
+		return snapshots.map((snapshot) =>
+			this.mutationAllowedByLeadSnapshotWithScope(
+				scope,
+				snapshot.storeId,
+				snapshot.ownerUserId,
+				ownerTeamsCache,
+			),
+		);
 	}
 
 	async assertCanListOwner(
@@ -205,11 +278,21 @@ class LeadAccessPolicy {
 	}
 
 	async assertCanReadLead(actor: LeadActor, lead: Lead): Promise<void> {
+		await this.assertCanReadLeadSnapshot(actor, {
+			storeId: lead.storeId.value,
+			ownerUserId: lead.ownerUserId?.value ?? null,
+		});
+	}
+
+	async assertCanReadLeadSnapshot(
+		actor: LeadActor,
+		input: { readonly storeId: string; readonly ownerUserId: string | null },
+	): Promise<void> {
 		const scope = await this.resolveScope(actor);
 		if (scope.kind === 'full') {
 			return;
 		}
-		if (lead.ownerUserId?.value === scope.actorUserId) {
+		if (input.ownerUserId === scope.actorUserId) {
 			return;
 		}
 		if (scope.kind === 'attendant') {
@@ -217,15 +300,15 @@ class LeadAccessPolicy {
 				'Atendentes podem acessar apenas os proprios leads.',
 			);
 		}
-		if (lead.ownerUserId === null) {
-			if (!scope.readStoreIds.has(lead.storeId.value)) {
+		if (input.ownerUserId === null) {
+			if (!scope.readStoreIds.has(input.storeId)) {
 				throw new LeadAccessDeniedError();
 			}
 			return;
 		}
 		if (
 			!(await this.targetUserIntersectsTeams(
-				lead.ownerUserId.value,
+				input.ownerUserId,
 				scope.readTeamIds,
 			))
 		) {
@@ -242,15 +325,14 @@ class LeadAccessPolicy {
 		leadStoreId: string,
 		leadOwnerUserId: string | null,
 	): Promise<boolean> {
-		return this.isMutationAllowedByLeadSnapshot(
-			actor,
-			leadStoreId,
-			leadOwnerUserId,
-		);
+		const results = await this.batchCanMutateLeadSnapshots(actor, [
+			{ storeId: leadStoreId, ownerUserId: leadOwnerUserId },
+		]);
+		return results[0] ?? false;
 	}
 
 	async assertCanMutateLead(actor: LeadActor, lead: Lead): Promise<void> {
-		const allowed = await this.isMutationAllowedByLeadSnapshot(
+		const allowed = await this.canActorMutateLeadOnSnapshot(
 			actor,
 			lead.storeId.value,
 			lead.ownerUserId?.value ?? null,
@@ -270,36 +352,6 @@ class LeadAccessPolicy {
 			);
 		}
 		throw new LeadAccessDeniedError();
-	}
-
-	private async isMutationAllowedByLeadSnapshot(
-		actor: LeadActor,
-		leadStoreId: string,
-		leadOwnerUserId: string | null,
-	): Promise<boolean> {
-		const scope = await this.resolveScope(actor);
-		if (scope.kind === 'full') {
-			return true;
-		}
-		if (leadOwnerUserId === scope.actorUserId) {
-			return true;
-		}
-		if (scope.kind === 'attendant') {
-			return false;
-		}
-		if (scope.kind === 'general_manager') {
-			return false;
-		}
-		if (scope.kind === 'manager') {
-			if (leadOwnerUserId === null) {
-				return scope.mutateStoreIds.has(leadStoreId);
-			}
-			return this.targetUserIntersectsTeams(
-				leadOwnerUserId,
-				scope.mutateTeamIds,
-			);
-		}
-		return false;
 	}
 
 	async assertCanCreateLead(

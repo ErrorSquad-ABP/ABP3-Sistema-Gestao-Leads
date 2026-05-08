@@ -6,6 +6,7 @@ import { CreateDealUseCase } from './application/use-cases/create-deal.use-case.
 import { DeleteDealUseCase } from './application/use-cases/delete-deal.use-case.js';
 import { FindDealUseCase } from './application/use-cases/find-deal.use-case.js';
 import { ListDealHistoryUseCase } from './application/use-cases/list-deal-history.use-case.js';
+import { ListDealPipelineUseCase } from './application/use-cases/list-deal-pipeline.use-case.js';
 import { ListDealsUseCase } from './application/use-cases/list-deals.use-case.js';
 import { ListDealsByLeadUseCase } from './application/use-cases/list-deals-by-lead.use-case.js';
 import { UpdateDealUseCase } from './application/use-cases/update-deal.use-case.js';
@@ -25,6 +26,7 @@ import { DealController } from './presentation/controllers/deal.controller.js';
 		UpdateDealUseCase,
 		FindDealUseCase,
 		ListDealsUseCase,
+		ListDealPipelineUseCase,
 		ListDealsByLeadUseCase,
 		ListDealHistoryUseCase,
 		DeleteDealUseCase,

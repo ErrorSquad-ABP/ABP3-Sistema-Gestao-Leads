@@ -15,7 +15,6 @@ import { LeadRepositoryFactory } from '../../../leads/infrastructure/persistence
 import { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import { DealNotFoundError } from '../../domain/errors/deal-not-found.error.js';
-import { ActiveDealForVehicleAlreadyExistsError } from '../../domain/errors/active-deal-for-vehicle-already-exists.error.js';
 import { DealVehicleNotAvailableError } from '../../domain/errors/deal-vehicle-not-available.error.js';
 import { DealVehicleStoreMismatchError } from '../../domain/errors/deal-vehicle-store-mismatch.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
@@ -96,24 +95,6 @@ class UpdateDealUseCase {
 							nextVehicle.status,
 						);
 					}
-					const existingVehicleOpen =
-						await deals.findOpenByVehicleId(nextVehicleId);
-					if (existingVehicleOpen) {
-						throw new ActiveDealForVehicleAlreadyExistsError(dto.vehicleId);
-					}
-
-					const prevVehicle = await vehicles.findById(deal.vehicleId);
-					if (
-						prevVehicle &&
-						prevVehicle.status !== 'INACTIVE' &&
-						prevVehicle.status !== 'SOLD'
-					) {
-						prevVehicle.changeStatus('AVAILABLE');
-						await vehicles.update(prevVehicle);
-					}
-
-					nextVehicle.changeStatus('RESERVED');
-					await vehicles.update(nextVehicle);
 
 					deal.changeVehicle(nextVehicleId);
 				}
@@ -146,14 +127,10 @@ class UpdateDealUseCase {
 				await leads.update(lead);
 			}
 
-			if (before.status === 'OPEN' && after.status !== 'OPEN') {
+			if (before.status === 'OPEN' && after.status === 'WON') {
 				const vehicle = await vehicles.findById(deal.vehicleId);
 				if (vehicle && vehicle.status !== 'INACTIVE') {
-					if (after.status === 'WON') {
-						vehicle.changeStatus('SOLD');
-					} else if (after.status === 'LOST' && vehicle.status !== 'SOLD') {
-						vehicle.changeStatus('AVAILABLE');
-					}
+					vehicle.changeStatus('SOLD');
 					await vehicles.update(vehicle);
 				}
 			}

@@ -1,6 +1,8 @@
 import { apiFetch } from '@/lib/http/api-client';
 
 import {
+	parseDealPipelineResponse,
+	parseDealPipelineStageResponse,
 	parseDealsByLeadListResponse,
 	parseDealsPagedResponse,
 } from '../schemas/deal-list.schema';
@@ -8,7 +10,12 @@ import {
 	parseDealHistoryResponse,
 	parseDealResponse,
 } from '../schemas/deal.schema';
-import type { DealCreateInput, DealUpdateInput } from '../model/deals.model';
+import type {
+	DealCreateInput,
+	DealPipelineQuery,
+	DealPipelineStageQuery,
+	DealUpdateInput,
+} from '../model/deals.model';
 
 type ListDealsQuery = {
 	storeId?: string;
@@ -35,11 +42,59 @@ function dealsListQuery(query: ListDealsQuery) {
 	return params.toString();
 }
 
+function dealsPipelineQuery(
+	query: DealPipelineQuery | Omit<DealPipelineStageQuery, 'stage'>,
+) {
+	const params = new URLSearchParams({
+		pageSize: String(query.pageSize),
+	});
+	if ('page' in query) {
+		params.set('page', String(query.page));
+	}
+	if (query.status) {
+		params.set('status', query.status);
+	}
+	if (query.importance) {
+		params.set('importance', query.importance);
+	}
+	if (query.valueSort) {
+		params.set('valueSort', query.valueSort);
+	}
+	const search = query.search?.trim();
+	if (search) {
+		params.set('search', search);
+	}
+	return params.toString();
+}
+
 async function listDealsPaged(query: ListDealsQuery, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/deals?${dealsListQuery(query)}`, {
 		signal,
 	});
 	return parseDealsPagedResponse(raw);
+}
+
+async function getDealsPipeline(
+	query: DealPipelineQuery,
+	signal?: AbortSignal,
+) {
+	const raw = await apiFetch<unknown>(
+		`/api/deals/pipeline?${dealsPipelineQuery(query)}`,
+		{ signal },
+	);
+	return parseDealPipelineResponse(raw);
+}
+
+async function getDealsPipelineStage(
+	query: DealPipelineStageQuery,
+	signal?: AbortSignal,
+) {
+	const { stage, ...params } = query;
+	const raw = await apiFetch<unknown>(
+		`/api/deals/pipeline/stages/${stage}?${dealsPipelineQuery(params)}`,
+		{ signal },
+	);
+	return parseDealPipelineStageResponse(raw);
 }
 
 async function listDealsByLead(leadId: string, signal?: AbortSignal) {
@@ -89,6 +144,8 @@ export {
 	createDealForLead,
 	deleteDeal,
 	findDeal,
+	getDealsPipeline,
+	getDealsPipelineStage,
 	listDealHistory,
 	listDealsByLead,
 	listDealsPaged,

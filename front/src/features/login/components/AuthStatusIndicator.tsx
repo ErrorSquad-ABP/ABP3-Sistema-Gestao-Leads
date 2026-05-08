@@ -22,18 +22,21 @@ function AuthStatusIndicator({
 				<button
 					aria-describedby={id}
 					aria-label={label}
-					className="flex size-10 items-center justify-center rounded-full border border-[#d6dce5] bg-white text-[#1b2430] transition-colors hover:bg-[#f2f4f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0cdbf]"
+					className="flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent-soft)]"
 					type="button"
 				>
 					{icon}
 				</button>
 				<div
-					className="pointer-events-none absolute right-0 top-12 w-72 rounded-2xl border border-[#d6dce5] bg-white px-3 py-2.5 text-sm leading-6 text-[#6b7687] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+					className="pointer-events-none absolute right-0 top-12 w-72 rounded-2xl border border-border bg-card px-3 py-2.5 text-sm leading-6 text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
 					id={id}
 					role="tooltip"
 				>
-					<div className="mb-1 flex items-center gap-2 text-[#1b2430]">
-						<Info aria-hidden="true" className="size-4 text-[#D96C3F]" />
+					<div className="mb-1 flex items-center gap-2 text-foreground">
+						<Info
+							aria-hidden="true"
+							className="size-4 text-[color:var(--brand-accent)]"
+						/>
 						<span className="font-medium">{label}</span>
 					</div>
 					<p>{message}</p>

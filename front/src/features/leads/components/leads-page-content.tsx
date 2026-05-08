@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
 	ChevronLeft,
 	ChevronRight,
@@ -22,6 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { ApiError, isApiError } from '@/lib/http/api-error';
+import { appRoutes } from '@/lib/routes/app-routes';
 import {
 	useLeadCustomersQuery,
 	useLeadOwnersQuery,
@@ -81,6 +83,7 @@ function buildCustomerLabelById(customers: LeadCustomer[]) {
 }
 
 function LeadsPageContent({ user }: LeadsPageContentProps) {
+	const router = useRouter();
 	const [listPage, setListPage] = useState(1);
 	const query = useLeadsListQuery(user, listPage);
 	const customersQuery = useLeadCustomersQuery();
@@ -232,6 +235,10 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 		setDialogError(null);
 		setTargetLead(lead);
 		setDealsOpen(true);
+	}
+
+	function openLeadDetail(lead: LeadListItem) {
+		router.push(`${appRoutes.app.leads}/${lead.id}`);
 	}
 
 	async function handleLeadFormSubmit(
@@ -472,6 +479,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 												? openDeleteDialog
 												: undefined
 										}
+										onDetail={openLeadDetail}
 										onEdit={openEditDialog}
 										onReassign={
 											user.role === 'ATTENDANT' ? undefined : openReassignDialog

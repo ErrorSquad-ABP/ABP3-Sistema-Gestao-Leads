@@ -34,9 +34,15 @@ function useUpdateLeadMutation() {
 	return useMutation({
 		mutationFn: (input: { leadId: string; payload: UpdateLeadInput }) =>
 			updateLead(input.leadId, input.payload),
-		onSuccess: async () => {
+		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detail(variables.leadId),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detailHub(variables.leadId),
 			});
 		},
 	});
@@ -48,9 +54,15 @@ function useReassignLeadMutation() {
 	return useMutation({
 		mutationFn: (input: { leadId: string; payload: ReassignLeadInput }) =>
 			reassignLead(input.leadId, input.payload),
-		onSuccess: async () => {
+		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detail(variables.leadId),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detailHub(variables.leadId),
 			});
 		},
 	});
@@ -61,9 +73,15 @@ function useConvertLeadMutation() {
 
 	return useMutation({
 		mutationFn: (leadId: string) => convertLead(leadId),
-		onSuccess: async () => {
+		onSuccess: async (_data, leadId) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detail(leadId),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detailHub(leadId),
 			});
 		},
 	});
@@ -74,9 +92,15 @@ function useDeleteLeadMutation() {
 
 	return useMutation({
 		mutationFn: (leadId: string) => deleteLead(leadId),
-		onSuccess: async () => {
+		onSuccess: async (_data, leadId) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detail(leadId),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.detailHub(leadId),
 			});
 		},
 	});

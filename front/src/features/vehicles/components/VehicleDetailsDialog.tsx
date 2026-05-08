@@ -1,14 +1,22 @@
 'use client';
 
-import { Calendar, Car, Palette, Tag, Wrench, Building2 } from 'lucide-react';
-
+import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	BadgeDollarSign,
+	Barcode,
+	Calendar,
+	CarFront,
+	Fuel,
+	Gauge,
+	IdCard,
+	Palette,
+	Store,
+	Tag,
+	Wrench,
+} from 'lucide-react';
+
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 import type { Vehicle } from '../model/vehicles.model';
 import {
@@ -17,6 +25,14 @@ import {
 	formatVehiclePriceBRL,
 	formatVehicleStatus,
 } from '../lib/vehicle-formatters';
+import {
+	VehicleModalHeader,
+	VehicleModalInfoBanner,
+	VehicleModalSection,
+	VehicleStatusSummary,
+	getVehicleStatusSubtitle,
+	vehicleModalContentClass,
+} from './VehicleModalLayout';
 
 type VehicleDetailsDialogProps = {
 	onClose: () => void;
@@ -25,8 +41,28 @@ type VehicleDetailsDialogProps = {
 	vehicle: Vehicle | null;
 };
 
+type VehicleDetailProps = {
+	children: ReactNode;
+	icon: LucideIcon;
+	label: string;
+};
+
 function formatDateTime(value: Date) {
 	return value.toLocaleString('pt-BR');
+}
+
+function VehicleDetail({ children, icon: Icon, label }: VehicleDetailProps) {
+	return (
+		<div className="min-w-0 rounded-xl border border-[#e8edf4] bg-[#f9fbfd] px-3 py-2.5">
+			<p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[#6b7687]">
+				<Icon className="size-3.5 shrink-0" />
+				{label}
+			</p>
+			<p className="mt-1 truncate text-sm font-medium text-[#1b2430]">
+				{children}
+			</p>
+		</div>
+	);
 }
 
 function VehicleDetailsDialog({
@@ -44,180 +80,99 @@ function VehicleDetailsDialog({
 			onOpenChange={(nextOpen: boolean) => (!nextOpen ? onClose() : null)}
 			open={open}
 		>
-			<DialogContent className="flex max-w-5xl flex-col rounded-[1.75rem] border border-[#d8e0ea] bg-white">
-				<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
-					<div className="flex items-center gap-4">
-						<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">
-							<Car className="size-6" />
-						</div>
-						<div className="space-y-1">
-							<p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#d96c3f]">
-								Veículos
-							</p>
-							<DialogTitle>
-								{vehicle.brand} {vehicle.model}
-							</DialogTitle>
-							<DialogDescription className="max-w-2xl">
-								Ficha completa do veículo selecionado.
-							</DialogDescription>
-						</div>
-					</div>
-				</DialogHeader>
+			<DialogContent className={vehicleModalContentClass}>
+				<VehicleModalHeader
+					description="Consulte a ficha operacional completa do veículo selecionado."
+					icon={CarFront}
+					title={`${vehicle.brand} ${vehicle.model}`}
+				/>
 
-				<div className="px-8 pb-8 pt-7">
+				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pb-7 pt-3 md:px-8">
+					<VehicleModalInfoBanner>
+						Status atual: {formatVehicleStatus(vehicle.status)} -{' '}
+						{getVehicleStatusSubtitle(vehicle.status)}.
+					</VehicleModalInfoBanner>
+
 					<div className="grid gap-4 lg:grid-cols-2">
-						<div className="rounded-3xl border border-[#e5ebf3] bg-white p-5">
-							<div className="flex items-center gap-2 text-sm font-semibold text-[#1b2430]">
-								<Building2 className="size-4 text-[#d96c3f]" />
-								Contexto do catálogo
+						<VehicleModalSection
+							description="Origem e controle do veículo no catálogo."
+							title="Contexto do catálogo"
+						>
+							<div className="grid gap-4 text-sm md:grid-cols-2">
+								<VehicleDetail icon={Store} label="Loja">
+									{storeLabelById?.[vehicle.storeId] ?? vehicle.storeId}
+								</VehicleDetail>
+								<VehicleDetail icon={Tag} label="Status">
+									{formatVehicleStatus(vehicle.status)}
+								</VehicleDetail>
+								<VehicleDetail icon={Calendar} label="Criado em">
+									{formatDateTime(vehicle.createdAt)}
+								</VehicleDetail>
+								<VehicleDetail icon={Calendar} label="Atualizado em">
+									{formatDateTime(vehicle.updatedAt)}
+								</VehicleDetail>
 							</div>
-							<div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Loja
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{storeLabelById?.[vehicle.storeId] ?? vehicle.storeId}
-									</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Status
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{formatVehicleStatus(vehicle.status)}
-									</p>
-								</div>
-								<div>
-									<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										<Calendar className="size-3.5" />
-										Criado em
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{formatDateTime(vehicle.createdAt)}
-									</p>
-								</div>
-								<div>
-									<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										<Calendar className="size-3.5" />
-										Atualizado em
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{formatDateTime(vehicle.updatedAt)}
-									</p>
-								</div>
-							</div>
-						</div>
+						</VehicleModalSection>
 
-						<div className="rounded-3xl border border-[#e5ebf3] bg-white p-5">
-							<div className="flex items-center gap-2 text-sm font-semibold text-[#1b2430]">
-								<Wrench className="size-4 text-[#d96c3f]" />
-								Dados do veículo
+						<VehicleModalSection
+							description="Marca, modelo, versão, anos e cor cadastrados."
+							title="Dados do veículo"
+						>
+							<div className="grid gap-4 text-sm md:grid-cols-2">
+								<VehicleDetail icon={Tag} label="Marca">
+									{vehicle.brand}
+								</VehicleDetail>
+								<VehicleDetail icon={CarFront} label="Modelo">
+									{vehicle.model}
+								</VehicleDetail>
+								<VehicleDetail icon={Wrench} label="Versão">
+									{vehicle.version ?? 'Não informada'}
+								</VehicleDetail>
+								<VehicleDetail icon={Palette} label="Cor">
+									{vehicle.color ?? 'Não informada'}
+								</VehicleDetail>
+								<VehicleDetail icon={Calendar} label="Ano do modelo">
+									{vehicle.modelYear}
+								</VehicleDetail>
+								<VehicleDetail icon={Calendar} label="Ano de fabricação">
+									{vehicle.manufactureYear ?? 'Não informado'}
+								</VehicleDetail>
 							</div>
-							<div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Marca
-									</p>
-									<p className="mt-1 text-[#1b2430]">{vehicle.brand}</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Modelo
-									</p>
-									<p className="mt-1 text-[#1b2430]">{vehicle.model}</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Versão
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{vehicle.version ?? 'Não informada'}
-									</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Cor
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{vehicle.color ?? 'Não informada'}
-									</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Ano do modelo
-									</p>
-									<p className="mt-1 text-[#1b2430]">{vehicle.modelYear}</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Ano de fabricação
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{vehicle.manufactureYear ?? 'Não informado'}
-									</p>
-								</div>
-							</div>
-						</div>
+						</VehicleModalSection>
 
-						<div className="rounded-3xl border border-[#e5ebf3] bg-white p-5">
-							<div className="flex items-center gap-2 text-sm font-semibold text-[#1b2430]">
-								<Tag className="size-4 text-[#d96c3f]" />
-								Operacional
+						<VehicleModalSection
+							description="Dados comerciais e operacionais para venda."
+							title="Operacional"
+						>
+							<div className="grid gap-4 text-sm md:grid-cols-2">
+								<VehicleDetail icon={Gauge} label="Quilometragem">
+									{formatMileage(vehicle.mileage)}
+								</VehicleDetail>
+								<VehicleDetail icon={Fuel} label="Combustível">
+									{formatFuelType(vehicle.supportedFuelType)}
+								</VehicleDetail>
+								<VehicleDetail icon={BadgeDollarSign} label="Preço">
+									{formatVehiclePriceBRL(vehicle.price)}
+								</VehicleDetail>
 							</div>
-							<div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Quilometragem
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{formatMileage(vehicle.mileage)}
-									</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Combustível
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{formatFuelType(vehicle.supportedFuelType)}
-									</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Preço
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{formatVehiclePriceBRL(vehicle.price)}
-									</p>
-								</div>
-							</div>
-						</div>
+						</VehicleModalSection>
 
-						<div className="rounded-3xl border border-[#e5ebf3] bg-white p-5">
-							<div className="flex items-center gap-2 text-sm font-semibold text-[#1b2430]">
-								<Palette className="size-4 text-[#d96c3f]" />
-								Documentos
+						<VehicleModalSection
+							description="Informações de identificação e consulta."
+							title="Documentos"
+						>
+							<div className="grid gap-4 text-sm md:grid-cols-2">
+								<VehicleDetail icon={IdCard} label="Placa">
+									{vehicle.plate ?? 'Não informada'}
+								</VehicleDetail>
+								<VehicleDetail icon={Barcode} label="Chassi (VIN)">
+									{vehicle.vin ?? 'Não informado'}
+								</VehicleDetail>
 							</div>
-							<div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Placa
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{vehicle.plate ?? 'Não informada'}
-									</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
-										Chassi (VIN)
-									</p>
-									<p className="mt-1 text-[#1b2430]">
-										{vehicle.vin ?? 'Não informado'}
-									</p>
-								</div>
-							</div>
-						</div>
+						</VehicleModalSection>
 					</div>
+
+					<VehicleStatusSummary status={vehicle.status} />
 				</div>
 			</DialogContent>
 		</Dialog>
