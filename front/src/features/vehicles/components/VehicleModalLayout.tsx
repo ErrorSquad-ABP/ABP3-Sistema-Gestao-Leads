@@ -47,38 +47,49 @@ type VehicleStatusSummaryProps = {
 const vehicleModalContentClass =
 	'flex max-h-[92vh] max-w-5xl flex-col overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]';
 
-const statusSummaryMeta: Record<
-	VehicleStatus,
-	{
-		readonly icon: LucideIcon;
-		readonly iconClassName: string;
-		readonly subtitle: string;
-	}
-> = {
-	AVAILABLE: {
-		icon: CheckCircle2,
-		iconClassName: 'bg-emerald-100 text-emerald-700',
-		subtitle: 'Pronto para venda',
-	},
-	RESERVED: {
-		icon: Clock3,
-		iconClassName: 'bg-orange-100 text-orange-700',
-		subtitle: 'Em negociação',
-	},
-	SOLD: {
-		icon: ShieldCheck,
-		iconClassName: 'bg-violet-100 text-violet-700',
-		subtitle: 'Negócio fechado',
-	},
-	INACTIVE: {
-		icon: Archive,
-		iconClassName: 'bg-slate-100 text-slate-600',
-		subtitle: 'Fora do catálogo',
-	},
+type VehicleStatusSummaryMeta = {
+	readonly icon: LucideIcon;
+	readonly iconClassName: string;
+	readonly subtitle: string;
 };
 
+function getVehicleStatusSummaryMeta(
+	status: VehicleStatus,
+): VehicleStatusSummaryMeta {
+	switch (status) {
+		case 'AVAILABLE':
+			return {
+				icon: CheckCircle2,
+				iconClassName: 'bg-emerald-100 text-emerald-700',
+				subtitle: 'Pronto para venda',
+			};
+		case 'RESERVED':
+			return {
+				icon: Clock3,
+				iconClassName: 'bg-orange-100 text-orange-700',
+				subtitle: 'Em negociação',
+			};
+		case 'SOLD':
+			return {
+				icon: ShieldCheck,
+				iconClassName: 'bg-violet-100 text-violet-700',
+				subtitle: 'Negócio fechado',
+			};
+		case 'INACTIVE':
+			return {
+				icon: Archive,
+				iconClassName: 'bg-slate-100 text-slate-600',
+				subtitle: 'Fora do catálogo',
+			};
+		default: {
+			const _exhaustive: never = status;
+			return _exhaustive;
+		}
+	}
+}
+
 function getVehicleStatusSubtitle(status: VehicleStatus) {
-	return statusSummaryMeta[status].subtitle;
+	return getVehicleStatusSummaryMeta(status).subtitle;
 }
 
 function VehicleModalHeader({
@@ -181,7 +192,7 @@ function VehicleStatusSummary({ status }: VehicleStatusSummaryProps) {
 				</div>
 
 				{statuses.map((item) => {
-					const meta = statusSummaryMeta[item];
+					const meta = getVehicleStatusSummaryMeta(item);
 					const Icon = meta.icon;
 					const isSelected = status === item;
 
