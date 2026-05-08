@@ -11,8 +11,8 @@ import {
 	Fuel,
 	MoreHorizontal,
 	PencilLine,
-	PlusCircle,
 	Trash2,
+	UsersRound,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -31,13 +31,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { appRoutes } from '@/lib/routes/app-routes';
 
 import type {
@@ -53,6 +47,11 @@ import {
 } from '../lib/vehicle-formatters';
 import { formatVehicleStatusLabel } from '../lib/vehicle-labels';
 import { VehicleImage } from './VehicleImage';
+import {
+	VehicleModalHeader,
+	VehicleModalSection,
+	vehicleModalContentClass,
+} from './VehicleModalLayout';
 
 type VehicleCatalogTableProps = {
 	items: readonly VehicleCatalogItem[];
@@ -363,38 +362,6 @@ function VehicleCatalogTable({
 								</TableCell>
 								<TableCell className="text-right">
 									<div className="flex justify-end gap-1">
-										{item.vehicle.status !== 'INACTIVE' ? (
-											<>
-												<Button
-													className="rounded-md border-[#d6dce5]"
-													size="icon-sm"
-													variant="outline"
-													onClick={() => onOpenDetails(item.vehicle)}
-												>
-													<PlusCircle className="size-4" />
-													<span className="sr-only">Abrir veículo</span>
-												</Button>
-												<Button
-													className="rounded-md border-[#d6dce5]"
-													size="icon-sm"
-													variant="outline"
-													onClick={() => onEdit(item.vehicle)}
-												>
-													<PencilLine className="size-4" />
-													<span className="sr-only">Editar veículo</span>
-												</Button>
-											</>
-										) : (
-											<Button
-												className="rounded-md border-[#d6dce5]"
-												size="icon-sm"
-												variant="outline"
-												onClick={() => onOpenDetails(item.vehicle)}
-											>
-												<Eye className="size-4" />
-												<span className="sr-only">Ver veículo</span>
-											</Button>
-										)}
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button
@@ -457,44 +424,50 @@ function VehicleCatalogTable({
 					}
 				}}
 			>
-				<DialogContent className="max-w-xl rounded-2xl border-[#dde4ed] bg-white">
-					<DialogHeader>
-						<DialogTitle>Leads interessados</DialogTitle>
-						<DialogDescription>
-							{interestPickerItem
+				<DialogContent className={`${vehicleModalContentClass} max-w-xl`}>
+					<VehicleModalHeader
+						description={
+							interestPickerItem
 								? `${interestPickerItem.vehicle.brand} ${interestPickerItem.vehicle.model} possui ${interestPickerItem.interests.length} leads vinculados.`
-								: 'Selecione um lead para abrir o detalhe.'}
-						</DialogDescription>
-					</DialogHeader>
-					<div className="max-h-[24rem] overflow-y-auto px-5 py-4">
-						<div className="space-y-2">
-							{interestPickerItem?.interests.map((interest) => (
-								<button
-									type="button"
-									key={`${interest.dealId}-${interest.leadId}`}
-									className="grid w-full gap-1 rounded-xl border border-[#e5ebf3] bg-white px-4 py-3 text-left transition hover:border-[#f05a28]/40 hover:bg-orange-50/40"
-									onClick={() => openLead(interest.leadId)}
-								>
-									<div className="flex items-start justify-between gap-3">
-										<div className="min-w-0">
-											<p className="truncate text-sm font-semibold text-[#101828]">
-												{interest.customerName}
-											</p>
-											<p className="mt-0.5 truncate text-xs text-[#667085]">
-												{interest.dealTitle}
-											</p>
+								: 'Selecione um lead para abrir o detalhe.'
+						}
+						icon={UsersRound}
+						title="Leads interessados"
+					/>
+					<div className="max-h-[28rem] overflow-y-auto px-7 pb-6 pt-3">
+						<VehicleModalSection
+							description="Escolha qual negociação deseja consultar."
+							title="Interesses vinculados"
+						>
+							<div className="space-y-2">
+								{interestPickerItem?.interests.map((interest) => (
+									<button
+										type="button"
+										key={`${interest.dealId}-${interest.leadId}`}
+										className="grid w-full gap-1 rounded-xl border border-[#e5ebf3] bg-white px-4 py-3 text-left transition hover:border-[#f05a28]/40 hover:bg-orange-50/40"
+										onClick={() => openLead(interest.leadId)}
+									>
+										<div className="flex items-start justify-between gap-3">
+											<div className="min-w-0">
+												<p className="truncate text-sm font-semibold text-[#101828]">
+													{interest.customerName}
+												</p>
+												<p className="mt-0.5 truncate text-xs text-[#667085]">
+													{interest.dealTitle}
+												</p>
+											</div>
+											<span className="shrink-0 rounded-md bg-orange-50 px-2 py-1 text-[0.68rem] font-semibold text-[#f05a28]">
+												{dealStageLabels[interest.dealStage] ??
+													interest.dealStage}
+											</span>
 										</div>
-										<span className="shrink-0 rounded-md bg-orange-50 px-2 py-1 text-[0.68rem] font-semibold text-[#f05a28]">
-											{dealStageLabels[interest.dealStage] ??
-												interest.dealStage}
-										</span>
-									</div>
-									<p className="text-xs text-[#667085]">
-										Criado em {formatCompactDate(interest.createdAt)}
-									</p>
-								</button>
-							))}
-						</div>
+										<p className="text-xs text-[#667085]">
+											Criado em {formatCompactDate(interest.createdAt)}
+										</p>
+									</button>
+								))}
+							</div>
+						</VehicleModalSection>
 					</div>
 				</DialogContent>
 			</Dialog>
