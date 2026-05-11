@@ -72,6 +72,27 @@ const queryKeys = {
 			] as const,
 		detail: (vehicleId: string) => ['vehicles', 'detail', vehicleId] as const,
 	},
+	customers: {
+		catalogRoot: ['customers', 'catalog'] as const,
+		catalog: (params: {
+			search?: string;
+			storeId?: string;
+			status?: string;
+			sort?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'customers',
+				'catalog',
+				params.search?.trim() ?? '',
+				params.storeId ?? 'all-stores',
+				params.status ?? 'all-statuses',
+				params.sort ?? 'recent',
+				params.page,
+				params.limit,
+			] as const,
+	},
 	deals: {
 		listRoot: ['deals', 'list'] as const,
 		pipelineRoot: ['deals', 'pipeline'] as const,

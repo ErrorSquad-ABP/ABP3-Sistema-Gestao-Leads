@@ -1,6 +1,12 @@
 'use client';
 
-import { AlertCircle } from 'lucide-react';
+import {
+	AlertCircle,
+	BadgeDollarSign,
+	Mail,
+	Phone,
+	UserRound,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,9 +22,11 @@ import { Label } from '@/components/ui/label';
 
 import type {
 	CustomerDialogMode,
+	CustomerCatalogItem,
 	CustomerMutationInput,
 	CustomerRecord,
 } from '../model/customers.model';
+import { formatCurrency } from './CustomersTable';
 
 type CustomerDialogState = {
 	mode: CustomerDialogMode;
@@ -51,6 +59,11 @@ type CustomerDeleteDialogProps = {
 	deleteTarget: CustomerRecord | null;
 	onClose: () => void;
 	onConfirm: () => void;
+};
+
+type CustomerDetailsDialogProps = {
+	item: CustomerCatalogItem | null;
+	onClose: () => void;
 };
 
 const emptyCustomerForm: CustomerFormState = {
@@ -246,9 +259,82 @@ function CustomerDeleteDialog({
 	);
 }
 
+function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
+	return (
+		<Dialog onOpenChange={(open) => !open && onClose()} open={item !== null}>
+			<DialogContent className="max-w-2xl rounded-[1.35rem] border-[#d8e0ea] bg-white">
+				<DialogHeader className="border-b-0 px-7 pb-3 pt-7">
+					<div className="flex items-start gap-4 pr-8">
+						<div className="flex size-14 items-center justify-center rounded-2xl bg-[#ff5a1f]/10 text-[#ff4f17]">
+							<UserRound className="size-7" />
+						</div>
+						<div>
+							<p className="text-[0.7rem] font-bold uppercase tracking-[0.26em] text-[#ff4f17]">
+								Clientes
+							</p>
+							<DialogTitle className="mt-1 text-2xl font-bold text-[#101828]">
+								{item?.customer.name ?? 'Cliente'}
+							</DialogTitle>
+							<DialogDescription>
+								Resumo comercial do cliente no CRM.
+							</DialogDescription>
+						</div>
+					</div>
+				</DialogHeader>
+				<div className="grid gap-4 px-7 pb-7 pt-3">
+					<div className="grid gap-3 sm:grid-cols-2">
+						<div className="rounded-2xl border border-[#e7edf5] bg-[#f8fafc] p-4">
+							<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
+								<Mail className="size-3.5" />
+								E-mail
+							</p>
+							<p className="mt-2 text-sm font-medium text-[#101828]">
+								{item?.customer.email ?? 'Não informado'}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-[#e7edf5] bg-[#f8fafc] p-4">
+							<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
+								<Phone className="size-3.5" />
+								Telefone
+							</p>
+							<p className="mt-2 text-sm font-medium text-[#101828]">
+								{item?.customer.phone ?? 'Não informado'}
+							</p>
+						</div>
+					</div>
+					<div className="grid gap-3 sm:grid-cols-3">
+						<div className="rounded-2xl border border-[#e7edf5] p-4">
+							<p className="text-xs text-[#667085]">Negociações abertas</p>
+							<p className="mt-1 text-2xl font-bold text-[#101828]">
+								{item?.openDealsCount ?? 0}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-[#e7edf5] p-4">
+							<p className="text-xs text-[#667085]">Negociações ganhas</p>
+							<p className="mt-1 text-2xl font-bold text-emerald-600">
+								{item?.wonDealsCount ?? 0}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-[#e7edf5] p-4">
+							<p className="flex items-center gap-2 text-xs text-[#667085]">
+								<BadgeDollarSign className="size-3.5" />
+								Valor total
+							</p>
+							<p className="mt-1 text-2xl font-bold text-[#101828]">
+								{formatCurrency(item?.totalDealValue ?? '0')}
+							</p>
+						</div>
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 export {
 	emptyCustomerForm,
 	CustomerDeleteDialog,
+	CustomerDetailsDialog,
 	CustomerFormDialog,
 	toCustomerFormState,
 	toCustomerPayload,

@@ -9,6 +9,7 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
 } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
@@ -26,6 +27,7 @@ import {
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
+import { CustomerCatalogResponseDto } from '../../application/dto/customer-catalog-response.dto.js';
 import { CustomerResponseDto } from '../../application/dto/customer-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { CreateCustomerUseCase } from '../../application/use-cases/create-customer.use-case.js';
@@ -34,12 +36,19 @@ import { DeleteCustomerUseCase } from '../../application/use-cases/delete-custom
 // biome-ignore lint/style/useImportType: Nest DI
 import { FindCustomerUseCase } from '../../application/use-cases/find-customer.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI
+import { ListCustomerCatalogUseCase } from '../../application/use-cases/list-customer-catalog.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI
 import { ListCustomersUseCase } from '../../application/use-cases/list-customers.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { UpdateCustomerUseCase } from '../../application/use-cases/update-customer.use-case.js';
+import { CustomerCatalogPresenter } from '../presenters/customer-catalog.presenter.js';
 import { CustomerPresenter } from '../presenters/customer.presenter.js';
 import type { CreateCustomerValidated } from '../validators/create-customer.validator.js';
 import { CreateCustomerValidator } from '../validators/create-customer.validator.js';
+import {
+	ListCustomerCatalogQueryValidator,
+	type ListCustomerCatalogValidatedQuery,
+} from '../validators/list-customer-catalog-query.validator.js';
 import type { UpdateCustomerValidated } from '../validators/update-customer.validator.js';
 import { UpdateCustomerValidator } from '../validators/update-customer.validator.js';
 
@@ -70,6 +79,7 @@ class CustomerController {
 		private readonly deleteCustomerUseCase: DeleteCustomerUseCase,
 		private readonly findCustomerUseCase: FindCustomerUseCase,
 		private readonly listCustomersUseCase: ListCustomersUseCase,
+		private readonly listCustomerCatalogUseCase: ListCustomerCatalogUseCase,
 	) {}
 
 	@Post()
@@ -105,6 +115,25 @@ class CustomerController {
 		const customers = await this.listCustomersUseCase.execute();
 
 		return CustomerPresenter.toResponseMany(customers);
+	}
+
+	@Get('catalog')
+	@HttpCode(HttpStatus.OK)
+	@ApiOperation({
+		summary: 'Listar catálogo enriquecido de clientes',
+		description:
+			'Retorna clientes com métricas de leads, negociações, atividade e dados agregados para a tela de CRM.',
+	})
+	@ApiOkResponseEnvelope(CustomerCatalogResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async catalog(
+		@Query(ListCustomerCatalogQueryValidator)
+		query: ListCustomerCatalogValidatedQuery,
+	) {
+		const page = await this.listCustomerCatalogUseCase.execute(query);
+
+		return CustomerCatalogPresenter.toResponse(page);
 	}
 
 	@Get(':id')

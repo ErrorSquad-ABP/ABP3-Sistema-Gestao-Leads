@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { CreateCustomerUseCase } from './application/use-cases/create-customer.use-case.js';
 import { DeleteCustomerUseCase } from './application/use-cases/delete-customer.use-case.js';
 import { FindCustomerUseCase } from './application/use-cases/find-customer.use-case.js';
+import { ListCustomerCatalogUseCase } from './application/use-cases/list-customer-catalog.use-case.js';
 import { ListCustomersUseCase } from './application/use-cases/list-customers.use-case.js';
 import { UpdateCustomerUseCase } from './application/use-cases/update-customer.use-case.js';
 import { CustomerFactory } from './domain/factories/customer.factory.js';
@@ -18,6 +19,7 @@ import { CustomerController } from './presentation/controllers/customer.controll
 		UpdateCustomerUseCase,
 		DeleteCustomerUseCase,
 		FindCustomerUseCase,
+		ListCustomerCatalogUseCase,
 		ListCustomersUseCase,
 	],
 	exports: [CustomerFactory, CustomerRepositoryFactory, FindCustomerUseCase],
