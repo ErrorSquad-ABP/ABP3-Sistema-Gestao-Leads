@@ -1,6 +1,8 @@
 'use client';
 
+import { Icon } from '@iconify/react';
 import {
+	Flame,
 	Handshake,
 	Plus,
 	Search,
@@ -9,6 +11,7 @@ import {
 	UsersRound,
 	Zap,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -16,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLeadStoresQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import { isApiError } from '@/lib/http/api-error';
+import { appRoutes } from '@/lib/routes/app-routes';
 
 import {
 	useCreateCustomerMutation,
@@ -85,6 +89,12 @@ function sourceLabel(value: string) {
 			return 'Site / Formulário';
 		case 'WHATSAPP':
 			return 'WhatsApp';
+		case 'INSTAGRAM':
+			return 'Instagram';
+		case 'FACEBOOK':
+			return 'Facebook';
+		case 'MERCADO_LIVRE':
+			return 'Mercado Livre';
 		case 'PHONE':
 			return 'Telefone';
 		case 'SOCIAL_MEDIA':
@@ -95,6 +105,32 @@ function sourceLabel(value: string) {
 			return 'Cadastro';
 		default:
 			return value;
+	}
+}
+
+function SourceIcon({ value }: { readonly value: string }) {
+	switch (value) {
+		case 'WHATSAPP':
+			return (
+				<Icon className="size-4 text-[#25d366]" icon="simple-icons:whatsapp" />
+			);
+		case 'INSTAGRAM':
+			return (
+				<Icon className="size-4 text-[#e4405f]" icon="simple-icons:instagram" />
+			);
+		case 'FACEBOOK':
+			return (
+				<Icon className="size-4 text-[#1877f2]" icon="simple-icons:facebook" />
+			);
+		case 'MERCADO_LIVRE':
+			return (
+				<Icon
+					className="size-4 text-[#3483fa]"
+					icon="simple-icons:mercadolibre"
+				/>
+			);
+		default:
+			return null;
 	}
 }
 
@@ -383,11 +419,13 @@ function CustomersManagementScreen() {
 
 			<div className="grid gap-4 xl:grid-cols-[1fr_1.25fr_1fr]">
 				<BreakdownCard
+					href={appRoutes.app.leads}
 					items={catalog?.origins ?? []}
 					title="Clientes por origem"
 					total={catalog?.summary.total ?? 0}
 				/>
 				<BreakdownCard
+					href={appRoutes.app.stores}
 					items={catalog?.locations ?? []}
 					title="Clientes por localização"
 					total={catalog?.summary.total ?? 0}
@@ -409,12 +447,19 @@ function CustomersManagementScreen() {
 						<div className="space-y-3">
 							{(catalog?.highlights ?? []).map((item, index) => (
 								<div
-									className="grid grid-cols-[1.5rem_2rem_1fr_auto] items-center gap-2 text-sm"
+									className="grid grid-cols-[1.75rem_2rem_1fr_auto] items-center gap-2 text-sm"
 									key={item.customer.id}
 								>
-									<span className="text-xs font-semibold text-[#f05a28]">
-										{index + 1}
-									</span>
+									{index === 0 ? (
+										<span className="flex items-center gap-1 text-sm font-bold text-[#f05a28]">
+											1
+											<Flame className="size-3.5 fill-[#f05a28] text-[#f05a28]" />
+										</span>
+									) : (
+										<span className="text-xs font-semibold text-[#f05a28]">
+											{index + 1}
+										</span>
+									)}
 									<span className="flex size-8 items-center justify-center rounded-full bg-[#f1f4f8] text-[0.65rem] font-semibold text-[#667085]">
 										{item.customer.name
 											.split(/\s+/)
@@ -479,6 +524,7 @@ function CustomersManagementScreen() {
 }
 
 type BreakdownCardProps = {
+	href: string;
 	items: readonly { readonly label: string; readonly count: number }[];
 	title: string;
 	total: number;
@@ -486,14 +532,15 @@ type BreakdownCardProps = {
 };
 
 function BreakdownCard({
+	href,
 	items,
 	title,
 	total,
 	variant = 'bars',
 }: BreakdownCardProps) {
 	return (
-		<Card className="rounded-3xl border-[#dfe7f1] bg-white">
-			<CardContent className="p-5">
+		<Card className="h-full rounded-3xl border-[#dfe7f1] bg-white">
+			<CardContent className="flex h-full flex-col p-5">
 				<div className="mb-4 flex items-start justify-between">
 					<div>
 						<h2 className="text-sm font-bold text-[#101828]">{title}</h2>
@@ -503,31 +550,47 @@ function BreakdownCard({
 								: 'Canais que mais geram clientes.'}
 						</p>
 					</div>
-					<Button className="h-auto p-0 text-xs text-[#f05a28]" variant="link">
+					<Link
+						className="text-xs font-medium text-[#f05a28] hover:underline"
+						href={href}
+					>
 						Ver todos
-					</Button>
+					</Link>
 				</div>
-				<div className={variant === 'donut' ? 'grid gap-4 md:grid-cols-2' : ''}>
-					<div className="space-y-3">
+				<div
+					className={
+						variant === 'donut'
+							? 'grid flex-1 items-center gap-6 md:grid-cols-[1.15fr_0.85fr]'
+							: 'flex-1'
+					}
+				>
+					<div className={variant === 'donut' ? 'space-y-3' : 'space-y-4'}>
 						{items.map((item) => {
 							const percentage =
 								total > 0 ? Math.round((item.count / total) * 100) : 0;
 							return (
 								<div
-									className="grid grid-cols-[1fr_auto] gap-3"
+									className={
+										variant === 'donut'
+											? 'grid grid-cols-[1fr_auto] items-center gap-3 border-b border-[#eef2f6] pb-2 last:border-b-0'
+											: 'grid grid-cols-[minmax(8rem,1fr)_minmax(10rem,1.3fr)_auto] items-center gap-4'
+									}
 									key={item.label}
 								>
-									<div>
-										<p className="text-sm font-medium text-[#344054]">
+									<div className="flex min-w-0 items-center gap-2">
+										<SourceIcon value={item.label} />
+										<p className="truncate text-sm font-medium text-[#344054]">
 											{sourceLabel(item.label)}
 										</p>
+									</div>
+									{variant === 'donut' ? null : (
 										<div className="mt-2 h-1.5 rounded-full bg-[#eef2f6]">
 											<div
 												className="h-1.5 rounded-full bg-[#f05a28]"
 												style={{ width: `${Math.max(4, percentage)}%` }}
 											/>
 										</div>
-									</div>
+									)}
 									<span className="text-sm font-semibold text-[#667085]">
 										{percentage}% ({item.count})
 									</span>
@@ -540,9 +603,9 @@ function BreakdownCard({
 					</div>
 					{variant === 'donut' ? (
 						<div className="flex items-center justify-center">
-							<div className="relative flex size-32 items-center justify-center rounded-full bg-[conic-gradient(#f05a28_0_42%,#7c3aed_42%_62%,#22c55e_62%_78%,#64748b_78%_100%)]">
-								<div className="flex size-20 flex-col items-center justify-center rounded-full bg-white">
-									<span className="text-xl font-bold text-[#101828]">
+							<div className="relative flex size-40 items-center justify-center rounded-full bg-[conic-gradient(#f05a28_0_42%,#7c3aed_42%_62%,#22c55e_62%_78%,#64748b_78%_100%)]">
+								<div className="flex size-24 flex-col items-center justify-center rounded-full bg-white">
+									<span className="text-2xl font-bold text-[#101828]">
 										{formatCount(total)}
 									</span>
 									<span className="text-xs text-[#667085]">Total</span>
