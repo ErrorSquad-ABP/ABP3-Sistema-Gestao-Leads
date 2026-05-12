@@ -34,11 +34,17 @@ type CustomersTableProps = {
 	onDelete: (item: CustomerCatalogItem) => void;
 	onEdit: (item: CustomerCatalogItem) => void;
 	onNextPage: () => void;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (pageSize: 6 | 10 | 20 | 50) => void;
 	onPreviousPage: () => void;
 	onView: (item: CustomerCatalogItem) => void;
+	pageSize: number;
+	pageSizeOptions: readonly (6 | 10 | 20 | 50)[];
 	totalItems: number;
 	totalPages: number;
 };
+
+type PaginationItem = number | 'ellipsis';
 
 function formatCustomerInitials(name: string) {
 	const words = name.trim().split(/\s+/).filter(Boolean);
@@ -93,17 +99,61 @@ function formatDealSummary(item: CustomerCatalogItem) {
 	return `${item.openDealsCount} ${item.openDealsCount === 1 ? 'aberta' : 'abertas'}`;
 }
 
+function buildPaginationItems(
+	currentPage: number,
+	totalPages: number,
+): PaginationItem[] {
+	if (totalPages <= 5) {
+		return Array.from({ length: totalPages }, (_, index) => index + 1);
+	}
+
+	const leadingPages = [1, 2, 3, 4];
+	if (currentPage <= 4) {
+		return [...leadingPages, 'ellipsis', totalPages];
+	}
+
+	if (currentPage >= totalPages - 2) {
+		return [
+			1,
+			'ellipsis',
+			totalPages - 3,
+			totalPages - 2,
+			totalPages - 1,
+			totalPages,
+		];
+	}
+
+	return [
+		1,
+		'ellipsis',
+		currentPage - 1,
+		currentPage,
+		currentPage + 1,
+		'ellipsis',
+		totalPages,
+	];
+}
+
 function CustomersTable({
 	currentPage,
 	items,
 	onDelete,
 	onEdit,
 	onNextPage,
+	onPageChange,
+	onPageSizeChange,
 	onPreviousPage,
 	onView,
+	pageSize,
+	pageSizeOptions,
 	totalItems,
 	totalPages,
 }: CustomersTableProps) {
+	const paginationItems = buildPaginationItems(currentPage, totalPages);
+	const firstVisibleItem =
+		items.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+	const lastVisibleItem = Math.min(currentPage * pageSize, totalItems);
+
 	return (
 		<div className="overflow-hidden rounded-b-3xl border-t border-[#e7edf5]">
 			<Table>
@@ -191,8 +241,8 @@ function CustomersTable({
 									<Badge
 										className={
 											item.status === 'ACTIVE'
-												? 'gap-1.5 border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-700'
-												: 'gap-1.5 border-slate-100 bg-slate-100 px-3 py-1 text-slate-600'
+												? 'gap-1.5 rounded-full border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-700'
+												: 'gap-1.5 rounded-full border-slate-100 bg-slate-100 px-3 py-1 text-slate-600'
 										}
 									>
 										<span
@@ -207,13 +257,6 @@ function CustomersTable({
 								</TableCell>
 								<TableCell className="pr-6">
 									<div className="flex justify-end gap-2">
-										<Button
-											className="h-9 rounded-lg border-[#d8e0ea] px-4 text-xs shadow-none"
-											onClick={() => onView(item)}
-											variant="outline"
-										>
-											Ver detalhes
-										</Button>
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button
@@ -261,10 +304,10 @@ function CustomersTable({
 				</TableBody>
 			</Table>
 
-			<div className="flex flex-col gap-3 border-t border-[#e7edf5] px-7 py-4 sm:flex-row sm:items-center sm:justify-between">
+			<div className="grid gap-3 border-t border-[#e7edf5] px-7 py-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
 				<p className="text-sm text-[#667085]">
-					Mostrando {items.length === 0 ? 0 : (currentPage - 1) * 6 + 1} a{' '}
-					{Math.min(currentPage * 6, totalItems)} de {totalItems} clientes
+					Mostrando {firstVisibleItem} a {lastVisibleItem} de {totalItems}{' '}
+					clientes
 				</p>
 				<div className="flex items-center justify-center gap-2">
 					<Button
@@ -276,10 +319,29 @@ function CustomersTable({
 					>
 						<ChevronLeft className="size-4" />
 					</Button>
-					<span className="rounded-lg bg-orange-50 px-3 py-1.5 text-sm font-semibold text-[#f05a28]">
-						{currentPage}
-					</span>
-					<span className="px-2 text-sm text-[#1e293b]">de {totalPages}</span>
+					{paginationItems.map((item, index) =>
+						item === 'ellipsis' ? (
+							<span
+								className="px-2 text-sm font-semibold text-[#667085]"
+								key={`ellipsis-${index}`}
+							>
+								...
+							</span>
+						) : (
+							<Button
+								className={
+									item === currentPage
+										? 'min-w-9 rounded-lg bg-orange-50 px-3 text-sm font-semibold text-[#f05a28] shadow-none hover:bg-orange-50'
+										: 'min-w-9 rounded-lg px-3 text-sm font-semibold text-[#1e293b] shadow-none hover:bg-[#f8fafc]'
+								}
+								key={item}
+								onClick={() => onPageChange(item)}
+								variant="ghost"
+							>
+								{item}
+							</Button>
+						),
+					)}
 					<Button
 						className="rounded-lg border-[#d8e0ea]"
 						disabled={currentPage >= totalPages}
@@ -290,7 +352,22 @@ function CustomersTable({
 						<ChevronRight className="size-4" />
 					</Button>
 				</div>
-				<div className="text-sm text-[#667085]">Itens por página: 6</div>
+				<label className="flex items-center justify-start gap-2 text-sm text-[#667085] lg:justify-end">
+					Itens por página:
+					<select
+						className="h-9 rounded-lg border border-[#d8e0ea] bg-white px-3 text-sm font-semibold text-[#1e293b] outline-none"
+						onChange={(event) =>
+							onPageSizeChange(Number(event.target.value) as 6 | 10 | 20 | 50)
+						}
+						value={pageSize}
+					>
+						{pageSizeOptions.map((option) => (
+							<option key={option} value={option}>
+								{option}
+							</option>
+						))}
+					</select>
+				</label>
 			</div>
 		</div>
 	);

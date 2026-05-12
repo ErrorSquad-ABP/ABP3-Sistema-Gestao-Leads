@@ -2,10 +2,8 @@
 
 import {
 	Handshake,
-	MoreHorizontal,
 	Plus,
 	Search,
-	SlidersHorizontal,
 	Star,
 	Target,
 	TrendingUp,
@@ -44,7 +42,7 @@ import {
 } from './CustomerForm';
 import { CustomersTable, formatCurrency } from './CustomersTable';
 
-const PAGE_SIZE = 6;
+const pageSizeOptions = [6, 10, 20, 50] as const;
 
 const statusOptions: {
 	readonly value: CustomerCatalogStatus;
@@ -109,6 +107,7 @@ function CustomersManagementScreen() {
 	>('');
 	const [selectedStoreId, setSelectedStoreId] = useState('');
 	const [sort, setSort] = useState<CustomerCatalogSort>('recent');
+	const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(6);
 	const [dialogState, setDialogState] = useState<CustomerDialogState | null>(
 		null,
 	);
@@ -126,7 +125,7 @@ function CustomersManagementScreen() {
 		status: selectedStatus || undefined,
 		sort,
 		page,
-		limit: PAGE_SIZE,
+		limit: pageSize,
 	});
 	const storesQuery = useLeadStoresQuery();
 	const createCustomerMutation = useCreateCustomerMutation();
@@ -330,21 +329,6 @@ function CustomersManagementScreen() {
 									</option>
 								))}
 							</select>
-							<Button
-								className="h-12 rounded-xl border-[#d8e0ea] px-4 shadow-none"
-								variant="outline"
-							>
-								Mais filtros
-								<SlidersHorizontal className="size-4" />
-							</Button>
-							<Button
-								className="h-12 rounded-xl border-[#d8e0ea] shadow-none"
-								size="icon"
-								variant="outline"
-							>
-								<MoreHorizontal className="size-4" />
-								<span className="sr-only">Mais opções</span>
-							</Button>
 						</div>
 					</div>
 
@@ -384,8 +368,15 @@ function CustomersManagementScreen() {
 							}}
 							onEdit={openEditDialog}
 							onNextPage={() => setPage((value) => value + 1)}
+							onPageChange={setPage}
+							onPageSizeChange={(value) => {
+								setPageSize(value);
+								setPage(1);
+							}}
 							onPreviousPage={() => setPage((value) => value - 1)}
 							onView={setDetailsTarget}
+							pageSize={pageSize}
+							pageSizeOptions={pageSizeOptions}
 							totalItems={catalog?.total ?? 0}
 							totalPages={catalog?.totalPages ?? 1}
 						/>
