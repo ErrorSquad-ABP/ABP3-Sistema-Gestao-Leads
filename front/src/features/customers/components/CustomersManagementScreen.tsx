@@ -6,7 +6,6 @@ import {
 	Search,
 	Star,
 	Target,
-	TrendingUp,
 	UsersRound,
 	Zap,
 } from 'lucide-react';
@@ -270,10 +269,7 @@ function CustomersManagementScreen() {
 									<p className="mt-1 text-2xl font-bold text-[#101828]">
 										{card.value}
 									</p>
-									<p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
-										<TrendingUp className="size-3" />
-										{card.helper}
-									</p>
+									<p className="mt-1 text-xs text-[#667085]">{card.helper}</p>
 								</div>
 							</CardContent>
 						</Card>
