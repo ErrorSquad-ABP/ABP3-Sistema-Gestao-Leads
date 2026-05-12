@@ -126,7 +126,7 @@ function SourceIcon({ value }: { readonly value: string }) {
 			return (
 				<Icon
 					className="size-4 text-[#3483fa]"
-					icon="simple-icons:mercadolibre"
+					icon="material-symbols:storefront-outline-rounded"
 				/>
 			);
 		default:
@@ -451,10 +451,7 @@ function CustomersManagementScreen() {
 									key={item.customer.id}
 								>
 									{index === 0 ? (
-										<span className="flex items-center gap-1 text-sm font-bold text-[#f05a28]">
-											1
-											<Flame className="size-3.5 fill-[#f05a28] text-[#f05a28]" />
-										</span>
+										<span className="text-sm font-bold text-[#f05a28]">1</span>
 									) : (
 										<span className="text-xs font-semibold text-[#f05a28]">
 											{index + 1}
@@ -471,8 +468,11 @@ function CustomersManagementScreen() {
 									<span className="truncate font-medium text-[#101828]">
 										{item.customer.name}
 									</span>
-									<span className="font-semibold text-[#101828]">
+									<span className="flex items-center justify-end gap-1 font-semibold text-[#101828]">
 										{formatCurrency(item.totalDealValue)}
+										{index === 0 ? (
+											<Flame className="size-3.5 fill-[#f05a28] text-[#f05a28]" />
+										) : null}
 									</span>
 								</div>
 							))}
@@ -577,8 +577,10 @@ function BreakdownCard({
 									}
 									key={item.label}
 								>
-									<div className="flex min-w-0 items-center gap-2">
-										<SourceIcon value={item.label} />
+									<div className="grid min-w-0 grid-cols-[1.25rem_1fr] items-center gap-2">
+										<span className="flex size-5 items-center justify-center">
+											<SourceIcon value={item.label} />
+										</span>
 										<p className="truncate text-sm font-medium text-[#344054]">
 											{sourceLabel(item.label)}
 										</p>
