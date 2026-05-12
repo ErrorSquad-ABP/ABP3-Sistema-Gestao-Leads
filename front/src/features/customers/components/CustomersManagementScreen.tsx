@@ -42,7 +42,7 @@ import {
 } from './CustomerForm';
 import { CustomersTable, formatCurrency } from './CustomersTable';
 
-const pageSizeOptions = [6, 10, 20, 50] as const;
+const pageSizeOptions = [6, 12, 18, 24, 48] as const;
 
 const statusOptions: {
 	readonly value: CustomerCatalogStatus;

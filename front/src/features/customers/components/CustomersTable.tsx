@@ -35,11 +35,11 @@ type CustomersTableProps = {
 	onEdit: (item: CustomerCatalogItem) => void;
 	onNextPage: () => void;
 	onPageChange: (page: number) => void;
-	onPageSizeChange: (pageSize: 6 | 10 | 20 | 50) => void;
+	onPageSizeChange: (pageSize: 6 | 12 | 18 | 24 | 48) => void;
 	onPreviousPage: () => void;
 	onView: (item: CustomerCatalogItem) => void;
 	pageSize: number;
-	pageSizeOptions: readonly (6 | 10 | 20 | 50)[];
+	pageSizeOptions: readonly (6 | 12 | 18 | 24 | 48)[];
 	totalItems: number;
 	totalPages: number;
 };
@@ -357,7 +357,9 @@ function CustomersTable({
 					<select
 						className="h-9 rounded-lg border border-[#d8e0ea] bg-white px-3 text-sm font-semibold text-[#1e293b] outline-none"
 						onChange={(event) =>
-							onPageSizeChange(Number(event.target.value) as 6 | 10 | 20 | 50)
+							onPageSizeChange(
+								Number(event.target.value) as 6 | 12 | 18 | 24 | 48,
+							)
 						}
 						value={pageSize}
 					>
