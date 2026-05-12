@@ -131,7 +131,7 @@ function SourceIcon({ value }: { readonly value: string }) {
 		case 'MERCADO_LIVRE':
 			return (
 				<Icon
-					className="size-5 text-[#3483fa]"
+					className="size-5 text-[#ffe600]"
 					icon="arcticons:mercado-libre"
 				/>
 			);
