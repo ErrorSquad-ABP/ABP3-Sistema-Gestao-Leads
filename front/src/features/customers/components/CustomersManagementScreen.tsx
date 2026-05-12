@@ -329,25 +329,26 @@ function CustomersManagementScreen() {
 									</option>
 								))}
 							</select>
+							<div className="flex items-center gap-3">
+								<span className="whitespace-nowrap text-sm text-[#667085]">
+									Ordenar por
+								</span>
+								<select
+									className="h-12 rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
+									onChange={(event) => {
+										setSort(event.target.value as CustomerCatalogSort);
+										setPage(1);
+									}}
+									value={sort}
+								>
+									{sortOptions.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
+								</select>
+							</div>
 						</div>
-					</div>
-
-					<div className="flex items-center justify-end gap-3 border-t border-[#e7edf5] px-5 py-3">
-						<span className="text-sm text-[#667085]">Ordenar por</span>
-						<select
-							className="h-10 rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
-							onChange={(event) => {
-								setSort(event.target.value as CustomerCatalogSort);
-								setPage(1);
-							}}
-							value={sort}
-						>
-							{sortOptions.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
-								</option>
-							))}
-						</select>
 					</div>
 
 					{catalogQuery.isLoading ? (
