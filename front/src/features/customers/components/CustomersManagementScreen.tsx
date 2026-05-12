@@ -2,11 +2,17 @@
 
 import { Icon } from '@iconify/react';
 import {
+	Circle,
 	Flame,
+	Globe2,
 	Handshake,
+	Megaphone,
+	Phone,
 	Plus,
 	Search,
+	Share2,
 	Star,
+	Store,
 	Target,
 	UsersRound,
 	Zap,
@@ -125,12 +131,24 @@ function SourceIcon({ value }: { readonly value: string }) {
 		case 'MERCADO_LIVRE':
 			return (
 				<Icon
-					className="size-4 text-[#3483fa]"
-					icon="material-symbols:storefront-outline-rounded"
+					className="size-5 text-[#3483fa]"
+					icon="arcticons:mercado-libre"
 				/>
 			);
+		case 'INDICATION':
+			return <Megaphone className="size-4 text-[#667085]" />;
+		case 'WEBSITE':
+			return <Globe2 className="size-4 text-[#667085]" />;
+		case 'PHONE':
+			return <Phone className="size-4 text-[#667085]" />;
+		case 'SOCIAL_MEDIA':
+			return <Share2 className="size-4 text-[#667085]" />;
+		case 'WALK_IN':
+			return <Store className="size-4 text-[#667085]" />;
+		case 'Cadastro':
+			return <UsersRound className="size-4 text-[#667085]" />;
 		default:
-			return null;
+			return <Circle className="size-3 text-[#667085]" />;
 	}
 }
 
@@ -551,8 +569,9 @@ function BreakdownCard({
 						</p>
 					</div>
 					<Link
-						className="text-xs font-medium text-[#f05a28] hover:underline"
+						className="text-xs font-semibold text-[#f05a28] hover:text-[#df4f1f] hover:underline"
 						href={href}
+						style={{ color: '#f05a28' }}
 					>
 						Ver todos
 					</Link>
