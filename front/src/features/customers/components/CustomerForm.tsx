@@ -8,7 +8,6 @@ import {
 	BadgeDollarSign,
 	CalendarClock,
 	CheckCircle2,
-	CircleSlash2,
 	IdCard,
 	Info,
 	Mail,
@@ -164,19 +163,6 @@ function formatCustomerStatus(status: CustomerCatalogStatus) {
 	}
 }
 
-function getCustomerStatusSubtitle(status: CustomerCatalogStatus) {
-	switch (status) {
-		case 'ACTIVE':
-			return 'Com vínculo ou contato';
-		case 'INACTIVE':
-			return 'Sem atividade recente';
-		default: {
-			const _exhaustive: never = status;
-			return _exhaustive;
-		}
-	}
-}
-
 function formatDateTime(value: Date | null) {
 	if (!value) {
 		return 'Sem atividade';
@@ -308,54 +294,6 @@ function CustomerDetail({ children, icon: Icon, label }: CustomerDetailProps) {
 			<p className="mt-2 break-words text-sm font-medium text-[#101828]">
 				{children}
 			</p>
-		</div>
-	);
-}
-
-function CustomerStatusSummary({
-	status,
-}: {
-	readonly status: CustomerCatalogStatus;
-}) {
-	const isActive = status === 'ACTIVE';
-	const StatusIcon = isActive ? CheckCircle2 : CircleSlash2;
-
-	return (
-		<div className="rounded-2xl border border-[#dfe7f1] bg-white p-3">
-			<div className="grid gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-				<div className="flex items-center gap-3 rounded-xl bg-orange-50/70 px-3 py-2.5">
-					<div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#ff5a1f]/10 text-[#ff4f17]">
-						<UserRound className="size-5" />
-					</div>
-					<div className="min-w-0">
-						<p className="text-sm font-bold text-[#1b2537]">
-							Resumo do cliente
-						</p>
-						<p className="truncate text-xs text-[#6d7890]">
-							Status operacional no CRM.
-						</p>
-					</div>
-				</div>
-				<div className="flex items-center gap-3 rounded-xl border border-[#ff8a5c] bg-orange-50 px-3 py-2.5 shadow-[0_0_0_1px_rgba(255,90,31,0.16)]">
-					<div
-						className={
-							isActive
-								? 'flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700'
-								: 'flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600'
-						}
-					>
-						<StatusIcon className="size-4" />
-					</div>
-					<div className="min-w-0">
-						<p className="truncate text-xs font-bold text-[#1b2537]">
-							{formatCustomerStatus(status)}
-						</p>
-						<p className="truncate text-[0.68rem] text-[#6d7890]">
-							{getCustomerStatusSubtitle(status)}
-						</p>
-					</div>
-				</div>
-			</div>
 		</div>
 	);
 }
@@ -601,11 +539,6 @@ function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 					title={item.customer.name}
 				/>
 				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pb-7 pt-3 md:px-8">
-					<CustomerModalInfoBanner>
-						Status atual: {formatCustomerStatus(item.status)} -{' '}
-						{getCustomerStatusSubtitle(item.status)}.
-					</CustomerModalInfoBanner>
-
 					<div className="grid gap-4 lg:grid-cols-2">
 						<CustomerModalSection
 							description="Dados de identificação e contato do cadastro."
@@ -667,8 +600,6 @@ function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 							</div>
 						</CustomerModalSection>
 					</div>
-
-					<CustomerStatusSummary status={item.status} />
 				</div>
 			</DialogContent>
 		</Dialog>
