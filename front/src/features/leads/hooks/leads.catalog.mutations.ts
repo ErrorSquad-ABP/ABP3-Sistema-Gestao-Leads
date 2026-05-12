@@ -24,6 +24,9 @@ function useCreateCustomerMutation() {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.customers,
 			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.customers.catalogRoot,
+			});
 			void queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
 			});
@@ -40,6 +43,9 @@ function useUpdateCustomerMutation() {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.customers,
 			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.customers.catalogRoot,
+			});
 			void queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
 			});
@@ -54,6 +60,9 @@ function useDeleteCustomerMutation() {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.customers,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.customers.catalogRoot,
 			});
 			void queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
