@@ -24,6 +24,9 @@ function useCreateLeadMutation() {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
 			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.catalogRoot,
+			});
 		},
 	});
 }
@@ -37,6 +40,9 @@ function useUpdateLeadMutation() {
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.catalogRoot,
 			});
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(variables.leadId),
@@ -59,6 +65,9 @@ function useReassignLeadMutation() {
 				queryKey: queryKeys.leads.listRoot,
 			});
 			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.catalogRoot,
+			});
+			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(variables.leadId),
 			});
 			await queryClient.invalidateQueries({
@@ -78,6 +87,9 @@ function useConvertLeadMutation() {
 				queryKey: queryKeys.leads.listRoot,
 			});
 			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.catalogRoot,
+			});
+			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(leadId),
 			});
 			await queryClient.invalidateQueries({
@@ -95,6 +107,9 @@ function useDeleteLeadMutation() {
 		onSuccess: async (_data, leadId) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.leads.catalogRoot,
 			});
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(leadId),

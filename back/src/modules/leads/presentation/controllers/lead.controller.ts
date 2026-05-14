@@ -35,6 +35,7 @@ import {
 } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import { StoreResponseDto } from '../../../stores/application/dto/store-response.dto.js';
 import { StorePresenter } from '../../../stores/presentation/presenters/store.presenter.js';
+import { LeadCatalogResponseDto } from '../../application/dto/lead-catalog-response.dto.js';
 import { LeadCatalogOwnerDto } from '../../application/dto/lead-catalog-owner.dto.js';
 import { LeadDetailResponseDto } from '../../application/dto/lead-detail-response.dto.js';
 import { LeadResponseDto } from '../../application/dto/lead-response.dto.js';
@@ -54,6 +55,8 @@ import { ListLeadCatalogOwnersUseCase } from '../../application/use-cases/list-l
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListLeadCatalogStoresUseCase } from '../../application/use-cases/list-lead-catalog-stores.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { ListLeadCatalogUseCase } from '../../application/use-cases/list-lead-catalog.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListAllLeadsUseCase } from '../../application/use-cases/list-all-leads.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListManagerLeadsUseCase } from '../../application/use-cases/list-manager-leads.use-case.js';
@@ -69,6 +72,10 @@ import { LeadDetailPresenter } from '../presenters/lead-detail.presenter.js';
 import { LeadPresenter } from '../presenters/lead.presenter.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateLeadValidator } from '../validators/create-lead.validator.js';
+import {
+	ListLeadCatalogQueryValidator,
+	type ListLeadCatalogValidatedQuery,
+} from '../validators/list-lead-catalog-query.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { ListLeadsQueryValidator } from '../validators/list-leads-query.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
@@ -113,6 +120,7 @@ class LeadController {
 		private readonly updateLeadUseCase: UpdateLeadUseCase,
 		private readonly findLeadUseCase: FindLeadUseCase,
 		private readonly getLeadDetailUseCase: GetLeadDetailUseCase,
+		private readonly listLeadCatalogUseCase: ListLeadCatalogUseCase,
 		private readonly listLeadCatalogStoresUseCase: ListLeadCatalogStoresUseCase,
 		private readonly listLeadCatalogOwnersUseCase: ListLeadCatalogOwnersUseCase,
 		private readonly listOwnLeadsUseCase: ListOwnLeadsUseCase,
@@ -233,6 +241,47 @@ class LeadController {
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	listCatalogOwners(@CurrentUser() user: JwtUser) {
 		return this.listLeadCatalogOwnersUseCase.execute(toLeadActor(user));
+	}
+
+	@Get('catalog')
+	@ApiOperation({
+		summary: 'Listar catálogo enriquecido de leads',
+		description:
+			'Retorna leads paginados com métricas, funil e distribuição por origem para a tela operacional.',
+	})
+	@ApiOkResponseEnvelope(LeadCatalogResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async listCatalog(
+		@CurrentUser() user: JwtUser,
+		@Query(ListLeadCatalogQueryValidator)
+		query: ListLeadCatalogValidatedQuery,
+	) {
+		const catalog = await this.listLeadCatalogUseCase.execute(
+			toLeadActor(user),
+			query,
+		);
+		return {
+			items: catalog.items.map((item) => ({
+				lead: LeadPresenter.toResponse(item.lead),
+				customer: item.customer,
+				store: item.store,
+				owner: item.owner,
+				lastActivityAt: item.lastActivityAt?.toISOString() ?? null,
+				lastActivityLabel: item.lastActivityLabel,
+				openDealsCount: item.openDealsCount,
+				totalDealsCount: item.totalDealsCount,
+				hasInteraction: item.hasInteraction,
+			})),
+			summary: catalog.summary,
+			funnel: catalog.funnel,
+			origins: catalog.origins,
+			page: catalog.page,
+			limit: catalog.limit,
+			total: catalog.total,
+			totalPages: catalog.totalPages,
+		};
 	}
 
 	@Get('team/:teamId')

@@ -7,6 +7,7 @@ import { TeamRepositoryFactory } from '../../../teams/infrastructure/persistence
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import type { Lead } from '../../domain/entities/lead.entity.js';
 import { LeadAccessDeniedError } from '../../domain/errors/lead-access-denied.error.js';
+import type { LeadCatalogScope } from '../../domain/repositories/lead.repository.js';
 import type { LeadActor } from '../types/lead-actor.js';
 
 type LeadScope =
@@ -106,6 +107,17 @@ class LeadAccessPolicy {
 
 	async resolveCatalogScope(actor: LeadActor): Promise<LeadScope> {
 		return this.resolveScope(actor);
+	}
+
+	async resolveCatalogListScope(actor: LeadActor): Promise<LeadCatalogScope> {
+		const scope = await this.resolveScope(actor);
+		if (scope.kind === 'full') {
+			return { kind: 'all' };
+		}
+		if (scope.kind === 'attendant') {
+			return { kind: 'owner', ownerUserId: Uuid.parse(scope.actorUserId) };
+		}
+		return { kind: 'readableTeams', teamIds: [...scope.readTeamIds] };
 	}
 
 	private async targetUserTeamIds(userId: string): Promise<readonly string[]> {

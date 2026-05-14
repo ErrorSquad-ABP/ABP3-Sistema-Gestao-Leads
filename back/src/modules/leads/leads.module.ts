@@ -12,6 +12,7 @@ import { DeleteLeadUseCase } from './application/use-cases/delete-lead.use-case.
 import { FindLeadUseCase } from './application/use-cases/find-lead.use-case.js';
 import { ListLeadCatalogOwnersUseCase } from './application/use-cases/list-lead-catalog-owners.use-case.js';
 import { ListLeadCatalogStoresUseCase } from './application/use-cases/list-lead-catalog-stores.use-case.js';
+import { ListLeadCatalogUseCase } from './application/use-cases/list-lead-catalog.use-case.js';
 import { ListAllLeadsUseCase } from './application/use-cases/list-all-leads.use-case.js';
 import { ListManagerLeadsUseCase } from './application/use-cases/list-manager-leads.use-case.js';
 import { ListOwnLeadsUseCase } from './application/use-cases/list-own-leads.use-case.js';
@@ -42,6 +43,7 @@ import { LeadController } from './presentation/controllers/lead.controller.js';
 		CreateLeadUseCase,
 		UpdateLeadUseCase,
 		FindLeadUseCase,
+		ListLeadCatalogUseCase,
 		ListLeadCatalogStoresUseCase,
 		ListLeadCatalogOwnersUseCase,
 		ListOwnLeadsUseCase,
