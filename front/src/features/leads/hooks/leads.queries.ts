@@ -5,11 +5,13 @@ import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { queryKeys } from '@/lib/constants/query-keys';
 
 import {
+	fetchLeadCatalog,
 	fetchLeadsAll,
 	fetchLeadsByOwner,
 	fetchLeadsManager,
 	findLeadDetailHub,
 	findLeadById,
+	type LeadCatalogFilters,
 } from '../api/leads.service';
 import { type LeadsListScope, resolveLeadsListScope } from '../lib/leads-scope';
 import type { LeadListItem } from '../model/leads.model';
@@ -54,6 +56,28 @@ function buildLeadsListQueryKey(user: AuthenticatedUser, page: number) {
 		return queryKeys.leads.list({ scope: 'manager', page });
 	}
 	return queryKeys.leads.list({ scope: 'owner', id: s.id, page });
+}
+
+function useLeadCatalogQuery(
+	user: AuthenticatedUser,
+	filters: LeadCatalogFilters,
+) {
+	const scope = useMemo(() => resolveLeadsListScope(user), [user]);
+	const enabled = scope !== null && scope.kind !== 'none';
+
+	const catalogQuery = useQuery({
+		queryKey: enabled
+			? queryKeys.leads.catalog(filters)
+			: queryKeys.leads.inactive(user.id),
+		queryFn: ({ signal }: { signal: AbortSignal }) =>
+			fetchLeadCatalog(filters, signal),
+		enabled,
+	});
+
+	return {
+		scope,
+		...catalogQuery,
+	};
 }
 
 type UseLeadsListQueryOptions = {
@@ -148,5 +172,6 @@ export {
 	useLeadDetailQuery,
 	isLeadsListQueryEnabled,
 	resolveLeadsListScope,
+	useLeadCatalogQuery,
 	useLeadsListQuery,
 };

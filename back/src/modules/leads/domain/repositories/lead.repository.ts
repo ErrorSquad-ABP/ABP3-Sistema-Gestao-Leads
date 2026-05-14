@@ -11,6 +11,106 @@ type LeadListFilters = {
 	readonly withoutOpenDeal?: boolean;
 };
 
+type LeadCatalogStatus =
+	| 'NEW'
+	| 'CONTACTED'
+	| 'QUALIFIED'
+	| 'NEGOTIATING'
+	| 'CONVERTED'
+	| 'LOST';
+
+type LeadCatalogSource =
+	| 'WEBSITE'
+	| 'WHATSAPP'
+	| 'PHONE'
+	| 'WALK_IN'
+	| 'INDICATION'
+	| 'OTHER'
+	| 'INSTAGRAM'
+	| 'FACEBOOK'
+	| 'MERCADO_LIVRE';
+
+type LeadCatalogSort = 'recent' | 'last_activity' | 'status' | 'source';
+
+type LeadCatalogScope =
+	| { readonly kind: 'all' }
+	| { readonly kind: 'owner'; readonly ownerUserId: UUID }
+	| { readonly kind: 'readableTeams'; readonly teamIds: readonly string[] };
+
+type LeadCatalogFilters = {
+	readonly scope: LeadCatalogScope;
+	readonly search?: string;
+	readonly status?: LeadCatalogStatus;
+	readonly source?: LeadCatalogSource;
+	readonly storeId?: UUID;
+	readonly ownerUserId?: UUID;
+	readonly activityStartDate?: Date;
+	readonly activityEndDate?: Date;
+	readonly sort?: LeadCatalogSort;
+};
+
+type LeadCatalogCustomer = {
+	readonly id: string;
+	readonly name: string;
+	readonly email: string | null;
+	readonly phone: string | null;
+	readonly cpf: string | null;
+};
+
+type LeadCatalogStore = {
+	readonly id: string;
+	readonly name: string;
+};
+
+type LeadCatalogOwner = {
+	readonly id: string;
+	readonly name: string;
+	readonly email: string;
+} | null;
+
+type LeadCatalogItem = {
+	readonly lead: Lead;
+	readonly customer: LeadCatalogCustomer;
+	readonly store: LeadCatalogStore;
+	readonly owner: LeadCatalogOwner;
+	readonly lastActivityAt: Date | null;
+	readonly lastActivityLabel: string;
+	readonly openDealsCount: number;
+	readonly totalDealsCount: number;
+	readonly hasInteraction: boolean;
+};
+
+type LeadCatalogSummary = {
+	readonly total: number;
+	readonly withInteraction: number;
+	readonly converted: number;
+	readonly staleNoContact: number;
+	readonly conversionRate: number;
+};
+
+type LeadCatalogBreakdownItem = {
+	readonly label: string;
+	readonly count: number;
+};
+
+type LeadCatalogFunnel = {
+	readonly totalLeads: number;
+	readonly withInteraction: number;
+	readonly openDeals: number;
+	readonly converted: number;
+};
+
+type LeadCatalogPage = {
+	readonly items: readonly LeadCatalogItem[];
+	readonly summary: LeadCatalogSummary;
+	readonly funnel: LeadCatalogFunnel;
+	readonly origins: readonly LeadCatalogBreakdownItem[];
+	readonly page: number;
+	readonly limit: number;
+	readonly total: number;
+	readonly totalPages: number;
+};
+
 /**
  * Persistence port for {@link Lead} (diagram: ILeadRepository).
  */
@@ -38,6 +138,23 @@ interface ILeadRepository {
 		pagination: LeadListPagination,
 		filters?: LeadListFilters,
 	): Promise<LeadListPage>;
+	listCatalog(
+		filters: LeadCatalogFilters,
+		pagination: LeadListPagination,
+	): Promise<LeadCatalogPage>;
 }
 
-export type { ILeadRepository, LeadListFilters };
+export type {
+	ILeadRepository,
+	LeadCatalogBreakdownItem,
+	LeadCatalogFilters,
+	LeadCatalogFunnel,
+	LeadCatalogItem,
+	LeadCatalogPage,
+	LeadCatalogScope,
+	LeadCatalogSort,
+	LeadCatalogSource,
+	LeadCatalogStatus,
+	LeadCatalogSummary,
+	LeadListFilters,
+};

@@ -44,7 +44,7 @@ type CustomersTableProps = {
 	totalPages: number;
 };
 
-type PaginationItem = number | 'ellipsis';
+type PaginationItem = number | 'ellipsis-start' | 'ellipsis-end';
 
 function formatCustomerInitials(name: string) {
 	const words = name.trim().split(/\s+/).filter(Boolean);
@@ -109,13 +109,13 @@ function buildPaginationItems(
 
 	const leadingPages = [1, 2, 3, 4];
 	if (currentPage <= 4) {
-		return [...leadingPages, 'ellipsis', totalPages];
+		return [...leadingPages, 'ellipsis-end', totalPages];
 	}
 
 	if (currentPage >= totalPages - 2) {
 		return [
 			1,
-			'ellipsis',
+			'ellipsis-start',
 			totalPages - 3,
 			totalPages - 2,
 			totalPages - 1,
@@ -125,11 +125,11 @@ function buildPaginationItems(
 
 	return [
 		1,
-		'ellipsis',
+		'ellipsis-start',
 		currentPage - 1,
 		currentPage,
 		currentPage + 1,
-		'ellipsis',
+		'ellipsis-end',
 		totalPages,
 	];
 }
@@ -319,11 +319,11 @@ function CustomersTable({
 					>
 						<ChevronLeft className="size-4" />
 					</Button>
-					{paginationItems.map((item, index) =>
-						item === 'ellipsis' ? (
+					{paginationItems.map((item) =>
+						typeof item === 'string' ? (
 							<span
 								className="px-2 text-sm font-semibold text-[#667085]"
-								key={`ellipsis-${index}`}
+								key={item}
 							>
 								...
 							</span>
