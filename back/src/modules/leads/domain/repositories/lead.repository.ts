@@ -86,6 +86,7 @@ type LeadCatalogSummary = {
 	readonly converted: number;
 	readonly staleNoContact: number;
 	readonly conversionRate: number;
+	readonly wonValue: string;
 };
 
 type LeadCatalogBreakdownItem = {

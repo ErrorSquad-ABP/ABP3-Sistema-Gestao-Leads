@@ -31,6 +31,10 @@ type LeadCatalogRow = Prisma.LeadGetPayload<{
 	};
 }>;
 
+type LeadCatalogItemWithRevenue = LeadCatalogItem & {
+	readonly wonValue: number;
+};
+
 const SEVEN_DAYS_IN_MS = 7 * 24 * 60 * 60 * 1000;
 
 function withoutOpenDealWhere(
@@ -116,6 +120,20 @@ function getLastActivity(row: LeadCatalogRow): {
 
 function hasInteraction(row: LeadCatalogRow): boolean {
 	return row.status !== 'NEW' || row.events.length > 0 || row.deals.length > 0;
+}
+
+function sumWonDealValue(row: LeadCatalogRow): number {
+	return row.deals.reduce((total, deal) => {
+		if (deal.status !== 'WON' || deal.value === null) {
+			return total;
+		}
+
+		return total + Number(deal.value.toString());
+	}, 0);
+}
+
+function toMoneyString(value: number): string {
+	return value.toFixed(2);
 }
 
 function matchesActivityDate(
@@ -359,7 +377,7 @@ class LeadPrismaRepository implements ILeadRepository {
 		const search = normalizeSearch(filters.search ?? '');
 		const enriched = rows
 			.filter((row) => leadMatchesSearch(row, search))
-			.map((row): LeadCatalogItem => {
+			.map((row): LeadCatalogItemWithRevenue => {
 				const lastActivity = getLastActivity(row);
 				return {
 					lead: LeadMapper.toDomain(row),
@@ -372,6 +390,7 @@ class LeadPrismaRepository implements ILeadRepository {
 						.length,
 					totalDealsCount: row.deals.length,
 					hasInteraction: hasInteraction(row),
+					wonValue: sumWonDealValue(row),
 				};
 			})
 			.filter((item) => matchesActivityDate(item, filters));
@@ -410,12 +429,17 @@ class LeadPrismaRepository implements ILeadRepository {
 
 		const total = sorted.length;
 		const start = (pagination.page - 1) * pagination.limit;
-		const pageItems = sorted.slice(start, start + pagination.limit);
+		const pageItems = sorted
+			.slice(start, start + pagination.limit)
+			.map(({ wonValue: _wonValue, ...item }) => item);
 		const staleLimit = Date.now() - SEVEN_DAYS_IN_MS;
 		const converted = enriched.filter(
 			(item) => item.lead.status === 'CONVERTED',
 		).length;
 		const openDeals = enriched.filter((item) => item.openDealsCount > 0).length;
+		const wonValue = enriched.reduce((totalValue, item) => {
+			return totalValue + item.wonValue;
+		}, 0);
 
 		return {
 			items: pageItems,
@@ -436,6 +460,7 @@ class LeadPrismaRepository implements ILeadRepository {
 					enriched.length > 0
 						? Math.round((converted / enriched.length) * 100)
 						: 0,
+				wonValue: toMoneyString(wonValue),
 			},
 			funnel: {
 				totalLeads: enriched.length,

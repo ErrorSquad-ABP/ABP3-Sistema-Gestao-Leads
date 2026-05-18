@@ -82,6 +82,9 @@ class LeadCatalogSummaryDto {
 
 	@ApiProperty()
 	conversionRate!: number;
+
+	@ApiProperty()
+	wonValue!: string;
 }
 
 class LeadCatalogBreakdownItemDto {
