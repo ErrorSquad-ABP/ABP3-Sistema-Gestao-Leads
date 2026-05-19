@@ -3,7 +3,10 @@ import { isApiError } from '@/lib/http/api-error';
 import type { StoreRecord } from '../model/stores.model';
 
 type StoreProfile = {
+	addressLine: string;
 	coverage: string;
+	cityState: string;
+	distributionRegion: string;
 	region: string;
 	scope: string;
 	state: string;
@@ -11,9 +14,15 @@ type StoreProfile = {
 
 type StoreTableRow = StoreProfile & {
 	convertedLeadCount: number;
+	conversionRate: number;
 	initials: string;
 	leadCount: number;
+	openDealsCount: number;
+	ownerEmail: string | null;
+	ownerInitials: string;
+	ownerName: string;
 	store: StoreRecord;
+	teamCount: number;
 	wonValue: number;
 };
 
@@ -79,6 +88,36 @@ const stateSearchTerms = new Map([
 	['TO', ['tocantins', 'palmas']],
 ]);
 
+const brazilRegionsByState = new Map([
+	['AC', 'Norte'],
+	['AL', 'Nordeste'],
+	['AP', 'Norte'],
+	['AM', 'Norte'],
+	['BA', 'Nordeste'],
+	['CE', 'Nordeste'],
+	['DF', 'Centro-Oeste'],
+	['ES', 'Sudeste'],
+	['GO', 'Centro-Oeste'],
+	['MA', 'Nordeste'],
+	['MT', 'Centro-Oeste'],
+	['MS', 'Centro-Oeste'],
+	['MG', 'Sudeste'],
+	['PA', 'Norte'],
+	['PB', 'Nordeste'],
+	['PR', 'Sul'],
+	['PE', 'Nordeste'],
+	['PI', 'Nordeste'],
+	['RJ', 'Sudeste'],
+	['RN', 'Nordeste'],
+	['RS', 'Sul'],
+	['RO', 'Norte'],
+	['RR', 'Norte'],
+	['SC', 'Sul'],
+	['SP', 'Sudeste'],
+	['SE', 'Nordeste'],
+	['TO', 'Norte'],
+]);
+
 function getStoresErrorMessage(error: unknown) {
 	if (!isApiError(error)) {
 		return 'Não foi possível concluir a operação agora.';
@@ -105,6 +144,17 @@ function getStoreInitials(name: string) {
 	return initials || 'LJ';
 }
 
+function getPersonInitials(name: string) {
+	const initials = name
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((part) => part[0])
+		.join('')
+		.slice(0, 2)
+		.toUpperCase();
+	return initials || 'NA';
+}
+
 function resolveStateCode(name: string) {
 	const searchableName = ` ${name.replace(/[^a-z0-9]+/g, ' ')} `;
 	const words = searchableName.trim().split(/\s+/);
@@ -124,12 +174,19 @@ function resolveStateCode(name: string) {
 	return null;
 }
 
+function resolveBrazilRegion(stateCode: string) {
+	return brazilRegionsByState.get(stateCode) ?? 'Outras regiões';
+}
+
 function resolveStoreProfile(store: StoreRecord): StoreProfile {
 	const name = normalizeSearch(store.name);
 
 	if (name.includes('cacapava')) {
 		return {
+			addressLine: 'Rua Cel. João Dias, 500',
 			coverage: 'SP',
+			cityState: 'Caçapava, SP',
+			distributionRegion: resolveBrazilRegion('SP'),
 			region: 'Vale do Paraíba - SP',
 			scope: 'Abrangência: Caçapava, Taubaté, Pindamonhangaba e região.',
 			state: 'SP',
@@ -138,7 +195,10 @@ function resolveStoreProfile(store: StoreRecord): StoreProfile {
 
 	if (name.includes('sjc') || name.includes('sao jose')) {
 		return {
+			addressLine: 'Av. Andrômeda, 885',
 			coverage: 'SP',
+			cityState: 'São José dos Campos, SP',
+			distributionRegion: resolveBrazilRegion('SP'),
 			region: 'São José dos Campos - SP',
 			scope: 'Abrangência: São José dos Campos, Jacareí e região.',
 			state: 'SP',
@@ -147,7 +207,10 @@ function resolveStoreProfile(store: StoreRecord): StoreProfile {
 
 	if (name.includes('matriz') || name.includes('sede')) {
 		return {
+			addressLine: 'Av. das Nações Unidas, 12901',
 			coverage: 'SP',
+			cityState: 'São Paulo, SP',
+			distributionRegion: resolveBrazilRegion('SP'),
 			region: 'Matriz - Sede',
 			scope:
 				'Gestão estratégica, suporte comercial e governança das operações.',
@@ -159,7 +222,10 @@ function resolveStoreProfile(store: StoreRecord): StoreProfile {
 	if (stateCode) {
 		const stateName = stateLabels.get(stateCode) ?? stateCode;
 		return {
+			addressLine: 'Operação regional',
 			coverage: stateCode,
+			cityState: `${stateName}, ${stateCode}`,
+			distributionRegion: resolveBrazilRegion(stateCode),
 			region: `${stateName} - ${stateCode}`,
 			scope: `Abrangência: operação comercial regional em ${stateName}.`,
 			state: stateCode,
@@ -167,7 +233,10 @@ function resolveStoreProfile(store: StoreRecord): StoreProfile {
 	}
 
 	return {
+		addressLine: 'Operação regional',
 		coverage: 'SP',
+		cityState: 'São Paulo, SP',
+		distributionRegion: resolveBrazilRegion('SP'),
 		region: 'Operação regional',
 		scope: 'Abrangência definida pela estrutura comercial da loja.',
 		state: 'SP',
@@ -176,6 +245,7 @@ function resolveStoreProfile(store: StoreRecord): StoreProfile {
 
 export {
 	getStoreInitials,
+	getPersonInitials,
 	getStoresErrorMessage,
 	normalizeSearch,
 	resolveStoreProfile,

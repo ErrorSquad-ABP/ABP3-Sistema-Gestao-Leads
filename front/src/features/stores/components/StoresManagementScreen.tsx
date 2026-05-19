@@ -4,6 +4,7 @@ import { useQueries } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
 import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
+import { useLeadOwnersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import {
 	useCreateStoreMutation,
@@ -14,6 +15,7 @@ import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
 import type { StoreRecord } from '@/features/stores/model/stores.model';
 
 import {
+	getPersonInitials,
 	getStoreInitials,
 	getStoresErrorMessage,
 	normalizeSearch,
@@ -31,11 +33,7 @@ import {
 } from './StoreForm';
 import { StoresCatalogCard } from './StoresCatalogCard';
 import { StoresMetricsGrid, StoresPageHeader } from './StoresHeaderMetrics';
-import {
-	StoresDistributionCard,
-	StoresInsightsAside,
-	type DistributionItem,
-} from './StoresInsightsAside';
+import { StoresInsightsAside } from './StoresInsightsAside';
 
 type StoresManagementScreenProps = {
 	user: AuthenticatedUser;
@@ -48,6 +46,7 @@ function parseCatalogMoney(value: string): number {
 
 function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 	const storesQuery = useStoresQuery();
+	const ownersQuery = useLeadOwnersQuery();
 	const createStoreMutation = useCreateStoreMutation();
 	const updateStoreMutation = useUpdateStoreMutation();
 	const deleteStoreMutation = useDeleteStoreMutation();
@@ -76,6 +75,8 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				);
 				return {
 					converted: catalog.summary.converted,
+					conversionRate: catalog.summary.conversionRate,
+					openDeals: catalog.funnel.openDeals,
 					storeId: store.id,
 					total: catalog.total,
 					wonValue: parseCatalogMoney(catalog.summary.wonValue),
@@ -88,12 +89,20 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 	const leadMetricsByStoreId = useMemo(() => {
 		const metrics = new Map<
 			string,
-			{ converted: number; total: number; wonValue: number }
+			{
+				converted: number;
+				conversionRate: number;
+				openDeals: number;
+				total: number;
+				wonValue: number;
+			}
 		>();
 		for (const query of leadCountQueries) {
 			if (query.data) {
 				metrics.set(query.data.storeId, {
 					converted: query.data.converted,
+					conversionRate: query.data.conversionRate,
+					openDeals: query.data.openDeals,
 					total: query.data.total,
 					wonValue: query.data.wonValue,
 				});
@@ -102,21 +111,42 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		return metrics;
 	}, [leadCountQueries]);
 
+	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data]);
+	const ownersByStoreId = useMemo(() => {
+		const grouped = new Map<string, typeof owners>();
+		for (const owner of owners) {
+			for (const storeId of owner.storeIds) {
+				const next = grouped.get(storeId) ?? [];
+				next.push(owner);
+				grouped.set(storeId, next);
+			}
+		}
+		return grouped;
+	}, [owners]);
+
 	const rows = useMemo<StoreTableRow[]>(
 		() =>
 			stores.map((store) => {
 				const profile = resolveStoreProfile(store);
 				const metrics = leadMetricsByStoreId.get(store.id);
+				const storeOwners = ownersByStoreId.get(store.id) ?? [];
+				const primaryOwner = storeOwners[0] ?? null;
 				return {
 					...profile,
 					convertedLeadCount: metrics?.converted ?? 0,
+					conversionRate: metrics?.conversionRate ?? 0,
 					initials: getStoreInitials(store.name),
 					leadCount: metrics?.total ?? 0,
+					openDealsCount: metrics?.openDeals ?? 0,
+					ownerEmail: primaryOwner?.email ?? null,
+					ownerInitials: getPersonInitials(primaryOwner?.name ?? ''),
+					ownerName: primaryOwner?.name ?? 'Sem responsável',
 					store,
+					teamCount: Math.max(1, storeOwners.length),
 					wonValue: metrics?.wonValue ?? 0,
 				};
 			}),
-		[leadMetricsByStoreId, stores],
+		[leadMetricsByStoreId, ownersByStoreId, stores],
 	);
 
 	const regionOptions = useMemo(() => {
@@ -133,7 +163,7 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 			const matchesSearch =
 				!searchTerm ||
 				normalizeSearch(
-					`${row.store.name} ${row.region} ${row.scope} ${row.state}`,
+					`${row.store.name} ${row.region} ${row.scope} ${row.state} ${row.cityState} ${row.addressLine} ${row.ownerName}`,
 				).includes(searchTerm);
 			const matchesRegion =
 				regionFilter === 'ALL' || row.state === regionFilter;
@@ -154,54 +184,57 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		() => [...new Set(rows.map((row) => row.state))],
 		[rows],
 	);
-	const storeDistribution = useMemo<DistributionItem[]>(
-		() =>
-			uniqueStates.map((state) => ({
-				count: rows.filter((row) => row.state === state).length,
-				label: state,
-			})),
-		[rows, uniqueStates],
-	);
-	const leadDistribution = useMemo<DistributionItem[]>(
-		() =>
-			uniqueStates.map((state) => ({
-				count: rows
-					.filter((row) => row.state === state)
-					.reduce((total, row) => total + row.leadCount, 0),
-				label: state,
-			})),
-		[rows, uniqueStates],
-	);
 	const totalLeadCount = rows.reduce((total, row) => total + row.leadCount, 0);
+	const totalOpenDeals = rows.reduce(
+		(total, row) => total + row.openDealsCount,
+		0,
+	);
 	const totalConvertedLeads = rows.reduce(
 		(total, row) => total + row.convertedLeadCount,
 		0,
 	);
-	const totalWonValue = rows.reduce((total, row) => total + row.wonValue, 0);
 	const averageLeads = stores.length
 		? Math.round(totalLeadCount / stores.length)
 		: 0;
-	const topStore = rows.reduce<StoreTableRow | null>(
-		(best, row) =>
-			best === null || row.leadCount > best.leadCount ? row : best,
-		null,
-	);
-	const topConvertedStore = rows
-		.filter((row) => row.convertedLeadCount > 0)
-		.reduce<StoreTableRow | null>(
-			(best, row) =>
-				best === null || row.convertedLeadCount > best.convertedLeadCount
-					? row
-					: best,
-			null,
+	const averageConversionRate =
+		totalLeadCount > 0
+			? Math.round((totalConvertedLeads / totalLeadCount) * 100)
+			: 0;
+
+	function handleExport() {
+		const headers = [
+			'Loja',
+			'Cidade/Estado',
+			'Responsavel',
+			'Leads',
+			'Negociacoes abertas',
+			'Conversao',
+			'Status',
+		];
+		const csvRows = filteredRows.map((row) =>
+			[
+				row.store.name,
+				row.cityState,
+				row.ownerName,
+				String(row.leadCount),
+				String(row.openDealsCount),
+				`${row.conversionRate}%`,
+				'Ativa',
+			]
+				.map((value) => `"${value.replaceAll('"', '""')}"`)
+				.join(','),
 		);
-	const topRevenueStore = rows
-		.filter((row) => row.wonValue > 0)
-		.reduce<StoreTableRow | null>(
-			(best, row) =>
-				best === null || row.wonValue > best.wonValue ? row : best,
-			null,
-		);
+		const blob = new Blob([[headers.join(','), ...csvRows].join('\n')], {
+			type: 'text/csv;charset=utf-8',
+		});
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = 'lojas.csv';
+		link.click();
+		URL.revokeObjectURL(url);
+	}
+
 	function openCreateStoreDialog() {
 		setDialogError(null);
 		setStoreName(emptyStoreName);
@@ -258,64 +291,49 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 			<StoresPageHeader
 				canManageStores={canManageStores}
 				onCreate={openCreateStoreDialog}
+				onExport={handleExport}
+				onRegionFilterChange={(value) => {
+					setRegionFilter(value);
+					setPage(1);
+				}}
+				onSearchChange={(value) => {
+					setSearch(value);
+					setPage(1);
+				}}
+				regionFilter={regionFilter}
+				regionOptions={regionOptions}
+				search={search}
 			/>
 
 			<StoresMetricsGrid
 				activeStores={stores.length}
 				averageLeads={averageLeads}
+				averageConversionRate={averageConversionRate}
+				openDeals={totalOpenDeals}
 				storesCount={stores.length}
+				totalLeads={totalLeadCount}
 				uniqueStates={uniqueStates}
 			/>
 
-			<div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px]">
-				<StoresCatalogCard
-					canManageStores={canManageStores}
-					errorMessage={
-						storesQuery.isError
-							? getStoresErrorMessage(storesQuery.error)
-							: null
-					}
-					filteredCount={filteredRows.length}
-					isError={storesQuery.isError}
-					isLoading={storesQuery.isLoading}
-					onDelete={(store) => {
-						setDeleteError(null);
-						setDeleteTarget(store);
-					}}
-					onEdit={openEditStoreDialog}
-					onPageChange={setPage}
-					onRegionFilterChange={(value) => {
-						setRegionFilter(value);
-						setPage(1);
-					}}
-					onSearchChange={(value) => {
-						setSearch(value);
-						setPage(1);
-					}}
-					page={safePage}
-					regionFilter={regionFilter}
-					regionOptions={regionOptions}
-					rows={paginatedRows}
-					search={search}
-					totalPages={totalPages}
-				/>
-				<StoresDistributionCard
-					distribution={storeDistribution}
-					storesCount={stores.length}
-				/>
-			</div>
+			<StoresInsightsAside rows={rows} storesCount={stores.length} />
 
-			<StoresInsightsAside
-				averageLeads={averageLeads}
-				coverageDistribution={leadDistribution}
-				storesCount={stores.length}
-				topConvertedStore={topConvertedStore}
-				topRevenueStore={topRevenueStore}
-				topStore={topStore}
-				totalConvertedLeads={totalConvertedLeads}
-				totalLeadCount={totalLeadCount}
-				totalWonValue={totalWonValue}
-				uniqueStatesCount={uniqueStates.length}
+			<StoresCatalogCard
+				canManageStores={canManageStores}
+				errorMessage={
+					storesQuery.isError ? getStoresErrorMessage(storesQuery.error) : null
+				}
+				filteredCount={filteredRows.length}
+				isError={storesQuery.isError}
+				isLoading={storesQuery.isLoading}
+				onDelete={(store) => {
+					setDeleteError(null);
+					setDeleteTarget(store);
+				}}
+				onEdit={openEditStoreDialog}
+				onPageChange={setPage}
+				page={safePage}
+				rows={paginatedRows}
+				totalPages={totalPages}
 			/>
 
 			<StoreFormDialog

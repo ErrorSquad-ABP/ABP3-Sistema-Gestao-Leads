@@ -1,10 +1,9 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 
 import {
 	STORES_PAGE_SIZE,
@@ -22,13 +21,8 @@ type StoresCatalogCardProps = {
 	onDelete: (store: StoreRecord) => void;
 	onEdit: (store: StoreRecord) => void;
 	onPageChange: (page: number | ((current: number) => number)) => void;
-	onRegionFilterChange: (value: string) => void;
-	onSearchChange: (value: string) => void;
 	page: number;
-	regionFilter: string;
-	regionOptions: Array<[string, string]>;
 	rows: StoreTableRow[];
-	search: string;
 	totalPages: number;
 };
 
@@ -41,49 +35,21 @@ function StoresCatalogCard({
 	onDelete,
 	onEdit,
 	onPageChange,
-	onRegionFilterChange,
-	onSearchChange,
 	page,
-	regionFilter,
-	regionOptions,
 	rows,
-	search,
 	totalPages,
 }: StoresCatalogCardProps) {
 	return (
 		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
 			<CardContent className="space-y-4 p-5">
-				<div className="flex flex-col gap-3 2xl:flex-row 2xl:items-start 2xl:justify-between">
-					<div className="space-y-1">
-						<h2 className="text-lg font-bold text-[#101828]">
-							Cadastro de lojas
+				<div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+					<div className="flex items-center gap-2">
+						<h2 className="text-base font-bold text-[#101828]">
+							Lista de lojas
 						</h2>
-						<p className="text-xs text-[#667085]">
-							Gerencie suas lojas e defina o escopo comercial de cada operação.
-						</p>
-					</div>
-					<div className="flex flex-col gap-3 lg:flex-row">
-						<div className="relative">
-							<Search className="-translate-y-1/2 absolute top-1/2 left-3.5 size-4 text-[#667085]" />
-							<Input
-								className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[310px]"
-								onChange={(event) => onSearchChange(event.target.value)}
-								placeholder="Buscar por loja ou região..."
-								value={search}
-							/>
-						</div>
-						<select
-							className="h-11 rounded-xl border border-[#d8e0ea] bg-white px-4 text-xs text-[#101828] outline-none lg:w-[190px]"
-							onChange={(event) => onRegionFilterChange(event.target.value)}
-							value={regionFilter}
-						>
-							<option value="ALL">Todas as regiões</option>
-							{regionOptions.map(([state, label]) => (
-								<option key={state} value={state}>
-									{label}
-								</option>
-							))}
-						</select>
+						<span className="rounded-full bg-[#f2f4f7] px-2 py-0.5 text-[11px] font-medium text-[#667085]">
+							{filteredCount} lojas cadastradas
+						</span>
 					</div>
 				</div>
 
@@ -104,7 +70,7 @@ function StoresCatalogCard({
 					/>
 				)}
 
-				<div className="flex flex-col gap-3 text-xs text-[#667085] md:flex-row md:items-center md:justify-between">
+				<div className="grid items-center gap-3 text-xs text-[#667085] md:grid-cols-[1fr_auto_1fr]">
 					<span>
 						Exibindo {rows.length === 0 ? 0 : (page - 1) * STORES_PAGE_SIZE + 1}{' '}
 						a {Math.min(page * STORES_PAGE_SIZE, filteredCount)} de{' '}
@@ -137,6 +103,9 @@ function StoresCatalogCard({
 							<ChevronRight className="size-3.5" />
 						</Button>
 					</div>
+					<span className="text-right">
+						Itens por página: {STORES_PAGE_SIZE}
+					</span>
 				</div>
 
 				{!canManageStores ? (
