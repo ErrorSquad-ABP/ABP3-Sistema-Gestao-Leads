@@ -13,7 +13,9 @@ import type {
 import { OperationalDashboardRepositoryFactory } from '../../infrastructure/persistence/factories/operational-dashboard-repository.factory.js';
 
 const DEFAULT_LOOKBACK_DAYS = 30;
+const NON_ADMIN_MAX_RANGE_DAYS = 366;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+const ACTIVE_LEAD_STATUS_KEYS = new Set(['NEW', 'CONTACTED', 'QUALIFIED']);
 
 type GetOperationalDashboardInput = {
 	readonly startDate?: string;
@@ -33,6 +35,12 @@ type OperationalDashboardResult = {
 	readonly totals: {
 		readonly totalLeads: number;
 		readonly totalLeadsWithOpenDeal: number;
+	};
+	readonly kpis: {
+		readonly totalLeads: OperationalDashboardKpi;
+		readonly activeLeads: OperationalDashboardKpi;
+		readonly convertedLeads: OperationalDashboardKpi;
+		readonly conversionRate: OperationalDashboardKpi;
 	};
 	readonly distributions: {
 		readonly byStatus: {
@@ -57,6 +65,23 @@ type OperationalDashboardResult = {
 			readonly percentage: number;
 		}[];
 	};
+	readonly trend: {
+		readonly points: {
+			readonly date: string;
+			readonly totalLeads: number;
+			readonly activeLeads: number;
+			readonly convertedLeads: number;
+			readonly conversionRate: number;
+		}[];
+	};
+};
+
+type OperationalDashboardKpi = {
+	readonly value: number;
+	readonly previousValue: number;
+	readonly delta: number;
+	readonly deltaPercentage: number | null;
+	readonly deltaPoints: number | null;
 };
 
 @Injectable()
@@ -79,20 +104,38 @@ class GetOperationalDashboardUseCase {
 			);
 		}
 
-		const period = this.resolvePeriod(input);
+		const period = this.resolvePeriod(input, actor.role);
 		const dashboard = this.operationalDashboardRepositoryFactory.create();
-		const aggregate = await dashboard.getOperationalAggregate({
-			period: {
-				startDate: period.startDate,
-				endDate: period.endDate,
-			},
-			scope:
-				scope.kind === 'full'
-					? {}
-					: {
-							storeIds: [...scope.readStoreIds],
-						},
-		});
+		const dashboardScope =
+			scope.kind === 'full'
+				? {}
+				: {
+						storeIds: [...scope.readStoreIds],
+					};
+		const previousPeriod = this.resolvePreviousPeriod(period);
+		const [aggregate, previousAggregate, trendPoints] = await Promise.all([
+			dashboard.getOperationalAggregate({
+				period: {
+					startDate: period.startDate,
+					endDate: period.endDate,
+				},
+				scope: dashboardScope,
+			}),
+			dashboard.getOperationalAggregate({
+				period: {
+					startDate: previousPeriod.startDate,
+					endDate: previousPeriod.endDate,
+				},
+				scope: dashboardScope,
+			}),
+			dashboard.getOperationalTrend({
+				period: {
+					startDate: period.startDate,
+					endDate: period.endDate,
+				},
+				scope: dashboardScope,
+			}),
+		]);
 
 		const role =
 			scope.kind === 'full'
@@ -102,6 +145,30 @@ class GetOperationalDashboardUseCase {
 					: ('GENERAL_MANAGER' as const);
 		const storeIds =
 			scope.kind === 'full' ? null : [...scope.readStoreIds].sort();
+		const currentActiveLeads = this.countStatuses(
+			aggregate.byStatus,
+			ACTIVE_LEAD_STATUS_KEYS,
+		);
+		const previousActiveLeads = this.countStatuses(
+			previousAggregate.byStatus,
+			ACTIVE_LEAD_STATUS_KEYS,
+		);
+		const currentConvertedLeads = this.countStatuses(
+			aggregate.byStatus,
+			new Set(['CONVERTED']),
+		);
+		const previousConvertedLeads = this.countStatuses(
+			previousAggregate.byStatus,
+			new Set(['CONVERTED']),
+		);
+		const currentConversionRate = this.computePercentage(
+			currentConvertedLeads,
+			aggregate.totalLeads,
+		);
+		const previousConversionRate = this.computePercentage(
+			previousConvertedLeads,
+			previousAggregate.totalLeads,
+		);
 
 		return {
 			period: {
@@ -116,6 +183,21 @@ class GetOperationalDashboardUseCase {
 			totals: {
 				totalLeads: aggregate.totalLeads,
 				totalLeadsWithOpenDeal: aggregate.totalLeadsWithOpenDeal,
+			},
+			kpis: {
+				totalLeads: this.toCountKpi(
+					aggregate.totalLeads,
+					previousAggregate.totalLeads,
+				),
+				activeLeads: this.toCountKpi(currentActiveLeads, previousActiveLeads),
+				convertedLeads: this.toCountKpi(
+					currentConvertedLeads,
+					previousConvertedLeads,
+				),
+				conversionRate: this.toRateKpi(
+					currentConversionRate,
+					previousConversionRate,
+				),
 			},
 			distributions: {
 				byStatus: this.toDistributionWithPercentage(
@@ -138,7 +220,29 @@ class GetOperationalDashboardUseCase {
 					DEAL_IMPORTANCES,
 				),
 			},
+			trend: {
+				points: trendPoints.map((point) => ({
+					date: point.date,
+					activeLeads: point.activeLeads,
+					convertedLeads: point.convertedLeads,
+					totalLeads: point.totalLeads,
+					conversionRate: this.computePercentage(
+						point.convertedLeads,
+						point.totalLeads,
+					),
+				})),
+			},
 		};
+	}
+
+	private countStatuses(
+		rows: readonly DashboardDistributionItem[],
+		statuses: ReadonlySet<string>,
+	): number {
+		return rows.reduce(
+			(total, item) => total + (statuses.has(item.key) ? item.count : 0),
+			0,
+		);
 	}
 
 	private toDistributionWithPercentage(
@@ -185,7 +289,56 @@ class GetOperationalDashboardUseCase {
 		return Number(((count / total) * 100).toFixed(2));
 	}
 
-	private resolvePeriod(input: GetOperationalDashboardInput): {
+	private toCountKpi(
+		value: number,
+		previousValue: number,
+	): OperationalDashboardKpi {
+		const delta = value - previousValue;
+		return {
+			value,
+			previousValue,
+			delta,
+			deltaPercentage:
+				previousValue > 0
+					? Number(((delta / previousValue) * 100).toFixed(2))
+					: null,
+			deltaPoints: null,
+		};
+	}
+
+	private toRateKpi(
+		value: number,
+		previousValue: number,
+	): OperationalDashboardKpi {
+		const delta = Number((value - previousValue).toFixed(2));
+		return {
+			value,
+			previousValue,
+			delta,
+			deltaPercentage: null,
+			deltaPoints: delta,
+		};
+	}
+
+	private resolvePreviousPeriod(period: {
+		readonly startDate: Date;
+		readonly endDate: Date;
+		readonly days: number;
+	}): {
+		readonly startDate: Date;
+		readonly endDate: Date;
+	} {
+		const duration = period.endDate.getTime() - period.startDate.getTime();
+		return {
+			startDate: new Date(period.startDate.getTime() - duration),
+			endDate: new Date(period.startDate),
+		};
+	}
+
+	private resolvePeriod(
+		input: GetOperationalDashboardInput,
+		role: LeadActor['role'],
+	): {
 		readonly startDate: Date;
 		readonly endDate: Date;
 		readonly days: number;
@@ -217,6 +370,11 @@ class GetOperationalDashboardUseCase {
 					(endDate.getTime() - startDate.getTime()) / MILLISECONDS_PER_DAY,
 				),
 			);
+			if (role !== 'ADMINISTRATOR' && days > NON_ADMIN_MAX_RANGE_DAYS) {
+				throw new BadRequestException(
+					'Usuários não administradores podem consultar no máximo um ano por vez.',
+				);
+			}
 			return {
 				startDate,
 				endDate,
