@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+	DealLossReason,
 	LeadSource,
 	LeadStatus,
 	SupportedFuelType,
@@ -360,6 +361,49 @@ function mapLeadStatus(row: DashboardCsvRow) {
 	}
 }
 
+function mapDealLossReason(value: string) {
+	const normalized = normalizeLabel(value).toLowerCase();
+
+	if (normalized.length === 0) {
+		return DealLossReason.OTHER;
+	}
+
+	if (normalized.includes('preco') || normalized.includes('orcamento')) {
+		return DealLossReason.PRICE_EXPECTATION;
+	}
+
+	if (normalized.includes('comprou') || normalized.includes('outra loja')) {
+		return DealLossReason.BOUGHT_ELSEWHERE;
+	}
+
+	if (
+		normalized.includes('contato') ||
+		normalized.includes('resposta') ||
+		normalized.includes('retorno')
+	) {
+		return DealLossReason.NO_RESPONSE;
+	}
+
+	if (
+		normalized.includes('indisponivel') ||
+		normalized.includes('estoque') ||
+		normalized.includes('veiculo') ||
+		normalized.includes('produto')
+	) {
+		return DealLossReason.VEHICLE_UNAVAILABLE;
+	}
+
+	if (
+		normalized.includes('interesse') ||
+		normalized.includes('desist') ||
+		normalized.includes('cancel')
+	) {
+		return DealLossReason.NO_INTEREST;
+	}
+
+	return DealLossReason.OTHER;
+}
+
 export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const csvContent = await readFile(CSV_FILE_PATH, 'utf-8');
 	const rows = parseCsv(csvContent);
@@ -530,7 +574,12 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 	const deals = rows.map((row, index) => {
 		const leadId = deterministicUuid(`lead:${row.lead_id.trim()}`);
 		const vehicleId = deterministicUuid(`vehicle:${row.lead_id.trim()}`);
+		const firstInteractionAt = shiftDate(
+			parseDate(row.first_interaction_at),
+			dateOffsetMs,
+		);
 		const createdAt =
+			firstInteractionAt ??
 			shiftDate(parseDate(row.negotiation_created_at), dateOffsetMs) ??
 			new Date();
 		const updatedAt =
@@ -556,6 +605,10 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 			importance: 'WARM' as const,
 			stage: 'NEGOTIATION' as const,
 			status,
+			lossReason:
+				status === 'LOST'
+					? mapDealLossReason(row.finalization_reason)
+					: null,
 			closedAt,
 			createdAt,
 			updatedAt,

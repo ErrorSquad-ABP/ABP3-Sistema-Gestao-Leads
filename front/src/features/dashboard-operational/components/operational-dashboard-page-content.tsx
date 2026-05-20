@@ -1097,11 +1097,6 @@ function OperationalDashboardPageContent({
 							totalOpenDeals={dashboard.totals.totalLeadsWithOpenDeal}
 						/>
 					</div>
-
-					<p className="text-center text-xs text-[#66708a]">
-						Dados referentes ao período selecionado. Atualizado conforme a
-						resposta atual da API.
-					</p>
 				</>
 			) : null}
 		</section>

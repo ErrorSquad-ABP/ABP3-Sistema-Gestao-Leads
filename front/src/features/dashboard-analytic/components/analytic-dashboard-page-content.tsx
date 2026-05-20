@@ -7,11 +7,9 @@ import {
 	CalendarRange,
 	CheckCircle2,
 	Clock3,
+	Filter,
 	LineChart as LineChartIcon,
 	Target,
-	UserRoundCheck,
-	UserRoundX,
-	UsersRound,
 	XCircle,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -22,6 +20,7 @@ import {
 	BarChart,
 	CartesianGrid,
 	Cell,
+	LabelList,
 	Line,
 	LineChart,
 	Pie,
@@ -39,6 +38,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { ApiError } from '@/lib/http/api-error';
+import { cn } from '@/lib/utils';
 
 import { useAnalyticDashboardQuery } from '../hooks/analytic-dashboard.queries';
 import { validateDraftFilter } from '../lib/analytic-dashboard-filters';
@@ -53,7 +53,7 @@ const FILTER_OPTIONS: {
 	label: string;
 }[] = [
 	{ value: 'week', label: 'Semana' },
-	{ value: 'month', label: 'Mes' },
+	{ value: 'month', label: 'Mês' },
 	{ value: 'year', label: 'Ano' },
 	{ value: 'custom', label: 'Personalizado' },
 ];
@@ -71,10 +71,10 @@ const IMPORTANCE_LABELS = new Map([
 ]);
 const REASON_LABELS = new Map([
 	['NO_INTEREST', 'Sem interesse'],
-	['PRICE_EXPECTATION', 'Preco fora da expectativa'],
+	['PRICE_EXPECTATION', 'Preço fora da expectativa'],
 	['BOUGHT_ELSEWHERE', 'Comprou em outra loja'],
-	['NO_RESPONSE', 'Nao retornou contato'],
-	['VEHICLE_UNAVAILABLE', 'Veiculo indisponivel'],
+	['NO_RESPONSE', 'Não retornou contato'],
+	['VEHICLE_UNAVAILABLE', 'Veículo indisponível'],
 	['OTHER', 'Outros'],
 ]);
 const KPI_SKELETON_KEYS = ['conversion', 'converted', 'lost', 'average-time'];
@@ -83,6 +83,11 @@ type TooltipPayloadItem = {
 	readonly color?: string;
 	readonly dataKey?: string | number;
 	readonly name?: string | number;
+	readonly payload?: {
+		readonly chartLabel?: string;
+		readonly label?: string;
+		readonly name?: string;
+	};
 	readonly value?: string | number | null;
 };
 
@@ -166,32 +171,17 @@ function getErrorMessage(error: unknown) {
 		return error.message;
 	}
 
-	return 'Nao foi possivel carregar o dashboard analitico.';
+	return 'Não foi possível carregar o dashboard analítico.';
 }
 
 function getPeriodLabel(dashboard: AnalyticDashboard | undefined) {
 	if (!dashboard) {
-		return 'Periodo selecionado';
+		return 'Período selecionado';
 	}
 
 	return `${formatDateShort(dashboard.filter.startDate)} - ${formatDateShort(
 		dashboard.filter.endDate,
 	)}`;
-}
-
-function getRoleScopeLabel(scope: AnalyticDashboard['filter']['scope']) {
-	switch (scope) {
-		case 'attendant':
-			return 'Seus leads';
-		case 'manager':
-			return 'Equipe vinculada';
-		case 'general_manager':
-			return 'Operacao consolidada';
-		case 'full':
-			return 'Visao global';
-		default:
-			return scope;
-	}
 }
 
 function getImportanceLabel(key: string) {
@@ -200,6 +190,21 @@ function getImportanceLabel(key: string) {
 
 function getReasonLabel(key: string) {
 	return REASON_LABELS.get(key) ?? key;
+}
+
+function getReasonChartLabel(label: string) {
+	switch (label) {
+		case 'Preço fora da expectativa':
+			return 'Preço';
+		case 'Não retornou contato':
+			return 'Não retornou';
+		case 'Comprou em outra loja':
+			return 'Outra loja';
+		case 'Veículo indisponível':
+			return 'Veículo indisponível';
+		default:
+			return label;
+	}
 }
 
 function normalizeChartValue(value: number, max: number) {
@@ -284,21 +289,38 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 		return null;
 	}
 
+	const firstItem = payload[0];
+	const title =
+		firstItem?.payload?.label ??
+		firstItem?.payload?.name ??
+		(label == null ? null : String(label));
+
 	return (
 		<div className="rounded-xl border border-[#dde6f1] bg-white px-3 py-2 text-xs shadow-lg">
-			<p className="mb-2 font-semibold text-[#07142a]">{String(label)}</p>
+			{title ? (
+				<p className="mb-2 font-semibold text-[#07142a]">{title}</p>
+			) : null}
 			<div className="space-y-1 text-[#66708a]">
-				{payload.map((item) => (
-					<div key={`${item.dataKey}-${item.name}`} className="flex gap-2">
-						<span
-							className="mt-1 size-2 rounded-full"
-							style={{ backgroundColor: item.color }}
-						/>
-						<span>
-							{item.name}: {formatCount(Number(item.value ?? 0))}
-						</span>
-					</div>
-				))}
+				{payload.map((item) => {
+					const itemName =
+						item.name ??
+						item.payload?.label ??
+						item.payload?.name ??
+						item.dataKey ??
+						'Valor';
+
+					return (
+						<div key={`${item.dataKey}-${itemName}`} className="flex gap-2">
+							<span
+								className="mt-1 size-2 rounded-full"
+								style={{ backgroundColor: item.color }}
+							/>
+							<span>
+								{String(itemName)}: {formatCount(Number(item.value ?? 0))}
+							</span>
+						</div>
+					);
+				})}
 			</div>
 		</div>
 	);
@@ -325,10 +347,8 @@ function DeltaBadge({ direction, tone, value }: DeltaBadgeProps) {
 				: 'text-[#64748b]';
 
 	return (
-		<span
-			className={`inline-flex items-center gap-1 font-semibold ${toneClass}`}
-		>
-			<Icon className="size-3.5" />
+		<span className={cn('inline-flex items-center gap-1 font-semibold', toneClass)}>
+			<Icon className="size-3" />
 			{value}
 		</span>
 	);
@@ -356,30 +376,37 @@ function KpiCard({
 	value,
 }: KpiCardProps) {
 	return (
-		<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-			<CardContent className="grid h-full grid-cols-[auto_1fr_7rem] items-center gap-4 p-5">
-				<div className={`rounded-2xl p-3 ${iconTone}`}>
-					<Icon className="size-7" />
+		<Card className="overflow-hidden rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+			<CardContent className="min-h-[132px] p-4">
+				<div className="flex items-start gap-3">
+					<div
+						className={cn(
+							'grid size-12 shrink-0 place-items-center rounded-full',
+							iconTone,
+						)}
+					>
+						<Icon className="size-6" />
+					</div>
+					<div className="min-w-0">
+						<p className="text-xs font-semibold text-[#2d3a56]">{title}</p>
+						<p className="mt-1.5 text-3xl font-bold leading-none tracking-tight text-[#06142b]">
+							{value}
+						</p>
+						<p className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-[#66708a]">
+							<DeltaBadge {...delta} />
+							<span>{subtitle}</span>
+						</p>
+					</div>
 				</div>
-				<div className="min-w-0">
-					<p className="text-sm font-semibold text-[#26324c]">{title}</p>
-					<p className="mt-2 text-4xl font-bold tracking-tight text-[#07142a]">
-						{value}
-					</p>
-					<p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[#66708a]">
-						<DeltaBadge {...delta} />
-						<span>{subtitle}</span>
-					</p>
-				</div>
-				<div className="h-20">
+				<div className="mt-1.5 h-9">
 					<ResponsiveContainer width="100%" height="100%">
 						<LineChart data={points}>
 							<Line
-								type="monotone"
 								dataKey="value"
+								dot={{ fill: lineColor, r: 2, strokeWidth: 0 }}
 								stroke={lineColor}
-								strokeWidth={2.5}
-								dot={false}
+								strokeWidth={2}
+								type="monotone"
 							/>
 						</LineChart>
 					</ResponsiveContainer>
@@ -391,7 +418,7 @@ function KpiCard({
 
 function KpiSkeleton() {
 	return (
-		<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+		<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
 			<CardContent className="space-y-4 p-5">
 				<Skeleton className="size-12 rounded-2xl bg-[#edf2f7]" />
 				<Skeleton className="h-5 w-32 bg-[#edf2f7]" />
@@ -399,6 +426,34 @@ function KpiSkeleton() {
 				<Skeleton className="h-4 w-44 bg-[#edf2f7]" />
 			</CardContent>
 		</Card>
+	);
+}
+
+function SectionTitle({ title }: { title: string }) {
+	return (
+		<h2 className="text-base font-bold text-[#06142b]">{title}</h2>
+	);
+}
+
+function CardAction({ children }: { children: string }) {
+	return (
+		<span className="mt-4 inline-flex items-center gap-2 text-[11px] font-semibold text-[#ff5722]">
+			{children}
+			<ArrowRight className="size-3" />
+		</span>
+	);
+}
+
+function DonutCenter({ total }: { total: number }) {
+	return (
+		<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+			<div>
+				<p className="text-2xl font-bold leading-none text-[#06142b]">
+					{formatCount(total)}
+				</p>
+				<p className="mt-1 text-[10px] font-semibold text-[#66708a]">Total</p>
+			</div>
+		</div>
 	);
 }
 
@@ -442,6 +497,7 @@ function AnalyticDashboardPageContent({
 			(dashboard?.finalizationReasons ?? []).map((item) => ({
 				...item,
 				label: getReasonLabel(item.key),
+				chartLabel: getReasonChartLabel(getReasonLabel(item.key)),
 			})),
 		[dashboard?.finalizationReasons],
 	);
@@ -466,7 +522,7 @@ function AnalyticDashboardPageContent({
 						},
 						{
 							key: 'notConverted',
-							label: 'Nao convertidos',
+							label: 'Não convertidos',
 							count: dashboard.summary.notConvertedLeads,
 							color: '#ef4444',
 						},
@@ -512,9 +568,9 @@ function AnalyticDashboardPageContent({
 		dashboard && trendData.length > 0
 			? [
 					{
-						title: 'Taxa de conversao',
+						title: 'Taxa de conversão',
 						value: formatPercent(dashboard.kpis.conversionRate.value),
-						subtitle: 'vs. periodo anterior',
+						subtitle: 'vs. período anterior',
 						icon: Target,
 						iconTone: 'bg-[#fff1e8] text-[#ff5722]',
 						lineColor: '#ff5722',
@@ -543,7 +599,7 @@ function AnalyticDashboardPageContent({
 					{
 						title: 'Leads convertidos',
 						value: formatCount(dashboard.kpis.convertedLeads.value),
-						subtitle: 'vs. periodo anterior',
+						subtitle: 'vs. período anterior',
 						icon: CheckCircle2,
 						iconTone: 'bg-[#e9fbf1] text-[#16a34a]',
 						lineColor: '#16a34a',
@@ -572,7 +628,7 @@ function AnalyticDashboardPageContent({
 					{
 						title: 'Leads perdidos',
 						value: formatCount(dashboard.kpis.lostLeads.value),
-						subtitle: 'vs. periodo anterior',
+						subtitle: 'vs. período anterior',
 						icon: XCircle,
 						iconTone: 'bg-[#fff0f0] text-[#ef4444]',
 						lineColor: '#ef4444',
@@ -599,11 +655,11 @@ function AnalyticDashboardPageContent({
 						} satisfies DeltaBadgeProps,
 					},
 					{
-						title: 'Tempo medio ate atendimento',
+						title: 'Tempo médio até atendimento',
 						value: formatHours(
 							dashboard.kpis.averageTimeToFirstInteraction.value,
 						),
-						subtitle: 'vs. periodo anterior',
+						subtitle: 'vs. período anterior',
 						icon: Clock3,
 						iconTone: 'bg-[#f4eaff] text-[#8b3ff6]',
 						lineColor: '#8b3ff6',
@@ -632,34 +688,28 @@ function AnalyticDashboardPageContent({
 				]
 			: [];
 
-	const bannerTone =
-		(dashboard?.kpis.conversionRate.deltaPoints ?? 0) > 0
-			? 'positive'
-			: (dashboard?.kpis.conversionRate.deltaPoints ?? 0) < 0
-				? 'negative'
-				: 'neutral';
-
 	return (
-		<div className="space-y-6 bg-[#f4f7fa] px-1 pb-4">
+		<div className="space-y-4 bg-[#f4f7fa] px-1 pb-4">
 			<header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 				<div>
-					<h1 className="text-4xl font-bold tracking-tight text-[#07142a]">
-						Dashboard Analitico
+					<h1 className="text-2xl font-bold tracking-tight text-[#06142b]">
+						Dashboard Analítico
 					</h1>
-					<p className="mt-2 text-base text-[#66708a]">
-						Visao estrategica da performance comercial no periodo selecionado.
+					<p className="mt-1.5 text-sm text-[#66708a]">
+						Visão estratégica da performance comercial no período selecionado.
 					</p>
 				</div>
 
-				<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-					<div className="inline-flex overflow-hidden rounded-2xl border border-[#d6e0ec] bg-white">
+				<div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
+					<div className="inline-flex overflow-hidden rounded-[13px] border border-[#dbe4ef] bg-white">
 						{FILTER_OPTIONS.map((option) => (
 							<button
-								className={`h-12 px-6 text-sm font-semibold transition ${
+								className={cn(
+									'h-9 border-[#e6edf5] border-r px-4 text-[11px] font-semibold transition last:border-r-0',
 									mode === option.value
-										? 'bg-[#fff0e8] text-[#ff5722]'
-										: 'text-[#07142a] hover:bg-[#f8fafc]'
-								}`}
+										? 'bg-[#ff5722] text-white shadow-sm'
+										: 'text-[#06142b] hover:bg-[#f8fafc]',
+								)}
 								key={option.value}
 								onClick={() => selectMode(option.value)}
 								type="button"
@@ -670,22 +720,22 @@ function AnalyticDashboardPageContent({
 					</div>
 
 					{mode === 'custom' ? (
-						<div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#d6e0ec] bg-white p-1.5">
+						<div className="flex flex-wrap items-center gap-2 rounded-[13px] border border-[#dbe4ef] bg-white p-1.5">
 							<Input
-								className="h-10 w-36 border-0 text-sm font-semibold shadow-none"
+								className="h-8 w-36 rounded-xl border-[#dbe4ef] text-[11px] font-semibold shadow-none"
 								onChange={(event) => setStartDate(event.target.value)}
 								type="date"
 								value={startDate}
 							/>
 							<span className="text-[#66708a]">-</span>
 							<Input
-								className="h-10 w-36 border-0 text-sm font-semibold shadow-none"
+								className="h-8 w-36 rounded-xl border-[#dbe4ef] text-[11px] font-semibold shadow-none"
 								onChange={(event) => setEndDate(event.target.value)}
 								type="date"
 								value={endDate}
 							/>
 							<Button
-								className="h-10 rounded-xl bg-[#ff5722] px-4 text-white hover:bg-[#e94e1f]"
+								className="h-8 rounded-xl bg-[#ff5722] px-3.5 text-[11px] text-white hover:bg-[#e94e1f]"
 								onClick={() => applyFilter()}
 								type="button"
 							>
@@ -693,10 +743,11 @@ function AnalyticDashboardPageContent({
 							</Button>
 						</div>
 					) : (
-						<label className="flex h-12 items-center gap-2 rounded-2xl border border-[#d6e0ec] bg-white px-4 text-sm font-semibold text-[#07142a]">
-							<CalendarRange className="size-4 text-[#66708a]" />
+						<label className="flex h-9 cursor-pointer items-center gap-2 rounded-[13px] border border-[#dbe4ef] bg-white px-3 text-[11px] font-semibold text-[#2d3a56]">
+							<CalendarRange className="size-3.5 text-[#66708a]" />
+							<span>{getPeriodLabel(dashboard)}</span>
 							<Input
-								className="h-9 w-36 border-0 p-0 font-semibold shadow-none"
+								className="sr-only"
 								onChange={(event) => {
 									setReferenceDate(event.target.value);
 									setQuery({
@@ -710,12 +761,20 @@ function AnalyticDashboardPageContent({
 							/>
 						</label>
 					)}
+					<Button
+						className="h-9 rounded-[13px] border-[#dbe4ef] bg-white px-3 text-[11px] font-semibold text-[#2d3a56] shadow-none hover:bg-[#f8fafc]"
+						type="button"
+						variant="outline"
+					>
+						<Filter className="mr-1.5 size-3.5" />
+						Filtros
+					</Button>
 				</div>
 			</header>
 
 			{validationMessage ? (
 				<Alert className="border-[#ffc9b7] bg-[#fff7f3] text-[#9a3412]">
-					<AlertTitle>Filtro invalido</AlertTitle>
+					<AlertTitle>Filtro inválido</AlertTitle>
 					<AlertDescription>{validationMessage}</AlertDescription>
 				</Alert>
 			) : null}
@@ -736,16 +795,16 @@ function AnalyticDashboardPageContent({
 			</section>
 
 			{dashboard && !hasData ? (
-				<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+				<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
 					<CardContent className="flex min-h-56 flex-col items-center justify-center gap-3 text-center">
 						<LineChartIcon className="size-10 text-[#94a3b8]" />
 						<div>
 							<h2 className="text-xl font-bold text-[#07142a]">
-								Sem dados no periodo
+								Sem dados no período
 							</h2>
 							<p className="mt-1 text-sm text-[#66708a]">
 								Altere o filtro temporal para visualizar os indicadores
-								analiticos.
+								analíticos.
 							</p>
 						</div>
 					</CardContent>
@@ -754,37 +813,25 @@ function AnalyticDashboardPageContent({
 
 			{dashboard ? (
 				<>
-					<section className="grid gap-5 xl:grid-cols-[1fr_1.05fr_1fr]">
-						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-							<CardContent className="p-6">
-								<div className="mb-5 flex items-start justify-between gap-3">
-									<div>
-										<h2 className="text-xl font-bold text-[#07142a]">
-											Leads por equipe
-										</h2>
-										<p className="text-sm text-[#66708a]">
-											Distribuicao de leads no escopo atual.
-										</p>
-									</div>
-									<span className="text-right text-xl font-bold text-[#07142a]">
-										{formatCount(dashboard.summary.totalLeads)}
-										<span className="block text-xs font-medium text-[#66708a]">
-											total
-										</span>
-									</span>
+					<section className="grid gap-4 xl:grid-cols-[1fr_1.05fr_1fr]">
+						<Card className="min-h-[300px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+							<CardContent className="flex h-full flex-col p-4">
+								<div className="mb-4">
+									<SectionTitle title="Leads por equipe" />
 								</div>
 
-								<div className="grid items-center gap-5 md:grid-cols-[13rem_1fr]">
-									<div className="h-56">
+								<div className="grid flex-1 items-center gap-4 md:grid-cols-[minmax(15rem,1fr)_auto]">
+									<div className="relative mx-auto h-64 w-full max-w-[18rem]">
 										<ResponsiveContainer width="100%" height="100%">
 											<PieChart>
 												<Pie
 													data={teamDistribution}
 													dataKey="totalLeads"
-													innerRadius={58}
+													innerRadius={70}
 													nameKey="name"
-													outerRadius={92}
+													outerRadius={106}
 													paddingAngle={2}
+													stroke="none"
 												>
 													{teamDistribution.map((item, index) => (
 														<Cell
@@ -796,8 +843,9 @@ function AnalyticDashboardPageContent({
 												<Tooltip content={<ChartTooltip />} />
 											</PieChart>
 										</ResponsiveContainer>
+										<DonutCenter total={dashboard.summary.totalLeads} />
 									</div>
-									<div className="space-y-4">
+									<div className="w-full space-y-4 md:w-48">
 										{teamDistribution.map((item, index) => {
 											const percentage =
 												dashboard.summary.totalLeads > 0
@@ -830,26 +878,22 @@ function AnalyticDashboardPageContent({
 										})}
 									</div>
 								</div>
+								<CardAction>Ver desempenho das equipes</CardAction>
 							</CardContent>
 						</Card>
 
-						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-							<CardContent className="p-6">
-								<div className="mb-5">
-									<h2 className="text-xl font-bold text-[#07142a]">
-										Leads por atendente
-									</h2>
-									<p className="text-sm text-[#66708a]">
-										Ranking operacional por responsavel.
-									</p>
+						<Card className="min-h-[300px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+							<CardContent className="flex h-full flex-col p-4">
+								<div className="mb-4">
+									<SectionTitle title="Leads por atendente" />
 								</div>
-								<div className="space-y-3">
+								<div className="flex-1 space-y-3">
 									{attendantDistribution.map((item) => (
 										<div
-											className="grid grid-cols-[2.2rem_1fr_auto] items-center gap-3"
+											className="grid grid-cols-[2rem_1fr_auto] items-center gap-3"
 											key={item.id}
 										>
-											<div className="grid size-8 place-items-center rounded-full bg-[#edf2f7] text-xs font-bold text-[#66708a]">
+											<div className="grid size-7 place-items-center rounded-full bg-[#f2d7ca] text-[10px] font-bold text-[#8a3a1d]">
 												{item.name
 													.split(' ')
 													.slice(0, 2)
@@ -858,16 +902,16 @@ function AnalyticDashboardPageContent({
 											</div>
 											<div className="min-w-0">
 												<div className="mb-1 flex items-center justify-between gap-3">
-													<p className="truncate text-sm font-semibold text-[#07142a]">
+													<p className="truncate text-xs font-semibold text-[#06142b]">
 														{item.name}
 													</p>
-													<span className="text-sm font-semibold text-[#07142a]">
+													<span className="text-xs font-bold text-[#06142b]">
 														{formatCount(item.totalLeads)}
 													</span>
 												</div>
-												<div className="h-2 rounded-full bg-[#edf2f7]">
+												<div className="h-1.5 rounded-full bg-[#f0f3f7]">
 													<div
-														className="h-2 rounded-full bg-[#ff5722]"
+														className="h-1.5 rounded-full bg-[#ff5722]"
 														style={{
 															width: `${normalizeChartValue(
 																item.totalLeads,
@@ -882,37 +926,34 @@ function AnalyticDashboardPageContent({
 													/>
 												</div>
 											</div>
-											<span className="text-sm text-[#66708a]">
+											<span className="text-[11px] text-[#66708a]">
 												{formatPercent(item.conversionRate)}
 											</span>
 										</div>
 									))}
 								</div>
+								<CardAction>Ver ranking completo</CardAction>
 							</CardContent>
 						</Card>
 
-						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-							<CardContent className="p-6">
-								<div className="mb-5">
-									<h2 className="text-xl font-bold text-[#07142a]">
-										Distribuicao por importancia
-									</h2>
-									<p className="text-sm text-[#66708a]">
-										Frio, morno e quente por negociacao.
-									</p>
+						<Card className="min-h-[300px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+							<CardContent className="flex h-full flex-col p-4">
+								<div className="mb-4">
+									<SectionTitle title="Distribuição por importância" />
 								</div>
 
-								<div className="grid items-center gap-5 md:grid-cols-[13rem_1fr]">
-									<div className="h-56">
+								<div className="grid flex-1 items-center gap-4 md:grid-cols-[minmax(15rem,1fr)_auto]">
+									<div className="relative mx-auto h-64 w-full max-w-[18rem]">
 										<ResponsiveContainer width="100%" height="100%">
 											<PieChart>
 												<Pie
 													data={importanceData}
 													dataKey="count"
-													innerRadius={58}
+													innerRadius={70}
 													nameKey="label"
-													outerRadius={92}
+													outerRadius={106}
 													paddingAngle={2}
+													stroke="none"
 												>
 													{importanceData.map((item) => (
 														<Cell fill={item.color} key={item.key} />
@@ -921,8 +962,9 @@ function AnalyticDashboardPageContent({
 												<Tooltip content={<ChartTooltip />} />
 											</PieChart>
 										</ResponsiveContainer>
+										<DonutCenter total={dashboard.summary.totalLeads} />
 									</div>
-									<div className="space-y-4">
+									<div className="w-full space-y-4 md:w-48">
 										{importanceData.map((item) => {
 											const percentage =
 												dashboard.summary.totalLeads > 0
@@ -949,36 +991,36 @@ function AnalyticDashboardPageContent({
 										})}
 									</div>
 								</div>
+								<CardAction>Ver detalhes da importância</CardAction>
 							</CardContent>
 						</Card>
 					</section>
 
-					<section className="grid gap-5 xl:grid-cols-[1fr_0.72fr_1.2fr]">
-						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-							<CardContent className="p-6">
-								<div className="mb-5">
-									<h2 className="text-xl font-bold text-[#07142a]">
-										Motivos de finalizacao
-									</h2>
-									<p className="text-sm text-[#66708a]">
-										Apenas perdas encerradas no periodo.
-									</p>
+					<section className="grid gap-4 xl:grid-cols-[1fr_0.72fr_1.2fr]">
+						<Card className="min-h-[360px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+							<CardContent className="flex h-full flex-col p-4">
+								<div className="mb-4">
+									<SectionTitle title="Motivos de finalização" />
 								</div>
 
 								{finalizationData.length > 0 ? (
 									<div className="h-72">
 										<ResponsiveContainer width="100%" height="100%">
-											<BarChart data={finalizationData}>
+											<BarChart
+												data={finalizationData}
+												margin={{ bottom: 20, left: -18, right: 8, top: 18 }}
+											>
 												<CartesianGrid
 													stroke="#edf2f7"
-													strokeDasharray="4 4"
 													vertical={false}
 												/>
 												<XAxis
 													axisLine={false}
-													dataKey="label"
-													fontSize={11}
+													dataKey="chartLabel"
+													fontSize={10}
+													height={42}
 													interval={0}
+													tickMargin={10}
 													tickLine={false}
 												/>
 												<YAxis
@@ -990,41 +1032,45 @@ function AnalyticDashboardPageContent({
 												<Bar
 													dataKey="count"
 													fill="#ff7a1a"
+													maxBarSize={86}
 													name="Leads"
 													radius={[10, 10, 0, 0]}
-												/>
+												>
+													<LabelList
+														className="fill-[#06142b] text-[10px] font-bold"
+														dataKey="count"
+														position="top"
+													/>
+												</Bar>
 											</BarChart>
 										</ResponsiveContainer>
 									</div>
 								) : (
-									<div className="grid min-h-72 place-items-center rounded-2xl bg-[#f8fafc] text-center text-sm text-[#66708a]">
-										Nenhuma perda com motivo registrado no periodo.
+									<div className="grid min-h-64 place-items-center rounded-2xl bg-[#f8fafc] text-center text-sm text-[#66708a]">
+										Nenhuma perda com motivo registrado no período.
 									</div>
 								)}
+								<CardAction>Ver todos os motivos</CardAction>
 							</CardContent>
 						</Card>
 
-						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-							<CardContent className="p-6">
-								<div className="mb-5">
-									<h2 className="text-xl font-bold text-[#07142a]">
-										Convertidos vs nao convertidos
-									</h2>
-									<p className="text-sm text-[#66708a]">
-										Leitura geral dos leads do periodo.
-									</p>
+						<Card className="min-h-[360px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+							<CardContent className="flex h-full flex-col p-4">
+								<div className="mb-4">
+									<SectionTitle title="Leads convertidos vs não convertidos" />
 								</div>
-								<div className="grid items-center gap-4">
-									<div className="h-56">
+								<div className="grid flex-1 items-center gap-4">
+									<div className="relative mx-auto h-60 w-full max-w-68">
 										<ResponsiveContainer width="100%" height="100%">
 											<PieChart>
 												<Pie
 													data={conversionSplit}
 													dataKey="count"
-													innerRadius={58}
+													innerRadius={66}
 													nameKey="label"
-													outerRadius={92}
+													outerRadius={100}
 													paddingAngle={2}
+													stroke="none"
 												>
 													{conversionSplit.map((item) => (
 														<Cell fill={item.color} key={item.key} />
@@ -1033,6 +1079,7 @@ function AnalyticDashboardPageContent({
 												<Tooltip content={<ChartTooltip />} />
 											</PieChart>
 										</ResponsiveContainer>
+										<DonutCenter total={dashboard.summary.totalLeads} />
 									</div>
 									<div className="space-y-3">
 										{conversionSplit.map((item) => (
@@ -1056,22 +1103,21 @@ function AnalyticDashboardPageContent({
 										))}
 									</div>
 								</div>
+								<CardAction>Ver detalhes da conversão</CardAction>
 							</CardContent>
 						</Card>
 
-						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-							<CardContent className="p-6">
-								<div className="mb-5">
-									<h2 className="text-xl font-bold text-[#07142a]">
-										Evolucao de leads no periodo
-									</h2>
-									<p className="text-sm text-[#66708a]">
-										Serie temporal agregada conforme o intervalo.
-									</p>
+						<Card className="min-h-[360px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+							<CardContent className="flex h-full flex-col p-4">
+								<div className="mb-4">
+									<SectionTitle title="Evolução de leads no período" />
 								</div>
 								<div className="h-72">
 									<ResponsiveContainer width="100%" height="100%">
-										<AreaChart data={trendData}>
+										<AreaChart
+											data={trendData}
+											margin={{ bottom: 0, left: -18, right: 12, top: 18 }}
+										>
 											<defs>
 												<linearGradient
 													id="analyticTrend"
@@ -1094,7 +1140,6 @@ function AnalyticDashboardPageContent({
 											</defs>
 											<CartesianGrid
 												stroke="#edf2f7"
-												strokeDasharray="4 4"
 												vertical={false}
 											/>
 											<XAxis
@@ -1107,64 +1152,33 @@ function AnalyticDashboardPageContent({
 											<Tooltip content={<ChartTooltip />} />
 											<Area
 												dataKey="totalLeads"
+												dot={{
+													fill: '#ff5722',
+													r: 3,
+													stroke: '#ffffff',
+													strokeWidth: 2,
+												}}
 												fill="url(#analyticTrend)"
 												name="Leads"
 												stroke="#ff5722"
 												strokeWidth={2.5}
 												type="monotone"
-											/>
+											>
+												<LabelList
+													className="fill-[#06142b] text-[10px] font-bold"
+													dataKey="totalLeads"
+													position="top"
+												/>
+											</Area>
 										</AreaChart>
 									</ResponsiveContainer>
 								</div>
+								<CardAction>Ver evolução completa</CardAction>
 							</CardContent>
 						</Card>
 					</section>
-
-					<section className="rounded-3xl border border-[#ffcdbb] bg-[#fff4ee] px-6 py-5">
-						<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-							<div className="flex items-center gap-4">
-								<div className="grid size-14 place-items-center rounded-full bg-white text-[#ff5722]">
-									{bannerTone === 'positive' ? (
-										<UserRoundCheck className="size-7" />
-									) : bannerTone === 'negative' ? (
-										<UserRoundX className="size-7" />
-									) : (
-										<UsersRound className="size-7" />
-									)}
-								</div>
-								<div>
-									<h2 className="text-lg font-bold text-[#07142a]">
-										{bannerTone === 'positive'
-											? 'Performance em destaque'
-											: bannerTone === 'negative'
-												? 'Conversao exige atencao'
-												: 'Performance estavel'}
-									</h2>
-									<p className="text-sm text-[#66708a]">
-										{bannerTone === 'positive'
-											? `A taxa de conversao subiu ${formatDeltaPoints(
-													dashboard.kpis.conversionRate.deltaPoints,
-												)} no periodo.`
-											: bannerTone === 'negative'
-												? `A taxa de conversao caiu ${formatDeltaPoints(
-														dashboard.kpis.conversionRate.deltaPoints,
-													)} no periodo.`
-												: 'A taxa de conversao ficou sem variacao relevante no periodo.'}
-									</p>
-								</div>
-							</div>
-							<div className="text-sm font-semibold text-[#ff5722]">
-								{getRoleScopeLabel(dashboard.filter.scope)} -{' '}
-								{getPeriodLabel(dashboard)}
-							</div>
-						</div>
-					</section>
 				</>
 			) : null}
-
-			<p className="text-center text-sm text-[#66708a]">
-				Dados calculados pelo backend com validacao temporal e regras de RBAC.
-			</p>
 		</div>
 	);
 }
