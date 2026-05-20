@@ -35,6 +35,7 @@ class DealFactory {
 			stage,
 			'OPEN',
 			null,
+			null,
 			now,
 			now,
 		);

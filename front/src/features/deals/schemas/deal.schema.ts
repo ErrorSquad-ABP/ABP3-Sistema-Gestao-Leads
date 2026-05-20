@@ -4,6 +4,15 @@ import { ApiError } from '@/lib/http/api-error';
 
 const dealStatuses = ['OPEN', 'WON', 'LOST'] as const;
 
+const dealLossReasons = [
+	'NO_INTEREST',
+	'PRICE_EXPECTATION',
+	'BOUGHT_ELSEWHERE',
+	'NO_RESPONSE',
+	'VEHICLE_UNAVAILABLE',
+	'OTHER',
+] as const;
+
 const dealStages = [
 	'INITIAL_CONTACT',
 	'NEGOTIATION',
@@ -25,6 +34,7 @@ const dealSchema = z.object({
 	importance: z.enum(dealImportances),
 	stage: z.enum(dealStages),
 	status: z.enum(dealStatuses),
+	lossReason: z.enum(dealLossReasons).nullable().optional().default(null),
 	closedAt: z.coerce.date().nullable(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
@@ -64,6 +74,7 @@ function parseDealHistoryResponse(data: unknown) {
 export {
 	dealHistoryItemSchema,
 	dealImportances,
+	dealLossReasons,
 	dealSchema,
 	dealStages,
 	dealStatuses,

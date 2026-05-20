@@ -46,6 +46,7 @@ import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-fo
 import { isApiError } from '@/lib/http/api-error';
 import {
 	dealImportanceOptions,
+	dealLossReasonOptions,
 	dealStageOptions,
 	dealStatusOptions,
 } from '../lib/deal-labels';
@@ -61,6 +62,7 @@ import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealImportance,
+	DealLossReason,
 	DealStage,
 	DealStatus,
 	DealUpdateFormInput,
@@ -273,6 +275,7 @@ function DealFormDialog({
 	const [stageDropdownOpen, setStageDropdownOpen] = useState(false);
 	const [importanceDropdownOpen, setImportanceDropdownOpen] = useState(false);
 	const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+	const [lossReasonDropdownOpen, setLossReasonDropdownOpen] = useState(false);
 	const vehicleSearchRef = useRef<HTMLInputElement | null>(null);
 	const isReadOnly = Boolean(targetDeal && targetDeal.status !== 'OPEN');
 
@@ -288,6 +291,10 @@ function DealFormDialog({
 		name: 'importance',
 	});
 	const statusValue = useWatch({ control: form.control, name: 'status' });
+	const lossReasonValue = useWatch({
+		control: form.control,
+		name: 'lossReason',
+	});
 	const stageVisual = getStageVisual(stageValue);
 	const importanceVisual = getImportanceVisual(importanceValue);
 	const statusVisual = getStatusVisual(statusValue);
@@ -355,6 +362,7 @@ function DealFormDialog({
 				setStageDropdownOpen(false);
 				setImportanceDropdownOpen(false);
 				setStatusDropdownOpen(false);
+				setLossReasonDropdownOpen(false);
 			});
 			return;
 		}
@@ -366,6 +374,7 @@ function DealFormDialog({
 					stage: targetDeal.stage,
 					importance: targetDeal.importance,
 					status: targetDeal.status,
+					lossReason: targetDeal.lossReason,
 				});
 				setValueCentsDigits(apiDecimalStringToCentsDigits(targetDeal.value));
 				setVehicleSearch(resolvedCurrentVehicle.displayLabel);
@@ -373,6 +382,7 @@ function DealFormDialog({
 				setStageDropdownOpen(false);
 				setImportanceDropdownOpen(false);
 				setStatusDropdownOpen(false);
+				setLossReasonDropdownOpen(false);
 			});
 		} else {
 			queueMicrotask(() => {
@@ -382,9 +392,19 @@ function DealFormDialog({
 				setStageDropdownOpen(false);
 				setImportanceDropdownOpen(false);
 				setStatusDropdownOpen(false);
+				setLossReasonDropdownOpen(false);
 			});
 		}
 	}, [form, open, resolvedCurrentVehicle.displayLabel, targetDeal]);
+
+	useEffect(() => {
+		if (statusValue !== 'LOST' && lossReasonValue) {
+			form.setValue('lossReason', null, {
+				shouldDirty: true,
+				shouldValidate: true,
+			});
+		}
+	}, [form, lossReasonValue, statusValue]);
 
 	function handleSelectVehicle(option: { id: string; label: string }) {
 		form.setValue('vehicleId', option.id as DealUpdateFormInput['vehicleId'], {
@@ -837,6 +857,72 @@ function DealFormDialog({
 									A negociação só pode ser editada quando está em aberto.
 								</p>
 							</div>
+							{statusValue === 'LOST' ? (
+								<div className="space-y-1 md:col-span-2">
+									<Label
+										className="text-[12.5px] font-semibold text-[#1b2430]"
+										htmlFor="deal-form-loss-reason"
+									>
+										Motivo da perda{' '}
+										<span className="text-[color:var(--brand-accent)]">*</span>
+									</Label>
+									<div className={fieldShellClass}>
+										<span className="pointer-events-none absolute left-3.5 flex size-7 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+											<CircleX className="size-4" />
+										</span>
+										<button
+											className={selectButtonClass}
+											disabled={isPending || isReadOnly}
+											id="deal-form-loss-reason"
+											onBlur={() => {
+												window.setTimeout(
+													() => setLossReasonDropdownOpen(false),
+													120,
+												);
+											}}
+											onClick={() =>
+												setLossReasonDropdownOpen((current) => !current)
+											}
+											type="button"
+										>
+											<span className="truncate">
+												{getOptionLabel(
+													dealLossReasonOptions,
+													(lossReasonValue ?? undefined) as
+														| DealLossReason
+														| undefined,
+												)}
+											</span>
+										</button>
+										<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
+										{lossReasonDropdownOpen ? (
+											<div className={dropdownPanelClass}>
+												{dealLossReasonOptions.map((opt) => (
+													<button
+														key={opt.value}
+														className={dropdownItemClass}
+														onMouseDown={(event) => {
+															event.preventDefault();
+															form.setValue('lossReason', opt.value, {
+																shouldDirty: true,
+																shouldValidate: true,
+															});
+															setLossReasonDropdownOpen(false);
+														}}
+														type="button"
+													>
+														{opt.label}
+													</button>
+												))}
+											</div>
+										) : null}
+									</div>
+									<p className="text-[11.5px] leading-4 text-[#7a8494]">
+										Esse dado alimenta os motivos de finalização do dashboard
+										analítico.
+									</p>
+								</div>
+							) : null}
 						</div>
 						<div className="flex items-center justify-between gap-4 rounded-xl border border-[#e7ebf0] bg-white px-4 py-4">
 							<div className="flex min-w-0 items-center gap-3">

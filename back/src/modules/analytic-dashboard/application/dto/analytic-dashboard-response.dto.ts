@@ -29,8 +29,45 @@ class AnalyticDashboardSummaryDto {
 	@ApiProperty()
 	notConvertedLeads!: number;
 
+	@ApiProperty()
+	lostLeads!: number;
+
+	@ApiProperty()
+	finalizedLeads!: number;
+
 	@ApiProperty({ example: 37.5 })
 	conversionRate!: number;
+}
+
+class AnalyticDashboardKpiDto {
+	@ApiProperty()
+	value!: number;
+
+	@ApiProperty()
+	previousValue!: number;
+
+	@ApiProperty()
+	delta!: number;
+
+	@ApiProperty({ nullable: true })
+	deltaPercentage!: number | null;
+
+	@ApiProperty({ required: false })
+	deltaPoints?: number;
+}
+
+class AnalyticDashboardKpisDto {
+	@ApiProperty({ type: () => AnalyticDashboardKpiDto })
+	conversionRate!: AnalyticDashboardKpiDto;
+
+	@ApiProperty({ type: () => AnalyticDashboardKpiDto })
+	convertedLeads!: AnalyticDashboardKpiDto;
+
+	@ApiProperty({ type: () => AnalyticDashboardKpiDto })
+	lostLeads!: AnalyticDashboardKpiDto;
+
+	@ApiProperty({ type: () => AnalyticDashboardKpiDto })
+	averageTimeToFirstInteraction!: AnalyticDashboardKpiDto;
 }
 
 class AnalyticDashboardPerformanceItemDto {
@@ -94,12 +131,43 @@ class AverageTimeToFirstInteractionDto {
 	methodology!: string;
 }
 
+class AnalyticDashboardTrendPointDto {
+	@ApiProperty({ example: '2026-04-01' })
+	date!: string;
+
+	@ApiProperty()
+	totalLeads!: number;
+
+	@ApiProperty()
+	convertedLeads!: number;
+
+	@ApiProperty()
+	lostLeads!: number;
+
+	@ApiProperty({ example: 37.5 })
+	conversionRate!: number;
+
+	@ApiProperty({ nullable: true, example: 18.75 })
+	averageTimeToFirstInteractionHours!: number | null;
+}
+
+class AnalyticDashboardTrendDto {
+	@ApiProperty({ type: () => [AnalyticDashboardTrendPointDto] })
+	points!: AnalyticDashboardTrendPointDto[];
+}
+
 class AnalyticDashboardResponseDto {
 	@ApiProperty({ type: () => AnalyticDashboardFilterDto })
 	filter!: AnalyticDashboardFilterDto;
 
 	@ApiProperty({ type: () => AnalyticDashboardSummaryDto })
 	summary!: AnalyticDashboardSummaryDto;
+
+	@ApiProperty({ type: () => AnalyticDashboardKpisDto })
+	kpis!: AnalyticDashboardKpisDto;
+
+	@ApiProperty({ type: () => AnalyticDashboardTrendDto })
+	trend!: AnalyticDashboardTrendDto;
 
 	@ApiProperty({ type: () => [AnalyticDashboardPerformanceItemDto] })
 	byAttendant!: AnalyticDashboardPerformanceItemDto[];
@@ -120,8 +188,12 @@ class AnalyticDashboardResponseDto {
 export {
 	AnalyticDashboardDistributionItemDto,
 	AnalyticDashboardFilterDto,
+	AnalyticDashboardKpiDto,
+	AnalyticDashboardKpisDto,
 	AnalyticDashboardPerformanceItemDto,
 	AnalyticDashboardResponseDto,
 	AnalyticDashboardSummaryDto,
+	AnalyticDashboardTrendDto,
+	AnalyticDashboardTrendPointDto,
 	AverageTimeToFirstInteractionDto,
 };

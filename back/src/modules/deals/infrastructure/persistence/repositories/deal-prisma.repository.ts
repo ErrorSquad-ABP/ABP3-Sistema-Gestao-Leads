@@ -125,6 +125,7 @@ class DealPrismaRepository implements IDealRepository {
 					importance: row.importance,
 					stage: row.stage,
 					status: row.status,
+					lossReason: row.lossReason,
 					closedAt: row.closedAt,
 				},
 			});
@@ -154,6 +155,7 @@ class DealPrismaRepository implements IDealRepository {
 				importance: row.importance,
 				stage: row.stage,
 				status: row.status,
+				lossReason: row.lossReason,
 				closedAt: row.closedAt,
 			},
 			where: { id: row.id },

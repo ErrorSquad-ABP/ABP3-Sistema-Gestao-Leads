@@ -10,6 +10,7 @@ type DealSnapshot = {
 	readonly importance: string;
 	readonly stage: string;
 	readonly status: string;
+	readonly lossReason: string | null;
 };
 
 function snapshotDeal(deal: Deal): DealSnapshot {
@@ -20,6 +21,7 @@ function snapshotDeal(deal: Deal): DealSnapshot {
 		importance: deal.importance,
 		stage: deal.stage,
 		status: deal.status,
+		lossReason: deal.lossReason,
 	};
 }
 
@@ -106,6 +108,16 @@ function diffDealHistory(
 		after.status,
 		actorUserId,
 	);
+	if (before.lossReason !== after.lossReason && after.lossReason !== null) {
+		appendIfChanged(
+			out,
+			dealId,
+			DealHistoryField.LOSS_REASON,
+			before.lossReason,
+			after.lossReason,
+			actorUserId,
+		);
+	}
 	return out;
 }
 

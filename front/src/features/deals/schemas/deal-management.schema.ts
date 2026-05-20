@@ -5,7 +5,12 @@ import {
 	MONEY_BRL_EXCEEDS_DB_LIMIT,
 } from '@/lib/money-brl-limits';
 
-import { dealImportances, dealStages, dealStatuses } from './deal.schema';
+import {
+	dealImportances,
+	dealLossReasons,
+	dealStages,
+	dealStatuses,
+} from './deal.schema';
 
 const pricePattern = /^\d+(\.\d{2})$/;
 
@@ -38,34 +43,40 @@ const dealCreateSchema = z.object({
 		.optional(),
 });
 
-const dealUpdateSchema = z.object({
-	vehicleId: z.string().uuid('Informe um veículo válido.').optional(),
-	title: z.string().trim().min(1, 'Informe um título.').optional(),
-	value: z
-		.union([z.string().trim(), z.literal(''), z.null(), z.undefined()])
-		.transform((value) => {
-			if (value === '' || value === undefined) {
-				return undefined;
-			}
-			return value as string | null;
-		})
-		.refine(
-			(value) =>
-				value === undefined || value === null || pricePattern.test(value),
-			{
-				message: 'Informe um valor no formato 45000.00 ou deixe vazio.',
-			},
-		)
-		.refine(
-			(value) =>
-				value === undefined ||
-				value === null ||
-				isBrlApiDecimalAtOrUnderDbMax(value),
-			{ message: MONEY_BRL_EXCEEDS_DB_LIMIT },
-		),
-	importance: z.enum(dealImportances).optional(),
-	stage: z.enum(dealStages).optional(),
-	status: z.enum(dealStatuses).optional(),
-});
+const dealUpdateSchema = z
+	.object({
+		vehicleId: z.string().uuid('Informe um veículo válido.').optional(),
+		title: z.string().trim().min(1, 'Informe um título.').optional(),
+		value: z
+			.union([z.string().trim(), z.literal(''), z.null(), z.undefined()])
+			.transform((value) => {
+				if (value === '' || value === undefined) {
+					return undefined;
+				}
+				return value as string | null;
+			})
+			.refine(
+				(value) =>
+					value === undefined || value === null || pricePattern.test(value),
+				{
+					message: 'Informe um valor no formato 45000.00 ou deixe vazio.',
+				},
+			)
+			.refine(
+				(value) =>
+					value === undefined ||
+					value === null ||
+					isBrlApiDecimalAtOrUnderDbMax(value),
+				{ message: MONEY_BRL_EXCEEDS_DB_LIMIT },
+			),
+		importance: z.enum(dealImportances).optional(),
+		stage: z.enum(dealStages).optional(),
+		status: z.enum(dealStatuses).optional(),
+		lossReason: z.enum(dealLossReasons).nullable().optional(),
+	})
+	.refine((value) => value.status !== 'LOST' || Boolean(value.lossReason), {
+		message: 'Informe o motivo da perda.',
+		path: ['lossReason'],
+	});
 
 export { dealCreateSchema, dealUpdateSchema };
