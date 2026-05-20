@@ -60,6 +60,7 @@ const leadCatalogSchema = z.object({
 		converted: z.number().int().min(0),
 		staleNoContact: z.number().int().min(0),
 		conversionRate: z.number().int().min(0),
+		wonValue: z.string().default('0.00'),
 	}),
 	funnel: z.object({
 		totalLeads: z.number().int().min(0),
