@@ -11,7 +11,6 @@ import {
 	ChevronDown,
 	Handshake,
 	type LucideIcon,
-	Activity,
 	Users,
 	UserCog,
 	UserRound,
