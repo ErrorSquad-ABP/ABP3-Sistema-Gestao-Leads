@@ -57,6 +57,46 @@ class OperationalDashboardTotalsDto {
 	totalLeadsWithOpenDeal!: number;
 }
 
+class OperationalDashboardKpiDto {
+	@ApiProperty({ example: 248 })
+	value!: number;
+
+	@ApiProperty({ example: 210 })
+	previousValue!: number;
+
+	@ApiProperty({ example: 38 })
+	delta!: number;
+
+	@ApiProperty({
+		example: 18.1,
+		nullable: true,
+		description:
+			'Variação percentual. Retorna null quando a base anterior é zero.',
+	})
+	deltaPercentage!: number | null;
+
+	@ApiProperty({
+		example: 6,
+		nullable: true,
+		description: 'Variação em pontos percentuais, usada para taxas.',
+	})
+	deltaPoints!: number | null;
+}
+
+class OperationalDashboardKpisDto {
+	@ApiProperty({ type: OperationalDashboardKpiDto })
+	totalLeads!: OperationalDashboardKpiDto;
+
+	@ApiProperty({ type: OperationalDashboardKpiDto })
+	activeLeads!: OperationalDashboardKpiDto;
+
+	@ApiProperty({ type: OperationalDashboardKpiDto })
+	convertedLeads!: OperationalDashboardKpiDto;
+
+	@ApiProperty({ type: OperationalDashboardKpiDto })
+	conversionRate!: OperationalDashboardKpiDto;
+}
+
 class OperationalDashboardDistributionsDto {
 	@ApiProperty({ type: [DashboardDistributionItemDto] })
 	byStatus!: DashboardDistributionItemDto[];
@@ -87,6 +127,28 @@ class OperationalDashboardScopeDto {
 	storeIds!: string[] | null;
 }
 
+class OperationalDashboardTrendPointDto {
+	@ApiProperty({ example: '2026-04-01' })
+	date!: string;
+
+	@ApiProperty({ example: 12, minimum: 0 })
+	totalLeads!: number;
+
+	@ApiProperty({ example: 8, minimum: 0 })
+	activeLeads!: number;
+
+	@ApiProperty({ example: 3, minimum: 0 })
+	convertedLeads!: number;
+
+	@ApiProperty({ example: 25, minimum: 0, maximum: 100 })
+	conversionRate!: number;
+}
+
+class OperationalDashboardTrendDto {
+	@ApiProperty({ type: [OperationalDashboardTrendPointDto] })
+	points!: OperationalDashboardTrendPointDto[];
+}
+
 class OperationalDashboardResponseDto {
 	@ApiProperty({ type: OperationalDashboardPeriodDto })
 	period!: OperationalDashboardPeriodDto;
@@ -97,12 +159,22 @@ class OperationalDashboardResponseDto {
 	@ApiProperty({ type: OperationalDashboardTotalsDto })
 	totals!: OperationalDashboardTotalsDto;
 
+	@ApiProperty({ type: OperationalDashboardKpisDto })
+	kpis!: OperationalDashboardKpisDto;
+
 	@ApiProperty({ type: OperationalDashboardDistributionsDto })
 	distributions!: OperationalDashboardDistributionsDto;
+
+	@ApiProperty({ type: OperationalDashboardTrendDto })
+	trend!: OperationalDashboardTrendDto;
 }
 
 export {
 	DashboardDistributionItemDto,
 	DashboardStoreDistributionItemDto,
+	OperationalDashboardKpiDto,
+	OperationalDashboardKpisDto,
 	OperationalDashboardResponseDto,
+	OperationalDashboardTrendDto,
+	OperationalDashboardTrendPointDto,
 };

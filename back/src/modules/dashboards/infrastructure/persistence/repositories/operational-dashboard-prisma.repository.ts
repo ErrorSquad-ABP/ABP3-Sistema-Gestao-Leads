@@ -11,6 +11,7 @@ import type {
 	IOperationalDashboardRepository,
 	OperationalDashboardAggregate,
 	OperationalDashboardScope,
+	OperationalDashboardTrendPoint,
 } from '../../../domain/repositories/operational-dashboard.repository.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
@@ -35,6 +36,8 @@ const PRISMA_SOURCE_TO_DOMAIN_SOURCE: Record<PrismaLeadSource, string> = {
 	WEBSITE: 'digital-form',
 	WHATSAPP: 'whatsapp',
 };
+
+const ACTIVE_LEAD_STATUSES = new Set(['CONTACTED', 'NEW', 'QUALIFIED']);
 
 class OperationalDashboardPrismaRepository
 	implements IOperationalDashboardRepository
@@ -120,6 +123,75 @@ class OperationalDashboardPrismaRepository
 			byStore,
 			byImportance,
 		};
+	}
+
+	async getOperationalTrend(input: {
+		readonly period: { readonly startDate: Date; readonly endDate: Date };
+		readonly scope: OperationalDashboardScope;
+	}): Promise<OperationalDashboardTrendPoint[]> {
+		const rows = await this.client.lead.findMany({
+			where: this.buildLeadWhere(input.period, input.scope),
+			select: {
+				createdAt: true,
+				status: true,
+			},
+			orderBy: { createdAt: 'asc' },
+		});
+		const dayBuckets = new Map<
+			string,
+			{
+				totalLeads: number;
+				activeLeads: number;
+				convertedLeads: number;
+			}
+		>();
+
+		for (const row of rows) {
+			const date = row.createdAt.toISOString().slice(0, 10);
+			const bucket = dayBuckets.get(date) ?? {
+				activeLeads: 0,
+				convertedLeads: 0,
+				totalLeads: 0,
+			};
+			const status = PRISMA_STATUS_TO_DOMAIN_STATUS[row.status] ?? row.status;
+			bucket.totalLeads += 1;
+			if (ACTIVE_LEAD_STATUSES.has(status)) {
+				bucket.activeLeads += 1;
+			}
+			if (status === 'CONVERTED') {
+				bucket.convertedLeads += 1;
+			}
+			dayBuckets.set(date, bucket);
+		}
+
+		const points: OperationalDashboardTrendPoint[] = [];
+		const current = new Date(
+			Date.UTC(
+				input.period.startDate.getUTCFullYear(),
+				input.period.startDate.getUTCMonth(),
+				input.period.startDate.getUTCDate(),
+			),
+		);
+		const end = new Date(
+			Date.UTC(
+				input.period.endDate.getUTCFullYear(),
+				input.period.endDate.getUTCMonth(),
+				input.period.endDate.getUTCDate(),
+			),
+		);
+		while (current < end) {
+			const date = current.toISOString().slice(0, 10);
+			const bucket = dayBuckets.get(date);
+			points.push({
+				date,
+				activeLeads: bucket?.activeLeads ?? 0,
+				convertedLeads: bucket?.convertedLeads ?? 0,
+				totalLeads: bucket?.totalLeads ?? 0,
+			});
+			current.setUTCDate(current.getUTCDate() + 1);
+		}
+
+		return points;
 	}
 
 	private async resolveStoreNames(

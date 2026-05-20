@@ -3,13 +3,13 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import {
+	Activity,
 	Building2,
 	Car,
 	ClipboardList,
 	ChartColumn,
 	ChevronDown,
 	Handshake,
-	Home,
 	type LucideIcon,
 	Users,
 	UserCog,
@@ -54,10 +54,16 @@ type VisualNavItem = {
 
 const NAV_DASHBOARD: VisualNavItem[] = [
 	{
-		title: 'Dashboard',
+		title: 'Operacional',
 		href: '/app/dashboard/operational',
-		icon: Home,
+		icon: Activity,
 		accessKey: 'dashboardOperational',
+	},
+	{
+		title: 'Analítico',
+		href: '/app/dashboard/analytic',
+		icon: ChartColumn,
+		accessKey: 'dashboardAnalytic',
 	},
 ];
 
@@ -107,11 +113,6 @@ const NAV_ADMIN: VisualNavItem[] = [
 		icon: UserCog,
 		accessKey: 'users',
 	},
-	{
-		title: 'Relatórios',
-		href: '/app/operations',
-		icon: ChartColumn,
-	},
 ];
 
 function buildNavData(currentUser: AuthenticatedUser): NavItem[] {
@@ -129,8 +130,11 @@ function buildNavData(currentUser: AuthenticatedUser): NavItem[] {
 
 	const rows: NavItem[] = [];
 
-	for (const item of dashboardItems) {
-		rows.push({ href: item.href, icon: item.icon, title: item.title });
+	if (dashboardItems.length) {
+		rows.push({ isSection: true, label: 'DASHBOARDS' });
+		for (const item of dashboardItems) {
+			rows.push({ href: item.href, icon: item.icon, title: item.title });
+		}
 	}
 
 	if (workspaceItems.length) {
