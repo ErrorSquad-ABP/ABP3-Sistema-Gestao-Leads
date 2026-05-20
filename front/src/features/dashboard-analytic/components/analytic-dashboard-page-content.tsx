@@ -347,7 +347,9 @@ function DeltaBadge({ direction, tone, value }: DeltaBadgeProps) {
 				: 'text-[#64748b]';
 
 	return (
-		<span className={cn('inline-flex items-center gap-1 font-semibold', toneClass)}>
+		<span
+			className={cn('inline-flex items-center gap-1 font-semibold', toneClass)}
+		>
 			<Icon className="size-3" />
 			{value}
 		</span>
@@ -430,9 +432,7 @@ function KpiSkeleton() {
 }
 
 function SectionTitle({ title }: { title: string }) {
-	return (
-		<h2 className="text-base font-bold text-[#06142b]">{title}</h2>
-	);
+	return <h2 className="text-base font-bold text-[#06142b]">{title}</h2>;
 }
 
 function CardAction({ children }: { children: string }) {
@@ -1010,10 +1010,7 @@ function AnalyticDashboardPageContent({
 												data={finalizationData}
 												margin={{ bottom: 20, left: -18, right: 8, top: 18 }}
 											>
-												<CartesianGrid
-													stroke="#edf2f7"
-													vertical={false}
-												/>
+												<CartesianGrid stroke="#edf2f7" vertical={false} />
 												<XAxis
 													axisLine={false}
 													dataKey="chartLabel"
@@ -1138,10 +1135,7 @@ function AnalyticDashboardPageContent({
 													/>
 												</linearGradient>
 											</defs>
-											<CartesianGrid
-												stroke="#edf2f7"
-												vertical={false}
-											/>
+											<CartesianGrid stroke="#edf2f7" vertical={false} />
 											<XAxis
 												axisLine={false}
 												dataKey="label"

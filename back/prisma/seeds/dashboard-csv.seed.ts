@@ -606,9 +606,7 @@ export async function buildDashboardCsvSeed(): Promise<DashboardSeedDataset> {
 			stage: 'NEGOTIATION' as const,
 			status,
 			lossReason:
-				status === 'LOST'
-					? mapDealLossReason(row.finalization_reason)
-					: null,
+				status === 'LOST' ? mapDealLossReason(row.finalization_reason) : null,
 			closedAt,
 			createdAt,
 			updatedAt,
