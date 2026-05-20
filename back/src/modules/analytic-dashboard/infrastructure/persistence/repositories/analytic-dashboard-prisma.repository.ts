@@ -1,9 +1,11 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type {
+	AnalyticDashboardKpi,
 	AnalyticDashboardResult,
 	AnalyticDistributionItem,
 	AnalyticPerformanceItem,
+	AnalyticTrendPoint,
 	AnalyticsRankingOptions,
 	AnalyticsScope,
 	AnalyticsTimeRange,
@@ -34,23 +36,42 @@ type DealCountsByLead = {
 	lostDeals: number;
 };
 
-const FIRST_INTERACTION_METHODOLOGY =
-	'Aproximacao baseada no primeiro evento operacional registrado, na primeira negociacao criada ou, sem esses registros, em updatedAt do lead.';
-
 type Counter = {
 	totalLeads: number;
 	convertedLeads: number;
 	notConvertedLeads: number;
+	lostLeads: number;
 	openDeals: number;
 	wonDeals: number;
 	lostDeals: number;
 };
+
+type Aggregate = {
+	totalLeads: number;
+	convertedLeads: number;
+	notConvertedLeads: number;
+	lostLeads: number;
+	finalizedLeads: number;
+	conversionRate: number;
+	averageTimeToFirstInteractionHours: number | null;
+	leadsWithInteraction: number;
+	byAttendant: AnalyticPerformanceItem[];
+	byTeam: AnalyticPerformanceItem[];
+	importanceDistribution: AnalyticDistributionItem[];
+	finalizationReasons: AnalyticDistributionItem[];
+	trendPoints: AnalyticTrendPoint[];
+};
+
+const FIRST_INTERACTION_METHODOLOGY =
+	'Aproximacao baseada no primeiro evento operacional registrado, na primeira negociacao criada ou, sem esses registros, em updatedAt do lead.';
+const DAY_IN_MS = 86_400_000;
 
 function emptyCounter(): Counter {
 	return {
 		totalLeads: 0,
 		convertedLeads: 0,
 		notConvertedLeads: 0,
+		lostLeads: 0,
 		openDeals: 0,
 		wonDeals: 0,
 		lostDeals: 0,
@@ -66,6 +87,44 @@ function toRate(numerator: number, denominator: number): number {
 		return 0;
 	}
 	return round2((numerator / denominator) * 100);
+}
+
+function toDateKey(value: Date): string {
+	return value.toISOString().slice(0, 10);
+}
+
+function previousTimeRange(timeRange: AnalyticsTimeRange): AnalyticsTimeRange {
+	const duration =
+		timeRange.endExclusive.getTime() - timeRange.startAt.getTime();
+	const startAt = new Date(timeRange.startAt.getTime() - duration);
+	const endExclusive = new Date(timeRange.startAt.getTime());
+	return {
+		mode: timeRange.mode,
+		startAt,
+		endExclusive,
+		startDate: toDateKey(startAt),
+		endDate: toDateKey(new Date(endExclusive.getTime() - DAY_IN_MS)),
+	};
+}
+
+function toKpi(
+	value: number,
+	previousValue: number,
+	options: { readonly asRate?: boolean } = {},
+): AnalyticDashboardKpi {
+	const delta = round2(value - previousValue);
+	return {
+		value,
+		previousValue,
+		delta,
+		deltaPercentage:
+			previousValue === 0
+				? value === 0
+					? 0
+					: null
+				: round2((delta / previousValue) * 100),
+		...(options.asRate ? { deltaPoints: delta } : {}),
+	};
 }
 
 function resolvePrimaryTeam(
@@ -96,21 +155,25 @@ function toPerformanceItems(
 	limit?: number,
 ): AnalyticPerformanceItem[] {
 	const items = [...source.values()]
-		.map((item) => ({
-			id: item.id,
-			name: item.name,
-			totalLeads: item.counter.totalLeads,
-			convertedLeads: item.counter.convertedLeads,
-			notConvertedLeads: item.counter.notConvertedLeads,
-			conversionRate: toRate(
-				item.counter.convertedLeads,
-				item.counter.totalLeads,
-			),
-			openDeals: item.counter.openDeals,
-			wonDeals: item.counter.wonDeals,
-			lostDeals: item.counter.lostDeals,
-		}))
+		.map((item) => {
+			const finalizedLeads =
+				item.counter.convertedLeads + item.counter.lostLeads;
+			return {
+				id: item.id,
+				name: item.name,
+				totalLeads: item.counter.totalLeads,
+				convertedLeads: item.counter.convertedLeads,
+				notConvertedLeads: item.counter.notConvertedLeads,
+				conversionRate: toRate(item.counter.convertedLeads, finalizedLeads),
+				openDeals: item.counter.openDeals,
+				wonDeals: item.counter.wonDeals,
+				lostDeals: item.counter.lostDeals,
+			};
+		})
 		.sort((left, right) => {
+			if (right.conversionRate !== left.conversionRate) {
+				return right.conversionRate - left.conversionRate;
+			}
 			if (right.convertedLeads !== left.convertedLeads) {
 				return right.convertedLeads - left.convertedLeads;
 			}
@@ -139,16 +202,9 @@ function buildDealCountsByLead(
 			lostDeals: 0,
 		};
 
-		if (group.status === 'OPEN') {
-			counter.openDeals = group._count._all;
-		}
-		if (group.status === 'WON') {
-			counter.wonDeals = group._count._all;
-		}
-		if (group.status === 'LOST') {
-			counter.lostDeals = group._count._all;
-		}
-
+		if (group.status === 'OPEN') counter.openDeals = group._count._all;
+		if (group.status === 'WON') counter.wonDeals = group._count._all;
+		if (group.status === 'LOST') counter.lostDeals = group._count._all;
 		counters.set(group.leadId, counter);
 	}
 
@@ -168,27 +224,6 @@ function buildFirstInteractionMap(
 	);
 }
 
-function emptyAnalyticsResult(): AnalyticDashboardResult {
-	return {
-		summary: {
-			totalLeads: 0,
-			convertedLeads: 0,
-			notConvertedLeads: 0,
-			conversionRate: 0,
-		},
-		byAttendant: [],
-		byTeam: [],
-		importanceDistribution: [],
-		finalizationReasons: [],
-		averageTimeToFirstInteraction: {
-			hours: null,
-			leadsWithInteraction: 0,
-			isApproximate: true,
-			methodology: FIRST_INTERACTION_METHODOLOGY,
-		},
-	};
-}
-
 class AnalyticDashboardPrismaRepository
 	implements IAnalyticDashboardRepository
 {
@@ -199,40 +234,78 @@ class AnalyticDashboardPrismaRepository
 		timeRange: AnalyticsTimeRange,
 		options?: AnalyticsRankingOptions,
 	): Promise<AnalyticDashboardResult> {
-		const leadWhere = this.buildLeadWhere(scope, timeRange);
-		const dealWhere: Prisma.DealWhereInput = {
-			lead: leadWhere,
+		const current = await this.loadAggregate(scope, timeRange, options);
+		const previous = await this.loadAggregate(
+			scope,
+			previousTimeRange(timeRange),
+			options,
+		);
+
+		return {
+			summary: {
+				totalLeads: current.totalLeads,
+				convertedLeads: current.convertedLeads,
+				notConvertedLeads: current.notConvertedLeads,
+				lostLeads: current.lostLeads,
+				finalizedLeads: current.finalizedLeads,
+				conversionRate: current.conversionRate,
+			},
+			kpis: {
+				conversionRate: toKpi(current.conversionRate, previous.conversionRate, {
+					asRate: true,
+				}),
+				convertedLeads: toKpi(current.convertedLeads, previous.convertedLeads),
+				lostLeads: toKpi(current.lostLeads, previous.lostLeads),
+				averageTimeToFirstInteraction: toKpi(
+					current.averageTimeToFirstInteractionHours ?? 0,
+					previous.averageTimeToFirstInteractionHours ?? 0,
+				),
+			},
+			trend: { points: current.trendPoints },
+			byAttendant: current.byAttendant,
+			byTeam: current.byTeam,
+			importanceDistribution: current.importanceDistribution,
+			finalizationReasons: current.finalizationReasons,
+			averageTimeToFirstInteraction: {
+				hours: current.averageTimeToFirstInteractionHours,
+				leadsWithInteraction: current.leadsWithInteraction,
+				isApproximate: true,
+				methodology: FIRST_INTERACTION_METHODOLOGY,
+			},
 		};
+	}
+
+	private async loadAggregate(
+		scope: AnalyticsScope,
+		timeRange: AnalyticsTimeRange,
+		options?: AnalyticsRankingOptions,
+	): Promise<Aggregate> {
+		const leadWhere = this.buildLeadWhere(scope, timeRange);
+		const dealWhere: Prisma.DealWhereInput = { lead: leadWhere };
 
 		const [
-			totalLeads,
-			convertedLeads,
 			importanceGroups,
-			finalizationGroups,
+			lostDeals,
 			dealStatusByLead,
 			firstDealByLead,
 			firstLeadEventByLead,
 			leads,
 		] = await Promise.all([
-			this.prisma.lead.count({ where: leadWhere }),
-			this.prisma.lead.count({
-				where: {
-					...leadWhere,
-					status: 'CONVERTED',
-				},
-			}),
 			this.prisma.deal.groupBy({
 				by: ['importance'],
 				_count: { _all: true },
 				where: dealWhere,
 			}),
-			this.prisma.deal.groupBy({
-				by: ['status'],
-				_count: { _all: true },
+			this.prisma.deal.findMany({
 				where: {
 					...dealWhere,
-					status: { in: ['WON', 'LOST'] },
+					status: 'LOST',
+					lead: {
+						...leadWhere,
+						status: { not: 'CONVERTED' },
+					},
 				},
+				select: { leadId: true, lossReason: true },
 			}),
 			this.prisma.deal.groupBy({
 				by: ['leadId', 'status'],
@@ -252,8 +325,6 @@ class AnalyticDashboardPrismaRepository
 					type: { in: ['UPDATED', 'REASSIGNED', 'CONVERTED'] },
 				},
 			}),
-			// Team derivation still depends on owner/team/store relationships, so we keep
-			// only the minimal lead projection needed for ranking and interaction timing.
 			this.prisma.lead.findMany({
 				where: leadWhere,
 				select: {
@@ -278,9 +349,15 @@ class AnalyticDashboardPrismaRepository
 			}),
 		]);
 
-		if (totalLeads === 0) {
-			return emptyAnalyticsResult();
-		}
+		const lostLeadIds = new Set(lostDeals.map((deal) => deal.leadId));
+		const totalLeads = leads.length;
+		const convertedLeads = leads.filter(
+			(lead) => lead.status === 'CONVERTED',
+		).length;
+		const lostLeads = lostLeadIds.size;
+		const finalizedLeads = convertedLeads + lostLeads;
+		const notConvertedLeads = totalLeads - convertedLeads;
+		const conversionRate = toRate(convertedLeads, finalizedLeads);
 
 		const attendantCounters = new Map<
 			string,
@@ -300,75 +377,98 @@ class AnalyticDashboardPrismaRepository
 
 		let interactionLeadCount = 0;
 		let interactionTotalHours = 0;
-		const notConvertedLeads = totalLeads - convertedLeads;
+		const trendBuckets = this.emptyTrendBuckets(timeRange);
 
 		for (const lead of leads) {
 			const isConverted = lead.status === 'CONVERTED';
-			const ownerId = lead.owner?.id ?? '__unassigned__';
-			const ownerName = lead.owner?.name ?? 'Sem responsavel';
-			const attendantEntry = attendantCounters.get(ownerId) ?? {
-				id: ownerId,
-				name: ownerName,
-				counter: emptyCounter(),
-			};
-			attendantEntry.counter.totalLeads += 1;
-			attendantEntry.counter.convertedLeads += isConverted ? 1 : 0;
-			attendantEntry.counter.notConvertedLeads += isConverted ? 0 : 1;
+			const isLost = lostLeadIds.has(lead.id);
 			const dealCounts = dealCountsByLead.get(lead.id);
-			attendantEntry.counter.openDeals += dealCounts?.openDeals ?? 0;
-			attendantEntry.counter.wonDeals += dealCounts?.wonDeals ?? 0;
-			attendantEntry.counter.lostDeals += dealCounts?.lostDeals ?? 0;
-			attendantCounters.set(ownerId, attendantEntry);
-
-			const primaryTeam = resolvePrimaryTeam(lead, visibleTeamIds);
-			const teamId = primaryTeam?.id ?? '__no_team__';
-			const teamName = primaryTeam?.name ?? 'Sem equipe';
-			const teamEntry = teamCounters.get(teamId) ?? {
-				id: teamId,
-				name: teamName,
-				counter: emptyCounter(),
-			};
-			teamEntry.counter.totalLeads += 1;
-			teamEntry.counter.convertedLeads += isConverted ? 1 : 0;
-			teamEntry.counter.notConvertedLeads += isConverted ? 0 : 1;
-			teamEntry.counter.openDeals += dealCounts?.openDeals ?? 0;
-			teamEntry.counter.wonDeals += dealCounts?.wonDeals ?? 0;
-			teamEntry.counter.lostDeals += dealCounts?.lostDeals ?? 0;
-			teamCounters.set(teamId, teamEntry);
-
 			const interactionAt = this.resolveFirstInteractionAt({
 				lead,
 				firstDealAt: firstDealAtByLead.get(lead.id) ?? null,
 				firstLeadEventAt: firstLeadEventAtByLead.get(lead.id) ?? null,
 			});
-			if (interactionAt !== null) {
+			const interactionHours =
+				interactionAt === null
+					? null
+					: (interactionAt.getTime() - lead.createdAt.getTime()) / 3_600_000;
+
+			if (interactionHours !== null) {
 				interactionLeadCount += 1;
-				interactionTotalHours +=
-					(interactionAt.getTime() - lead.createdAt.getTime()) / 3_600_000;
+				interactionTotalHours += interactionHours;
+			}
+
+			this.incrementCounter(
+				attendantCounters,
+				lead.owner?.id ?? '__unassigned__',
+				lead.owner?.name ?? 'Sem responsavel',
+				isConverted,
+				isLost,
+				dealCounts,
+			);
+
+			const primaryTeam = resolvePrimaryTeam(lead, visibleTeamIds);
+			this.incrementCounter(
+				teamCounters,
+				primaryTeam?.id ?? '__no_team__',
+				primaryTeam?.name ?? 'Sem equipe',
+				isConverted,
+				isLost,
+				dealCounts,
+			);
+
+			const bucket = trendBuckets.get(toDateKey(lead.createdAt));
+			if (bucket) {
+				bucket.totalLeads += 1;
+				bucket.convertedLeads += isConverted ? 1 : 0;
+				bucket.lostLeads += isLost ? 1 : 0;
+				if (interactionHours !== null) {
+					bucket.interactionLeadCount += 1;
+					bucket.interactionTotalHours += interactionHours;
+				}
 			}
 		}
 
 		return {
-			summary: {
-				totalLeads,
-				convertedLeads,
-				notConvertedLeads,
-				conversionRate: toRate(convertedLeads, totalLeads),
-			},
+			totalLeads,
+			convertedLeads,
+			notConvertedLeads,
+			lostLeads,
+			finalizedLeads,
+			conversionRate,
+			averageTimeToFirstInteractionHours:
+				interactionLeadCount === 0
+					? null
+					: round2(interactionTotalHours / interactionLeadCount),
+			leadsWithInteraction: interactionLeadCount,
 			byAttendant: toPerformanceItems(attendantCounters, options?.top),
 			byTeam: toPerformanceItems(teamCounters, options?.top),
 			importanceDistribution: this.toImportanceDistribution(importanceGroups),
-			finalizationReasons: this.toFinalizationReasons(finalizationGroups),
-			averageTimeToFirstInteraction: {
-				hours:
-					interactionLeadCount === 0
-						? null
-						: round2(interactionTotalHours / interactionLeadCount),
-				leadsWithInteraction: interactionLeadCount,
-				isApproximate: true,
-				methodology: FIRST_INTERACTION_METHODOLOGY,
-			},
+			finalizationReasons: this.toFinalizationReasons(lostDeals),
+			trendPoints: this.toTrendPoints(trendBuckets),
 		};
+	}
+
+	private incrementCounter(
+		source: Map<
+			string,
+			{ readonly id: string; readonly name: string; counter: Counter }
+		>,
+		id: string,
+		name: string,
+		isConverted: boolean,
+		isLost: boolean,
+		dealCounts?: DealCountsByLead,
+	): void {
+		const entry = source.get(id) ?? { id, name, counter: emptyCounter() };
+		entry.counter.totalLeads += 1;
+		entry.counter.convertedLeads += isConverted ? 1 : 0;
+		entry.counter.notConvertedLeads += isConverted ? 0 : 1;
+		entry.counter.lostLeads += isLost ? 1 : 0;
+		entry.counter.openDeals += dealCounts?.openDeals ?? 0;
+		entry.counter.wonDeals += dealCounts?.wonDeals ?? 0;
+		entry.counter.lostDeals += dealCounts?.lostDeals ?? 0;
+		source.set(id, entry);
 	}
 
 	private buildLeadWhere(
@@ -385,14 +485,10 @@ class AnalyticDashboardPrismaRepository
 	}
 
 	private buildScopeWhere(scope: AnalyticsScope): Prisma.LeadWhereInput {
-		if (scope.kind === 'full') {
-			return {};
-		}
+		if (scope.kind === 'full') return {};
 
 		if (scope.kind === 'attendant') {
-			return {
-				ownerUserId: scope.actorUserId,
-			};
+			return { ownerUserId: scope.actorUserId };
 		}
 
 		if (scope.kind === 'manager') {
@@ -416,17 +512,12 @@ class AnalyticDashboardPrismaRepository
 							},
 						},
 					},
-					{
-						ownerUserId: null,
-						storeId: { in: [...scope.readStoreIds] },
-					},
+					{ ownerUserId: null, storeId: { in: [...scope.readStoreIds] } },
 				],
 			};
 		}
 
-		return {
-			storeId: { in: [...scope.readStoreIds] },
-		};
+		return { storeId: { in: [...scope.readStoreIds] } };
 	}
 
 	private toImportanceDistribution(
@@ -439,29 +530,93 @@ class AnalyticDashboardPrismaRepository
 				count: group._count._all,
 			}))
 			.sort((left, right) => {
-				if (right.count !== left.count) {
-					return right.count - left.count;
-				}
+				if (right.count !== left.count) return right.count - left.count;
 				return left.label.localeCompare(right.label);
 			});
 	}
 
 	private toFinalizationReasons(
-		groups: readonly { status: string; _count: { _all: number } }[],
+		lostDeals: readonly { lossReason: string | null }[],
 	): AnalyticDistributionItem[] {
-		return groups
-			.map((group) => ({
-				key: group.status === 'WON' ? 'sale_completed' : 'closed_without_sale',
-				label:
-					group.status === 'WON' ? 'Venda concluida' : 'Encerrada sem venda',
-				count: group._count._all,
+		const counters = new Map<string, number>();
+		for (const deal of lostDeals) {
+			const key = deal.lossReason ?? 'OTHER';
+			counters.set(key, (counters.get(key) ?? 0) + 1);
+		}
+		return [...counters.entries()]
+			.map(([key, count]) => ({
+				key,
+				label: this.lossReasonLabel(key),
+				count,
 			}))
 			.sort((left, right) => {
-				if (right.count !== left.count) {
-					return right.count - left.count;
-				}
+				if (right.count !== left.count) return right.count - left.count;
 				return left.label.localeCompare(right.label);
 			});
+	}
+
+	private emptyTrendBuckets(timeRange: AnalyticsTimeRange): Map<
+		string,
+		{
+			totalLeads: number;
+			convertedLeads: number;
+			lostLeads: number;
+			interactionLeadCount: number;
+			interactionTotalHours: number;
+		}
+	> {
+		const buckets = new Map<
+			string,
+			{
+				totalLeads: number;
+				convertedLeads: number;
+				lostLeads: number;
+				interactionLeadCount: number;
+				interactionTotalHours: number;
+			}
+		>();
+		for (
+			let cursor = timeRange.startAt.getTime();
+			cursor < timeRange.endExclusive.getTime();
+			cursor += DAY_IN_MS
+		) {
+			buckets.set(toDateKey(new Date(cursor)), {
+				totalLeads: 0,
+				convertedLeads: 0,
+				lostLeads: 0,
+				interactionLeadCount: 0,
+				interactionTotalHours: 0,
+			});
+		}
+		return buckets;
+	}
+
+	private toTrendPoints(
+		buckets: Map<
+			string,
+			{
+				totalLeads: number;
+				convertedLeads: number;
+				lostLeads: number;
+				interactionLeadCount: number;
+				interactionTotalHours: number;
+			}
+		>,
+	): AnalyticTrendPoint[] {
+		return [...buckets.entries()].map(([date, bucket]) => ({
+			date,
+			totalLeads: bucket.totalLeads,
+			convertedLeads: bucket.convertedLeads,
+			lostLeads: bucket.lostLeads,
+			conversionRate: toRate(
+				bucket.convertedLeads,
+				bucket.convertedLeads + bucket.lostLeads,
+			),
+			averageTimeToFirstInteractionHours:
+				bucket.interactionLeadCount === 0
+					? null
+					: round2(bucket.interactionTotalHours / bucket.interactionLeadCount),
+		}));
 	}
 
 	private importanceLabel(importance: string): string {
@@ -474,6 +629,25 @@ class AnalyticDashboardPrismaRepository
 				return 'Frio';
 			default:
 				return importance;
+		}
+	}
+
+	private lossReasonLabel(reason: string): string {
+		switch (reason) {
+			case 'NO_INTEREST':
+				return 'Sem interesse';
+			case 'PRICE_EXPECTATION':
+				return 'Preço fora da expectativa';
+			case 'BOUGHT_ELSEWHERE':
+				return 'Comprou em outra loja';
+			case 'NO_RESPONSE':
+				return 'Não retornou contato';
+			case 'VEHICLE_UNAVAILABLE':
+				return 'Veículo indisponível';
+			case 'OTHER':
+				return 'Outros';
+			default:
+				return reason;
 		}
 	}
 
@@ -506,10 +680,7 @@ class AnalyticDashboardPrismaRepository
 			candidates.push(lead.updatedAt);
 		}
 
-		if (candidates.length === 0) {
-			return null;
-		}
-
+		if (candidates.length === 0) return null;
 		return candidates.reduce((earliest, current) =>
 			current.getTime() < earliest.getTime() ? current : earliest,
 		);

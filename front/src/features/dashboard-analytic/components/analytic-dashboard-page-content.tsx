@@ -1,26 +1,31 @@
 'use client';
 
 import {
-	BarChart3,
+	ArrowDown,
+	ArrowRight,
+	ArrowUp,
 	CalendarRange,
+	CheckCircle2,
 	Clock3,
-	Filter,
-	RefreshCw,
-	TrendingUp,
-	Users2,
+	LineChart as LineChartIcon,
+	Target,
+	UserRoundCheck,
+	UserRoundX,
+	UsersRound,
+	XCircle,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
+	Area,
+	AreaChart,
 	Bar,
 	BarChart,
 	CartesianGrid,
 	Cell,
-	Legend,
 	Line,
 	LineChart,
 	Pie,
 	PieChart,
-	Rectangle,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -28,9 +33,8 @@ import {
 } from 'recharts';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
@@ -44,66 +48,145 @@ import type {
 	AnalyticDashboardQuery,
 } from '../model/analytic-dashboard.model';
 
-const ANALYTIC_FILTER_OPTIONS: {
+const FILTER_OPTIONS: {
 	value: AnalyticDashboardFilterMode;
 	label: string;
 }[] = [
 	{ value: 'week', label: 'Semana' },
 	{ value: 'month', label: 'Mes' },
 	{ value: 'year', label: 'Ano' },
-	{ value: 'custom', label: 'Periodo' },
+	{ value: 'custom', label: 'Personalizado' },
 ];
 
-const CHART_COLORS = ['#ff7a45', '#f39c12', '#3498db', '#2d3648'];
-const PRIMARY_COLOR = '#ff7a45';
-const SECONDARY_COLOR = '#2d3648';
-const MUTED_COLOR = '#cfd8e3';
+const TEAM_COLORS = ['#ff5722', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6'];
+const IMPORTANCE_COLORS: Record<string, string> = {
+	COLD: '#2f6bed',
+	WARM: '#ff7a1a',
+	HOT: '#ef4444',
+};
+const IMPORTANCE_LABELS = new Map([
+	['COLD', 'Frias'],
+	['WARM', 'Mornas'],
+	['HOT', 'Quentes'],
+]);
+const REASON_LABELS = new Map([
+	['NO_INTEREST', 'Sem interesse'],
+	['PRICE_EXPECTATION', 'Preco fora da expectativa'],
+	['BOUGHT_ELSEWHERE', 'Comprou em outra loja'],
+	['NO_RESPONSE', 'Nao retornou contato'],
+	['VEHICLE_UNAVAILABLE', 'Veiculo indisponivel'],
+	['OTHER', 'Outros'],
+]);
+const KPI_SKELETON_KEYS = ['conversion', 'converted', 'lost', 'average-time'];
 
-function toLocalDateInputValue(date: Date) {
+type TooltipPayloadItem = {
+	readonly color?: string;
+	readonly dataKey?: string | number;
+	readonly name?: string | number;
+	readonly value?: string | number | null;
+};
+
+type ChartTooltipProps = {
+	readonly active?: boolean;
+	readonly label?: string | number;
+	readonly payload?: readonly TooltipPayloadItem[];
+};
+
+type TrendPoint = AnalyticDashboard['trend']['points'][number];
+
+function toDateInputValue(date: Date) {
 	const year = String(date.getFullYear());
 	const month = String(date.getMonth() + 1).padStart(2, '0');
 	const day = String(date.getDate()).padStart(2, '0');
 	return `${year}-${month}-${day}`;
 }
 
-function isoToday() {
-	return toLocalDateInputValue(new Date());
+function todayInputValue() {
+	return toDateInputValue(new Date());
 }
 
-function isoThirtyDaysAgo() {
+function thirtyDaysAgoInputValue() {
 	const date = new Date();
 	date.setDate(date.getDate() - 29);
-	return toLocalDateInputValue(date);
+	return toDateInputValue(date);
 }
 
-function formatPercent(value: number) {
-	return `${value.toFixed(1)}%`;
+function parseIsoDate(value: string) {
+	return new Date(`${value}T00:00:00.000Z`);
 }
 
 function formatCount(value: number) {
 	return new Intl.NumberFormat('pt-BR').format(value);
 }
 
-function formatHours(value: number | null) {
-	if (value == null) {
-		return 'Sem dados';
-	}
-	return `${value.toFixed(1)}h`;
+function formatPercent(value: number) {
+	return `${new Intl.NumberFormat('pt-BR', {
+		maximumFractionDigits: 1,
+		minimumFractionDigits: 0,
+	}).format(value)}%`;
 }
 
-function formatDateLabel(value: string) {
+function formatDateShort(value: string) {
 	const [year, month, day] = value.split('-');
 	return `${day}/${month}/${year}`;
 }
 
-function getScopeLabel(scope: AnalyticDashboard['filter']['scope']) {
+function formatHours(value: number | null) {
+	if (value == null) {
+		return 'Sem dados';
+	}
+
+	if (value < 1) {
+		return `${Math.round(value * 60)}min`;
+	}
+
+	const hours = Math.floor(value);
+	const minutes = Math.round((value - hours) * 60);
+	return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+}
+
+function formatDeltaPercent(value: number | null) {
+	if (value == null) {
+		return '0%';
+	}
+
+	return `${value > 0 ? '+' : ''}${formatPercent(value)}`;
+}
+
+function formatDeltaPoints(value: number | undefined) {
+	const delta = value ?? 0;
+	return `${delta > 0 ? '+' : ''}${new Intl.NumberFormat('pt-BR', {
+		maximumFractionDigits: 1,
+		minimumFractionDigits: 1,
+	}).format(delta)} p.p.`;
+}
+
+function getErrorMessage(error: unknown) {
+	if (error instanceof ApiError) {
+		return error.message;
+	}
+
+	return 'Nao foi possivel carregar o dashboard analitico.';
+}
+
+function getPeriodLabel(dashboard: AnalyticDashboard | undefined) {
+	if (!dashboard) {
+		return 'Periodo selecionado';
+	}
+
+	return `${formatDateShort(dashboard.filter.startDate)} - ${formatDateShort(
+		dashboard.filter.endDate,
+	)}`;
+}
+
+function getRoleScopeLabel(scope: AnalyticDashboard['filter']['scope']) {
 	switch (scope) {
 		case 'attendant':
 			return 'Seus leads';
 		case 'manager':
-			return 'Equipe e lojas do gestor';
+			return 'Equipe vinculada';
 		case 'general_manager':
-			return 'Lojas visiveis ao gerente geral';
+			return 'Operacao consolidada';
 		case 'full':
 			return 'Visao global';
 		default:
@@ -111,82 +194,102 @@ function getScopeLabel(scope: AnalyticDashboard['filter']['scope']) {
 	}
 }
 
-function getRoleCopy(user: AuthenticatedUser) {
-	switch (user.role) {
-		case 'MANAGER':
-			return {
-				eyebrow: 'Gestao da equipe',
-				title: 'Dashboard analitico comercial',
-				subtitle:
-					'Acompanhe conversao, desempenho do time e sinais de perda dentro do seu escopo gerencial.',
-			};
-		case 'GENERAL_MANAGER':
-			return {
-				eyebrow: 'Visao consolidada',
-				title: 'Dashboard analitico multiunidade',
-				subtitle:
-					'Compare conversao, distribuicao de esforco e qualidade do atendimento entre as lojas visiveis para o seu papel.',
-			};
-		case 'ADMINISTRATOR':
-			return {
-				eyebrow: 'Administracao',
-				title: 'Dashboard analitico global',
-				subtitle:
-					'Leia o funil comercial completo com filtros temporais, comparativos e indicadores consolidados do CRM.',
-			};
-		default:
-			return {
-				eyebrow: 'Analise',
-				title: 'Dashboard analitico',
-				subtitle:
-					'Indicadores consolidados do funil comercial com o recorte permitido para o seu perfil.',
-			};
-	}
+function getImportanceLabel(key: string) {
+	return IMPORTANCE_LABELS.get(key) ?? key;
 }
 
-function getTimeModeLabel(mode: AnalyticDashboardFilterMode) {
-	return (
-		ANALYTIC_FILTER_OPTIONS.find((option) => option.value === mode)?.label ??
-		mode
-	);
+function getReasonLabel(key: string) {
+	return REASON_LABELS.get(key) ?? key;
 }
 
-function getDashboardErrorMessage(error: unknown) {
-	if (!(error instanceof ApiError)) {
-		return 'Nao foi possivel carregar o dashboard analitico.';
+function normalizeChartValue(value: number, max: number) {
+	if (max <= 0) {
+		return 0;
 	}
 
-	if (error.code?.startsWith('dashboard.time_range.')) {
-		return error.message;
-	}
-
-	return error.message || 'Nao foi possivel carregar o dashboard analitico.';
+	return Math.max(5, (value / max) * 100);
 }
 
-type DashboardTooltipItem = {
-	readonly name?: string | number;
-	readonly dataKey?: string | number;
-	readonly color?: string;
-	readonly value?: string | number | null;
-};
+function bucketTrend(points: readonly TrendPoint[]) {
+	if (points.length <= 45) {
+		return points.map((point) => ({
+			label: formatDateShort(point.date),
+			totalLeads: point.totalLeads,
+			convertedLeads: point.convertedLeads,
+			lostLeads: point.lostLeads,
+			conversionRate: point.conversionRate,
+			averageTimeToFirstInteractionHours:
+				point.averageTimeToFirstInteractionHours,
+		}));
+	}
 
-type DashboardTooltipProps = {
-	readonly active?: boolean;
-	readonly payload?: readonly DashboardTooltipItem[];
-	readonly label?: string | number;
-};
+	const buckets = new Map<
+		string,
+		{
+			totalLeads: number;
+			convertedLeads: number;
+			lostLeads: number;
+			averageTimeSum: number;
+			averageTimeCount: number;
+		}
+	>();
 
-function DashboardTooltip({ active, payload, label }: DashboardTooltipProps) {
+	for (const point of points) {
+		const date = parseIsoDate(point.date);
+		const key =
+			points.length > 120
+				? `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
+				: `Sem ${Math.ceil(date.getUTCDate() / 7)}/${String(
+						date.getUTCMonth() + 1,
+					).padStart(2, '0')}`;
+		const current = buckets.get(key) ?? {
+			totalLeads: 0,
+			convertedLeads: 0,
+			lostLeads: 0,
+			averageTimeSum: 0,
+			averageTimeCount: 0,
+		};
+
+		current.totalLeads += point.totalLeads;
+		current.convertedLeads += point.convertedLeads;
+		current.lostLeads += point.lostLeads;
+
+		if (point.averageTimeToFirstInteractionHours != null) {
+			current.averageTimeSum += point.averageTimeToFirstInteractionHours;
+			current.averageTimeCount += 1;
+		}
+
+		buckets.set(key, current);
+	}
+
+	return Array.from(buckets.entries()).map(([label, bucket]) => {
+		const finalized = bucket.convertedLeads + bucket.lostLeads;
+		return {
+			label,
+			totalLeads: bucket.totalLeads,
+			convertedLeads: bucket.convertedLeads,
+			lostLeads: bucket.lostLeads,
+			conversionRate:
+				finalized > 0 ? (bucket.convertedLeads / finalized) * 100 : 0,
+			averageTimeToFirstInteractionHours:
+				bucket.averageTimeCount > 0
+					? bucket.averageTimeSum / bucket.averageTimeCount
+					: null,
+		};
+	});
+}
+
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 	if (!active || !payload?.length) {
 		return null;
 	}
 
 	return (
-		<div className="rounded-xl border border-[#e5e9ef] bg-white px-3 py-2 text-xs shadow-lg">
-			<p className="mb-2 font-semibold text-[#1f2a38]">{String(label)}</p>
-			<div className="space-y-1 text-[#5f6b7a]">
+		<div className="rounded-xl border border-[#dde6f1] bg-white px-3 py-2 text-xs shadow-lg">
+			<p className="mb-2 font-semibold text-[#07142a]">{String(label)}</p>
+			<div className="space-y-1 text-[#66708a]">
 				{payload.map((item) => (
-					<div key={`${item.name}-${item.dataKey}`} className="flex gap-2">
+					<div key={`${item.dataKey}-${item.name}`} className="flex gap-2">
 						<span
 							className="mt-1 size-2 rounded-full"
 							style={{ backgroundColor: item.color }}
@@ -201,13 +304,99 @@ function DashboardTooltip({ active, payload, label }: DashboardTooltipProps) {
 	);
 }
 
-function MetricCardSkeleton() {
+type DeltaBadgeProps = {
+	value: string;
+	direction: 'up' | 'down' | 'flat';
+	tone: 'good' | 'bad' | 'neutral';
+};
+
+function DeltaBadge({ direction, tone, value }: DeltaBadgeProps) {
+	const Icon =
+		direction === 'up'
+			? ArrowUp
+			: direction === 'down'
+				? ArrowDown
+				: ArrowRight;
+	const toneClass =
+		tone === 'good'
+			? 'text-[#009966]'
+			: tone === 'bad'
+				? 'text-[#ef4444]'
+				: 'text-[#64748b]';
+
 	return (
-		<Card className="rounded-2xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-			<CardContent className="space-y-3 p-5">
-				<Skeleton className="h-11 w-11 rounded-xl bg-[#edf1f5]" />
-				<Skeleton className="h-4 w-28 rounded-md bg-[#edf1f5]" />
-				<Skeleton className="h-8 w-24 rounded-md bg-[#edf1f5]" />
+		<span
+			className={`inline-flex items-center gap-1 font-semibold ${toneClass}`}
+		>
+			<Icon className="size-3.5" />
+			{value}
+		</span>
+	);
+}
+
+type KpiCardProps = {
+	title: string;
+	value: string;
+	subtitle: string;
+	icon: typeof Target;
+	iconTone: string;
+	lineColor: string;
+	points: { label: string; value: number }[];
+	delta: DeltaBadgeProps;
+};
+
+function KpiCard({
+	delta,
+	icon: Icon,
+	iconTone,
+	lineColor,
+	points,
+	subtitle,
+	title,
+	value,
+}: KpiCardProps) {
+	return (
+		<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+			<CardContent className="grid h-full grid-cols-[auto_1fr_7rem] items-center gap-4 p-5">
+				<div className={`rounded-2xl p-3 ${iconTone}`}>
+					<Icon className="size-7" />
+				</div>
+				<div className="min-w-0">
+					<p className="text-sm font-semibold text-[#26324c]">{title}</p>
+					<p className="mt-2 text-4xl font-bold tracking-tight text-[#07142a]">
+						{value}
+					</p>
+					<p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[#66708a]">
+						<DeltaBadge {...delta} />
+						<span>{subtitle}</span>
+					</p>
+				</div>
+				<div className="h-20">
+					<ResponsiveContainer width="100%" height="100%">
+						<LineChart data={points}>
+							<Line
+								type="monotone"
+								dataKey="value"
+								stroke={lineColor}
+								strokeWidth={2.5}
+								dot={false}
+							/>
+						</LineChart>
+					</ResponsiveContainer>
+				</div>
+			</CardContent>
+		</Card>
+	);
+}
+
+function KpiSkeleton() {
+	return (
+		<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+			<CardContent className="space-y-4 p-5">
+				<Skeleton className="size-12 rounded-2xl bg-[#edf2f7]" />
+				<Skeleton className="h-5 w-32 bg-[#edf2f7]" />
+				<Skeleton className="h-10 w-24 bg-[#edf2f7]" />
+				<Skeleton className="h-4 w-44 bg-[#edf2f7]" />
 			</CardContent>
 		</Card>
 	);
@@ -220,791 +409,762 @@ type AnalyticDashboardPageContentProps = {
 function AnalyticDashboardPageContent({
 	user,
 }: AnalyticDashboardPageContentProps) {
-	const initialReferenceDate = isoToday();
-	const [draftMode, setDraftMode] =
-		useState<AnalyticDashboardFilterMode>('month');
-	const [draftReferenceDate, setDraftReferenceDate] =
-		useState(initialReferenceDate);
-	const [draftStartDate, setDraftStartDate] = useState(isoThirtyDaysAgo());
-	const [draftEndDate, setDraftEndDate] = useState(initialReferenceDate);
-	const [localFilterError, setLocalFilterError] = useState<string | null>(null);
-	const [appliedQuery, setAppliedQuery] = useState<AnalyticDashboardQuery>({
+	const [mode, setMode] = useState<AnalyticDashboardFilterMode>('month');
+	const [referenceDate, setReferenceDate] = useState(todayInputValue);
+	const [startDate, setStartDate] = useState(thirtyDaysAgoInputValue);
+	const [endDate, setEndDate] = useState(todayInputValue);
+	const [validationMessage, setValidationMessage] = useState<string | null>(
+		null,
+	);
+	const [query, setQuery] = useState<AnalyticDashboardQuery>({
 		mode: 'month',
-		referenceDate: initialReferenceDate,
-		top: 6,
+		referenceDate,
+		top: 8,
 	});
 
-	const dashboardQuery = useAnalyticDashboardQuery(appliedQuery);
+	const dashboardQuery = useAnalyticDashboardQuery(query);
 	const dashboard = dashboardQuery.data;
-	const copy = getRoleCopy(user);
 
-	const topAttendants = useMemo(
-		() => (dashboard?.byAttendant ?? []).slice(0, 6),
-		[dashboard?.byAttendant],
+	const trendData = useMemo(
+		() => bucketTrend(dashboard?.trend.points ?? []),
+		[dashboard?.trend.points],
 	);
-	const topTeams = useMemo(
-		() => (dashboard?.byTeam ?? []).slice(0, 5),
+	const teamDistribution = useMemo(
+		() => dashboard?.byTeam.slice(0, 5) ?? [],
 		[dashboard?.byTeam],
 	);
-	const conversionBarData = useMemo(() => {
-		if (!dashboard) {
-			return [];
+	const attendantDistribution = useMemo(
+		() => dashboard?.byAttendant.slice(0, 8) ?? [],
+		[dashboard?.byAttendant],
+	);
+	const finalizationData = useMemo(
+		() =>
+			(dashboard?.finalizationReasons ?? []).map((item) => ({
+				...item,
+				label: getReasonLabel(item.key),
+			})),
+		[dashboard?.finalizationReasons],
+	);
+	const importanceData = useMemo(
+		() =>
+			(dashboard?.importanceDistribution ?? []).map((item) => ({
+				...item,
+				label: getImportanceLabel(item.key),
+				color: IMPORTANCE_COLORS[item.key] ?? '#94a3b8',
+			})),
+		[dashboard?.importanceDistribution],
+	);
+	const conversionSplit = useMemo(
+		() =>
+			dashboard
+				? [
+						{
+							key: 'converted',
+							label: 'Convertidos',
+							count: dashboard.summary.convertedLeads,
+							color: '#22c55e',
+						},
+						{
+							key: 'notConverted',
+							label: 'Nao convertidos',
+							count: dashboard.summary.notConvertedLeads,
+							color: '#ef4444',
+						},
+					]
+				: [],
+		[dashboard],
+	);
+
+	const hasData = Boolean(dashboard && dashboard.summary.totalLeads > 0);
+
+	function applyFilter(nextMode = mode) {
+		const message = validateDraftFilter(user, nextMode, startDate, endDate);
+		setValidationMessage(message);
+
+		if (message) {
+			return;
 		}
-		return [
-			{
-				name: 'Convertidos',
-				valor: dashboard.summary.convertedLeads,
-				fill: PRIMARY_COLOR,
-			},
-			{
-				name: 'Nao convertidos',
-				valor: dashboard.summary.notConvertedLeads,
-				fill: SECONDARY_COLOR,
-			},
-		];
-	}, [dashboard]);
-	const importanceData = dashboard?.importanceDistribution ?? [];
-	const finalizationData = dashboard?.finalizationReasons ?? [];
-	const hasNoData =
-		dashboard !== undefined && dashboard.summary.totalLeads === 0;
 
-	const topAttendant = topAttendants[0] ?? null;
-	const topTeam = topTeams[0] ?? null;
-
-	function applyFilter() {
-		const validationError = validateDraftFilter(
-			user,
-			draftMode,
-			draftStartDate,
-			draftEndDate,
+		setQuery(
+			nextMode === 'custom'
+				? {
+						mode: 'custom',
+						startDate,
+						endDate,
+						top: 8,
+					}
+				: {
+						mode: nextMode,
+						referenceDate,
+						top: 8,
+					},
 		);
-
-		if (validationError) {
-			setLocalFilterError(validationError);
-			return;
-		}
-
-		setLocalFilterError(null);
-
-		if (draftMode === 'custom') {
-			setAppliedQuery({
-				mode: draftMode,
-				startDate: draftStartDate,
-				endDate: draftEndDate,
-				top: 6,
-			});
-			return;
-		}
-
-		setAppliedQuery({
-			mode: draftMode,
-			referenceDate: draftReferenceDate,
-			top: 6,
-		});
 	}
 
-	function resetFilter() {
-		setDraftMode('month');
-		setDraftReferenceDate(initialReferenceDate);
-		setDraftStartDate(isoThirtyDaysAgo());
-		setDraftEndDate(initialReferenceDate);
-		setLocalFilterError(null);
-		setAppliedQuery({
-			mode: 'month',
-			referenceDate: initialReferenceDate,
-			top: 6,
-		});
+	function selectMode(nextMode: AnalyticDashboardFilterMode) {
+		setMode(nextMode);
+		if (nextMode !== 'custom') {
+			applyFilter(nextMode);
+		}
 	}
+
+	const kpiCards =
+		dashboard && trendData.length > 0
+			? [
+					{
+						title: 'Taxa de conversao',
+						value: formatPercent(dashboard.kpis.conversionRate.value),
+						subtitle: 'vs. periodo anterior',
+						icon: Target,
+						iconTone: 'bg-[#fff1e8] text-[#ff5722]',
+						lineColor: '#ff5722',
+						points: trendData.map((point) => ({
+							label: point.label,
+							value: point.conversionRate,
+						})),
+						delta: {
+							value: formatDeltaPoints(
+								dashboard.kpis.conversionRate.deltaPoints,
+							),
+							direction:
+								dashboard.kpis.conversionRate.delta > 0
+									? 'up'
+									: dashboard.kpis.conversionRate.delta < 0
+										? 'down'
+										: 'flat',
+							tone:
+								dashboard.kpis.conversionRate.delta > 0
+									? 'good'
+									: dashboard.kpis.conversionRate.delta < 0
+										? 'bad'
+										: 'neutral',
+						} satisfies DeltaBadgeProps,
+					},
+					{
+						title: 'Leads convertidos',
+						value: formatCount(dashboard.kpis.convertedLeads.value),
+						subtitle: 'vs. periodo anterior',
+						icon: CheckCircle2,
+						iconTone: 'bg-[#e9fbf1] text-[#16a34a]',
+						lineColor: '#16a34a',
+						points: trendData.map((point) => ({
+							label: point.label,
+							value: point.convertedLeads,
+						})),
+						delta: {
+							value: formatDeltaPercent(
+								dashboard.kpis.convertedLeads.deltaPercentage,
+							),
+							direction:
+								dashboard.kpis.convertedLeads.delta > 0
+									? 'up'
+									: dashboard.kpis.convertedLeads.delta < 0
+										? 'down'
+										: 'flat',
+							tone:
+								dashboard.kpis.convertedLeads.delta > 0
+									? 'good'
+									: dashboard.kpis.convertedLeads.delta < 0
+										? 'bad'
+										: 'neutral',
+						} satisfies DeltaBadgeProps,
+					},
+					{
+						title: 'Leads perdidos',
+						value: formatCount(dashboard.kpis.lostLeads.value),
+						subtitle: 'vs. periodo anterior',
+						icon: XCircle,
+						iconTone: 'bg-[#fff0f0] text-[#ef4444]',
+						lineColor: '#ef4444',
+						points: trendData.map((point) => ({
+							label: point.label,
+							value: point.lostLeads,
+						})),
+						delta: {
+							value: formatDeltaPercent(
+								dashboard.kpis.lostLeads.deltaPercentage,
+							),
+							direction:
+								dashboard.kpis.lostLeads.delta > 0
+									? 'up'
+									: dashboard.kpis.lostLeads.delta < 0
+										? 'down'
+										: 'flat',
+							tone:
+								dashboard.kpis.lostLeads.delta < 0
+									? 'good'
+									: dashboard.kpis.lostLeads.delta > 0
+										? 'bad'
+										: 'neutral',
+						} satisfies DeltaBadgeProps,
+					},
+					{
+						title: 'Tempo medio ate atendimento',
+						value: formatHours(
+							dashboard.kpis.averageTimeToFirstInteraction.value,
+						),
+						subtitle: 'vs. periodo anterior',
+						icon: Clock3,
+						iconTone: 'bg-[#f4eaff] text-[#8b3ff6]',
+						lineColor: '#8b3ff6',
+						points: trendData.map((point) => ({
+							label: point.label,
+							value: point.averageTimeToFirstInteractionHours ?? 0,
+						})),
+						delta: {
+							value: formatDeltaPercent(
+								dashboard.kpis.averageTimeToFirstInteraction.deltaPercentage,
+							),
+							direction:
+								dashboard.kpis.averageTimeToFirstInteraction.delta > 0
+									? 'up'
+									: dashboard.kpis.averageTimeToFirstInteraction.delta < 0
+										? 'down'
+										: 'flat',
+							tone:
+								dashboard.kpis.averageTimeToFirstInteraction.delta < 0
+									? 'good'
+									: dashboard.kpis.averageTimeToFirstInteraction.delta > 0
+										? 'bad'
+										: 'neutral',
+						} satisfies DeltaBadgeProps,
+					},
+				]
+			: [];
+
+	const bannerTone =
+		(dashboard?.kpis.conversionRate.deltaPoints ?? 0) > 0
+			? 'positive'
+			: (dashboard?.kpis.conversionRate.deltaPoints ?? 0) < 0
+				? 'negative'
+				: 'neutral';
 
 	return (
-		<div
-			className="space-y-6"
-			aria-busy={dashboardQuery.isFetching ? 'true' : 'false'}
-		>
-			<section className="overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#1f2a38_0%,#17212c_100%)] px-6 py-6 text-white shadow-[0_16px_40px_rgba(23,33,44,0.12)] md:px-8">
-				<div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-					<div className="max-w-3xl space-y-4">
-						<div className="space-y-2">
-							<p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ffb192]">
-								{copy.eyebrow}
-							</p>
-							<h1 className="text-[2rem] font-semibold leading-tight tracking-tight md:text-[2.3rem]">
-								{copy.title}
-							</h1>
-							<p className="max-w-2xl text-sm leading-7 text-[#cfd8e3] md:text-[0.95rem]">
-								{copy.subtitle}
-							</p>
-						</div>
-
-						<div className="flex flex-wrap gap-2">
-							<Badge
-								className="rounded-full border-none bg-white/12 px-3 py-1 text-white"
-								variant="secondary"
-							>
-								{dashboard
-									? getScopeLabel(dashboard.filter.scope)
-									: 'Escopo carregado pelo backend'}
-							</Badge>
-							<Badge
-								className="rounded-full border-none bg-white/12 px-3 py-1 text-white"
-								variant="secondary"
-							>
-								{dashboard
-									? `${formatDateLabel(dashboard.filter.startDate)} ate ${formatDateLabel(
-											dashboard.filter.endDate,
-										)}`
-									: 'Periodo analitico'}
-							</Badge>
-						</div>
-					</div>
-
-					<div className="w-full max-w-xl rounded-2xl bg-white/8 p-4 backdrop-blur">
-						<div className="flex flex-wrap gap-2">
-							{ANALYTIC_FILTER_OPTIONS.map((option) => (
-								<button
-									key={option.value}
-									className={`h-10 rounded-md px-4 text-sm font-medium transition ${
-										draftMode === option.value
-											? 'bg-[#ff7a45] text-white'
-											: 'bg-white/8 text-[#d9e1eb] hover:bg-white/14'
-									}`}
-									onClick={() => {
-										setDraftMode(option.value);
-										setLocalFilterError(null);
-									}}
-									type="button"
-								>
-									{option.label}
-								</button>
-							))}
-						</div>
-
-						<div className="mt-4 grid gap-3 md:grid-cols-2">
-							{draftMode === 'custom' ? (
-								<>
-									<label className="space-y-2 text-sm">
-										<span className="text-[#d9e1eb]">Data inicial</span>
-										<Input
-											className="h-11 rounded-md border-white/10 bg-white text-[#1f2a38]"
-											onChange={(event) => {
-												setDraftStartDate(event.target.value);
-												setLocalFilterError(null);
-											}}
-											type="date"
-											value={draftStartDate}
-										/>
-									</label>
-									<label className="space-y-2 text-sm">
-										<span className="text-[#d9e1eb]">Data final</span>
-										<Input
-											className="h-11 rounded-md border-white/10 bg-white text-[#1f2a38]"
-											onChange={(event) => {
-												setDraftEndDate(event.target.value);
-												setLocalFilterError(null);
-											}}
-											type="date"
-											value={draftEndDate}
-										/>
-									</label>
-								</>
-							) : (
-								<label className="space-y-2 text-sm md:col-span-2">
-									<span className="text-[#d9e1eb]">Data de referencia</span>
-									<Input
-										className="h-11 rounded-md border-white/10 bg-white text-[#1f2a38]"
-										onChange={(event) => {
-											setDraftReferenceDate(event.target.value);
-											setLocalFilterError(null);
-										}}
-										type="date"
-										value={draftReferenceDate}
-									/>
-								</label>
-							)}
-						</div>
-
-						<div className="mt-4 flex flex-wrap items-center gap-3">
-							<Button
-								className="rounded-md bg-[#ff7a45] text-white hover:bg-[#f16d35]"
-								onClick={applyFilter}
-								type="button"
-							>
-								<Filter className="size-4" />
-								Aplicar filtro
-							</Button>
-							<Button
-								className="rounded-md border-white/14 bg-transparent text-white hover:bg-white/10"
-								onClick={() => dashboardQuery.refetch()}
-								type="button"
-								variant="outline"
-							>
-								<RefreshCw className="size-4" />
-								Atualizar
-							</Button>
-							<Button
-								className="rounded-md border-white/14 bg-transparent text-white hover:bg-white/10"
-								onClick={resetFilter}
-								type="button"
-								variant="outline"
-							>
-								Resetar
-							</Button>
-						</div>
-
-						<p className="mt-3 text-xs leading-5 text-[#d9e1eb]">
-							{user.role === 'ADMINISTRATOR'
-								? 'Administrador pode consultar janelas maiores no modo customizado.'
-								: 'Para este perfil, o backend aceita no maximo um ano no modo customizado.'}
-						</p>
-					</div>
+		<div className="space-y-6 bg-[#f4f7fa] px-1 pb-4">
+			<header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+				<div>
+					<h1 className="text-4xl font-bold tracking-tight text-[#07142a]">
+						Dashboard Analitico
+					</h1>
+					<p className="mt-2 text-base text-[#66708a]">
+						Visao estrategica da performance comercial no periodo selecionado.
+					</p>
 				</div>
-			</section>
 
-			{localFilterError ? (
-				<Alert variant="warning">
-					<AlertTitle>Filtro temporal invalido</AlertTitle>
-					<AlertDescription>{localFilterError}</AlertDescription>
+				<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+					<div className="inline-flex overflow-hidden rounded-2xl border border-[#d6e0ec] bg-white">
+						{FILTER_OPTIONS.map((option) => (
+							<button
+								className={`h-12 px-6 text-sm font-semibold transition ${
+									mode === option.value
+										? 'bg-[#fff0e8] text-[#ff5722]'
+										: 'text-[#07142a] hover:bg-[#f8fafc]'
+								}`}
+								key={option.value}
+								onClick={() => selectMode(option.value)}
+								type="button"
+							>
+								{option.label}
+							</button>
+						))}
+					</div>
+
+					{mode === 'custom' ? (
+						<div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#d6e0ec] bg-white p-1.5">
+							<Input
+								className="h-10 w-36 border-0 text-sm font-semibold shadow-none"
+								onChange={(event) => setStartDate(event.target.value)}
+								type="date"
+								value={startDate}
+							/>
+							<span className="text-[#66708a]">-</span>
+							<Input
+								className="h-10 w-36 border-0 text-sm font-semibold shadow-none"
+								onChange={(event) => setEndDate(event.target.value)}
+								type="date"
+								value={endDate}
+							/>
+							<Button
+								className="h-10 rounded-xl bg-[#ff5722] px-4 text-white hover:bg-[#e94e1f]"
+								onClick={() => applyFilter()}
+								type="button"
+							>
+								Aplicar
+							</Button>
+						</div>
+					) : (
+						<label className="flex h-12 items-center gap-2 rounded-2xl border border-[#d6e0ec] bg-white px-4 text-sm font-semibold text-[#07142a]">
+							<CalendarRange className="size-4 text-[#66708a]" />
+							<Input
+								className="h-9 w-36 border-0 p-0 font-semibold shadow-none"
+								onChange={(event) => {
+									setReferenceDate(event.target.value);
+									setQuery({
+										mode,
+										referenceDate: event.target.value,
+										top: 8,
+									});
+								}}
+								type="date"
+								value={referenceDate}
+							/>
+						</label>
+					)}
+				</div>
+			</header>
+
+			{validationMessage ? (
+				<Alert className="border-[#ffc9b7] bg-[#fff7f3] text-[#9a3412]">
+					<AlertTitle>Filtro invalido</AlertTitle>
+					<AlertDescription>{validationMessage}</AlertDescription>
 				</Alert>
 			) : null}
 
-			{dashboardQuery.isError ? (
-				<Alert variant="destructive" role="alert">
-					<AlertTitle>Falha ao carregar o dashboard</AlertTitle>
+			{dashboardQuery.error ? (
+				<Alert variant="destructive">
+					<AlertTitle>Erro ao carregar indicadores</AlertTitle>
 					<AlertDescription>
-						{getDashboardErrorMessage(dashboardQuery.error)}
+						{getErrorMessage(dashboardQuery.error)}
 					</AlertDescription>
 				</Alert>
 			) : null}
 
-			<section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-				{dashboard === undefined && dashboardQuery.isPending ? (
-					<>
-						<MetricCardSkeleton />
-						<MetricCardSkeleton />
-						<MetricCardSkeleton />
-						<MetricCardSkeleton />
-					</>
-				) : (
-					[
-						{
-							icon: TrendingUp,
-							iconClasses: 'bg-[#fff0e8] text-[#ff7a45]',
-							label: 'Taxa de conversao',
-							value: dashboard
-								? formatPercent(dashboard.summary.conversionRate)
-								: '--',
-						},
-						{
-							icon: BarChart3,
-							iconClasses: 'bg-[#edf8f2] text-[#2ecc71]',
-							label: 'Leads convertidos',
-							value: dashboard
-								? formatCount(dashboard.summary.convertedLeads)
-								: '--',
-						},
-						{
-							icon: Users2,
-							iconClasses: 'bg-[#eef3ff] text-[#3498db]',
-							label: 'Leads nao convertidos',
-							value: dashboard
-								? formatCount(dashboard.summary.notConvertedLeads)
-								: '--',
-						},
-						{
-							icon: Clock3,
-							iconClasses: 'bg-[#f4eefc] text-[#8e5dd9]',
-							label: 'Tempo medio ate atendimento',
-							value: dashboard
-								? formatHours(dashboard.averageTimeToFirstInteraction.hours)
-								: '--',
-						},
-					].map((metric) => (
-						<Card
-							key={metric.label}
-							className="rounded-2xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]"
-						>
-							<CardContent className="p-5">
-								<div
-									className={`mb-3 flex size-11 items-center justify-center rounded-xl ${metric.iconClasses}`}
-								>
-									<metric.icon className="size-5" />
+			<section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+				{dashboardQuery.isPending
+					? KPI_SKELETON_KEYS.map((key) => <KpiSkeleton key={key} />)
+					: kpiCards.map((card) => <KpiCard key={card.title} {...card} />)}
+			</section>
+
+			{dashboard && !hasData ? (
+				<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+					<CardContent className="flex min-h-56 flex-col items-center justify-center gap-3 text-center">
+						<LineChartIcon className="size-10 text-[#94a3b8]" />
+						<div>
+							<h2 className="text-xl font-bold text-[#07142a]">
+								Sem dados no periodo
+							</h2>
+							<p className="mt-1 text-sm text-[#66708a]">
+								Altere o filtro temporal para visualizar os indicadores
+								analiticos.
+							</p>
+						</div>
+					</CardContent>
+				</Card>
+			) : null}
+
+			{dashboard ? (
+				<>
+					<section className="grid gap-5 xl:grid-cols-[1fr_1.05fr_1fr]">
+						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+							<CardContent className="p-6">
+								<div className="mb-5 flex items-start justify-between gap-3">
+									<div>
+										<h2 className="text-xl font-bold text-[#07142a]">
+											Leads por equipe
+										</h2>
+										<p className="text-sm text-[#66708a]">
+											Distribuicao de leads no escopo atual.
+										</p>
+									</div>
+									<span className="text-right text-xl font-bold text-[#07142a]">
+										{formatCount(dashboard.summary.totalLeads)}
+										<span className="block text-xs font-medium text-[#66708a]">
+											total
+										</span>
+									</span>
 								</div>
-								<p className="text-sm text-[#6c7683]">{metric.label}</p>
-								<p className="mt-1 text-[1.8rem] font-semibold text-[#1f2a38]">
-									{metric.value}
-								</p>
+
+								<div className="grid items-center gap-5 md:grid-cols-[13rem_1fr]">
+									<div className="h-56">
+										<ResponsiveContainer width="100%" height="100%">
+											<PieChart>
+												<Pie
+													data={teamDistribution}
+													dataKey="totalLeads"
+													innerRadius={58}
+													nameKey="name"
+													outerRadius={92}
+													paddingAngle={2}
+												>
+													{teamDistribution.map((item, index) => (
+														<Cell
+															fill={TEAM_COLORS[index % TEAM_COLORS.length]}
+															key={item.id}
+														/>
+													))}
+												</Pie>
+												<Tooltip content={<ChartTooltip />} />
+											</PieChart>
+										</ResponsiveContainer>
+									</div>
+									<div className="space-y-4">
+										{teamDistribution.map((item, index) => {
+											const percentage =
+												dashboard.summary.totalLeads > 0
+													? (item.totalLeads / dashboard.summary.totalLeads) *
+														100
+													: 0;
+											return (
+												<div
+													className="grid grid-cols-[1rem_1fr_auto] items-center gap-3"
+													key={item.id}
+												>
+													<span
+														className="size-3 rounded-full"
+														style={{
+															backgroundColor:
+																TEAM_COLORS[index % TEAM_COLORS.length],
+														}}
+													/>
+													<div className="min-w-0">
+														<p className="truncate text-sm font-semibold text-[#07142a]">
+															{item.name}
+														</p>
+													</div>
+													<span className="text-sm font-semibold text-[#26324c]">
+														{formatCount(item.totalLeads)} (
+														{formatPercent(percentage)})
+													</span>
+												</div>
+											);
+										})}
+									</div>
+								</div>
 							</CardContent>
 						</Card>
-					))
-				)}
-			</section>
 
-			{hasNoData ? (
-				<Alert>
-					<AlertTitle>Nenhum dado encontrado</AlertTitle>
-					<AlertDescription>
-						Este periodo nao retornou leads dentro do seu escopo. Ajuste o
-						filtro temporal para explorar outra janela de analise.
-					</AlertDescription>
-				</Alert>
-			) : null}
-
-			<section className="grid gap-6 xl:grid-cols-[minmax(0,2.2fr)_minmax(280px,0.95fr)]">
-				<div className="space-y-6">
-					<Card className="rounded-3xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-						<CardHeader className="pb-4">
-							<div className="space-y-2">
-								<p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#ff7a45]">
-									Performance
-								</p>
-								<CardTitle className="text-[1.35rem] text-[#1f2a38]">
-									Ranking por atendente
-								</CardTitle>
-							</div>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							{dashboard === undefined && dashboardQuery.isPending ? (
-								<Skeleton className="h-[360px] rounded-2xl bg-[#edf1f5]" />
-							) : topAttendants.length === 0 ? (
-								<div className="rounded-2xl bg-[#f8f9fb] px-4 py-14 text-sm text-[#6c7683]">
-									Nao ha dados de atendentes para o periodo selecionado.
+						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+							<CardContent className="p-6">
+								<div className="mb-5">
+									<h2 className="text-xl font-bold text-[#07142a]">
+										Leads por atendente
+									</h2>
+									<p className="text-sm text-[#66708a]">
+										Ranking operacional por responsavel.
+									</p>
 								</div>
-							) : (
-								<>
-									<div className="h-[320px] w-full">
+								<div className="space-y-3">
+									{attendantDistribution.map((item) => (
+										<div
+											className="grid grid-cols-[2.2rem_1fr_auto] items-center gap-3"
+											key={item.id}
+										>
+											<div className="grid size-8 place-items-center rounded-full bg-[#edf2f7] text-xs font-bold text-[#66708a]">
+												{item.name
+													.split(' ')
+													.slice(0, 2)
+													.map((part) => part[0])
+													.join('')}
+											</div>
+											<div className="min-w-0">
+												<div className="mb-1 flex items-center justify-between gap-3">
+													<p className="truncate text-sm font-semibold text-[#07142a]">
+														{item.name}
+													</p>
+													<span className="text-sm font-semibold text-[#07142a]">
+														{formatCount(item.totalLeads)}
+													</span>
+												</div>
+												<div className="h-2 rounded-full bg-[#edf2f7]">
+													<div
+														className="h-2 rounded-full bg-[#ff5722]"
+														style={{
+															width: `${normalizeChartValue(
+																item.totalLeads,
+																Math.max(
+																	...attendantDistribution.map(
+																		(attendant) => attendant.totalLeads,
+																	),
+																	0,
+																),
+															)}%`,
+														}}
+													/>
+												</div>
+											</div>
+											<span className="text-sm text-[#66708a]">
+												{formatPercent(item.conversionRate)}
+											</span>
+										</div>
+									))}
+								</div>
+							</CardContent>
+						</Card>
+
+						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+							<CardContent className="p-6">
+								<div className="mb-5">
+									<h2 className="text-xl font-bold text-[#07142a]">
+										Distribuicao por importancia
+									</h2>
+									<p className="text-sm text-[#66708a]">
+										Frio, morno e quente por negociacao.
+									</p>
+								</div>
+
+								<div className="grid items-center gap-5 md:grid-cols-[13rem_1fr]">
+									<div className="h-56">
 										<ResponsiveContainer width="100%" height="100%">
-											<BarChart
-												data={topAttendants}
-												margin={{ left: 0, right: 4, top: 8, bottom: 0 }}
-											>
+											<PieChart>
+												<Pie
+													data={importanceData}
+													dataKey="count"
+													innerRadius={58}
+													nameKey="label"
+													outerRadius={92}
+													paddingAngle={2}
+												>
+													{importanceData.map((item) => (
+														<Cell fill={item.color} key={item.key} />
+													))}
+												</Pie>
+												<Tooltip content={<ChartTooltip />} />
+											</PieChart>
+										</ResponsiveContainer>
+									</div>
+									<div className="space-y-4">
+										{importanceData.map((item) => {
+											const percentage =
+												dashboard.summary.totalLeads > 0
+													? (item.count / dashboard.summary.totalLeads) * 100
+													: 0;
+											return (
+												<div
+													className="grid grid-cols-[1rem_1fr_auto] items-center gap-3"
+													key={item.key}
+												>
+													<span
+														className="size-3 rounded-full"
+														style={{ backgroundColor: item.color }}
+													/>
+													<span className="text-sm font-semibold text-[#07142a]">
+														{item.label}
+													</span>
+													<span className="text-sm font-semibold text-[#26324c]">
+														{formatCount(item.count)} (
+														{formatPercent(percentage)})
+													</span>
+												</div>
+											);
+										})}
+									</div>
+								</div>
+							</CardContent>
+						</Card>
+					</section>
+
+					<section className="grid gap-5 xl:grid-cols-[1fr_0.72fr_1.2fr]">
+						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+							<CardContent className="p-6">
+								<div className="mb-5">
+									<h2 className="text-xl font-bold text-[#07142a]">
+										Motivos de finalizacao
+									</h2>
+									<p className="text-sm text-[#66708a]">
+										Apenas perdas encerradas no periodo.
+									</p>
+								</div>
+
+								{finalizationData.length > 0 ? (
+									<div className="h-72">
+										<ResponsiveContainer width="100%" height="100%">
+											<BarChart data={finalizationData}>
 												<CartesianGrid
-													stroke="#e9edf2"
-													strokeDasharray="3 3"
+													stroke="#edf2f7"
+													strokeDasharray="4 4"
 													vertical={false}
 												/>
 												<XAxis
 													axisLine={false}
-													dataKey="name"
-													tick={{ fill: '#7a8491', fontSize: 12 }}
+													dataKey="label"
+													fontSize={11}
+													interval={0}
 													tickLine={false}
 												/>
 												<YAxis
-													allowDecimals={false}
 													axisLine={false}
-													tick={{ fill: '#7a8491', fontSize: 12 }}
+													fontSize={11}
 													tickLine={false}
 												/>
-												<Tooltip content={<DashboardTooltip />} />
-												<Legend />
+												<Tooltip content={<ChartTooltip />} />
 												<Bar
-													dataKey="convertedLeads"
-													fill={PRIMARY_COLOR}
-													name="Convertidos"
-													radius={[8, 8, 0, 0]}
-												/>
-												<Bar
-													dataKey="notConvertedLeads"
-													fill={SECONDARY_COLOR}
-													name="Nao convertidos"
-													radius={[8, 8, 0, 0]}
+													dataKey="count"
+													fill="#ff7a1a"
+													name="Leads"
+													radius={[10, 10, 0, 0]}
 												/>
 											</BarChart>
 										</ResponsiveContainer>
 									</div>
-
-									<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-										{topAttendants.map((attendant) => (
-											<div
-												key={attendant.id}
-												className="rounded-2xl bg-[#f8f9fb] px-4 py-4"
-											>
-												<p className="text-sm font-semibold text-[#1f2a38]">
-													{attendant.name}
-												</p>
-												<div className="mt-3 flex items-end justify-between gap-3">
-													<div>
-														<p className="text-[1.3rem] font-semibold text-[#1f2a38]">
-															{formatPercent(attendant.conversionRate)}
-														</p>
-														<p className="text-xs text-[#7a8491]">
-															{formatCount(attendant.totalLeads)} leads
-														</p>
-													</div>
-													<div className="text-right text-xs text-[#7a8491]">
-														<p>{formatCount(attendant.wonDeals)} ganhas</p>
-														<p>{formatCount(attendant.openDeals)} abertas</p>
-													</div>
-												</div>
-											</div>
-										))}
-									</div>
-								</>
-							)}
-						</CardContent>
-					</Card>
-
-					<div className="grid gap-6 lg:grid-cols-2">
-						<Card className="rounded-3xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-							<CardHeader className="pb-4">
-								<div className="space-y-2">
-									<p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#ff7a45]">
-										Equipes
-									</p>
-									<CardTitle className="text-[1.25rem] text-[#1f2a38]">
-										Comparativo por equipe
-									</CardTitle>
-								</div>
-							</CardHeader>
-							<CardContent>
-								{dashboard === undefined && dashboardQuery.isPending ? (
-									<Skeleton className="h-[280px] rounded-2xl bg-[#edf1f5]" />
-								) : topTeams.length === 0 ? (
-									<div className="rounded-2xl bg-[#f8f9fb] px-4 py-12 text-sm text-[#6c7683]">
-										Sem dados agregados por equipe neste intervalo.
-									</div>
 								) : (
-									<div className="h-[280px] w-full">
-										<ResponsiveContainer width="100%" height="100%">
-											<LineChart
-												data={topTeams}
-												margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
-											>
-												<CartesianGrid
-													stroke="#e9edf2"
-													strokeDasharray="3 3"
-													vertical={false}
-												/>
-												<XAxis
-													axisLine={false}
-													dataKey="name"
-													tick={{ fill: '#7a8491', fontSize: 12 }}
-													tickLine={false}
-												/>
-												<YAxis
-													allowDecimals={false}
-													axisLine={false}
-													tick={{ fill: '#7a8491', fontSize: 12 }}
-													tickLine={false}
-												/>
-												<Tooltip content={<DashboardTooltip />} />
-												<Line
-													dataKey="convertedLeads"
-													name="Convertidos"
-													stroke={PRIMARY_COLOR}
-													strokeWidth={3}
-													type="monotone"
-													dot={{ fill: PRIMARY_COLOR, r: 4 }}
-												/>
-												<Line
-													dataKey="notConvertedLeads"
-													name="Nao convertidos"
-													stroke={MUTED_COLOR}
-													strokeWidth={3}
-													type="monotone"
-													dot={{ fill: SECONDARY_COLOR, r: 4 }}
-												/>
-											</LineChart>
-										</ResponsiveContainer>
+									<div className="grid min-h-72 place-items-center rounded-2xl bg-[#f8fafc] text-center text-sm text-[#66708a]">
+										Nenhuma perda com motivo registrado no periodo.
 									</div>
 								)}
 							</CardContent>
 						</Card>
 
-						<Card className="rounded-3xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-							<CardHeader className="pb-4">
-								<div className="space-y-2">
-									<p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#ff7a45]">
-										Leitura rapida
-									</p>
-									<CardTitle className="text-[1.25rem] text-[#1f2a38]">
-										Destaques do periodo
-									</CardTitle>
-								</div>
-							</CardHeader>
-							<CardContent className="space-y-3">
-								<div className="rounded-2xl bg-[#f8f9fb] px-4 py-4">
-									<p className="text-xs uppercase tracking-[0.18em] text-[#7a8491]">
-										Melhor atendente
-									</p>
-									<p className="mt-2 text-base font-semibold text-[#1f2a38]">
-										{topAttendant?.name ?? 'Sem dados'}
-									</p>
-									<p className="mt-1 text-sm text-[#6c7683]">
-										{topAttendant
-											? `${formatPercent(topAttendant.conversionRate)} de conversao com ${formatCount(
-													topAttendant.totalLeads,
-												)} leads no periodo.`
-											: 'Nao houve leads suficientes para destacar um atendente.'}
+						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+							<CardContent className="p-6">
+								<div className="mb-5">
+									<h2 className="text-xl font-bold text-[#07142a]">
+										Convertidos vs nao convertidos
+									</h2>
+									<p className="text-sm text-[#66708a]">
+										Leitura geral dos leads do periodo.
 									</p>
 								</div>
-
-								<div className="rounded-2xl bg-[#f8f9fb] px-4 py-4">
-									<p className="text-xs uppercase tracking-[0.18em] text-[#7a8491]">
-										Equipe em destaque
-									</p>
-									<p className="mt-2 text-base font-semibold text-[#1f2a38]">
-										{topTeam?.name ?? 'Sem dados'}
-									</p>
-									<p className="mt-1 text-sm text-[#6c7683]">
-										{topTeam
-											? `${formatPercent(topTeam.conversionRate)} de conversao e ${formatCount(
-													topTeam.convertedLeads,
-												)} leads convertidos.`
-											: 'Nao houve volume suficiente para destacar uma equipe.'}
-									</p>
-								</div>
-
-								<div className="rounded-2xl bg-[#f8f9fb] px-4 py-4">
-									<p className="text-xs uppercase tracking-[0.18em] text-[#7a8491]">
-										Foco do momento
-									</p>
-									<p className="mt-2 text-base font-semibold text-[#1f2a38]">
-										{importanceData[0]?.label ?? 'Sem dados'}
-									</p>
-									<p className="mt-1 text-sm text-[#6c7683]">
-										{importanceData[0]
-											? `${formatCount(importanceData[0].count)} negociacoes concentram a principal faixa de importancia do funil.`
-											: 'A distribuicao por importancia ainda nao possui dados no periodo.'}
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-				</div>
-
-				<div className="space-y-6">
-					<Card className="rounded-3xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-[1.1rem] text-[#1f2a38]">
-								Resumo do funil
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="rounded-2xl bg-[#f8f9fb] px-4 py-4">
-								<p className="text-xs uppercase tracking-[0.22em] text-[#7a8491]">
-									Periodo aplicado
-								</p>
-								<p className="mt-2 text-sm font-medium text-[#1f2a38]">
-									{dashboard
-										? `${formatDateLabel(dashboard.filter.startDate)} ate ${formatDateLabel(
-												dashboard.filter.endDate,
-											)}`
-										: '--'}
-								</p>
-							</div>
-
-							<div className="space-y-3 text-sm text-[#425062]">
-								<div className="flex items-center justify-between">
-									<span>Total de leads</span>
-									<strong className="text-[#1f2a38]">
-										{dashboard
-											? formatCount(dashboard.summary.totalLeads)
-											: '--'}
-									</strong>
-								</div>
-								<div className="flex items-center justify-between">
-									<span>Escopo de visualizacao</span>
-									<strong className="text-[#1f2a38]">
-										{dashboard ? getScopeLabel(dashboard.filter.scope) : '--'}
-									</strong>
-								</div>
-								<div className="flex items-center justify-between">
-									<span>Leads com interacao</span>
-									<strong className="text-[#1f2a38]">
-										{dashboard
-											? formatCount(
-													dashboard.averageTimeToFirstInteraction
-														.leadsWithInteraction,
-												)
-											: '--'}
-									</strong>
-								</div>
-							</div>
-
-							{dashboard === undefined && dashboardQuery.isPending ? (
-								<Skeleton className="h-[220px] rounded-2xl bg-[#edf1f5]" />
-							) : (
-								<div className="h-[220px] w-full">
-									<ResponsiveContainer width="100%" height="100%">
-										<BarChart
-											data={conversionBarData}
-											layout="vertical"
-											margin={{ top: 0, right: 10, left: 10, bottom: 0 }}
-										>
-											<CartesianGrid
-												horizontal={false}
-												stroke="#eceff4"
-												strokeDasharray="3 3"
-											/>
-											<XAxis
-												allowDecimals={false}
-												axisLine={false}
-												tick={{ fill: '#7a8491', fontSize: 12 }}
-												tickLine={false}
-												type="number"
-											/>
-											<YAxis
-												axisLine={false}
-												dataKey="name"
-												tick={{ fill: '#7a8491', fontSize: 12 }}
-												tickLine={false}
-												type="category"
-											/>
-											<Tooltip content={<DashboardTooltip />} />
-											<Bar
-												dataKey="valor"
-												radius={[0, 8, 8, 0]}
-												shape={<Rectangle radius={[0, 8, 8, 0]} />}
-											>
-												{conversionBarData.map((item) => (
-													<Cell key={item.name} fill={item.fill} />
-												))}
-											</Bar>
-										</BarChart>
-									</ResponsiveContainer>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
-					<Card className="rounded-3xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-[1.1rem] text-[#1f2a38]">
-								Negociacoes por importancia
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{dashboard === undefined && dashboardQuery.isPending ? (
-								<Skeleton className="h-[260px] rounded-2xl bg-[#edf1f5]" />
-							) : importanceData.length > 0 ? (
-								<div className="space-y-5">
-									<div className="h-[220px] w-full">
+								<div className="grid items-center gap-4">
+									<div className="h-56">
 										<ResponsiveContainer width="100%" height="100%">
 											<PieChart>
 												<Pie
-													cx="50%"
-													cy="50%"
-													data={importanceData}
+													data={conversionSplit}
 													dataKey="count"
-													innerRadius={56}
+													innerRadius={58}
 													nameKey="label"
-													outerRadius={86}
-													paddingAngle={3}
+													outerRadius={92}
+													paddingAngle={2}
 												>
-													{importanceData.map((item, index) => (
-														<Cell
-															key={item.key}
-															fill={CHART_COLORS[index % CHART_COLORS.length]}
-														/>
+													{conversionSplit.map((item) => (
+														<Cell fill={item.color} key={item.key} />
 													))}
 												</Pie>
-												<Tooltip content={<DashboardTooltip />} />
+												<Tooltip content={<ChartTooltip />} />
 											</PieChart>
 										</ResponsiveContainer>
 									</div>
-
-									<div className="space-y-2">
-										{importanceData.map((item, index) => (
+									<div className="space-y-3">
+										{conversionSplit.map((item) => (
 											<div
+												className="flex items-center justify-between gap-3"
 												key={item.key}
-												className="flex items-center justify-between text-sm text-[#425062]"
 											>
 												<div className="flex items-center gap-2">
 													<span
-														className="size-2.5 rounded-full"
-														style={{
-															backgroundColor:
-																CHART_COLORS[index % CHART_COLORS.length],
-														}}
+														className="size-3 rounded-full"
+														style={{ backgroundColor: item.color }}
 													/>
-													<span>{item.label}</span>
+													<span className="text-sm font-semibold text-[#07142a]">
+														{item.label}
+													</span>
 												</div>
-												<strong className="text-[#1f2a38]">
+												<span className="text-sm font-semibold text-[#26324c]">
 													{formatCount(item.count)}
-												</strong>
+												</span>
 											</div>
 										))}
 									</div>
 								</div>
-							) : (
-								<div className="rounded-2xl bg-[#f8f9fb] px-4 py-12 text-sm text-[#6c7683]">
-									Nao ha distribuicao por importancia para este periodo.
-								</div>
-							)}
-						</CardContent>
-					</Card>
+							</CardContent>
+						</Card>
 
-					<Card className="rounded-3xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-[1.1rem] text-[#1f2a38]">
-								Motivos de finalizacao
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-3">
-							{dashboard === undefined && dashboardQuery.isPending ? (
-								<>
-									<Skeleton className="h-20 rounded-2xl bg-[#edf1f5]" />
-									<Skeleton className="h-20 rounded-2xl bg-[#edf1f5]" />
-								</>
-							) : finalizationData.length > 0 ? (
-								finalizationData.map((item) => (
-									<div
-										key={item.key}
-										className="rounded-2xl bg-[#f8f9fb] px-4 py-4"
-									>
-										<div className="flex items-center justify-between gap-3">
-											<p className="text-sm font-medium text-[#1f2a38]">
-												{item.label}
-											</p>
-											<span className="rounded-full bg-[#fff0e8] px-2.5 py-1 text-xs font-semibold text-[#ff7a45]">
-												{formatCount(item.count)}
-											</span>
-										</div>
-									</div>
-								))
-							) : (
-								<div className="rounded-2xl bg-[#f8f9fb] px-4 py-12 text-sm text-[#6c7683]">
-									As negociacoes encerradas ainda nao geraram motivos no
-									intervalo aplicado.
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
-					<Card className="rounded-3xl border-[#e6eaef] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-[1.1rem] text-[#1f2a38]">
-								Filtro em uso
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-3 text-sm text-[#425062]">
-							<div className="flex items-center gap-3 rounded-2xl bg-[#f8f9fb] px-4 py-4">
-								<CalendarRange className="size-4 text-[#ff7a45]" />
-								<div>
-									<p className="font-medium text-[#1f2a38]">
-										{dashboard
-											? getTimeModeLabel(dashboard.filter.mode)
-											: getTimeModeLabel(appliedQuery.mode)}
+						<Card className="rounded-3xl border-[#dde6f1] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+							<CardContent className="p-6">
+								<div className="mb-5">
+									<h2 className="text-xl font-bold text-[#07142a]">
+										Evolucao de leads no periodo
+									</h2>
+									<p className="text-sm text-[#66708a]">
+										Serie temporal agregada conforme o intervalo.
 									</p>
-									<p className="text-xs text-[#7a8491]">
-										{dashboard
-											? `${dashboard.filter.startDate} a ${dashboard.filter.endDate}`
-											: appliedQuery.mode === 'custom'
-												? `${appliedQuery.startDate ?? '--'} a ${appliedQuery.endDate ?? '--'}`
-												: `Referencia em ${appliedQuery.referenceDate ?? '--'}`}
+								</div>
+								<div className="h-72">
+									<ResponsiveContainer width="100%" height="100%">
+										<AreaChart data={trendData}>
+											<defs>
+												<linearGradient
+													id="analyticTrend"
+													x1="0"
+													x2="0"
+													y1="0"
+													y2="1"
+												>
+													<stop
+														offset="0%"
+														stopColor="#ff5722"
+														stopOpacity={0.22}
+													/>
+													<stop
+														offset="100%"
+														stopColor="#ff5722"
+														stopOpacity={0}
+													/>
+												</linearGradient>
+											</defs>
+											<CartesianGrid
+												stroke="#edf2f7"
+												strokeDasharray="4 4"
+												vertical={false}
+											/>
+											<XAxis
+												axisLine={false}
+												dataKey="label"
+												fontSize={11}
+												tickLine={false}
+											/>
+											<YAxis axisLine={false} fontSize={11} tickLine={false} />
+											<Tooltip content={<ChartTooltip />} />
+											<Area
+												dataKey="totalLeads"
+												fill="url(#analyticTrend)"
+												name="Leads"
+												stroke="#ff5722"
+												strokeWidth={2.5}
+												type="monotone"
+											/>
+										</AreaChart>
+									</ResponsiveContainer>
+								</div>
+							</CardContent>
+						</Card>
+					</section>
+
+					<section className="rounded-3xl border border-[#ffcdbb] bg-[#fff4ee] px-6 py-5">
+						<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+							<div className="flex items-center gap-4">
+								<div className="grid size-14 place-items-center rounded-full bg-white text-[#ff5722]">
+									{bannerTone === 'positive' ? (
+										<UserRoundCheck className="size-7" />
+									) : bannerTone === 'negative' ? (
+										<UserRoundX className="size-7" />
+									) : (
+										<UsersRound className="size-7" />
+									)}
+								</div>
+								<div>
+									<h2 className="text-lg font-bold text-[#07142a]">
+										{bannerTone === 'positive'
+											? 'Performance em destaque'
+											: bannerTone === 'negative'
+												? 'Conversao exige atencao'
+												: 'Performance estavel'}
+									</h2>
+									<p className="text-sm text-[#66708a]">
+										{bannerTone === 'positive'
+											? `A taxa de conversao subiu ${formatDeltaPoints(
+													dashboard.kpis.conversionRate.deltaPoints,
+												)} no periodo.`
+											: bannerTone === 'negative'
+												? `A taxa de conversao caiu ${formatDeltaPoints(
+														dashboard.kpis.conversionRate.deltaPoints,
+													)} no periodo.`
+												: 'A taxa de conversao ficou sem variacao relevante no periodo.'}
 									</p>
 								</div>
 							</div>
+							<div className="text-sm font-semibold text-[#ff5722]">
+								{getRoleScopeLabel(dashboard.filter.scope)} -{' '}
+								{getPeriodLabel(dashboard)}
+							</div>
+						</div>
+					</section>
+				</>
+			) : null}
 
-							<p className="leading-6 text-[#6c7683]">
-								O backend valida o intervalo temporal e devolve os indicadores
-								ja recortados pelo seu papel, entao a interface trabalha com
-								dados reais e consistentes com o escopo permitido.
-							</p>
-						</CardContent>
-					</Card>
-				</div>
-			</section>
+			<p className="text-center text-sm text-[#66708a]">
+				Dados calculados pelo backend com validacao temporal e regras de RBAC.
+			</p>
 		</div>
 	);
 }

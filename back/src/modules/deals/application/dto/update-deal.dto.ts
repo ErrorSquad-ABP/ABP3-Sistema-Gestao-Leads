@@ -5,6 +5,7 @@ class UpdateDealDto {
 	importance?: string;
 	stage?: string;
 	status?: string;
+	lossReason?: string | null;
 }
 
 export { UpdateDealDto };

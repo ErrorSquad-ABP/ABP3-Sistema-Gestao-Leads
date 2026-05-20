@@ -19,6 +19,7 @@ describe('Deal entity', () => {
 			'INITIAL_CONTACT',
 			'OPEN',
 			null,
+			null,
 			now,
 			now,
 		);
@@ -38,6 +39,7 @@ describe('Deal entity', () => {
 			'WARM',
 			'INITIAL_CONTACT',
 			'LOST',
+			'NO_INTEREST',
 			now,
 			now,
 			now,
@@ -60,6 +62,7 @@ describe('Deal entity', () => {
 			'INITIAL_CONTACT',
 			'OPEN',
 			null,
+			null,
 			now,
 			now,
 		);
@@ -78,6 +81,7 @@ describe('Deal entity', () => {
 			'WARM',
 			'INITIAL_CONTACT',
 			'OPEN',
+			null,
 			null,
 			now,
 			now,
@@ -100,10 +104,61 @@ describe('Deal entity', () => {
 			'NEGOTIATION',
 			'OPEN',
 			null,
+			null,
 			now,
 			now,
 		);
 		deal.changeStage('INITIAL_CONTACT');
 		assert.equal(deal.stage, 'INITIAL_CONTACT');
+	});
+
+	it('requires a loss reason when closing as LOST', () => {
+		const now = new Date('2026-01-01T12:00:00.000Z');
+		const deal = new Deal(
+			Uuid.generate(),
+			Uuid.generate(),
+			Uuid.generate(),
+			'Título',
+			null,
+			'WARM',
+			'NEGOTIATION',
+			'OPEN',
+			null,
+			null,
+			now,
+			now,
+		);
+
+		assert.throws(
+			() => deal.changeStatus('LOST'),
+			(error: unknown) =>
+				error instanceof Error &&
+				error.message ===
+					'Motivo de perda é obrigatório ao encerrar uma negociação como perdida.',
+		);
+	});
+
+	it('stores loss reason when closing as LOST', () => {
+		const now = new Date('2026-01-01T12:00:00.000Z');
+		const deal = new Deal(
+			Uuid.generate(),
+			Uuid.generate(),
+			Uuid.generate(),
+			'Título',
+			null,
+			'WARM',
+			'NEGOTIATION',
+			'OPEN',
+			null,
+			null,
+			now,
+			now,
+		);
+
+		deal.changeStatus('LOST', 'NO_RESPONSE');
+
+		assert.equal(deal.status, 'LOST');
+		assert.equal(deal.lossReason, 'NO_RESPONSE');
+		assert.ok(deal.closedAt instanceof Date);
 	});
 });

@@ -1,10 +1,12 @@
 import { AggregateRoot } from '../../../../shared/domain/core/aggregate-root.js';
 import type { DealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
+import type { DealLossReason } from '../../../../shared/domain/enums/deal-loss-reason.enum.js';
 import type { DealStage } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import type { DealStatus } from '../../../../shared/domain/enums/deal-status.enum.js';
 import type { Money } from '../../../../shared/domain/value-objects/money.value-object.js';
 // biome-ignore lint/style/useImportType: Uuid é classe em runtime (parse/generate)
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { DealAlreadyClosedError } from '../errors/deal-already-closed.error.js';
 import { assertAdjacentDealStageTransition } from '../policies/deal-stage-transition.policy.js';
 
@@ -20,6 +22,7 @@ class Deal extends AggregateRoot {
 	private _importance: DealImportance;
 	private _stage: DealStage;
 	private _status: DealStatus;
+	private _lossReason: DealLossReason | null;
 	private _closedAt: Date | null;
 	private _createdAt: Date;
 	private _updatedAt: Date;
@@ -33,6 +36,7 @@ class Deal extends AggregateRoot {
 		importance: DealImportance,
 		stage: DealStage,
 		status: DealStatus,
+		lossReason: DealLossReason | null,
 		closedAt: Date | null,
 		createdAt: Date,
 		updatedAt: Date,
@@ -46,6 +50,7 @@ class Deal extends AggregateRoot {
 		this._importance = importance;
 		this._stage = stage;
 		this._status = status;
+		this._lossReason = lossReason;
 		this._closedAt = closedAt;
 		this._createdAt = createdAt;
 		this._updatedAt = updatedAt;
@@ -81,6 +86,10 @@ class Deal extends AggregateRoot {
 
 	get status(): DealStatus {
 		return this._status;
+	}
+
+	get lossReason(): DealLossReason | null {
+		return this._lossReason;
 	}
 
 	get closedAt(): Date | null {
@@ -152,7 +161,10 @@ class Deal extends AggregateRoot {
 	/**
 	 * Transição de OPEN para WON ou LOST. Não reabre negociação encerrada.
 	 */
-	changeStatus(next: DealStatus): void {
+	changeStatus(
+		next: DealStatus,
+		lossReason: DealLossReason | null = null,
+	): void {
 		if (this._status === next) {
 			return;
 		}
@@ -162,7 +174,14 @@ class Deal extends AggregateRoot {
 		if (next === 'OPEN') {
 			return;
 		}
+		if (next === 'LOST' && lossReason === null) {
+			throw new DomainValidationError(
+				'Motivo de perda é obrigatório ao encerrar uma negociação como perdida.',
+				{ code: 'deal.loss_reason.required' },
+			);
+		}
 		this._status = next;
+		this._lossReason = next === 'LOST' ? lossReason : null;
 		this._closedAt = new Date();
 	}
 }

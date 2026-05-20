@@ -55,6 +55,7 @@ type DealEnrichedRow = {
 	readonly importance: string;
 	readonly stage: string;
 	readonly status: string;
+	readonly lossReason: string | null;
 	readonly closedAt: Date | null;
 	readonly createdAt: Date;
 	readonly updatedAt: Date;

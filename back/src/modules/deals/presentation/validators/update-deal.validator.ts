@@ -9,6 +9,7 @@ import {
 } from 'class-validator';
 
 import { DEAL_IMPORTANCES } from '../../../../shared/domain/enums/deal-importance.enum.js';
+import { DEAL_LOSS_REASONS } from '../../../../shared/domain/enums/deal-loss-reason.enum.js';
 import { DEAL_STAGES } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import { DEAL_STATUSES } from '../../../../shared/domain/enums/deal-status.enum.js';
 
@@ -51,6 +52,15 @@ class UpdateDealValidator {
 	@IsString()
 	@IsIn(DEAL_STATUSES)
 	status?: string;
+
+	@ApiPropertyOptional({
+		enum: DEAL_LOSS_REASONS,
+		description: 'Obrigatório quando status=LOST.',
+	})
+	@IsOptional()
+	@IsString()
+	@IsIn(DEAL_LOSS_REASONS)
+	lossReason?: string | null;
 }
 
 export { UpdateDealValidator };

@@ -7,6 +7,7 @@ import type {
 import type {
 	dealHistoryItemSchema,
 	dealImportances,
+	dealLossReasons,
 	dealSchema,
 	dealStages,
 	dealStatuses,
@@ -24,6 +25,7 @@ type DealHistoryItem = z.infer<typeof dealHistoryItemSchema>;
 type DealStatus = (typeof dealStatuses)[number];
 type DealStage = (typeof dealStages)[number];
 type DealImportance = (typeof dealImportances)[number];
+type DealLossReason = (typeof dealLossReasons)[number];
 
 type DealCreateInput = z.output<typeof dealCreateSchema>;
 type DealCreateFormInput = z.input<typeof dealCreateSchema>;
@@ -50,6 +52,7 @@ export type {
 	DealCreateInput,
 	DealHistoryItem,
 	DealImportance,
+	DealLossReason,
 	DealPipelineQuery,
 	DealPipelineResponse,
 	DealPipelineSortMode,

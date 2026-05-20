@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { DEAL_IMPORTANCES } from '../../../../shared/domain/enums/deal-importance.enum.js';
+import { DEAL_LOSS_REASONS } from '../../../../shared/domain/enums/deal-loss-reason.enum.js';
 import { DEAL_STAGES } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import { DEAL_STATUSES } from '../../../../shared/domain/enums/deal-status.enum.js';
 
@@ -52,6 +53,14 @@ class DealResponseDto {
 
 	@ApiProperty({ enum: DEAL_STATUSES })
 	status!: string;
+
+	@ApiPropertyOptional({
+		enum: DEAL_LOSS_REASONS,
+		nullable: true,
+		description:
+			'Motivo informado quando a negociação é encerrada como perdida.',
+	})
+	lossReason!: string | null;
 
 	@ApiPropertyOptional({ nullable: true, type: String, format: 'date-time' })
 	closedAt!: Date | null;

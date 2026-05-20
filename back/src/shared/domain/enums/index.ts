@@ -18,6 +18,16 @@ export {
 	parseCanonicalDealImportance,
 	parseDealImportance,
 } from './deal-importance.enum.js';
+export type { DealLossReason } from './deal-loss-reason.enum.js';
+export {
+	assertCanonicalDealLossReason,
+	assertDealLossReason,
+	DEAL_LOSS_REASONS,
+	isCanonicalDealLossReason,
+	isDealLossReason,
+	parseCanonicalDealLossReason,
+	parseDealLossReason,
+} from './deal-loss-reason.enum.js';
 export type { DealStage } from './deal-stage.enum.js';
 export {
 	assertCanonicalDealStage,

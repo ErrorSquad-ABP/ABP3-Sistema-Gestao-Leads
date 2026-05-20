@@ -3,6 +3,7 @@ import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { assertCanonicalDealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
+import { assertCanonicalDealLossReason } from '../../../../shared/domain/enums/deal-loss-reason.enum.js';
 import { assertCanonicalDealStage } from '../../../../shared/domain/enums/deal-stage.enum.js';
 import { assertCanonicalDealStatus } from '../../../../shared/domain/enums/deal-status.enum.js';
 import { Money } from '../../../../shared/domain/value-objects/money.value-object.js';
@@ -69,7 +70,8 @@ class UpdateDealUseCase {
 				dto.value !== undefined ||
 				dto.importance !== undefined ||
 				dto.stage !== undefined ||
-				dto.status !== undefined;
+				dto.status !== undefined ||
+				dto.lossReason !== undefined;
 			if (!hasInput) {
 				return deal;
 			}
@@ -113,7 +115,13 @@ class UpdateDealUseCase {
 				deal.changeStage(assertCanonicalDealStage(dto.stage));
 			}
 			if (dto.status !== undefined) {
-				deal.changeStatus(assertCanonicalDealStatus(dto.status));
+				const nextStatus = assertCanonicalDealStatus(dto.status);
+				deal.changeStatus(
+					nextStatus,
+					dto.lossReason === undefined || dto.lossReason === null
+						? null
+						: assertCanonicalDealLossReason(dto.lossReason),
+				);
 			}
 
 			const after = snapshotDeal(deal);

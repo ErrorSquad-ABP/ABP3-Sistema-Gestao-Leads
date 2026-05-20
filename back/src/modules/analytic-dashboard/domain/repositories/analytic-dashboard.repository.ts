@@ -35,7 +35,17 @@ type AnalyticSummary = {
 	readonly totalLeads: number;
 	readonly convertedLeads: number;
 	readonly notConvertedLeads: number;
+	readonly lostLeads: number;
+	readonly finalizedLeads: number;
 	readonly conversionRate: number;
+};
+
+type AnalyticDashboardKpi = {
+	readonly value: number;
+	readonly previousValue: number;
+	readonly delta: number;
+	readonly deltaPercentage: number | null;
+	readonly deltaPoints?: number;
 };
 
 type AnalyticPerformanceItem = {
@@ -63,8 +73,26 @@ type AverageTimeToFirstInteraction = {
 	readonly methodology: string;
 };
 
+type AnalyticTrendPoint = {
+	readonly date: string;
+	readonly totalLeads: number;
+	readonly convertedLeads: number;
+	readonly lostLeads: number;
+	readonly conversionRate: number;
+	readonly averageTimeToFirstInteractionHours: number | null;
+};
+
 type AnalyticDashboardResult = {
 	readonly summary: AnalyticSummary;
+	readonly kpis: {
+		readonly conversionRate: AnalyticDashboardKpi;
+		readonly convertedLeads: AnalyticDashboardKpi;
+		readonly lostLeads: AnalyticDashboardKpi;
+		readonly averageTimeToFirstInteraction: AnalyticDashboardKpi;
+	};
+	readonly trend: {
+		readonly points: readonly AnalyticTrendPoint[];
+	};
 	readonly byAttendant: readonly AnalyticPerformanceItem[];
 	readonly byTeam: readonly AnalyticPerformanceItem[];
 	readonly importanceDistribution: readonly AnalyticDistributionItem[];
@@ -83,7 +111,9 @@ interface IAnalyticDashboardRepository {
 export type {
 	AnalyticDashboardResult,
 	AnalyticDistributionItem,
+	AnalyticDashboardKpi,
 	AnalyticPerformanceItem,
+	AnalyticTrendPoint,
 	AnalyticsRankingOptions,
 	AnalyticsScope,
 	AnalyticsTimeMode,
