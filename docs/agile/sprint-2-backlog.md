@@ -1,5 +1,7 @@
 # Sprint 2 Backlog
 
+> Documento histórico de planejamento e execução. A sprint foi encerrada documentalmente em `20/05/2026`. Para a consolidação final, consulte [`sprint-2-review.md`](./sprint-2-review.md).
+
 ## Objetivo
 
 Registrar o backlog operacional da Sprint 2 em nível de épicos fullstack `end-to-end`, conectando cada card ao escopo da ABP e ao tipo de entrega esperada.
@@ -18,9 +20,9 @@ Introduzir o veículo como objeto comercial do CRM, para que leads e negociaçõ
 
 ### Estado atual da `main`
 
-- backend de `vehicles` já entregue;
-- vínculo de `vehicle` com o fluxo de negociação já disponível no backend;
-- fechamento pendente concentrado em frontend e integração operacional.
+- módulo de `vehicles` entregue `end-to-end`;
+- vínculo de `vehicle` com o fluxo de negociação disponível;
+- frontend e integração operacional concluídos.
 
 ### Requisitos relacionados
 
@@ -45,9 +47,9 @@ Fechar o requisito `RF03`, permitindo que leads evoluam para negociações reais
 
 ### Estado atual da `main`
 
-- backend de `deals` já entregue;
-- histórico mínimo e regras centrais de domínio já estão na API;
-- fechamento pendente concentrado em frontend e UX integrada ao lead.
+- módulo de `deals` entregue `end-to-end`;
+- histórico, regras centrais de domínio e UX integrada ao lead concluídos;
+- pipeline e vínculo com veículo disponíveis no frontend.
 
 ### Requisitos relacionados
 
@@ -149,7 +151,7 @@ Restaurar aderência ao edital em execução local e atualizar os artefatos arqu
 
 - modo secundário de Compose com PostgreSQL local entregue;
 - migrations e seeds validadas no banco local secundário;
-- ainda restam atualização arquitetural mais ampla e eventual refinamento de setup.
+- documentação de setup e fechamento arquitetural atualizados.
 
 ### Requisitos relacionados
 

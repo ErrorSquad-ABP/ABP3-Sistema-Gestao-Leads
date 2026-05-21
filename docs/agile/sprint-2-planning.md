@@ -1,5 +1,7 @@
 # Sprint 2 Planning
 
+> Documento histórico de planejamento. A sprint foi encerrada documentalmente em `20/05/2026`. Para o resultado consolidado, consulte [`sprint-2-review.md`](./sprint-2-review.md).
+
 ## Objetivo
 
 Documentar o planejamento da Sprint 2 com base no enunciado oficial da ABP e no estado real da `main`, definindo escopo comprometido, forma de execução e critérios de sucesso.

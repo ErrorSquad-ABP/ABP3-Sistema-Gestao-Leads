@@ -12,5 +12,6 @@ Este diretório documenta o fluxo real de operação do projeto.
 Se o código ou a topologia operacional mudar, o runbook correspondente deve mudar na mesma entrega. Hoje isso é especialmente importante porque:
 
 - o Compose não sobe mais PostgreSQL local por padrão;
+- o modo secundário `docker-compose.local.yml` sobe PostgreSQL para conformidade e validação isolada;
 - migrations e seeds são operações explícitas;
 - a produção está ativa e precisa de documentação aderente ao runtime real.

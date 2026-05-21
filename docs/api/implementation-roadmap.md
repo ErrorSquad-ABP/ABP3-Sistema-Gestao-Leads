@@ -1,5 +1,7 @@
 # Roadmap Técnico por Módulo e Pasta
 
+> Documento histórico de direção técnica. Ele não é um checklist vivo de status atual. Para o estado consolidado após a Sprint 2, consulte [`../README.md`](../README.md), [`README.md`](./README.md) e [`../agile/sprint-2-review.md`](../agile/sprint-2-review.md).
+
 ## Objetivo
 Este roadmap define a ordem de implementação recomendada para o projeto com base no diagrama de implementação atual. Ele segue a direção arquitetural já estabelecida no projeto, priorizando primeiro as fundações compartilhadas, depois a primeira fatia vertical completa (`Lead`) e, por fim, os módulos restantes por replicação do mesmo padrão.
 

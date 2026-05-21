@@ -20,12 +20,14 @@ Nao ha versionamento por `/v1` na implementacao atual.
 - `/stores`
 - `/customers`
 - `/leads`
+- `/vehicles`
+- `/deals`
 - `/dashboards`
+- `audit-logs` como base de persistência e domínio
 
-## Recursos ainda nao fechados como produto
+## Recursos ainda em fechamento final
 
-- `negotiations`
-- `audit-logs`
+- audit log completo, com cobertura ampla de eventos e consulta administrativa refinada, fica como frente da Sprint 3.
 
 ## Regras operacionais
 
@@ -92,13 +94,45 @@ Rotas publicadas:
 | Metodo | Caminho | Uso |
 | --- | --- | --- |
 | `GET` | `/api/dashboards/operational?startDate=&endDate=` | Indicadores operacionais (`RF04`) |
+| `GET` | `/api/dashboards/analytic?mode=&referenceDate=&startDate=&endDate=&top=` | Indicadores analiticos e filtros temporais (`RF05`, `RF06`) |
 
 Contrato detalhado:
 
 - [Dashboard Operacional - Contrato Backend](./dashboard-operational-contract.md)
+- [Dashboard Analitico - Contrato Backend](./dashboard-analytic-contract.md)
+
+## Veículos
+
+Rotas publicadas:
+
+| Metodo | Caminho | Uso |
+| --- | --- | --- |
+| `POST` | `/api/vehicles` | Criar veiculo |
+| `GET` | `/api/vehicles?storeId=&status=&withoutOpenDeal=` | Listar veiculos |
+| `GET` | `/api/vehicles/catalog?page=&limit=&search=&storeId=&status=` | Catalogo enriquecido |
+| `GET` | `/api/vehicles/:id` | Buscar veiculo |
+| `PATCH` | `/api/vehicles/:id` | Atualizar veiculo |
+| `DELETE` | `/api/vehicles/:id` | Inativar veiculo |
+| `DELETE` | `/api/vehicles/:id/permanent` | Excluir permanentemente quando nao houver negociacoes vinculadas |
+
+## Negociações
+
+Rotas publicadas:
+
+| Metodo | Caminho | Uso |
+| --- | --- | --- |
+| `POST` | `/api/leads/:leadId/deals` | Criar negociacao para lead |
+| `GET` | `/api/leads/:leadId/deals` | Listar negociacoes do lead |
+| `GET` | `/api/deals?storeId=&ownerUserId=&status=&page=&limit=` | Listar negociacoes por escopo |
+| `GET` | `/api/deals/pipeline` | Pipeline de negociacoes por etapa |
+| `GET` | `/api/deals/pipeline/stages/:stage` | Pagina de uma etapa do pipeline |
+| `GET` | `/api/deals/:id/history` | Historico da negociacao |
+| `GET` | `/api/deals/:id` | Buscar negociacao |
+| `PATCH` | `/api/deals/:id` | Atualizar negociacao |
+| `DELETE` | `/api/deals/:id` | Excluir negociacao |
 
 ## Observacoes de estado
 
 - o backend ja suporta o nucleo transacional de Sprint 1;
-- dashboard operacional ja esta publicado para consumo de frontend;
-- analytics e logs administrativos ainda nao devem ser tratados como recursos concluidos.
+- veiculos, negociacoes, dashboards operacional e analitico ja estao publicados para consumo do frontend;
+- audit log possui base de schema, dominio e escrita auxiliar, mas a cobertura completa fica para a Sprint 3.

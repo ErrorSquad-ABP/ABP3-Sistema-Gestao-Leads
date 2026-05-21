@@ -19,22 +19,22 @@ O repositório já parte de uma base técnica pronta para evolução incremental
 
 Isso significa que o backlog abaixo foca principalmente o que ainda precisa ser implementado como produto e como capacidade real de negócio.
 
-## Estado do produto após a Sprint 1
+## Estado do produto após a Sprint 2
 
-Leitura executiva da `main` no início da Sprint 2:
+Leitura executiva da `develop` no fechamento documental da Sprint 2:
 
 - `EP-01` Identidade e Acesso: fechado no núcleo funcional;
 - `EP-02` Estrutura Organizacional: fechado no núcleo funcional;
 - `EP-03` Clientes e Leads: fechado no núcleo transacional;
-- `EP-07` Veículos: não iniciado como módulo de produto;
-- `EP-04` Negociações: não iniciado como módulo de produto;
-- `EP-05` Dashboards e Filtros: não iniciado como produto; telas atuais ainda são placeholder;
-- `EP-06` Auditoria e Entrega Final: parcial, com base documental e arquitetural, mas sem logs operacionais de produto e com pendência de aderência total do Compose ao edital.
+- `EP-07` Veículos: fechado como módulo de produto;
+- `EP-04` Negociações: fechado como módulo de produto;
+- `EP-05` Dashboards e Filtros: fechado no recorte operacional e analítico planejado para a Sprint 2;
+- `EP-06` Auditoria e Entrega Final: parcial, com base técnica e documental pronta, mas audit log completo permanece para a Sprint 3.
 
 Implicação prática:
 
-- a Sprint 2 deve priorizar veículos, negociações, dashboards, filtros temporais e auditoria;
-- o valor percebido pelo parceiro precisa crescer no frontend, não só na fundação do backend.
+- a Sprint 3 deve priorizar refinamento visual, qualidade de código e fechamento completo de auditoria;
+- novos blocos funcionais grandes devem ser evitados até a consolidação final da entrega.
 
 ## Requisitos funcionais de referência
 
@@ -104,19 +104,17 @@ Os pontos abaixo já estão parcialmente ou totalmente cobertos pela fundação 
 | `EP-03` | Clientes e Leads | Entregar o núcleo operacional do processo comercial | Alta | Sprint 1 |
 | `EP-07` | Veículos | Representar o objeto comercial negociado e vinculá-lo ao funil | Alta | Sprint 2 |
 | `EP-04` | Negociações | Controlar evolução comercial e histórico do funil | Alta | Sprint 2 |
-| `EP-05` | Dashboards e Filtros | Expor indicadores operacionais e analíticos com recorte temporal | Alta | Sprint 2 e Sprint 3 |
+| `EP-05` | Dashboards e Filtros | Expor indicadores operacionais e analíticos com recorte temporal | Alta | Sprint 2 |
 | `EP-06` | Auditoria e Entrega Final | Garantir logs, documentação final, segurança, desempenho e estabilidade | Alta | Sprint 3 e contínuo |
 
-## Foco confirmado para Sprint 2
+## Foco confirmado para Sprint 3
 
-Os cards da Sprint 2 deixam de ser tarefas por camada e passam a ser épicos fullstack `end-to-end`, com responsável único por feature. O recorte confirmado é:
+Após a Sprint 2, o foco remanescente é:
 
-- negociações;
-- veículos;
-- dashboard operacional;
-- dashboard analítico com filtros temporais;
-- logs de auditoria;
-- conformidade de execução local com PostgreSQL em Docker Compose e fechamento arquitetural impactado.
+- refinamento visual fino;
+- qualidade de código e redução de dívida técnica;
+- audit log completo;
+- documentação final de cobertura ABP.
 
 ## Visão priorizada dos épicos e stories
 
@@ -149,9 +147,9 @@ Criar a base de autenticação e autorização que sustenta todos os fluxos prot
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-01` | Implementar autenticação por e-mail e senha com JWT | Crítica | Sprint 1 | Não iniciado |
-| `US-02` | Permitir atualização do próprio e-mail e da própria senha | Crítica | Sprint 1 | Não iniciado |
-| `US-03` | Implementar RBAC no backend para todos os perfis | Crítica | Sprint 1 | Não iniciado |
+| `US-01` | Implementar autenticação por e-mail e senha com JWT | Crítica | Sprint 1 | Concluído |
+| `US-02` | Permitir atualização do próprio e-mail e da própria senha | Crítica | Sprint 1 | Concluído |
+| `US-03` | Implementar RBAC no backend para todos os perfis | Crítica | Sprint 1 | Concluído |
 
 ### US-01 - Implementar autenticação por e-mail e senha com JWT
 
@@ -244,8 +242,8 @@ Representar a estrutura administrativa e comercial que permitirá distribuir res
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-04` | Implementar gestão administrativa de usuários | Alta | Sprint 1 | Não iniciado |
-| `US-05` | Implementar gestão administrativa de equipes e lojas | Alta | Sprint 1 | Não iniciado |
+| `US-04` | Implementar gestão administrativa de usuários | Alta | Sprint 1 | Concluído |
+| `US-05` | Implementar gestão administrativa de equipes e lojas | Alta | Sprint 1 | Concluído |
 
 ### US-04 - Implementar gestão administrativa de usuários
 
@@ -309,9 +307,9 @@ Entregar o fluxo operacional principal do sistema, permitindo registrar clientes
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-06` | Implementar cadastro e manutenção de clientes | Alta | Sprint 1 | Não iniciado |
-| `US-07` | Implementar cadastro, listagem e edição de leads com vínculo completo | Alta | Sprint 1 | Não iniciado |
-| `US-08` | Garantir escopo de visualização e edição de leads por perfil | Alta | Sprint 1 | Não iniciado |
+| `US-06` | Implementar cadastro e manutenção de clientes | Alta | Sprint 1 | Concluído |
+| `US-07` | Implementar cadastro, listagem e edição de leads com vínculo completo | Alta | Sprint 1 | Concluído |
+| `US-08` | Garantir escopo de visualização e edição de leads por perfil | Alta | Sprint 1 | Concluído |
 
 ### US-06 - Implementar cadastro e manutenção de clientes
 
@@ -396,8 +394,8 @@ Representar o veículo como objeto comercial negociado, permitindo que o CRM tra
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-17` | Implementar catálogo operacional de veículos | Alta | Sprint 2 | Backend concluído / frontend pendente |
-| `US-18` | Vincular veículo ao fluxo de lead e negociação | Alta | Sprint 2 | Backend concluído / frontend pendente |
+| `US-17` | Implementar catálogo operacional de veículos | Alta | Sprint 2 | Concluído |
+| `US-18` | Vincular veículo ao fluxo de lead e negociação | Alta | Sprint 2 | Concluído |
 
 ### US-17 - Implementar catálogo operacional de veículos
 
@@ -423,11 +421,11 @@ O módulo de negociação perde aderência ao domínio da revenda se não houver
 - campos mínimos para identificação comercial do veículo;
 - API pronta para seleção e vínculo no fluxo operacional.
 
-**Estado atual da `main`**
+**Estado atual da `develop`**
 
-- modelagem, migrations e regras de domínio de `vehicles` já estão no backend;
-- a API de veículos já está publicada com `RBAC` administrativo;
-- o trabalho restante desta story está no frontend operacional e na integração de UX.
+- modelagem, migrations e regras de domínio de `vehicles` estão no backend;
+- a API de veículos está publicada com `RBAC` administrativo;
+- o frontend operacional e a integração de UX foram entregues na Sprint 2.
 
 ### US-18 - Vincular veículo ao fluxo de lead e negociação
 
@@ -452,11 +450,11 @@ Não basta ter o catálogo disponível. O valor do módulo aparece quando o veí
 - proteção de regra para evitar vínculos inválidos;
 - base pronta para leituras analíticas futuras envolvendo portfólio comercial.
 
-**Estado atual da `main`**
+**Estado atual da `develop`**
 
-- o backend já vincula `vehicle`, `lead` e `deal`;
-- a negociação já valida disponibilidade do veículo, consistência de loja e reserva/fecho;
-- o trabalho restante desta story está na visualização e operação de frontend.
+- o backend vincula `vehicle`, `lead` e `deal`;
+- a negociação valida disponibilidade do veículo, consistência de loja e reserva/fecho;
+- a visualização e operação de frontend foram entregues na Sprint 2.
 
 ## EP-04 - Negociações
 
@@ -475,8 +473,8 @@ Controlar a evolução comercial do lead até a conclusão da negociação, com 
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-09` | Implementar gestão de negociações por lead | Alta | Sprint 2 | Backend concluído / frontend pendente |
-| `US-10` | Registrar histórico de estágio e status das negociações | Alta | Sprint 2 | Backend concluído / frontend pendente |
+| `US-09` | Implementar gestão de negociações por lead | Alta | Sprint 2 | Concluído |
+| `US-10` | Registrar histórico de estágio e status das negociações | Alta | Sprint 2 | Concluído |
 
 ### US-09 - Implementar gestão de negociações por lead
 
@@ -502,12 +500,12 @@ A negociação transforma o lead em fluxo comercial real. Ela é o ponto de liga
 - validação de estados da negociação no backend;
 - garantia de que cada lead possua no máximo uma negociação ativa.
 
-**Estado atual da `main`**
+**Estado atual da `develop`**
 
-- o módulo `deals` já existe no backend com criação, listagem, leitura, atualização e exclusão;
-- a regra de uma negociação ativa por lead já está aplicada;
-- a negociação já nasce vinculada a veículo e já atualiza estado comercial associado;
-- o trabalho restante desta story está no frontend do fluxo de negociação.
+- o módulo `deals` existe no backend com criação, listagem, leitura, atualização e exclusão;
+- a regra de uma negociação ativa por lead está aplicada;
+- a negociação nasce vinculada a veículo e atualiza estado comercial associado;
+- o frontend do fluxo de negociação foi entregue na Sprint 2.
 
 ### US-10 - Registrar histórico de estágio e status das negociações
 
@@ -531,10 +529,10 @@ O histórico é essencial para auditoria, análise de desempenho e explicação 
 - vínculo com usuário responsável e data/hora;
 - base pronta para logs e analytics.
 
-**Estado atual da `main`**
+**Estado atual da `develop`**
 
-- o backend já registra histórico mínimo de mudanças relevantes da negociação;
-- a timeline e a leitura operacional desse histórico ainda dependem de frontend dedicado.
+- o backend registra histórico de mudanças relevantes da negociação;
+- a leitura operacional foi integrada ao fluxo de negociação e detalhe do lead.
 
 ## EP-05 - Dashboards e Filtros
 
@@ -554,9 +552,9 @@ Entregar visibilidade operacional e analítica do funil comercial, com filtros t
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-11` | Entregar dashboard operacional com visão dos últimos 30 dias | Média | Sprint 2 | Não iniciado |
-| `US-12` | Implementar filtros temporais com validação de limite por perfil | Média | Sprint 2 | Não iniciado |
-| `US-13` | Entregar dashboard analítico conforme o papel do usuário | Alta | Sprint 3 | Não iniciado |
+| `US-11` | Entregar dashboard operacional com visão dos últimos 30 dias | Média | Sprint 2 | Concluído |
+| `US-12` | Implementar filtros temporais com validação de limite por perfil | Média | Sprint 2 | Concluído |
+| `US-13` | Entregar dashboard analítico conforme o papel do usuário | Alta | Sprint 2 | Concluído |
 
 ### US-11 - Entregar dashboard operacional com visão dos últimos 30 dias
 
@@ -653,7 +651,7 @@ Garantir rastreabilidade, documentação final, segurança, desempenho e estabil
 
 | ID | História | Prioridade | Sprint sugerida | Status inicial |
 | --- | --- | --- | --- | --- |
-| `US-14` | Implementar auditoria e logs administrativos | Média | Sprint 3 | Não iniciado |
+| `US-14` | Implementar auditoria e logs administrativos | Média | Sprint 3 | Base técnica iniciada / completo pendente |
 | `US-15` | Consolidar documentação técnica e artefatos finais do ABP | Alta | Sprint 3 | Em andamento |
 | `US-16` | Endurecer segurança, desempenho e confiabilidade para entrega final | Alta | Contínuo | Em andamento |
 
@@ -742,12 +740,13 @@ Este é um item contínuo, mas ganha peso maior nas últimas sprints, quando o s
 ### Sprint 2
 
 - `EP-04`
-- `EP-05` com foco em `US-11` e `US-12`
+- `EP-05`
+- `EP-07`
 
 ### Sprint 3
 
-- `EP-05` com foco em `US-13`
-- `EP-06`
+- `EP-06` com foco em `US-14`
+- refinamento visual e qualidade de código
 
 ### Contínuo
 

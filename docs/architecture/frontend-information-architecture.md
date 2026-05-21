@@ -1,8 +1,8 @@
 # Frontend - Estado Atual, IA e Direção de Evolução
 
-**Versão:** 3.0  
-**Data:** 2026-04-15  
-**Ramo de referência:** `main`
+**Versão:** 4.0
+**Data:** 2026-05-20
+**Ramo de referência:** `develop`
 
 ## Objetivo
 
@@ -13,7 +13,8 @@ Registrar a arquitetura da informação e o estado funcional real do frontend no
 - aplicação interna autenticada;
 - autorização real no backend;
 - frontend organiza navegação, estados, formulários e consumo de API;
-- dashboards ainda não estão fechados como produto.
+- dashboards, veículos e negociações já fazem parte do produto demonstrável;
+- identidade visual do produto consolidada como `Quantum CRM`.
 
 ## Mapa atual de áreas
 
@@ -26,10 +27,11 @@ Registrar a arquitetura da informação e o estado funcional real do frontend no
 | Lojas | Funcional | Gestão dedicada |
 | Equipes | Funcional | Gestão dedicada |
 | Usuários | Funcional | Gestão administrativa |
-| Dashboard Operacional | Placeholder | Rota existente, sem analytics real |
-| Dashboard Analítico | Placeholder | Rota existente, sem analytics real |
-| Logs | Não implementado | Sem feature real no frontend |
-| Negociações | Não implementado | Sem feature real no frontend |
+| Veículos | Funcional | Catálogo operacional e gestão visual |
+| Negociações | Funcional | Pipeline e vínculo com lead/veículo |
+| Dashboard Operacional | Funcional | Indicadores reais do backend |
+| Dashboard Analítico | Funcional | Funil, rankings, filtros temporais e motivos de finalização |
+| Logs | Em fechamento | Audit log completo fica para a Sprint 3 |
 
 ## Rotas atuais
 
@@ -40,12 +42,15 @@ Registrar a arquitetura da informação e o estado funcional real do frontend no
 | `/app` | redirecionamento por papel |
 | `/app/profile` | funcional |
 | `/app/leads` | funcional |
+| `/app/leads/[id]` | funcional |
 | `/app/customers` | funcional |
+| `/app/vehicles` | funcional |
+| `/app/deals` | funcional |
 | `/app/stores` | funcional |
 | `/app/teams` | funcional |
 | `/app/users` | funcional |
-| `/app/dashboard/operational` | placeholder |
-| `/app/dashboard/analytic` | placeholder |
+| `/app/dashboard/operational` | funcional |
+| `/app/dashboard/analytic` | funcional |
 | `/app/operations` | alias para `/app/stores` |
 | `/401` | funcional |
 | `/403` | funcional |
@@ -70,6 +75,8 @@ Registrar a arquitetura da informação e o estado funcional real do frontend no
 
 - Clientes
 - Leads
+- Negociações
+- Veículos
 
 ### Administração
 
@@ -81,8 +88,10 @@ Registrar a arquitetura da informação e o estado funcional real do frontend no
 
 | Área | `ATTENDANT` | `MANAGER` | `GENERAL_MANAGER` | `ADMINISTRATOR` |
 | --- | --- | --- | --- | --- |
-| Leads | Sim | Sim | Não na navegação atual | Sim |
-| Clientes | Sim | Sim | Não na navegação atual | Sim |
+| Leads | Sim | Sim | Sim | Sim |
+| Clientes | Sim | Sim | Sim | Sim |
+| Negociações | Sim | Sim | Sim | Sim |
+| Veículos | Não | Não | Sim | Sim |
 | Dashboard Operacional | Não | Sim | Sim | Sim |
 | Dashboard Analítico | Não | Sim | Sim | Sim |
 | Lojas | Não | Sim | Sim | Sim |
@@ -97,13 +106,15 @@ Hoje o frontend já consolidou:
 - componentes modulares por feature;
 - formulários com `React Hook Form` e `Zod`;
 - tabelas administrativas e operacionais;
+- pipeline de negociações;
+- catálogo visual de veículos;
+- dashboards com cards, gráficos e filtros reais;
+- identidade visual `Quantum CRM`;
 - telas de erro personalizadas;
 - header simplificado sem busca global.
 
-## Gaps explícitos
+## Gaps explícitos para Sprint 3
 
-- dashboard operacional real;
-- dashboard analítico real;
-- módulo de negociações;
-- logs administrativos;
-- filtros temporais avançados ligados ao backend.
+- audit log completo como experiência administrativa final;
+- refinamento visual fino para apresentação;
+- revisão de consistência e qualidade de código entre módulos.
