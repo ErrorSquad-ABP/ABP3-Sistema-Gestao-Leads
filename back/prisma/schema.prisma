@@ -55,6 +55,15 @@ enum DealStatus {
   LOST
 }
 
+enum DealLossReason {
+  NO_INTEREST
+  PRICE_EXPECTATION
+  BOUGHT_ELSEWHERE
+  NO_RESPONSE
+  VEHICLE_UNAVAILABLE
+  OTHER
+}
+
 enum DealHistoryField {
   IMPORTANCE
   STAGE
@@ -62,6 +71,7 @@ enum DealHistoryField {
   TITLE
   VALUE
   VEHICLE
+  LOSS_REASON
 }
 
 enum VehicleStatus {
@@ -253,6 +263,7 @@ model Deal {
   importance DealImportance
   stage      DealStage
   status     DealStatus
+  lossReason DealLossReason?
   closedAt   DateTime?
   lead       Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
   vehicle    Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Restrict)

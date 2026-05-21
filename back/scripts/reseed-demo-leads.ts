@@ -4,6 +4,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 import {
 	DealImportance,
+	DealLossReason,
 	DealStage,
 	DealStatus,
 	PrismaClient,
@@ -158,6 +159,15 @@ const LEAD_STATUSES = [
 	LeadStatus.NEGOTIATING,
 	LeadStatus.CONVERTED,
 	LeadStatus.LOST,
+] as const;
+
+const DEAL_LOSS_REASONS = [
+	DealLossReason.NO_INTEREST,
+	DealLossReason.PRICE_EXPECTATION,
+	DealLossReason.BOUGHT_ELSEWHERE,
+	DealLossReason.NO_RESPONSE,
+	DealLossReason.VEHICLE_UNAVAILABLE,
+	DealLossReason.OTHER,
 ] as const;
 
 type StoreOwnerPool = {
@@ -431,6 +441,10 @@ async function main() {
 			importance: DealImportance.WARM,
 			stage: DealStage.NEGOTIATION,
 			status,
+			lossReason:
+				status === DealStatus.LOST
+					? pickFrom(DEAL_LOSS_REASONS, `demo-loss-reason:${lead.id}`)
+					: null,
 			closedAt,
 			createdAt,
 			updatedAt,

@@ -43,6 +43,36 @@
       "totalLeads": 120,
       "totalLeadsWithOpenDeal": 64
     },
+    "kpis": {
+      "totalLeads": {
+        "value": 120,
+        "previousValue": 90,
+        "delta": 30,
+        "deltaPercentage": 33.33,
+        "deltaPoints": null
+      },
+      "activeLeads": {
+        "value": 82,
+        "previousValue": 70,
+        "delta": 12,
+        "deltaPercentage": 17.14,
+        "deltaPoints": null
+      },
+      "convertedLeads": {
+        "value": 28,
+        "previousValue": 22,
+        "delta": 6,
+        "deltaPercentage": 27.27,
+        "deltaPoints": null
+      },
+      "conversionRate": {
+        "value": 23.33,
+        "previousValue": 24.44,
+        "delta": -1.11,
+        "deltaPercentage": null,
+        "deltaPoints": -1.11
+      }
+    },
     "distributions": {
       "byStatus": [{ "key": "NEW", "count": 28, "percentage": 23.33 }],
       "bySource": [{ "key": "whatsapp", "count": 35, "percentage": 29.17 }],
@@ -55,6 +85,17 @@
         }
       ],
       "byImportance": [{ "key": "HOT", "count": 22, "percentage": 34.38 }]
+    },
+    "trend": {
+      "points": [
+        {
+          "date": "2026-04-01",
+          "totalLeads": 4,
+          "activeLeads": 3,
+          "convertedLeads": 1,
+          "conversionRate": 25
+        }
+      ]
     }
   },
   "errors": null
@@ -67,6 +108,18 @@
 - `COUNT(leads)` no período e no escopo.
 - `totals.totalLeadsWithOpenDeal`:
 - `COUNT(leads com deal OPEN)` no período e no escopo.
+- `kpis.totalLeads`:
+- total de leads do período atual comparado com o período imediatamente anterior de mesma duração.
+- `kpis.activeLeads`:
+- leads abertos, definidos como status `NEW`, `CONTACTED` e `QUALIFIED`.
+- `kpis.convertedLeads`:
+- leads com status `CONVERTED`.
+- `kpis.conversionRate`:
+- `convertedLeads / totalLeads * 100`.
+- `kpis.*.deltaPercentage`:
+- usado para contagens; retorna `null` quando o valor anterior é zero.
+- `kpis.*.deltaPoints`:
+- usado para taxa de conversão, em pontos percentuais.
 - `distributions.byStatus`:
 - agrupamento por `lead.status` (normalizado para domínio: `NEW`, `CONTACTED`, `QUALIFIED`, `DISQUALIFIED`, `CONVERTED`).
 - `distributions.bySource`:
@@ -79,6 +132,8 @@
 - fórmula `count / base * 100` com 2 casas decimais.
 - base para `byStatus`, `bySource`, `byStore`: `totals.totalLeads`.
 - base para `byImportance`: `totals.totalLeadsWithOpenDeal`.
+- `trend.points`:
+- série diária dentro do período atual para sparklines, com `date`, `totalLeads`, `activeLeads`, `convertedLeads` e `conversionRate`.
 
 ## Campos canônicos para frontend
 
@@ -89,6 +144,10 @@
 - `scope.storeIds`
 - `totals.totalLeads`
 - `totals.totalLeadsWithOpenDeal`
+- `kpis.totalLeads`
+- `kpis.activeLeads`
+- `kpis.convertedLeads`
+- `kpis.conversionRate`
 - `distributions.byStatus[].key`
 - `distributions.byStatus[].count`
 - `distributions.byStatus[].percentage`
@@ -102,6 +161,11 @@
 - `distributions.byImportance[].key`
 - `distributions.byImportance[].count`
 - `distributions.byImportance[].percentage`
+- `trend.points[].date`
+- `trend.points[].totalLeads`
+- `trend.points[].activeLeads`
+- `trend.points[].convertedLeads`
+- `trend.points[].conversionRate`
 
 ## Notas arquiteturais
 

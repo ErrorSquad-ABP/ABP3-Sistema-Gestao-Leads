@@ -1,5 +1,6 @@
 import type {
 	DealImportance,
+	DealLossReason,
 	DealPipelineSortMode,
 	DealStage,
 	DealStatus,
@@ -22,6 +23,15 @@ const dealImportanceLabels: Record<DealImportance, string> = {
 	COLD: 'Fria',
 	WARM: 'Morna',
 	HOT: 'Quente',
+};
+
+const dealLossReasonLabels: Record<DealLossReason, string> = {
+	NO_INTEREST: 'Sem interesse',
+	PRICE_EXPECTATION: 'Preço fora da expectativa',
+	BOUGHT_ELSEWHERE: 'Comprou em outra loja',
+	NO_RESPONSE: 'Não retornou contato',
+	VEHICLE_UNAVAILABLE: 'Veículo indisponível',
+	OTHER: 'Outros',
 };
 
 /** Status no filtro do pipeline (lista/kanban): plural. Detalhe de um negócio: `dealStatusLabels`. */
@@ -76,6 +86,7 @@ function getDealPipelineSortDropdownLabel(mode: DealPipelineSortMode): string {
 const dealStatusLabelsByKey: Record<string, string> = dealStatusLabels;
 const dealStageLabelsByKey: Record<string, string> = dealStageLabels;
 const dealImportanceLabelsByKey: Record<string, string> = dealImportanceLabels;
+const dealLossReasonLabelsByKey: Record<string, string> = dealLossReasonLabels;
 
 /** Campos de histórico (Prisma `DealHistoryField`) em texto amigável. */
 const dealHistoryFieldTitle: Record<string, string> = {
@@ -85,6 +96,7 @@ const dealHistoryFieldTitle: Record<string, string> = {
 	TITLE: 'Título',
 	VALUE: 'Valor',
 	VEHICLE: 'Veículo',
+	LOSS_REASON: 'Motivo de perda',
 };
 
 const uuidV4Re =
@@ -133,6 +145,10 @@ function formatDealImportanceLabel(value: string): string {
 	return labelFromMapOrToken(dealImportanceLabelsByKey, value);
 }
 
+function formatDealLossReasonLabel(value: string): string {
+	return labelFromMapOrToken(dealLossReasonLabelsByKey, value);
+}
+
 const dealStatusOptions = Object.entries(dealStatusLabels).map(
 	([value, label]) => ({
 		value: value as DealStatus,
@@ -150,6 +166,13 @@ const dealStageOptions = Object.entries(dealStageLabels).map(
 const dealImportanceOptions = Object.entries(dealImportanceLabels).map(
 	([value, label]) => ({
 		value: value as DealImportance,
+		label,
+	}),
+);
+
+const dealLossReasonOptions = Object.entries(dealLossReasonLabels).map(
+	([value, label]) => ({
+		value: value as DealLossReason,
 		label,
 	}),
 );
@@ -209,6 +232,9 @@ function formatDealHistoryValueDisplay(
 	if (f === 'IMPORTANCE') {
 		return formatDealImportanceLabel(raw);
 	}
+	if (f === 'LOSS_REASON') {
+		return formatDealLossReasonLabel(raw);
+	}
 	if (f === 'VALUE') {
 		return formatDealValueBRL(raw);
 	}
@@ -239,6 +265,7 @@ function formatDealLeadOwnerDisplay(leadOwnerName: string | null) {
 
 export {
 	dealImportanceOptions,
+	dealLossReasonOptions,
 	dealPipelineFilterImportanceAllLabel,
 	dealPipelineFilterImportanceLegendLabel,
 	dealPipelineFilterStatusAllLabel,
@@ -251,6 +278,7 @@ export {
 	formatDealImportanceLabel,
 	formatDealLeadCustomerDisplay,
 	formatDealLeadOwnerDisplay,
+	formatDealLossReasonLabel,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,

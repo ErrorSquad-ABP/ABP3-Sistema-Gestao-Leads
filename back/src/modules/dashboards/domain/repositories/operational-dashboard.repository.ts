@@ -19,6 +19,13 @@ type DashboardStoreDistributionItem = {
 	readonly count: number;
 };
 
+type OperationalDashboardTrendPoint = {
+	readonly date: string;
+	readonly totalLeads: number;
+	readonly activeLeads: number;
+	readonly convertedLeads: number;
+};
+
 type OperationalDashboardAggregate = {
 	readonly totalLeads: number;
 	readonly totalLeadsWithOpenDeal: number;
@@ -33,6 +40,11 @@ interface IOperationalDashboardRepository {
 		readonly period: DashboardPeriod;
 		readonly scope: OperationalDashboardScope;
 	}): Promise<OperationalDashboardAggregate>;
+
+	getOperationalTrend(input: {
+		readonly period: DashboardPeriod;
+		readonly scope: OperationalDashboardScope;
+	}): Promise<OperationalDashboardTrendPoint[]>;
 }
 
 export type {
@@ -42,4 +54,5 @@ export type {
 	IOperationalDashboardRepository,
 	OperationalDashboardAggregate,
 	OperationalDashboardScope,
+	OperationalDashboardTrendPoint,
 };

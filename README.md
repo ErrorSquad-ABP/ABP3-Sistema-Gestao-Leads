@@ -15,9 +15,9 @@ Repositório oficial da equipe `ErrorSquad-ABP` para o ABP 2026-1 do 3º DSM da 
 | Kickoff | 19/03/2026 às 19h30 |
 | Tema | Sistema de Gestão de Leads com Dashboard Analítico |
 
-## Estado atual da `main`
+## Estado atual da `develop`
 
-O produto já entrega um incremento funcional do núcleo transacional:
+O produto já entrega o incremento funcional principal do `Quantum CRM`:
 
 - autenticação por e-mail e senha;
 - `RBAC` aplicado no backend;
@@ -27,17 +27,20 @@ O produto já entrega um incremento funcional do núcleo transacional:
 - gestão de equipas;
 - gestão de clientes;
 - CRUD operacional de leads com catálogos auxiliares;
-- API de negociações com histórico mínimo e vínculo a veículo;
-- catálogo operacional de veículos no backend;
+- detalhe operacional do lead com timeline;
+- gestão de veículos `end-to-end`;
+- gestão de negociações `end-to-end`;
+- dashboards operacional e analítico com dados reais;
+- filtros temporais com validação no backend;
+- identidade visual própria do `Quantum CRM`;
+- base técnica de audit log para fechamento completo na Sprint 3;
 - deploy de `front` e `back` na Vercel com banco Neon.
 
-O que ainda não está fechado como produto:
+Frentes remanescentes para a Sprint 3:
 
-- módulo funcional de negociações no frontend;
-- módulo funcional de veículos no frontend;
-- dashboards operacionais e analíticos reais;
-- logs administrativos como feature de produto;
-- filtros temporais completos de analytics.
+- refinamento visual fino para apresentação final;
+- melhoria incremental de qualidade de código;
+- audit log completo como feature administrativa final.
 
 ## Direcionadores arquiteturais
 
@@ -85,12 +88,15 @@ O que ainda não está fechado como produto:
 - `/forgot-password`
 - `/app/profile`
 - `/app/leads`
+- `/app/leads/[id]`
 - `/app/customers`
 - `/app/stores`
 - `/app/teams`
 - `/app/users`
-- `/app/dashboard/operational` placeholder
-- `/app/dashboard/analytic` placeholder
+- `/app/vehicles`
+- `/app/deals`
+- `/app/dashboard/operational`
+- `/app/dashboard/analytic`
 
 ### Backend
 
@@ -102,16 +108,20 @@ O que ainda não está fechado como produto:
 - `/api/leads`
 - `/api/deals`
 - `/api/vehicles`
+- `/api/dashboards/operational`
+- `/api/dashboards/analytic`
 
 ## Organização ágil
 
 | Sprint | Período | Estado |
 | --- | --- | --- |
 | Sprint 1 | 24/03/2026 a 14/04/2026 | Encerrada |
-| Sprint 2 | 15/04/2026 a 21/05/2026 | Planejamento em atualização |
-| Sprint 3 | 22/05/2026 a 11/06/2026 | Não iniciada |
+| Sprint 2 | 15/04/2026 a 21/05/2026 | Encerrada documentalmente em 20/05/2026 |
+| Sprint 3 | 22/05/2026 a 11/06/2026 | Foco definido |
 
 A Sprint 1 já foi encerrada. O resultado consolidado está em [docs/agile/sprint-1-review.md](./docs/agile/sprint-1-review.md).
+
+A Sprint 2 também possui fechamento consolidado em [docs/agile/sprint-2-review.md](./docs/agile/sprint-2-review.md) e retrospective em [docs/agile/sprint-2-retrospective.md](./docs/agile/sprint-2-retrospective.md).
 
 ## Fluxo de branches
 
@@ -139,7 +149,7 @@ npm run quality:gate:blocking
 
 ## Subida local
 
-O `docker compose` atual sobe apenas `front` e `back`. O banco é externo ao Compose e vem da `DATABASE_URL` em `back/.env`.
+O projeto mantém dois modos locais: o fluxo padrão do time sobe `front` e `back` usando a `DATABASE_URL` do `back/.env`, enquanto o modo secundário de conformidade sobe `front + back + PostgreSQL` via `docker-compose.local.yml`.
 
 ### Desenvolvimento
 
@@ -168,6 +178,6 @@ npm run dev
 
 ## Próximas frentes naturais
 
-1. Fechar Sprint 2 com recorte realista de frontend para negociações, veículos, dashboards e gaps restantes.
-2. Consolidar dashboards como produto, não placeholder.
-3. Fechar documentação final de cobertura ABP, incluindo DER/UML e matriz requisito x entrega.
+1. Refinar visualmente o produto para apresentação final.
+2. Melhorar qualidade de código e consistência entre módulos entregues.
+3. Fechar audit log completo e documentação final de cobertura ABP.

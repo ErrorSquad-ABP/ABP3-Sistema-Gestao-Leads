@@ -1,5 +1,6 @@
 import type { Deal as PrismaDeal } from '../../../../../generated/prisma/client.js';
 import { assertCanonicalDealImportance } from '../../../../../shared/domain/enums/deal-importance.enum.js';
+import { assertCanonicalDealLossReason } from '../../../../../shared/domain/enums/deal-loss-reason.enum.js';
 import { assertCanonicalDealStage } from '../../../../../shared/domain/enums/deal-stage.enum.js';
 import { assertCanonicalDealStatus } from '../../../../../shared/domain/enums/deal-status.enum.js';
 import { Uuid } from '../../../../../shared/domain/types/identifiers.js';
@@ -21,6 +22,9 @@ class DealMapper {
 			assertCanonicalDealImportance(record.importance),
 			assertCanonicalDealStage(record.stage),
 			assertCanonicalDealStatus(record.status),
+			record.lossReason === null
+				? null
+				: assertCanonicalDealLossReason(record.lossReason),
 			record.closedAt,
 			record.createdAt,
 			record.updatedAt,
@@ -36,6 +40,7 @@ class DealMapper {
 		readonly importance: PrismaDeal['importance'];
 		readonly stage: PrismaDeal['stage'];
 		readonly status: PrismaDeal['status'];
+		readonly lossReason: PrismaDeal['lossReason'];
 		readonly closedAt: Date | null;
 	} {
 		return {
@@ -47,6 +52,7 @@ class DealMapper {
 			importance: deal.importance,
 			stage: deal.stage,
 			status: deal.status,
+			lossReason: deal.lossReason,
 			closedAt: deal.closedAt,
 		};
 	}

@@ -4,12 +4,38 @@ import type { PrismaService } from '../../../../../shared/infrastructure/databas
 import { computeTotalPages } from '../../../domain/types/lead-list-page.js';
 import type {
 	ILeadRepository,
+	LeadCatalogBreakdownItem,
+	LeadCatalogFilters,
+	LeadCatalogItem,
 	LeadListFilters,
 } from '../../../domain/repositories/lead.repository.js';
 import { buildListTeamLeadsWhere } from '../../queries/list-team-leads.query.js';
 import { LeadMapper } from '../mappers/lead.mapper.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
+type LeadCatalogRow = Prisma.LeadGetPayload<{
+	include: {
+		customer: {
+			select: {
+				id: true;
+				name: true;
+				email: true;
+				phone: true;
+				cpf: true;
+			};
+		};
+		store: { select: { id: true; name: true } };
+		owner: { select: { id: true; name: true; email: true } };
+		deals: true;
+		events: true;
+	};
+}>;
+
+type LeadCatalogItemWithRevenue = LeadCatalogItem & {
+	readonly wonValue: number;
+};
+
+const SEVEN_DAYS_IN_MS = 7 * 24 * 60 * 60 * 1000;
 
 function withoutOpenDealWhere(
 	filters?: LeadListFilters,
@@ -17,6 +43,131 @@ function withoutOpenDealWhere(
 	return filters?.withoutOpenDeal
 		? { deals: { none: { status: 'OPEN' } } }
 		: {};
+}
+
+function normalizeSearch(value: string): string {
+	return value.trim().toLowerCase();
+}
+
+function leadMatchesSearch(row: LeadCatalogRow, search: string): boolean {
+	if (!search) {
+		return true;
+	}
+	return [
+		row.customer.name,
+		row.customer.email ?? '',
+		row.customer.phone ?? '',
+		row.customer.cpf ?? '',
+		row.id,
+		row.vehicleInterestText ?? '',
+	]
+		.join(' ')
+		.toLowerCase()
+		.includes(search);
+}
+
+function catalogScopeWhere(
+	scope: LeadCatalogFilters['scope'],
+): Prisma.LeadWhereInput {
+	if (scope.kind === 'all') {
+		return {};
+	}
+	if (scope.kind === 'owner') {
+		return { ownerUserId: scope.ownerUserId.value };
+	}
+	if (scope.teamIds.length === 0) {
+		return { id: { in: [] } };
+	}
+	return {
+		owner: {
+			is: {
+				memberTeams: {
+					some: { id: { in: [...scope.teamIds] } },
+				},
+			},
+		},
+	};
+}
+
+function getLastActivity(row: LeadCatalogRow): {
+	readonly at: Date | null;
+	readonly label: string;
+} {
+	let lastActivityAt: Date | null = row.updatedAt;
+	let label = 'Cadastro';
+
+	for (const event of row.events) {
+		if (event.createdAt > (lastActivityAt ?? new Date(0))) {
+			lastActivityAt = event.createdAt;
+			label = event.title || 'Interação registrada';
+		}
+	}
+
+	for (const deal of row.deals) {
+		if (deal.updatedAt > (lastActivityAt ?? new Date(0))) {
+			lastActivityAt = deal.updatedAt;
+			label =
+				deal.status === 'WON'
+					? 'Negociação ganha'
+					: deal.status === 'LOST'
+						? 'Negociação perdida'
+						: 'Proposta enviada';
+		}
+	}
+
+	return { at: lastActivityAt, label };
+}
+
+function hasInteraction(row: LeadCatalogRow): boolean {
+	return row.status !== 'NEW' || row.events.length > 0 || row.deals.length > 0;
+}
+
+function sumWonDealValue(row: LeadCatalogRow): number {
+	return row.deals.reduce((total, deal) => {
+		if (deal.status !== 'WON' || deal.value === null) {
+			return total;
+		}
+
+		return total + Number(deal.value.toString());
+	}, 0);
+}
+
+function toMoneyString(value: number): string {
+	return value.toFixed(2);
+}
+
+function matchesActivityDate(
+	item: LeadCatalogItem,
+	filters: LeadCatalogFilters,
+): boolean {
+	const activityTime = item.lastActivityAt?.getTime();
+	if (activityTime === undefined) {
+		return !(filters.activityStartDate || filters.activityEndDate);
+	}
+	if (
+		filters.activityStartDate &&
+		activityTime < filters.activityStartDate.getTime()
+	) {
+		return false;
+	}
+	if (
+		filters.activityEndDate &&
+		activityTime > filters.activityEndDate.getTime()
+	) {
+		return false;
+	}
+	return true;
+}
+
+function sortBreakdown(
+	items: LeadCatalogBreakdownItem[],
+): LeadCatalogBreakdownItem[] {
+	return [...items].sort((left, right) => {
+		if (right.count !== left.count) {
+			return right.count - left.count;
+		}
+		return left.label.localeCompare(right.label, 'pt-BR');
+	});
 }
 
 class LeadPrismaRepository implements ILeadRepository {
@@ -182,6 +333,144 @@ class LeadPrismaRepository implements ILeadRepository {
 		]);
 		return {
 			items: rows.map((lead) => LeadMapper.toDomain(lead)),
+			page: pagination.page,
+			limit: pagination.limit,
+			total,
+			totalPages: computeTotalPages(total, pagination.limit),
+		};
+	}
+
+	async listCatalog(
+		filters: Parameters<ILeadRepository['listCatalog']>[0],
+		pagination: Parameters<ILeadRepository['listCatalog']>[1],
+	) {
+		const where: Prisma.LeadWhereInput = {
+			...catalogScopeWhere(filters.scope),
+			...(filters.status ? { status: filters.status } : {}),
+			...(filters.source ? { source: filters.source } : {}),
+			...(filters.storeId ? { storeId: filters.storeId.value } : {}),
+			...(filters.ownerUserId
+				? { ownerUserId: filters.ownerUserId.value }
+				: {}),
+		};
+
+		const rows = await this.client.lead.findMany({
+			where,
+			include: {
+				customer: {
+					select: {
+						id: true,
+						name: true,
+						email: true,
+						phone: true,
+						cpf: true,
+					},
+				},
+				store: { select: { id: true, name: true } },
+				owner: { select: { id: true, name: true, email: true } },
+				deals: true,
+				events: true,
+			},
+			orderBy: { createdAt: 'desc' },
+		});
+
+		const search = normalizeSearch(filters.search ?? '');
+		const enriched = rows
+			.filter((row) => leadMatchesSearch(row, search))
+			.map((row): LeadCatalogItemWithRevenue => {
+				const lastActivity = getLastActivity(row);
+				return {
+					lead: LeadMapper.toDomain(row),
+					customer: row.customer,
+					store: row.store,
+					owner: row.owner,
+					lastActivityAt: lastActivity.at,
+					lastActivityLabel: lastActivity.label,
+					openDealsCount: row.deals.filter((deal) => deal.status === 'OPEN')
+						.length,
+					totalDealsCount: row.deals.length,
+					hasInteraction: hasInteraction(row),
+					wonValue: sumWonDealValue(row),
+				};
+			})
+			.filter((item) => matchesActivityDate(item, filters));
+
+		const sorted = [...enriched].sort((left, right) => {
+			switch (filters.sort) {
+				case 'source':
+					return (
+						left.lead.source.value.localeCompare(
+							right.lead.source.value,
+							'pt-BR',
+						) ||
+						(right.lastActivityAt?.getTime() ?? 0) -
+							(left.lastActivityAt?.getTime() ?? 0)
+					);
+				case 'status':
+					return (
+						left.lead.status.localeCompare(right.lead.status, 'pt-BR') ||
+						(right.lastActivityAt?.getTime() ?? 0) -
+							(left.lastActivityAt?.getTime() ?? 0)
+					);
+				default:
+					return (
+						(right.lastActivityAt?.getTime() ?? 0) -
+							(left.lastActivityAt?.getTime() ?? 0) ||
+						left.customer.name.localeCompare(right.customer.name, 'pt-BR')
+					);
+			}
+		});
+
+		const originCounts = new Map<string, number>();
+		for (const item of enriched) {
+			const key = item.lead.source.value;
+			originCounts.set(key, (originCounts.get(key) ?? 0) + 1);
+		}
+
+		const total = sorted.length;
+		const start = (pagination.page - 1) * pagination.limit;
+		const pageItems = sorted
+			.slice(start, start + pagination.limit)
+			.map(({ wonValue: _wonValue, ...item }) => item);
+		const staleLimit = Date.now() - SEVEN_DAYS_IN_MS;
+		const converted = enriched.filter(
+			(item) => item.lead.status === 'CONVERTED',
+		).length;
+		const openDeals = enriched.filter((item) => item.openDealsCount > 0).length;
+		const wonValue = enriched.reduce((totalValue, item) => {
+			return totalValue + item.wonValue;
+		}, 0);
+
+		return {
+			items: pageItems,
+			summary: {
+				total: enriched.length,
+				withInteraction: enriched.filter((item) => item.hasInteraction).length,
+				converted,
+				staleNoContact: enriched.filter((item) => {
+					if (
+						item.lead.status === 'CONVERTED' ||
+						item.lead.status === 'DISQUALIFIED'
+					) {
+						return false;
+					}
+					return (item.lastActivityAt?.getTime() ?? 0) < staleLimit;
+				}).length,
+				conversionRate:
+					enriched.length > 0
+						? Math.round((converted / enriched.length) * 100)
+						: 0,
+				wonValue: toMoneyString(wonValue),
+			},
+			funnel: {
+				totalLeads: enriched.length,
+				withInteraction: enriched.filter((item) => item.hasInteraction).length,
+				openDeals,
+				converted,
+			},
+			origins: sortBreakdown(
+				Array.from(originCounts, ([label, count]) => ({ label, count })),
+			).slice(0, 5),
 			page: pagination.page,
 			limit: pagination.limit,
 			total,

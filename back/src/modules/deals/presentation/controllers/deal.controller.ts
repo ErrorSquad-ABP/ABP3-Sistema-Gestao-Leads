@@ -327,6 +327,7 @@ class DealController {
 			importance: body.importance,
 			stage: body.stage,
 			status: body.status,
+			lossReason: body.lossReason,
 		});
 		const deal = await this.findDealUseCase.execute(toLeadActor(user), id);
 		return DealPresenter.toResponseEnriched(deal.row, deal.canMutate);

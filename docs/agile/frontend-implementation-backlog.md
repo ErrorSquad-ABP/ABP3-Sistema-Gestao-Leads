@@ -6,6 +6,12 @@ Detalhar um backlog operacional do frontend em formato fácil de transpor para T
 
 Este backlog não substitui o `Product Backlog` nem os backlogs de sprint. Ele existe para quebrar a frente de frontend em cartões executáveis, com dependências, foco de entrega e critérios mínimos de aceite.
 
+## Estado após Sprint 2
+
+- `FRONT-01` a `FRONT-16` foram absorvidos pelo incremento entregue até a Sprint 2;
+- `FRONT-18` também avançou com o refactor visual e a identidade `Quantum CRM`;
+- `FRONT-17` permanece como frente principal da Sprint 3, junto de refinamento visual e qualidade de código.
+
 ## Como usar no Trello
 
 Sugestão de listas:
@@ -23,6 +29,7 @@ Sugestão de labels:
 - `auth`
 - `leads`
 - `customers`
+- `vehicles`
 - `negotiations`
 - `dashboard`
 - `admin`
@@ -44,13 +51,14 @@ Sugestão de labels:
 | `FRONT-09` | Integrar cliente ao fluxo operacional | Sprint 2 | `FRONT-07`, `FRONT-08`, backend `customers` |
 | `FRONT-10` | Implementar negociação ativa do lead | Sprint 2 | `FRONT-08`, backend `negotiations` |
 | `FRONT-11` | Implementar histórico e timeline da negociação | Sprint 2 | `FRONT-10`, backend `history` |
-| `FRONT-12` | Implementar dashboard operacional | Sprint 3 | `FRONT-03`, backend `dashboards` |
-| `FRONT-13` | Implementar dashboard analítico | Sprint 3 | `FRONT-12`, backend `dashboards` |
-| `FRONT-14` | Implementar equipes e vínculos | Sprint 3 | `FRONT-03`, backend `teams/users` |
-| `FRONT-15` | Implementar gestão administrativa de usuários | Sprint 3 | `FRONT-03`, backend `users` |
-| `FRONT-16` | Implementar gestão de lojas | Sprint 3 | `FRONT-03`, backend `stores` |
+| `FRONT-12` | Implementar dashboard operacional | Sprint 2 | `FRONT-03`, backend `dashboards` |
+| `FRONT-13` | Implementar dashboard analítico | Sprint 2 | `FRONT-12`, backend `dashboards` |
+| `FRONT-14` | Implementar equipes e vínculos | Sprint 1 | `FRONT-03`, backend `teams/users` |
+| `FRONT-15` | Implementar gestão administrativa de usuários | Sprint 1 | `FRONT-03`, backend `users` |
+| `FRONT-16` | Implementar gestão de lojas | Sprint 1 | `FRONT-03`, backend `stores` |
 | `FRONT-17` | Implementar logs administrativos | Sprint 3 | `FRONT-03`, backend `audit-logs` |
 | `FRONT-18` | Consolidar responsividade, estados e RBAC visual | Sprint 3 | Todos os fluxos principais |
+| `FRONT-19` | Implementar catálogo visual de veículos | Sprint 2 | `FRONT-03`, backend `vehicles` |
 
 ## Cartões detalhados
 
@@ -269,6 +277,19 @@ Sugestão de labels:
 - Aceite:
 - administrador consegue consultar logs de acesso e operação com legibilidade
 
+### `FRONT-19` - Implementar catálogo visual de veículos
+
+- Objetivo: cobrir o catálogo comercial de veículos na interface.
+- Labels: `frontend`, `vehicles`
+- Checklist:
+- criar listagem de veículos
+- suportar visualização em cards e tabela
+- integrar filtros por loja, status e busca
+- suportar criação, edição, inativação e exclusão quando permitido
+- integrar seleção de veículo no fluxo de negociação
+- Aceite:
+- usuário autorizado consegue operar veículos e vinculá-los a negociações
+
 ### `FRONT-18` - Consolidar responsividade, estados e RBAC visual
 
 - Objetivo: fechar a camada de acabamento funcional.
@@ -283,11 +304,9 @@ Sugestão de labels:
 
 ## Dependências externas que podem bloquear cartões
 
-- contratos de backend ainda não fechados;
-- definição final de status e estágios de negociação;
-- retorno real das consultas de dashboard;
+- cobertura completa de audit log;
 - política de sessão e armazenamento do JWT no frontend;
-- decisão final sobre granularidade do `Gerente Geral`.
+- refinamentos de qualidade e consistência visual para a Sprint 3.
 
 ## Definition of Done específico para cartões de frontend
 

@@ -3,6 +3,7 @@ import { apiFetch } from '@/lib/http/api-client';
 import { LEADS_PAGE_LIMIT } from '../lib/leads-pagination';
 import {
 	leadListItemSchema,
+	parseLeadCatalogResponse,
 	parseLeadListPagedResponse,
 } from '../schemas/lead-list.schema';
 import {
@@ -29,6 +30,50 @@ import type {
 type LeadsListQueryOptions = {
 	withoutOpenDeal?: boolean;
 };
+
+type LeadCatalogFilters = {
+	search?: string;
+	status?: string;
+	source?: string;
+	storeId?: string;
+	ownerUserId?: string;
+	activityStartDate?: string;
+	activityEndDate?: string;
+	sort?: 'recent' | 'last_activity' | 'status' | 'source';
+	page: number;
+	limit: number;
+};
+
+function leadCatalogQuery(filters: LeadCatalogFilters): string {
+	const params = new URLSearchParams();
+	if (filters.search?.trim()) {
+		params.set('search', filters.search.trim());
+	}
+	if (filters.status) {
+		params.set('status', filters.status);
+	}
+	if (filters.source) {
+		params.set('source', filters.source);
+	}
+	if (filters.storeId) {
+		params.set('storeId', filters.storeId);
+	}
+	if (filters.ownerUserId) {
+		params.set('ownerUserId', filters.ownerUserId);
+	}
+	if (filters.activityStartDate) {
+		params.set('activityStartDate', filters.activityStartDate);
+	}
+	if (filters.activityEndDate) {
+		params.set('activityEndDate', filters.activityEndDate);
+	}
+	if (filters.sort) {
+		params.set('sort', filters.sort);
+	}
+	params.set('page', String(filters.page));
+	params.set('limit', String(filters.limit));
+	return params.toString();
+}
 
 function leadsListQuery(page: number, options?: LeadsListQueryOptions): string {
 	const params = new URLSearchParams({
@@ -59,6 +104,17 @@ async function fetchLeadsByOwner(
 		},
 	);
 	return parseLeadListPagedResponse(raw);
+}
+
+async function fetchLeadCatalog(
+	filters: LeadCatalogFilters,
+	signal?: AbortSignal,
+) {
+	const query = leadCatalogQuery(filters);
+	const raw = await apiFetch<unknown>(`/api/leads/catalog?${query}`, {
+		signal,
+	});
+	return parseLeadCatalogResponse(raw);
 }
 
 /**
@@ -292,6 +348,7 @@ export {
 	deleteCustomer,
 	deleteLead,
 	deleteStore,
+	fetchLeadCatalog,
 	findLeadDetailHub,
 	findLeadById,
 	fetchLeadsAll,
@@ -309,6 +366,7 @@ export {
 export type {
 	CreateCustomerBody,
 	CreateStoreBody,
+	LeadCatalogFilters,
 	UpdateCustomerBody,
 	UpdateStoreBody,
 };

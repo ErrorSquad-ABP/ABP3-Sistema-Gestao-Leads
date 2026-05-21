@@ -6,7 +6,7 @@ Documentar a base visual e estrutural da área autenticada do frontend no estado
 
 ## Estado atual
 
-O `AppShell` já é a moldura oficial da área autenticada.
+O `AppShell` é a moldura oficial da área autenticada e já incorpora a identidade visual `Quantum CRM`.
 
 Ele é composto por:
 
@@ -14,7 +14,8 @@ Ele é composto por:
 - header simplificado;
 - menu de utilizador;
 - área principal de conteúdo;
-- navegação por papel.
+- navegação por papel;
+- marca visual do `Quantum CRM`.
 
 Base principal:
 
@@ -51,12 +52,15 @@ Estado atual:
 | --- | --- |
 | `/app/profile` | funcional |
 | `/app/leads` | funcional |
+| `/app/leads/[id]` | funcional |
 | `/app/customers` | funcional |
+| `/app/vehicles` | funcional |
+| `/app/deals` | funcional |
 | `/app/stores` | funcional |
 | `/app/teams` | funcional |
 | `/app/users` | funcional |
-| `/app/dashboard/analytic` | placeholder protegido |
-| `/app/dashboard/operational` | placeholder protegido |
+| `/app/dashboard/analytic` | funcional |
+| `/app/dashboard/operational` | funcional |
 
 ## Home por papel
 
@@ -67,8 +71,8 @@ Estado atual:
 | `GENERAL_MANAGER` | Dashboard Analítico |
 | `ADMINISTRATOR` | Dashboard Analítico |
 
-## O que ainda não está completo
+## O que ainda fica para Sprint 3
 
-- dashboards reais;
-- módulo de negociações;
-- logs administrativos.
+- refinamento visual fino da experiência;
+- audit log completo como tela administrativa final;
+- revisão de qualidade e consistência dos módulos.

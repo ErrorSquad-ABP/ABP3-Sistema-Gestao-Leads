@@ -138,5 +138,6 @@ O shell autenticado hoje possui:
 - sidebar;
 - topbar sem search global;
 - dropdown do utilizador;
-- páginas reais para `profile`, `leads`, `customers`, `stores`, `teams` e `users`;
-- dashboards ainda em placeholder.
+- páginas reais para `profile`, `leads`, `customers`, `vehicles`, `deals`, `stores`, `teams` e `users`;
+- dashboards operacional e analítico reais;
+- identidade visual `Quantum CRM`.

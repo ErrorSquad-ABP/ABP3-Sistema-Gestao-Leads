@@ -31,7 +31,11 @@ front/
 - `login`
 - `profile`
 - `leads`
+- `lead-detail`
 - `customers`
+- `vehicles`
+- `deals`
+- `dashboards`
 - `stores`
 - `teams`
 - `users`
@@ -45,17 +49,22 @@ Hoje o frontend já possui:
 - redirecionamento por papel;
 - perfil com atualização de credenciais;
 - CRUD de leads;
+- detalhe operacional de lead com timeline;
 - gestão de clientes;
+- catálogo e gestão visual de veículos;
+- pipeline e gestão de negociações;
+- dashboards operacional e analítico com dados reais;
 - gestão de lojas;
 - gestão de equipas;
 - gestão administrativa de utilizadores;
+- identidade visual `Quantum CRM`;
 - telas de erro e redirect customizadas.
 
-Ainda não fecha como produto:
+Ainda fica para refinamento da Sprint 3:
 
-- dashboards reais;
-- módulo de negociações;
-- logs administrativos.
+- ajustes visuais finos para apresentação final;
+- consistência de componentes entre telas;
+- tela administrativa final de audit log completo.
 
 ## Rotas relevantes
 
@@ -63,7 +72,10 @@ Ainda não fecha como produto:
 - `/forgot-password`
 - `/app/profile`
 - `/app/leads`
+- `/app/leads/[id]`
 - `/app/customers`
+- `/app/vehicles`
+- `/app/deals`
 - `/app/stores`
 - `/app/teams`
 - `/app/users`
@@ -72,6 +84,5 @@ Ainda não fecha como produto:
 
 ## Observações
 
-- os dashboards atuais ainda são placeholders;
 - `/app/operations` é só alias de compatibilidade para `/app/stores`;
 - o frontend não é autoridade de autorização: o backend continua sendo a fonte de verdade para `RBAC`.

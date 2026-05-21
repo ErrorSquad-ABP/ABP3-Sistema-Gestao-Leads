@@ -52,6 +52,7 @@ type SeedDeal = Pick<
 	| 'importance'
 	| 'stage'
 	| 'status'
+	| 'lossReason'
 	| 'closedAt'
 	| 'createdAt'
 	| 'updatedAt'

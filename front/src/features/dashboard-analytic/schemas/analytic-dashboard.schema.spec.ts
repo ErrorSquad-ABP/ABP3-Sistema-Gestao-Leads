@@ -19,7 +19,48 @@ describe('parseAnalyticDashboardResponse', () => {
 				totalLeads: 20,
 				convertedLeads: 7,
 				notConvertedLeads: 13,
+				lostLeads: 5,
+				finalizedLeads: 12,
 				conversionRate: 35,
+			},
+			kpis: {
+				conversionRate: {
+					value: 58.3,
+					previousValue: 40,
+					delta: 18.3,
+					deltaPercentage: 45.75,
+					deltaPoints: 18.3,
+				},
+				convertedLeads: {
+					value: 7,
+					previousValue: 4,
+					delta: 3,
+					deltaPercentage: 75,
+				},
+				lostLeads: {
+					value: 5,
+					previousValue: 6,
+					delta: -1,
+					deltaPercentage: -16.6,
+				},
+				averageTimeToFirstInteraction: {
+					value: 14.5,
+					previousValue: 18,
+					delta: -3.5,
+					deltaPercentage: -19.4,
+				},
+			},
+			trend: {
+				points: [
+					{
+						date: '2026-04-01',
+						totalLeads: 20,
+						convertedLeads: 7,
+						lostLeads: 5,
+						conversionRate: 58.3,
+						averageTimeToFirstInteractionHours: 14.5,
+					},
+				],
 			},
 			byAttendant: [
 				{
@@ -52,7 +93,7 @@ describe('parseAnalyticDashboardResponse', () => {
 				{ key: 'WARM', label: 'Morno', count: 7 },
 			],
 			finalizationReasons: [
-				{ key: 'sale_completed', label: 'Venda concluida', count: 7 },
+				{ key: 'NO_RESPONSE', label: 'Nao retornou contato', count: 5 },
 			],
 			averageTimeToFirstInteraction: {
 				hours: 14.5,

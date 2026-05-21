@@ -32,6 +32,32 @@ const queryKeys = {
 					: (['leads', 'list', params.scope, params.id, params.page] as const),
 		inactive: (userId: string) =>
 			['leads', 'list', 'inactive', userId] as const,
+		catalog: (params: {
+			search?: string;
+			status?: string;
+			source?: string;
+			storeId?: string;
+			ownerUserId?: string;
+			activityStartDate?: string;
+			activityEndDate?: string;
+			sort?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'leads',
+				'catalog',
+				params.search?.trim() ?? '',
+				params.status ?? 'all-statuses',
+				params.source ?? 'all-sources',
+				params.storeId ?? 'all-stores',
+				params.ownerUserId ?? 'all-owners',
+				params.activityStartDate ?? 'any-start-date',
+				params.activityEndDate ?? 'any-end-date',
+				params.sort ?? 'recent',
+				params.page,
+				params.limit,
+			] as const,
 		customers: ['leads', 'catalog', 'customers'] as const,
 		stores: ['leads', 'catalog', 'stores'] as const,
 		teams: ['leads', 'catalog', 'teams'] as const,
@@ -71,6 +97,27 @@ const queryKeys = {
 				params.limit,
 			] as const,
 		detail: (vehicleId: string) => ['vehicles', 'detail', vehicleId] as const,
+	},
+	customers: {
+		catalogRoot: ['customers', 'catalog'] as const,
+		catalog: (params: {
+			search?: string;
+			storeId?: string;
+			status?: string;
+			sort?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'customers',
+				'catalog',
+				params.search?.trim() ?? '',
+				params.storeId ?? 'all-stores',
+				params.status ?? 'all-statuses',
+				params.sort ?? 'recent',
+				params.page,
+				params.limit,
+			] as const,
 	},
 	deals: {
 		listRoot: ['deals', 'list'] as const,

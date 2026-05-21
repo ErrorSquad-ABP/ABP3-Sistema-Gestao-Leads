@@ -1,6 +1,10 @@
 import type { z } from 'zod';
 
-import type { leadListItemSchema } from '../schemas/lead-list.schema';
+import type {
+	leadCatalogSchema,
+	leadCatalogItemSchema,
+	leadListItemSchema,
+} from '../schemas/lead-list.schema';
 import type { leadDetailHubSchema } from '../schemas/lead-detail.schema';
 import type {
 	leadCustomerSchema,
@@ -16,6 +20,8 @@ import type {
 } from '../schemas/lead-management.schema';
 
 type LeadListItem = z.infer<typeof leadListItemSchema>;
+type LeadCatalog = z.infer<typeof leadCatalogSchema>;
+type LeadCatalogItem = z.infer<typeof leadCatalogItemSchema>;
 type LeadDetailHub = z.infer<typeof leadDetailHubSchema>;
 type LeadCustomer = z.infer<typeof leadCustomerSchema>;
 type LeadStore = z.infer<typeof leadStoreSchema>;
@@ -44,6 +50,8 @@ type ReassignLeadInput = {
 export type {
 	CreateLeadInput,
 	LeadCustomer,
+	LeadCatalog,
+	LeadCatalogItem,
 	LeadDetailHub,
 	LeadFormValues,
 	LeadListItem,

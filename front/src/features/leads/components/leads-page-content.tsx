@@ -1,35 +1,33 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import {
-	ChevronLeft,
-	ChevronRight,
-	LayoutList,
+	CalendarDays,
+	Download,
+	Filter,
 	Plus,
 	Search,
-	UserRound,
-	Building2,
+	Target,
+	Trophy,
+	UsersRound,
+	Zap,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-	Card,
-	CardAction,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { LeadDealsDialog } from '@/features/deals/components/LeadDealsDialog';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { ApiError, isApiError } from '@/lib/http/api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
+
 import {
 	useLeadCustomersQuery,
 	useLeadOwnersQuery,
 	useLeadStoresQuery,
 } from '../hooks/leads.catalog.queries';
-import { useLeadsListQuery } from '../hooks/leads.queries';
+import { useLeadCatalogQuery } from '../hooks/leads.queries';
 import {
 	useConvertLeadMutation,
 	useCreateLeadMutation,
@@ -37,21 +35,18 @@ import {
 	useReassignLeadMutation,
 	useUpdateLeadMutation,
 } from '../hooks/leads.mutations';
-import {
-	formatLeadSourceLabel,
-	formatLeadStatusLabel,
-	leadSourceOptions,
-	leadStatusOptions,
-	normalizeLeadSourceKey,
-} from '../lib/lead-list-labels';
-import { LEADS_PAGE_LIMIT } from '../lib/leads-pagination';
+import { leadSourceOptions, leadStatusOptions } from '../lib/lead-list-labels';
 import type {
 	CreateLeadInput,
-	LeadCustomer,
 	LeadListItem,
 	ReassignLeadInput,
 	UpdateLeadInput,
 } from '../model/leads.model';
+import {
+	CustomerManagerDialog,
+	LeadsTableSkeleton,
+	StoreManagerDialog,
+} from './LeadDetails';
 import {
 	buildOwnerOptions,
 	getLeadsErrorMessage,
@@ -60,47 +55,36 @@ import {
 	LeadReassignDialog,
 } from './LeadForm';
 import {
-	CustomerManagerDialog,
-	LeadsTableSkeleton,
-	StoreManagerDialog,
-} from './LeadDetails';
-import { LeadsTable } from './LeadsTable';
-import { LeadDealsDialog } from '@/features/deals/components/LeadDealsDialog';
+	FunnelCard,
+	formatCount,
+	LeadsListCard,
+	OriginsCard,
+	type pageSizeOptions,
+} from './LeadsCatalogWidgets';
 
 type LeadsPageContentProps = {
 	user: AuthenticatedUser;
 };
 
-function normalizeSearchValue(value: string) {
-	return value.trim().toLowerCase();
-}
-
-function buildCustomerLabelById(customers: LeadCustomer[]) {
-	const entries = customers.map(
-		(customer) => [customer.id, customer.name] as const,
-	);
-	return Object.fromEntries(entries);
-}
+const sortOptions = [
+	{ value: 'recent', label: 'Mais recentes' },
+	{ value: 'last_activity', label: 'Última atividade' },
+	{ value: 'status', label: 'Status' },
+	{ value: 'source', label: 'Origem' },
+] as const;
 
 function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const router = useRouter();
-	const [listPage, setListPage] = useState(1);
-	const query = useLeadsListQuery(user, listPage);
-	const customersQuery = useLeadCustomersQuery();
-	const storesQuery = useLeadStoresQuery();
-	const ownersQuery = useLeadOwnersQuery();
-	const createLeadMutation = useCreateLeadMutation();
-	const updateLeadMutation = useUpdateLeadMutation();
-	const reassignLeadMutation = useReassignLeadMutation();
-	const convertLeadMutation = useConvertLeadMutation();
-	const deleteLeadMutation = useDeleteLeadMutation();
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] =
+		useState<(typeof pageSizeOptions)[number]>(10);
 	const [search, setSearch] = useState('');
-	const [statusFilter, setStatusFilter] = useState<
-		'ALL' | LeadListItem['status']
-	>('ALL');
-	const [sourceFilter, setSourceFilter] = useState<
-		'ALL' | LeadListItem['source']
-	>('ALL');
+	const [statusFilter, setStatusFilter] = useState('');
+	const [sourceFilter, setSourceFilter] = useState('');
+	const [storeFilter, setStoreFilter] = useState('');
+	const [ownerFilter, setOwnerFilter] = useState('');
+	const [sort, setSort] =
+		useState<(typeof sortOptions)[number]['value']>('recent');
 	const [leadFormMode, setLeadFormMode] = useState<'create' | 'edit'>('create');
 	const [leadFormOpen, setLeadFormOpen] = useState(false);
 	const [customerManagerOpen, setCustomerManagerOpen] = useState(false);
@@ -111,23 +95,28 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const [dealsOpen, setDealsOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [targetLead, setTargetLead] = useState<LeadListItem | null>(null);
-	const { scope, data, isPending, isError, isSuccess, error, totalPages } =
-		query;
-	const leads = useMemo(() => data ?? [], [data]);
 
-	const title = user.role === 'ATTENDANT' ? 'Meus leads' : 'Gestão de leads';
-	let subtitle =
-		'Centralize entrada, reatribuição e evolução dos leads do seu escopo.';
-	if (user.role === 'ATTENDANT') {
-		subtitle =
-			'Acompanhe os leads sob sua responsabilidade e atualize o fluxo comercial.';
-	} else if (scope?.kind === 'all') {
-		subtitle =
-			user.role === 'GENERAL_MANAGER'
-				? 'Vista global de leads para acompanhamento executivo do pipeline.'
-				: 'Visão administrativa completa para governança operacional dos leads.';
-	}
+	const catalogQuery = useLeadCatalogQuery(user, {
+		search,
+		status: statusFilter || undefined,
+		source: sourceFilter || undefined,
+		storeId: storeFilter || undefined,
+		ownerUserId: ownerFilter || undefined,
+		sort,
+		page,
+		limit: pageSize,
+	});
+	const customersQuery = useLeadCustomersQuery();
+	const storesQuery = useLeadStoresQuery();
+	const ownersQuery = useLeadOwnersQuery();
+	const createLeadMutation = useCreateLeadMutation();
+	const updateLeadMutation = useUpdateLeadMutation();
+	const reassignLeadMutation = useReassignLeadMutation();
+	const convertLeadMutation = useConvertLeadMutation();
+	const deleteLeadMutation = useDeleteLeadMutation();
 
+	const catalog = catalogQuery.data;
+	const scope = catalogQuery.scope;
 	const customers = useMemo(
 		() => customersQuery.data ?? [],
 		[customersQuery.data],
@@ -136,68 +125,58 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data]);
 	const catalogError =
 		customersQuery.error ?? storesQuery.error ?? ownersQuery.error ?? null;
-	const catalogsPending =
-		customersQuery.isPending || storesQuery.isPending || ownersQuery.isPending;
-	const catalogsReady =
-		customersQuery.isSuccess && storesQuery.isSuccess && ownersQuery.isSuccess;
-	const customerLabelById = useMemo(
-		() => buildCustomerLabelById(customers),
-		[customers],
-	);
-	const storeLabelById = useMemo(
-		() => Object.fromEntries(stores.map((store) => [store.id, store.name])),
-		[stores],
-	);
-	const ownerLabelById = useMemo(
-		() =>
-			Object.fromEntries(
-				owners.map((owner) => [owner.id, `${owner.name} · ${owner.email}`]),
-			),
-		[owners],
-	);
-	const normalizedSearch = normalizeSearchValue(search);
-	const filteredLeads = useMemo(
-		() =>
-			leads.filter((lead) => {
-				if (statusFilter !== 'ALL' && lead.status !== statusFilter) {
-					return false;
-				}
-				if (
-					sourceFilter !== 'ALL' &&
-					normalizeLeadSourceKey(lead.source) !==
-						normalizeLeadSourceKey(sourceFilter)
-				) {
-					return false;
-				}
-				if (!normalizedSearch) {
-					return true;
-				}
+	const currentOwnerLabel = targetLead?.ownerUserId
+		? (owners.find((owner) => owner.id === targetLead.ownerUserId)?.name ??
+			'Responsável definido')
+		: 'Sem responsável';
 
-				const haystack = [
-					lead.id,
-					customerLabelById[lead.customerId] ?? lead.customerId,
-					storeLabelById[lead.storeId] ?? lead.storeId,
-					lead.ownerUserId
-						? (ownerLabelById[lead.ownerUserId] ?? lead.ownerUserId)
-						: 'sem responsável',
-					formatLeadSourceLabel(lead.source),
-					formatLeadStatusLabel(lead.status),
-				]
-					.join(' ')
-					.toLowerCase();
+	const metricCards = [
+		{
+			label: 'Total de leads',
+			value: formatCount(catalog?.summary.total ?? 0),
+			helper: 'Em todos os canais',
+			icon: UsersRound,
+			tone: 'blue',
+		},
+		{
+			label: 'Leads com interação',
+			value: formatCount(catalog?.summary.withInteraction ?? 0),
+			helper: 'Com atividade registrada',
+			icon: Zap,
+			tone: 'orange',
+		},
+		{
+			label: 'Leads convertidos',
+			value: formatCount(catalog?.summary.converted ?? 0),
+			helper: 'Com conversão no CRM',
+			icon: Target,
+			tone: 'green',
+		},
+		{
+			label: 'Leads em atenção',
+			value: formatCount(catalog?.summary.staleNoContact ?? 0),
+			helper: 'Aguardando evolução',
+			icon: CalendarDays,
+			tone: 'purple',
+		},
+		{
+			label: 'Taxa de conversão',
+			value: `${catalog?.summary.conversionRate ?? 0}%`,
+			helper: 'Leads convertidos',
+			icon: Trophy,
+			tone: 'amber',
+		},
+	] as const;
 
-				return haystack.includes(normalizedSearch);
-			}),
-		[
-			customerLabelById,
-			leads,
-			normalizedSearch,
-			ownerLabelById,
-			sourceFilter,
-			statusFilter,
-			storeLabelById,
-		],
-	);
+	function resetFilters() {
+		setSearch('');
+		setStatusFilter('');
+		setSourceFilter('');
+		setStoreFilter('');
+		setOwnerFilter('');
+		setSort('recent');
+		setPage(1);
+	}
 
 	function openCreateDialog() {
 		setDialogError(null);
@@ -295,35 +274,106 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 		}
 	}
 
-	const currentOwnerLabel = targetLead?.ownerUserId
-		? (ownerLabelById[targetLead.ownerUserId] ?? 'Responsável definido')
-		: 'Sem responsável';
-
 	return (
-		<div className="space-y-6" aria-busy={isPending ? 'true' : 'false'}>
-			<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
-				<CardHeader className="gap-5 border-none pb-6">
-					<div className="flex items-start justify-between gap-4">
-						<div className="space-y-3">
-							<div className="flex size-12 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
-								<LayoutList className="size-5" />
-							</div>
-							<div className="space-y-2">
-								<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
-									Workspace
-								</p>
-								<CardTitle className="text-[1.9rem] font-semibold tracking-tight">
-									{title}
-								</CardTitle>
-								<p className="max-w-3xl text-[0.95rem] leading-7 text-muted-foreground">
-									{subtitle}
-								</p>
-							</div>
-						</div>
+		<div
+			className="space-y-5"
+			aria-busy={catalogQuery.isPending ? 'true' : 'false'}
+		>
+			<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+				<div>
+					<h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
+						Gestão de leads
+					</h1>
+					<p className="mt-2 text-sm text-[#667085]">
+						Centralize, acompanhe e converta leads em oportunidades reais de
+						negócio.
+					</p>
+				</div>
+				<div className="flex flex-wrap gap-3">
+					<div className="relative min-w-88 flex-1">
+						<Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#667085]" />
+						<Input
+							className="h-12 rounded-xl border-[#d8e0ea] bg-white pl-11 shadow-none focus-visible:border-[#f05a28]/45"
+							onChange={(event) => {
+								setSearch(event.target.value);
+								setPage(1);
+							}}
+							placeholder="Buscar por nome, e-mail, telefone ou CPF"
+							value={search}
+						/>
 					</div>
-				</CardHeader>
-				<CardContent className="pt-0" />
-			</Card>
+					<Button
+						className="h-12 rounded-xl border-[#d8e0ea] bg-white text-[#101828]"
+						onClick={() =>
+							document
+								.getElementById('lead-filters')
+								?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+						}
+						type="button"
+						variant="outline"
+					>
+						<Filter className="size-4" />
+						Filtros
+					</Button>
+					<Button
+						className="h-12 rounded-xl border-[#d8e0ea] bg-white text-[#101828]"
+						disabled
+						title="Importação de leads ainda não está disponível no CRM."
+						type="button"
+						variant="outline"
+					>
+						<Download className="size-4" />
+						Importar
+					</Button>
+					<Button
+						className="h-12 rounded-xl bg-[#f05a28] px-5 text-white shadow-none hover:bg-[#df4f1f]"
+						onClick={openCreateDialog}
+						type="button"
+					>
+						<Plus className="size-4" />
+						Novo lead
+					</Button>
+				</div>
+			</div>
+
+			<div className="grid gap-4 xl:grid-cols-5">
+				{metricCards.map((card) => {
+					const IconComponent = card.icon;
+					return (
+						<Card
+							className="h-full rounded-3xl border-[#dfe7f1] bg-white"
+							key={card.label}
+						>
+							<CardContent className="flex min-h-32 items-center gap-5 p-6">
+								<div
+									className={
+										card.tone === 'blue'
+											? 'flex size-14 items-center justify-center rounded-full bg-blue-50 text-blue-600'
+											: card.tone === 'orange'
+												? 'flex size-14 items-center justify-center rounded-full bg-orange-50 text-[#f05a28]'
+												: card.tone === 'green'
+													? 'flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600'
+													: card.tone === 'purple'
+														? 'flex size-14 items-center justify-center rounded-full bg-violet-50 text-violet-600'
+														: 'flex size-14 items-center justify-center rounded-full bg-amber-50 text-amber-600'
+									}
+								>
+									<IconComponent className="size-7" />
+								</div>
+								<div>
+									<p className="text-sm font-medium text-[#667085]">
+										{card.label}
+									</p>
+									<p className="mt-1 text-2xl font-bold text-[#101828]">
+										{card.value}
+									</p>
+									<p className="mt-1 text-xs text-[#667085]">{card.helper}</p>
+								</div>
+							</CardContent>
+						</Card>
+					);
+				})}
+			</div>
 
 			{scope === null ? (
 				<div className="rounded-2xl border border-border/80 bg-muted/30 px-4 py-8 text-center text-sm text-muted-foreground">
@@ -333,199 +383,170 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 
 			{scope?.kind === 'none' ? (
 				<div className="rounded-2xl border border-border/80 bg-muted/30 px-4 py-8 text-sm text-muted-foreground">
-					Sem equipas com visibilidade para listagem ou criação de leads.
-					Contacte um administrador se precisar de apoio.
+					Sem equipes com visibilidade para listagem ou criação de leads.
 				</div>
 			) : null}
 
 			{scope !== null && scope.kind !== 'none' ? (
 				<>
-					{isError ? (
+					<Card className="rounded-3xl border-[#dfe7f1] bg-white">
+						<CardContent
+							className="flex flex-wrap items-center gap-3 p-5 xl:flex-nowrap"
+							id="lead-filters"
+						>
+							<select
+								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[190px]"
+								onChange={(event) => {
+									setStatusFilter(event.target.value);
+									setPage(1);
+								}}
+								value={statusFilter}
+							>
+								<option value="">Todos os status</option>
+								{leadStatusOptions.map((status) => (
+									<option key={status.value} value={status.value}>
+										{status.label}
+									</option>
+								))}
+							</select>
+							<select
+								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[210px]"
+								onChange={(event) => {
+									setSourceFilter(event.target.value);
+									setPage(1);
+								}}
+								value={sourceFilter}
+							>
+								<option value="">Todas as origens</option>
+								{leadSourceOptions.map((source) => (
+									<option key={source.value} value={source.value}>
+										{source.label}
+									</option>
+								))}
+							</select>
+							<select
+								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[180px]"
+								onChange={(event) => {
+									setStoreFilter(event.target.value);
+									setPage(1);
+								}}
+								value={storeFilter}
+							>
+								<option value="">Todas as lojas</option>
+								{stores.map((store) => (
+									<option key={store.id} value={store.id}>
+										{store.name}
+									</option>
+								))}
+							</select>
+							<select
+								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[240px]"
+								onChange={(event) => {
+									setOwnerFilter(event.target.value);
+									setPage(1);
+								}}
+								value={ownerFilter}
+							>
+								<option value="">Todos os responsáveis</option>
+								{owners.map((owner) => (
+									<option key={owner.id} value={owner.id}>
+										{owner.name}
+									</option>
+								))}
+							</select>
+							<div className="ml-auto flex min-w-0 flex-wrap items-center gap-3">
+								<span className="whitespace-nowrap text-sm text-[#667085]">
+									Ordenar por
+								</span>
+								<select
+									className="h-11 w-[190px] rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
+									onChange={(event) => {
+										setSort(event.target.value as typeof sort);
+										setPage(1);
+									}}
+									value={sort}
+								>
+									{sortOptions.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
+								</select>
+								<Button
+									className="h-11 whitespace-nowrap px-3 text-[#667085]"
+									onClick={resetFilters}
+									type="button"
+									variant="ghost"
+								>
+									Limpar filtros
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
+
+					{catalogError ? (
 						<div
 							className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 							role="alert"
-							aria-live="polite"
 						>
-							{error instanceof ApiError
-								? error.message
+							{isApiError(catalogError)
+								? catalogError.message
+								: 'Não foi possível carregar os catálogos necessários para a tela de leads.'}
+						</div>
+					) : null}
+
+					{catalogQuery.isError ? (
+						<div
+							className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+							role="alert"
+						>
+							{catalogQuery.error instanceof ApiError
+								? catalogQuery.error.message
 								: 'Não foi possível carregar os leads.'}
 						</div>
 					) : null}
-					{isPending ? <LeadsTableSkeleton /> : null}
-					{isSuccess ? (
-						<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
-							<CardHeader className="gap-5 border-none pb-6">
-								<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-									<div className="space-y-2">
-										<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
-											Operação comercial
-										</p>
-										<CardTitle className="text-[1.45rem] font-semibold tracking-tight">
-											Lista operacional de leads
-										</CardTitle>
-										<p className="max-w-3xl text-[0.95rem] leading-7 text-muted-foreground">
-											Crie, atualize, reatribua e converta leads dentro do seu
-											escopo de atuação.
-										</p>
-									</div>
-									<CardAction className="static self-start">
-										<div className="flex flex-wrap gap-2">
-											<Button
-												className="rounded-md shadow-none bg-[#2D3648] hover:bg-[#232B3B]"
-												onClick={openCreateDialog}
-												type="button"
-											>
-												<Plus className="size-4" />
-												Novo lead
-											</Button>
-											<Button
-												className="rounded-md shadow-none"
-												onClick={() => setCustomerManagerOpen(true)}
-												type="button"
-												variant="outline"
-											>
-												<UserRound className="size-4" />
-												Clientes
-											</Button>
-											<Button
-												className="rounded-md shadow-none"
-												onClick={() => setStoreManagerOpen(true)}
-												type="button"
-												variant="outline"
-											>
-												<Building2 className="size-4" />
-												Lojas
-											</Button>
-										</div>
-									</CardAction>
-								</div>
-							</CardHeader>
-							<CardContent className="space-y-5 pt-0">
-								{catalogError ? (
-									<div
-										className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
-										role="alert"
-									>
-										{isApiError(catalogError)
-											? catalogError.message
-											: 'Não foi possível carregar os catálogos necessários para a tabela de leads.'}
-									</div>
-								) : null}
-								{catalogsPending ? (
-									<div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
-										Carregando clientes, lojas e responsáveis para montar a
-										lista operacional...
-									</div>
-								) : null}
-								<div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-									<div className="relative w-full lg:max-w-md">
-										<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
-										<Input
-											className="h-10 rounded-md border-[#d6dce5] bg-[#f8fafc] pl-9 shadow-none focus-visible:border-[#2d3648]/45"
-											onChange={(event) => {
-												setSearch(event.target.value);
-												setListPage(1);
-											}}
-											placeholder="Pesquisar por lead, cliente, loja ou responsável"
-											value={search}
-										/>
-									</div>
-									<div className="flex flex-col gap-3 sm:flex-row">
-										<select
-											className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
-											onChange={(event) => {
-												setStatusFilter(
-													event.target.value as 'ALL' | LeadListItem['status'],
-												);
-												setListPage(1);
-											}}
-											value={statusFilter}
-										>
-											<option value="ALL">Todos os estados</option>
-											{leadStatusOptions.map((status) => (
-												<option key={status.value} value={status.value}>
-													{status.label}
-												</option>
-											))}
-										</select>
-										<select
-											className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
-											onChange={(event) => {
-												setSourceFilter(
-													event.target.value as 'ALL' | LeadListItem['source'],
-												);
-												setListPage(1);
-											}}
-											value={sourceFilter}
-										>
-											<option value="ALL">Todas as origens</option>
-											{leadSourceOptions.map((source) => (
-												<option key={source.value} value={source.value}>
-													{source.label}
-												</option>
-											))}
-										</select>
-									</div>
-								</div>
 
-								{catalogsReady ? (
-									<LeadsTable
-										customerLabelById={customerLabelById}
-										leads={filteredLeads}
-										onConvert={openConvertDialog}
-										onDeals={openDealsDialog}
-										onDelete={
-											user.role === 'ADMINISTRATOR'
-												? openDeleteDialog
-												: undefined
-										}
-										onDetail={openLeadDetail}
-										onEdit={openEditDialog}
-										onReassign={
-											user.role === 'ATTENDANT' ? undefined : openReassignDialog
-										}
-										ownerLabelById={ownerLabelById}
-										storeLabelById={storeLabelById}
-									/>
-								) : null}
+					{catalogQuery.isPending ? <LeadsTableSkeleton /> : null}
 
-								{catalogsReady ? (
-									<div className="flex flex-col gap-3 border-t border-border/75 pt-4 sm:flex-row sm:items-center sm:justify-between">
-										<p className="text-sm text-[#6b7687]">
-											Até {LEADS_PAGE_LIMIT} leads por página
-											{query.total > 0 ? ` · ${query.total} no total` : null}
-										</p>
-										<div className="flex items-center gap-2">
-											<p className="mr-2 text-sm text-[#6b7687]">
-												Página {listPage} de {Math.max(totalPages, 1)}
-											</p>
-											<Button
-												className="rounded-md"
-												disabled={listPage <= 1 || isPending}
-												onClick={() => setListPage((p) => p - 1)}
-												size="icon-sm"
-												type="button"
-												variant="outline"
-											>
-												<ChevronLeft className="size-4" />
-											</Button>
-											<Button
-												className="rounded-md"
-												disabled={
-													listPage >= Math.max(totalPages, 1) || isPending
-												}
-												onClick={() => setListPage((p) => p + 1)}
-												size="icon-sm"
-												type="button"
-												variant="outline"
-											>
-												<ChevronRight className="size-4" />
-											</Button>
-										</div>
-									</div>
-								) : null}
-							</CardContent>
-						</Card>
+					{catalog ? (
+						<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+							<LeadsListCard
+								currentPage={catalog.page}
+								items={catalog.items}
+								onConvert={openConvertDialog}
+								onDeals={openDealsDialog}
+								onDelete={
+									user.role === 'ADMINISTRATOR' ? openDeleteDialog : undefined
+								}
+								onDetail={openLeadDetail}
+								onEdit={openEditDialog}
+								onNextPage={() => setPage((value) => value + 1)}
+								onPageChange={setPage}
+								onPageSizeChange={(value) => {
+									setPageSize(value);
+									setPage(1);
+								}}
+								onPreviousPage={() => setPage((value) => value - 1)}
+								onReassign={
+									user.role === 'ATTENDANT' ? undefined : openReassignDialog
+								}
+								pageSize={pageSize}
+								totalItems={catalog.total}
+								totalPages={catalog.totalPages}
+							/>
+							<div className="space-y-4">
+								<FunnelCard
+									converted={catalog.funnel.converted}
+									openDeals={catalog.funnel.openDeals}
+									totalLeads={catalog.funnel.totalLeads}
+									withInteraction={catalog.funnel.withInteraction}
+								/>
+								<OriginsCard
+									origins={catalog.origins}
+									total={catalog.summary.total}
+								/>
+							</div>
+						</div>
 					) : null}
 				</>
 			) : null}

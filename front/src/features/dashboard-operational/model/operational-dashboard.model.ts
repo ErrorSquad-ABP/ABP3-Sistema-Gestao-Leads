@@ -31,6 +31,22 @@ type DashboardStoreDistributionItem = {
 	percentage: number;
 };
 
+type OperationalDashboardKpi = {
+	value: number;
+	previousValue: number;
+	delta: number;
+	deltaPercentage: number | null;
+	deltaPoints: number | null;
+};
+
+type OperationalDashboardTrendPoint = {
+	date: string;
+	totalLeads: number;
+	activeLeads: number;
+	convertedLeads: number;
+	conversionRate: number;
+};
+
 type OperationalDashboardData = {
 	period: {
 		startDate: string;
@@ -45,11 +61,20 @@ type OperationalDashboardData = {
 		totalLeads: number;
 		totalLeadsWithOpenDeal: number;
 	};
+	kpis: {
+		totalLeads: OperationalDashboardKpi;
+		activeLeads: OperationalDashboardKpi;
+		convertedLeads: OperationalDashboardKpi;
+		conversionRate: OperationalDashboardKpi;
+	};
 	distributions: {
 		byStatus: DashboardDistributionItem<OperationalDashboardStatusKey>[];
 		bySource: DashboardDistributionItem<OperationalDashboardSourceKey>[];
 		byStore: DashboardStoreDistributionItem[];
 		byImportance: DashboardDistributionItem<OperationalDashboardImportanceKey>[];
+	};
+	trend: {
+		points: OperationalDashboardTrendPoint[];
 	};
 };
 
@@ -63,7 +88,9 @@ export type {
 	DashboardStoreDistributionItem,
 	OperationalDashboardData,
 	OperationalDashboardImportanceKey,
+	OperationalDashboardKpi,
 	OperationalDashboardQueryInput,
 	OperationalDashboardSourceKey,
 	OperationalDashboardStatusKey,
+	OperationalDashboardTrendPoint,
 };
