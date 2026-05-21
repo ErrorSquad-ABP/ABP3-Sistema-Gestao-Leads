@@ -70,7 +70,7 @@ Diagramas Mermaid versionados no repositório:
 
 - `DG-IA-FRONT-01`: fluxos de IA/UX do frontend em [`frontend-information-architecture.md`](./frontend-information-architecture.md) (também em `../diagrams/README.md`).
 
-## Módulos previstos
+## Módulos ativos ou representados na arquitetura
 
 - `auth`
 - `users`
@@ -78,9 +78,11 @@ Diagramas Mermaid versionados no repositório:
 - `stores`
 - `customers`
 - `leads`
-- `negotiations`
+- `vehicles`
+- `deals`
 - `dashboards`
-- `audit-logs`
+- `analytic-dashboard`
+- `audit-logs` como base transversal em fechamento final
 
 ## Padrões de projeto que serão explicitados no projeto
 
@@ -100,7 +102,7 @@ Diagramas Mermaid versionados no repositório:
 - Regras de negócio não devem ficar em controllers, páginas ou componentes React.
 - O backend não deve ter uma pasta global `src/infrastructure`; cada módulo implementa sua própria infraestrutura.
 - Dependências compartilhadas devem ir para `shared` somente quando realmente forem transversais.
-- `audit-logs` deve ser tratado como preocupação transversal, preferencialmente por eventos internos, middlewares ou serviços de auditoria centralizados.
+- `audit-logs` deve ser tratado como preocupação transversal, com cobertura completa finalizada na Sprint 3 por eventos, serviços de auditoria centralizados ou instrumentação explícita nos casos de uso críticos.
 - O `package.json` da raiz deve conter apenas tooling e scripts de orquestração do repositório único.
 
 ## Estratégia de crescimento e escala
@@ -128,6 +130,6 @@ Como o domínio exige indicadores operacionais e analíticos, o backend foi pens
 ## Próximos artefatos
 
 - Diagrama de componentes
-- Diagrama de classes
 - Diagramas de sequência dos fluxos críticos
 - Registro de decisões arquiteturais
+- Matriz requisito x entrega para fechamento final da ABP

@@ -1,5 +1,7 @@
 # Sprint 2 Task Breakdown
 
+> Documento histórico de execução. A sprint foi encerrada documentalmente em `20/05/2026`. Para o resultado final, consulte [`sprint-2-review.md`](./sprint-2-review.md).
+
 ## Objetivo
 
 Transformar os épicos da Sprint 2 em checklists operacionais prontos para Trello, mantendo o modelo `1 card = 1 feature end-to-end`.
@@ -25,7 +27,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 
 ## `S2-EPIC-07` - Gestão de veículos end-to-end
 
-- backend já entregue na `main`; foco restante em frontend e integração operacional;
+- backend, frontend e integração operacional concluídos;
 - fechar o recorte do módulo de veículos como catálogo comercial, não como gestão completa de estoque;
 - definir modelo de persistência e campos mínimos do veículo;
 - implementar casos de uso e API de veículos;
@@ -37,7 +39,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 
 ## `S2-EPIC-01` - Gestão de negociações end-to-end
 
-- backend já entregue na `main`; foco restante em frontend e integração com detalhe do lead;
+- backend, frontend e integração com detalhe do lead concluídos;
 - fechar regra de domínio da negociação e da relação com `lead` e `vehicle`;
 - definir modelo de persistência e restrição de uma negociação ativa por lead;
 - implementar casos de uso e API de negociação;
@@ -86,7 +88,7 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 
 ## `S2-EPIC-05` - Conformidade Docker/PostgreSQL e fechamento arquitetural
 
-- Compose local secundário com PostgreSQL já entregue na `main`;
+- Compose local secundário com PostgreSQL entregue;
 - restaurar PostgreSQL no `Docker Compose`;
 - alinhar `migrations`, `seed` e setup local;
 - revisar runbooks e instruções de execução;

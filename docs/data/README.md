@@ -14,15 +14,14 @@ Consolidar o estado atual da modelagem relacional, da persistência e dos artefa
 - leads;
 - eventos operacionais de lead (`LeadEvent`);
 - veículos;
-- negociações com histórico mínimo no backend;
+- negociações com histórico, estágio, status, importância, valor, veículo e motivo de perda;
+- audit logs;
 - sessões de autenticação;
 - deals usados no seed analítico.
 
-## Núcleos ainda não fechados como produto
+## Núcleos ainda em fechamento final
 
-- negociações como módulo funcional completo no frontend;
-- veículos como módulo funcional completo no frontend;
-- logs administrativos completos.
+- audit log completo, com cobertura ampla de eventos e consulta administrativa final.
 
 ## Estratégia de persistência adotada
 
@@ -35,13 +34,16 @@ Prisma continua sendo a tecnologia oficial de evolução do banco. Isso implica:
 
 ## Registro da evolução recente do schema
 
-Com a entrega do detalhe operacional do lead, o schema passou a incluir:
+Com a entrega da Sprint 2, o schema passou a sustentar:
 
 - tabela `LeadEvent` para timeline operacional do lead;
 - enum `LeadEventType` com tipos de evento de operação (`CREATED`, `UPDATED`, `REASSIGNED`, `CONVERTED`);
 - relacionamento `Lead 1:N LeadEvent`;
 - relacionamento opcional `User 1:N LeadEvent` como ator da ação;
 - índices por `leadId + createdAt` e por `actorUserId` para leitura eficiente da timeline.
+- tabela `Vehicle` para catálogo comercial de veículos;
+- tabelas de `Deal` e histórico para negociações vinculadas a lead e veículo;
+- tabela `AuditLog` para base de auditoria administrativa.
 
 Migration correspondente no repositório:
 
@@ -77,5 +79,5 @@ Modos de seed:
 ## Diagramas e artefatos relacionados
 
 - DER e diagramas correlatos devem ser lidos em conjunto com [docs/diagrams/README.md](../diagrams/README.md)
-- o modelo atual já contempla relações relevantes de `users`, `teams`, `stores`, `customers`, `leads`, `lead_events`, `vehicles` e `deals`
+- o modelo atual já contempla relações relevantes de `users`, `teams`, `stores`, `customers`, `leads`, `lead_events`, `vehicles`, `deals` e `audit_logs`
 - o vínculo organizacional do utilizador já segue o modelo multi-team, sem depender de `teamId` único como fonte de verdade

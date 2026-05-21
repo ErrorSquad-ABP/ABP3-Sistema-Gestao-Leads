@@ -1,5 +1,7 @@
 # Sprint 2 Goal
 
+> Documento histórico de planejamento. A sprint foi encerrada documentalmente em `20/05/2026`. Para o resultado consolidado, consulte [`sprint-2-review.md`](./sprint-2-review.md).
+
 ## Objetivo
 
 Formalizar o objetivo central da Sprint 2 a partir do estado atual da `main`, concentrando o time nas lacunas funcionais mais relevantes da ABP e no aumento do valor percebido no frontend.

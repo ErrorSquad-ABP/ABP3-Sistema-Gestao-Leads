@@ -87,15 +87,16 @@ Já estão operacionais em produção:
 - gestão de lojas
 - gestão de equipas
 - CRUD de leads
-- API de negociações
-- API de veículos
+- detalhe operacional de lead
+- gestão de negociações
+- gestão de veículos
+- dashboard operacional
+- dashboard analítico
 
-Ainda não estão fechados como feature de produto:
+Ainda fica para fechamento final:
 
-- dashboards reais
-- módulo de negociações no frontend
-- módulo de veículos no frontend
-- logs administrativos
+- audit log completo
+- refinamentos visuais e de qualidade de código da Sprint 3
 
 ## Operação de banco
 

@@ -35,12 +35,15 @@ back/
 - `stores`
 - `customers`
 - `leads`
+- `vehicles`
+- `deals`
 - `dashboards` (operational)
+- `analytic-dashboard`
+- `audit-logs` (base de dominio e persistencia)
 
-## Modulos ainda nao fechados como produto
+## Modulos ainda em fechamento final
 
-- `negotiations`
-- `audit-logs`
+- `audit-logs` completo, com cobertura ampla de eventos e consulta administrativa refinada.
 
 ## Auth e sessao
 
@@ -92,10 +95,13 @@ Hoje o backend ja entrega:
 - CRUD de lojas;
 - CRUD de clientes;
 - CRUD de leads;
-- dashboard operacional (`RF04`) com agregacoes por status, origem, loja e importancia.
+- detalhe operacional de lead com timeline;
+- CRUD e catalogo de veiculos;
+- negociacoes com pipeline, historico, status, estagio, importancia, valor e vinculo a veiculo;
+- dashboard operacional (`RF04`) com agregacoes por status, origem, loja e importancia;
+- dashboard analitico (`RF05`) com filtros temporais (`RF06`), rankings, funil, motivos de perda e tempo medio ate primeira interacao;
+- base de audit log para fechamento completo na Sprint 3.
 
 O que ainda falta como recorte de produto:
 
-- negociacoes completas no frontend;
-- dashboard analitico (`RF05`) e filtros avancados (`RF06`);
 - logs administrativos completos.

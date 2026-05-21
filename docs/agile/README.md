@@ -13,8 +13,8 @@
 ## Estado atual
 
 - Sprint 1 encerrada
-- Sprint 2 em planejamento ativo
-- Sprint 3 não iniciada
+- Sprint 2 encerrada documentalmente em `20/05/2026`
+- Sprint 3 com foco definido em refinamento visual, qualidade de código e audit log completo
 
 ## Artefatos ativos
 
@@ -29,4 +29,6 @@
 - os documentos específicos de sprint permanecem como histórico e detalhamento acessado a partir de `sprints.md`;
 - `sprint-1-review` é a consolidação do que realmente ficou na `main`;
 - `sprint-1-retrospective` registra aprendizados de processo e percepção do parceiro;
-- os cards da Sprint 2 no Trello passam a representar épicos fullstack `end-to-end`, com um responsável por feature inteira.
+- `sprint-2-review` consolida o incremento de veículos, negociações, dashboards, identidade visual e filtros temporais;
+- `sprint-2-retrospective` registra aprendizados do ciclo e direciona a Sprint 3;
+- a Sprint 3 não abre novo bloco funcional grande: o foco é acabamento, qualidade e auditoria completa.

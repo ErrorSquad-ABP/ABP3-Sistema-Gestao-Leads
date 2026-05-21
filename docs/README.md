@@ -34,12 +34,15 @@ Este diretório concentra a documentação viva do repositório. A fonte primár
 
 ## Estado atual
 
-No estado atual da `main`, a documentação precisa refletir:
+No estado atual da `develop`, a documentação precisa refletir:
 
-- Compose local sem banco embarcado;
+- Compose padrão sem banco embarcado;
 - deploy real em `Vercel + Neon`;
 - autenticação híbrida com cookie HttpOnly e `Bearer`;
-- módulo transacional ativo em `users`, `stores`, `teams`, `customers` e `leads`;
+- módulo transacional ativo em `users`, `stores`, `teams`, `customers`, `leads`, `vehicles` e `deals`;
+- dashboards operacional e analítico com dados reais;
+- detalhe operacional de lead com timeline;
+- identidade visual consolidada do `Quantum CRM`;
 - opção secundária de Compose local com PostgreSQL;
-- dashboards ainda como placeholder;
-- Sprint 1 encerrada e Sprint 2 ainda em definição.
+- Sprint 1 e Sprint 2 encerradas;
+- Sprint 3 focada em refinamento visual, qualidade de código e audit log completo.
