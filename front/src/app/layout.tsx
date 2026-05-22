@@ -1,36 +1,36 @@
-import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
-import { Toaster } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Providers } from '@/lib/query/providers';
+import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Providers } from "@/lib/query/providers"
 
-import './styles.css';
+import "./styles.css"
 
 const metadata: Metadata = {
-	title: 'Quantum | Sistema de Gestão de Leads',
+	title: "Quantum | Sistema de Gestão de Leads",
 	description:
-		'Aplicação web em Next.js para o Sistema de Gestão de Leads com Dashboard Analítico.',
+		"Aplicação web em Next.js para o Sistema de Gestão de Leads com Dashboard Analítico.",
 	icons: {
 		icon: [
 			{
-				url: '/assets/light-logo-removebg.png',
-				media: '(prefers-color-scheme: light)',
+				url: "/assets/light-logo-removebg.png",
+				media: "(prefers-color-scheme: light)",
 			},
 			{
-				url: '/assets/dark-logo-removebg.png',
-				media: '(prefers-color-scheme: dark)',
+				url: "/assets/dark-logo-removebg.png",
+				media: "(prefers-color-scheme: dark)",
 			},
-			'/assets/light-logo-removebg.png',
+			"/assets/light-logo-removebg.png",
 		],
-		shortcut: '/assets/light-logo-removebg.png',
-		apple: '/assets/light-logo-removebg.png',
+		shortcut: "/assets/light-logo-removebg.png",
+		apple: "/assets/light-logo-removebg.png",
 	},
-};
+}
 
 type RootLayoutProps = {
-	children: ReactNode;
-};
+	children: ReactNode
+}
 
 function RootLayout({ children }: RootLayoutProps) {
 	return (
@@ -42,8 +42,8 @@ function RootLayout({ children }: RootLayoutProps) {
 				</TooltipProvider>
 			</body>
 		</html>
-	);
+	)
 }
 
-export { metadata };
-export default RootLayout;
+export { metadata }
+export default RootLayout

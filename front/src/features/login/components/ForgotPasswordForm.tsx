@@ -1,15 +1,15 @@
-import { Headset, ShieldCheck, UserRoundCog } from 'lucide-react';
+import { Headset, ShieldCheck, UserRoundCog } from "lucide-react"
 
-import { appRoutes } from '@/lib/routes/app-routes';
-import { AuthAccentLink } from './AuthAccentLink';
+import { appRoutes } from "@/lib/routes/app-routes"
+import { AuthAccentLink } from "./AuthAccentLink"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from '@/components/ui/card';
-import { LoginScreenLayout } from './LoginScreenLayout';
+} from "@/components/ui/card"
+import { LoginScreenLayout } from "./LoginScreenLayout"
 
 function ForgotPasswordForm() {
 	return (
@@ -95,7 +95,7 @@ function ForgotPasswordForm() {
 					<p className="border-t border-border pt-4 text-center text-[0.82rem]">
 						<span className="text-muted-foreground">Lembrou da senha? </span>
 						<AuthAccentLink
-							className="inline-block whitespace-nowrap text-[0.82rem] font-medium"
+							className="inline-block text-[0.82rem] font-medium whitespace-nowrap"
 							href={appRoutes.auth.login}
 						>
 							Voltar para entrar
@@ -104,7 +104,7 @@ function ForgotPasswordForm() {
 				</CardContent>
 			</Card>
 		</LoginScreenLayout>
-	);
+	)
 }
 
-export { ForgotPasswordForm };
+export { ForgotPasswordForm }

@@ -100,4 +100,32 @@ module.exports = [
 			'@typescript-eslint/no-unused-vars': unusedVarsRule,
 		},
 	},
+	{
+		files: ['back/prisma/**/*.ts'],
+		languageOptions: {
+			parser: tsParser,
+			ecmaVersion: 'latest',
+			sourceType: 'module',
+			parserOptions: {
+				project: ['./back/tsconfig.json'],
+				tsconfigRootDir: __dirname,
+			},
+			globals: {
+				process: 'readonly',
+				console: 'readonly',
+			},
+		},
+		plugins: {
+			'@typescript-eslint': tsPlugin,
+			security: securityPlugin,
+		},
+		rules: {
+			...js.configs.recommended.rules,
+			...(securityPlugin.configs.recommended?.rules ?? {}),
+			'no-undef': 'off',
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': unusedVarsRule,
+			'security/detect-object-injection': 'off',
+		},
+	},
 ];

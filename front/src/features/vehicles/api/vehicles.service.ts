@@ -1,122 +1,122 @@
-import { apiFetch } from '@/lib/http/api-client';
+import { apiFetch } from "@/lib/http/api-client"
 
 import {
 	parseVehicleCatalogResponse,
 	parseVehicleResponse,
 	parseVehiclesResponse,
-} from '../schemas/vehicle.schema';
+} from "../schemas/vehicle.schema"
 import type {
 	CreateVehicleInput,
 	UpdateVehicleInput,
 	VehicleCatalogSort,
-} from '../model/vehicles.model';
+} from "../model/vehicles.model"
 
 type ListVehiclesFilters = {
-	storeId?: string;
-	status?: string;
-	withoutOpenDeal?: boolean;
-};
+	storeId?: string
+	status?: string
+	withoutOpenDeal?: boolean
+}
 
 type VehicleCatalogFilters = {
-	storeId?: string;
-	status?: string;
-	search?: string;
-	sort?: VehicleCatalogSort;
-	page: number;
-	limit: number;
-};
+	storeId?: string
+	status?: string
+	search?: string
+	sort?: VehicleCatalogSort
+	page: number
+	limit: number
+}
 
 function vehiclesListQuery(filters: ListVehiclesFilters) {
-	const params = new URLSearchParams();
+	const params = new URLSearchParams()
 	if (filters.storeId) {
-		params.set('storeId', filters.storeId);
+		params.set("storeId", filters.storeId)
 	}
 	if (filters.status) {
-		params.set('status', filters.status);
+		params.set("status", filters.status)
 	}
 	if (filters.withoutOpenDeal) {
-		params.set('withoutOpenDeal', 'true');
+		params.set("withoutOpenDeal", "true")
 	}
-	return params.toString();
+	return params.toString()
 }
 
 function vehicleCatalogQuery(filters: VehicleCatalogFilters) {
-	const params = new URLSearchParams();
+	const params = new URLSearchParams()
 	if (filters.storeId) {
-		params.set('storeId', filters.storeId);
+		params.set("storeId", filters.storeId)
 	}
 	if (filters.status) {
-		params.set('status', filters.status);
+		params.set("status", filters.status)
 	}
 	if (filters.search?.trim()) {
-		params.set('search', filters.search.trim());
+		params.set("search", filters.search.trim())
 	}
 	if (filters.sort) {
-		params.set('sort', filters.sort);
+		params.set("sort", filters.sort)
 	}
-	params.set('page', String(filters.page));
-	params.set('limit', String(filters.limit));
-	return params.toString();
+	params.set("page", String(filters.page))
+	params.set("limit", String(filters.limit))
+	return params.toString()
 }
 
 async function listVehicles(
 	filters: ListVehiclesFilters,
-	signal?: AbortSignal,
+	signal?: AbortSignal
 ) {
-	const query = vehiclesListQuery(filters);
+	const query = vehiclesListQuery(filters)
 	const raw = await apiFetch<unknown>(
-		`/api/vehicles${query ? `?${query}` : ''}`,
+		`/api/vehicles${query ? `?${query}` : ""}`,
 		{
 			signal,
-		},
-	);
-	return parseVehiclesResponse(raw);
+		}
+	)
+	return parseVehiclesResponse(raw)
 }
 
 async function listVehicleCatalog(
 	filters: VehicleCatalogFilters,
-	signal?: AbortSignal,
+	signal?: AbortSignal
 ) {
-	const query = vehicleCatalogQuery(filters);
+	const query = vehicleCatalogQuery(filters)
 	const raw = await apiFetch<unknown>(`/api/vehicles/catalog?${query}`, {
 		signal,
-	});
-	return parseVehicleCatalogResponse(raw);
+	})
+	return parseVehicleCatalogResponse(raw)
 }
 
 async function createVehicle(input: CreateVehicleInput) {
-	const raw = await apiFetch<unknown>('/api/vehicles', {
-		method: 'POST',
+	const raw = await apiFetch<unknown>("/api/vehicles", {
+		method: "POST",
 		body: input,
-	});
-	return parseVehicleResponse(raw);
+	})
+	return parseVehicleResponse(raw)
 }
 
 async function updateVehicle(vehicleId: string, input: UpdateVehicleInput) {
 	const raw = await apiFetch<unknown>(`/api/vehicles/${vehicleId}`, {
-		method: 'PATCH',
+		method: "PATCH",
 		body: input,
-	});
-	return parseVehicleResponse(raw);
+	})
+	return parseVehicleResponse(raw)
 }
 
 async function findVehicle(vehicleId: string, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/vehicles/${vehicleId}`, {
 		signal,
-	});
-	return parseVehicleResponse(raw);
+	})
+	return parseVehicleResponse(raw)
 }
 
 async function deactivateVehicle(vehicleId: string) {
 	await apiFetch(`/api/vehicles/${vehicleId}`, {
-		method: 'DELETE',
-	});
+		method: "DELETE",
+	})
 }
 
 async function deleteVehiclePermanently(vehicleId: string) {
 	await apiFetch(`/api/vehicles/${vehicleId}/permanent`, {
-		method: 'DELETE',
-	});
+		method: "DELETE",
+	})
 }
 
 export {
@@ -127,5 +127,5 @@ export {
 	listVehicleCatalog,
 	listVehicles,
 	updateVehicle,
-};
-export type { ListVehiclesFilters, VehicleCatalogFilters };
+}
+export type { ListVehiclesFilters, VehicleCatalogFilters }

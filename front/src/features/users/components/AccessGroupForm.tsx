@@ -1,12 +1,12 @@
-'use client';
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { AlertCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
 
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
 	Dialog,
 	DialogContent,
@@ -14,115 +14,115 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
 import {
 	accessGroupSchema,
 	type AccessGroupFormValues,
-} from '../schemas/user-management.schema';
+} from "../schemas/user-management.schema"
 import {
 	roleLabels,
 	roleOptions,
 	type AccessFeatureKey,
 	type AccessGroup,
 	type UserRecord,
-} from '../model/users.model';
-import { getUsersErrorMessage } from './UserForm';
+} from "../model/users.model"
+import { getUsersErrorMessage } from "./UserForm"
 
 type AccessGroupDialogProps = {
-	group: AccessGroup | null;
-	isPending: boolean;
-	mode: 'create' | 'edit';
-	onClose: () => void;
-	onSubmit: (values: AccessGroupFormValues) => Promise<void>;
-	open: boolean;
-};
+	group: AccessGroup | null
+	isPending: boolean
+	mode: "create" | "edit"
+	onClose: () => void
+	onSubmit: (values: AccessGroupFormValues) => Promise<void>
+	open: boolean
+}
 
 type AccessFeatureOption = {
-	key: AccessFeatureKey;
-	label: string;
-	description: string;
-};
+	key: AccessFeatureKey
+	label: string
+	description: string
+}
 
 const accessFeatureCatalog: readonly AccessFeatureOption[] = [
 	{
-		key: 'dashboardOperational',
-		label: 'Dashboard operacional',
-		description: 'Indicadores diários, execução e acompanhamento do time.',
+		key: "dashboardOperational",
+		label: "Dashboard operacional",
+		description: "Indicadores diários, execução e acompanhamento do time.",
 	},
 	{
-		key: 'dashboardAnalytic',
-		label: 'Dashboard analítico',
-		description: 'Leitura consolidada de desempenho e conversão.',
+		key: "dashboardAnalytic",
+		label: "Dashboard analítico",
+		description: "Leitura consolidada de desempenho e conversão.",
 	},
 	{
-		key: 'leads',
-		label: 'Leads',
-		description: 'Fluxo comercial, priorização e acompanhamento de leads.',
+		key: "leads",
+		label: "Leads",
+		description: "Fluxo comercial, priorização e acompanhamento de leads.",
 	},
 	{
-		key: 'users',
-		label: 'Usuários',
-		description: 'CRUD administrativo de acessos e perfis.',
+		key: "users",
+		label: "Usuários",
+		description: "CRUD administrativo de acessos e perfis.",
 	},
 	{
-		key: 'profile',
-		label: 'Perfil',
-		description: 'Área de dados pessoais e apresentação do usuário.',
+		key: "profile",
+		label: "Perfil",
+		description: "Área de dados pessoais e apresentação do usuário.",
 	},
 	{
-		key: 'credentials',
-		label: 'Credenciais',
-		description: 'Troca de senha e governança de acesso individual.',
+		key: "credentials",
+		label: "Credenciais",
+		description: "Troca de senha e governança de acesso individual.",
 	},
 	{
-		key: 'reports',
-		label: 'Relatórios',
-		description: 'Leitura consolidada e acompanhamento gerencial.',
+		key: "reports",
+		label: "Relatórios",
+		description: "Leitura consolidada e acompanhamento gerencial.",
 	},
 	{
-		key: 'exports',
-		label: 'Exportações',
-		description: 'Saída de dados e downloads operacionais.',
+		key: "exports",
+		label: "Exportações",
+		description: "Saída de dados e downloads operacionais.",
 	},
-] as const;
+] as const
 
 function getFeatureLabels(featureKeys: readonly AccessFeatureKey[]) {
 	return accessFeatureCatalog
 		.filter((feature) => featureKeys.includes(feature.key))
-		.map((feature) => feature.label);
+		.map((feature) => feature.label)
 }
 
-function getBaseRoleLabel(role: AccessGroup['baseRole']) {
+function getBaseRoleLabel(role: AccessGroup["baseRole"]) {
 	if (!role) {
-		return 'Grupo flexível';
+		return "Grupo flexível"
 	}
 
 	switch (role) {
-		case 'ADMINISTRATOR':
-			return roleLabels.ADMINISTRATOR;
-		case 'ATTENDANT':
-			return roleLabels.ATTENDANT;
-		case 'GENERAL_MANAGER':
-			return roleLabels.GENERAL_MANAGER;
-		case 'MANAGER':
-			return roleLabels.MANAGER;
+		case "ADMINISTRATOR":
+			return roleLabels.ADMINISTRATOR
+		case "ATTENDANT":
+			return roleLabels.ATTENDANT
+		case "GENERAL_MANAGER":
+			return roleLabels.GENERAL_MANAGER
+		case "MANAGER":
+			return roleLabels.MANAGER
 	}
 }
 
-function getRoleBadgeClassName(role: UserRecord['role']) {
+function getRoleBadgeClassName(role: UserRecord["role"]) {
 	switch (role) {
-		case 'ADMINISTRATOR':
-			return 'border-[#d96c3f]/25 bg-[#d96c3f]/10 text-[#b3542c]';
-		case 'GENERAL_MANAGER':
-			return 'border-[#2d3648]/15 bg-[#2d3648]/8 text-[#2d3648]';
-		case 'MANAGER':
-			return 'border-sky-200 bg-sky-50 text-sky-800';
-		case 'ATTENDANT':
-			return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+		case "ADMINISTRATOR":
+			return "border-[#d96c3f]/25 bg-[#d96c3f]/10 text-[#b3542c]"
+		case "GENERAL_MANAGER":
+			return "border-[#2d3648]/15 bg-[#2d3648]/8 text-[#2d3648]"
+		case "MANAGER":
+			return "border-sky-200 bg-sky-50 text-sky-800"
+		case "ATTENDANT":
+			return "border-emerald-200 bg-emerald-50 text-emerald-800"
 	}
 }
 
@@ -134,59 +134,67 @@ function AccessGroupDialog({
 	onSubmit,
 	open,
 }: AccessGroupDialogProps) {
-	const isEditMode = mode === 'edit';
-	const [submitError, setSubmitError] = useState<string | null>(null);
+	const isEditMode = mode === "edit"
+	const [submitError, setSubmitError] = useState<string | null>(null)
 	const form = useForm<AccessGroupFormValues>({
 		resolver: zodResolver(accessGroupSchema),
 		defaultValues: {
-			name: '',
-			description: '',
+			name: "",
+			description: "",
 			baseRole: null,
-			featureKeys: ['profile'],
+			featureKeys: ["profile"],
 		},
-	});
+	})
 
 	useEffect(() => {
-		if (!open) {
-			form.reset({
-				name: '',
-				description: '',
-				baseRole: null,
-				featureKeys: ['profile'],
-			});
-			setSubmitError(null);
-			return;
+		if (!open || !group) {
+			return
 		}
 
-		if (group) {
-			form.reset({
-				name: group.name,
-				description: group.description,
-				baseRole: group.baseRole,
-				featureKeys: group.featureKeys,
-			});
-		}
-	}, [form, group, open]);
+		form.reset({
+			name: group.name,
+			description: group.description,
+			baseRole: group.baseRole,
+			featureKeys: group.featureKeys,
+		})
+	}, [form, group, open])
 
-	const selectedFeatures = form.watch('featureKeys');
+	function handleDialogOpenChange(nextOpen: boolean) {
+		if (nextOpen) {
+			return
+		}
+
+		setSubmitError(null)
+		form.reset({
+			name: "",
+			description: "",
+			baseRole: null,
+			featureKeys: ["profile"],
+		})
+		onClose()
+	}
+
+	const selectedFeatures =
+		useWatch({ control: form.control, name: "featureKeys" }) ?? []
+	const selectedBaseRole = useWatch({ control: form.control, name: "baseRole" })
 
 	function toggleFeature(featureKey: AccessFeatureKey, checked: boolean) {
-		const current = form.getValues('featureKeys');
+		const current = form.getValues("featureKeys")
 		form.setValue(
-			'featureKeys',
+			"featureKeys",
 			checked
 				? Array.from(new Set([...current, featureKey]))
 				: current.filter((item) => item !== featureKey),
-			{ shouldDirty: true, shouldValidate: true },
-		);
+			{ shouldDirty: true, shouldValidate: true }
+		)
 	}
 
 	return (
-		<Dialog onOpenChange={(nextOpen) => !nextOpen && onClose()} open={open}>
+		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
 			<DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
 				<DialogHeader>
 					<DialogTitle>
-						{isEditMode ? 'Editar grupo de acesso' : 'Novo grupo de acesso'}
+						{isEditMode ? "Editar grupo de acesso" : "Novo grupo de acesso"}
 					</DialogTitle>
 					<DialogDescription>
 						Defina o papel-base e as features que esse grupo libera na
@@ -198,12 +206,12 @@ function AccessGroupDialog({
 					className="flex max-h-[calc(100vh-10rem)] flex-col"
 					noValidate
 					onSubmit={form.handleSubmit(async (values) => {
-						setSubmitError(null);
+						setSubmitError(null)
 						try {
-							await onSubmit(values);
-							onClose();
+							await onSubmit(values)
+							onClose()
 						} catch (error) {
-							setSubmitError(getUsersErrorMessage(error));
+							setSubmitError(getUsersErrorMessage(error))
 						}
 					})}
 				>
@@ -222,7 +230,7 @@ function AccessGroupDialog({
 									className="h-10 rounded-md border-[#d6dce5] shadow-none focus-visible:border-[#2d3648]/45"
 									id="access-group-name"
 									placeholder="Gerentes regionais"
-									{...form.register('name')}
+									{...form.register("name")}
 								/>
 								{form.formState.errors.name ? (
 									<p className="text-xs text-destructive">
@@ -234,10 +242,10 @@ function AccessGroupDialog({
 							<div className="space-y-1.5">
 								<Label htmlFor="access-group-description">Descrição</Label>
 								<textarea
-									className="flex min-h-28 w-full rounded-md border border-[#d6dce5] bg-white px-3 py-2 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+									className="flex min-h-28 w-full rounded-md border border-[#d6dce5] bg-white px-3 py-2 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="access-group-description"
 									placeholder="Explique quando esse grupo deve ser usado."
-									{...form.register('description')}
+									{...form.register("description")}
 								/>
 								{form.formState.errors.description ? (
 									<p className="text-xs text-destructive">
@@ -249,19 +257,19 @@ function AccessGroupDialog({
 							<div className="space-y-1.5">
 								<Label htmlFor="access-group-role">Papel canônico</Label>
 								<select
-									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="access-group-role"
 									onChange={(event) =>
 										form.setValue(
-											'baseRole',
-											event.target.value === 'NONE'
+											"baseRole",
+											event.target.value === "NONE"
 												? null
 												: (event.target
-														.value as AccessGroupFormValues['baseRole']),
-											{ shouldDirty: true, shouldValidate: true },
+														.value as AccessGroupFormValues["baseRole"]),
+											{ shouldDirty: true, shouldValidate: true }
 										)
 									}
-									value={form.watch('baseRole') ?? 'NONE'}
+									value={selectedBaseRole ?? "NONE"}
 								>
 									<option value="NONE">Sem vínculo canônico</option>
 									{roleOptions.map((option) => (
@@ -286,15 +294,15 @@ function AccessGroupDialog({
 
 							<div className="grid gap-3">
 								{accessFeatureCatalog.map((feature) => {
-									const checked = selectedFeatures.includes(feature.key);
+									const checked = selectedFeatures.includes(feature.key)
 
 									return (
 										<label
 											className={cn(
-												'flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition-colors',
+												"flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition-colors",
 												checked
-													? 'border-[#d96c3f]/25 bg-[#d96c3f]/8'
-													: 'border-border/80 bg-white hover:border-[#d96c3f]/20 hover:bg-[#fff9f6]',
+													? "border-[#d96c3f]/25 bg-[#d96c3f]/8"
+													: "border-border/80 bg-white hover:border-[#d96c3f]/20 hover:bg-[#fff9f6]"
 											)}
 											key={feature.key}
 										>
@@ -314,7 +322,7 @@ function AccessGroupDialog({
 												</p>
 											</div>
 										</label>
-									);
+									)
 								})}
 							</div>
 
@@ -342,17 +350,17 @@ function AccessGroupDialog({
 						>
 							{isPending
 								? isEditMode
-									? 'Salvando...'
-									: 'Criando...'
+									? "Salvando..."
+									: "Criando..."
 								: isEditMode
-									? 'Salvar grupo'
-									: 'Criar grupo'}
+									? "Salvar grupo"
+									: "Criar grupo"}
 						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 export {
@@ -360,4 +368,4 @@ export {
 	getBaseRoleLabel,
 	getFeatureLabels,
 	getRoleBadgeClassName,
-};
+}

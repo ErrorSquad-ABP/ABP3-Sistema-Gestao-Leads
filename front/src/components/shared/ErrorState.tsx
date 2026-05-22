@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link"
 import {
 	ArrowLeft,
 	LockKeyhole,
@@ -6,7 +6,7 @@ import {
 	SearchX,
 	ShieldAlert,
 	ShieldX,
-} from 'lucide-react';
+} from "lucide-react"
 
 import {
 	Card,
@@ -14,25 +14,25 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 type ErrorStateAction = {
-	label: string;
-	href?: string;
-	onClick?: () => void;
-	variant?: 'default' | 'secondary';
-};
+	label: string
+	href?: string
+	onClick?: () => void
+	variant?: "default" | "secondary"
+}
 
 type ErrorStateProps = {
-	code: 401 | 403 | 404 | 500;
-	description: string;
-	eyebrow: string;
-	primaryAction: ErrorStateAction;
-	secondaryAction?: ErrorStateAction;
-	technicalDetails?: string;
-	title: string;
-};
+	code: 401 | 403 | 404 | 500
+	description: string
+	eyebrow: string
+	primaryAction: ErrorStateAction
+	secondaryAction?: ErrorStateAction
+	technicalDetails?: string
+	title: string
+}
 
 function ErrorState({
 	code,
@@ -50,22 +50,22 @@ function ErrorState({
 				? ShieldAlert
 				: code === 404
 					? SearchX
-					: ShieldX;
+					: ShieldX
 
 	function renderAction(action: ErrorStateAction, key: string) {
 		const className = cn(
-			'inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#d96c3f]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf7] disabled:pointer-events-none disabled:opacity-60',
-			action.variant === 'secondary'
-				? 'border border-[#ddd4ca] bg-[#fffaf7] text-[#1b2430] hover:border-[#cdbfb0] hover:bg-[#fdf4ee]'
-				: 'border border-[#ddd4ca] bg-[#fffaf7] text-[#1b2430] hover:border-[#d96c3f]/30 hover:bg-[#fdf4ee]',
-		);
+			"inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#d96c3f]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf7] disabled:pointer-events-none disabled:opacity-60",
+			action.variant === "secondary"
+				? "border border-[#ddd4ca] bg-[#fffaf7] text-[#1b2430] hover:border-[#cdbfb0] hover:bg-[#fdf4ee]"
+				: "border border-[#ddd4ca] bg-[#fffaf7] text-[#1b2430] hover:border-[#d96c3f]/30 hover:bg-[#fdf4ee]"
+		)
 
 		if (action.href) {
 			return (
 				<Link className={className} href={action.href} key={key}>
 					{action.label}
 				</Link>
-			);
+			)
 		}
 
 		return (
@@ -77,14 +77,14 @@ function ErrorState({
 			>
 				{action.label}
 			</button>
-		);
+		)
 	}
 
 	return (
 		<main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
 			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,108,63,0.12),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(191,168,139,0.14),transparent_28%)]" />
-			<div className="pointer-events-none absolute -left-32 top-20 size-56 rounded-full bg-[#d96c3f]/10 blur-3xl" />
-			<div className="pointer-events-none absolute -bottom-24 -right-16 size-72 rounded-full bg-[#d4b48c]/18 blur-3xl" />
+			<div className="pointer-events-none absolute top-20 -left-32 size-56 rounded-full bg-[#d96c3f]/10 blur-3xl" />
+			<div className="pointer-events-none absolute -right-16 -bottom-24 size-72 rounded-full bg-[#d4b48c]/18 blur-3xl" />
 
 			<Card className="relative w-full max-w-3xl overflow-hidden border-[#e5ddd4] bg-[#fffaf7]/95 backdrop-blur">
 				<div className="h-1.5 w-full bg-[linear-gradient(90deg,#D96C3F_0%,#E8B36A_100%)]" />
@@ -93,10 +93,10 @@ function ErrorState({
 						<Icon className="size-6" />
 					</div>
 					<div className="space-y-2">
-						<p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#D96C3F]">
+						<p className="text-xs font-semibold tracking-[0.22em] text-[#D96C3F] uppercase">
 							{eyebrow}
 						</p>
-						<CardTitle className="text-balance text-[2rem] font-semibold tracking-[-0.04em] text-[#1B2430]">
+						<CardTitle className="text-[2rem] font-semibold tracking-[-0.04em] text-balance text-[#1B2430]">
 							{title}
 						</CardTitle>
 						<CardDescription className="max-w-xl text-[0.95rem] leading-7 text-[#667085]">
@@ -110,27 +110,27 @@ function ErrorState({
 							<p className="font-medium text-[#1B2430]">Cód. {code}</p>
 							<p className="mt-1">
 								{code === 401
-									? 'A sessão atual não atende aos requisitos mínimos para abrir a rota protegida.'
+									? "A sessão atual não atende aos requisitos mínimos para abrir a rota protegida."
 									: code === 403
-										? 'O papel autenticado foi reconhecido, mas não cobre a operação ou área solicitada.'
+										? "O papel autenticado foi reconhecido, mas não cobre a operação ou área solicitada."
 										: code === 404
-											? 'O destino solicitado não existe mais, foi movido ou nunca fez parte do fluxo disponível.'
-											: 'A aplicação encontrou uma falha inesperada ao montar ou responder esta tela.'}
+											? "O destino solicitado não existe mais, foi movido ou nunca fez parte do fluxo disponível."
+											: "A aplicação encontrou uma falha inesperada ao montar ou responder esta tela."}
 							</p>
 							{technicalDetails ? (
 								<div className="mt-3 rounded-xl border border-[#ece3da] bg-[#fcf7f2] px-3 py-2.5 text-xs leading-5 text-[#6B7687]">
 									<span className="font-medium text-[#1B2430]">
 										Detalhe técnico:
-									</span>{' '}
+									</span>{" "}
 									{technicalDetails}
 								</div>
 							) : null}
 						</div>
 
 						<div className="flex flex-wrap gap-3">
-							{renderAction(primaryAction, 'primary')}
+							{renderAction(primaryAction, "primary")}
 							{secondaryAction
-								? renderAction(secondaryAction, 'secondary')
+								? renderAction(secondaryAction, "secondary")
 								: null}
 						</div>
 					</div>
@@ -143,12 +143,12 @@ function ErrorState({
 							</div>
 							<p className="mt-2 text-sm leading-6 text-[#6B7687]">
 								{code === 401
-									? 'Reinicie a autenticação para obter uma sessão válida antes de seguir no fluxo.'
+									? "Reinicie a autenticação para obter uma sessão válida antes de seguir no fluxo."
 									: code === 403
-										? 'Volte para um destino compatível com o seu papel ou troque de conta.'
+										? "Volte para um destino compatível com o seu papel ou troque de conta."
 										: code === 404
-											? 'Retorne para o dashboard ou navegue pela sidebar para encontrar um destino válido.'
-											: 'Tente recarregar a tela. Se a falha persistir, registre o erro e siga por outra rota.'}
+											? "Retorne para o dashboard ou navegue pela sidebar para encontrar um destino válido."
+											: "Tente recarregar a tela. Se a falha persistir, registre o erro e siga por outra rota."}
 							</p>
 						</div>
 
@@ -161,7 +161,7 @@ function ErrorState({
 				</CardContent>
 			</Card>
 		</main>
-	);
+	)
 }
 
-export { ErrorState };
+export { ErrorState }

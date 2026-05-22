@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import type { ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from "react"
+import type { LucideIcon } from "lucide-react"
 import {
 	Activity,
 	AlertCircle,
@@ -17,9 +17,9 @@ import {
 	Trash2,
 	UserRound,
 	UsersRound,
-} from 'lucide-react';
+} from "lucide-react"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	Dialog,
 	DialogContent,
@@ -27,9 +27,9 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 import type {
 	CustomerCatalogItem,
@@ -37,109 +37,109 @@ import type {
 	CustomerDialogMode,
 	CustomerMutationInput,
 	CustomerRecord,
-} from '../model/customers.model';
-import { formatCurrency } from './CustomersTable';
+} from "../model/customers.model"
+import { formatCurrency } from "./CustomersTable"
 
 type CustomerDialogState = {
-	mode: CustomerDialogMode;
-	customer: CustomerRecord | null;
-};
+	mode: CustomerDialogMode
+	customer: CustomerRecord | null
+}
 
 type CustomerFormState = {
-	name: string;
-	email: string;
-	phone: string;
-	cpf: string;
-};
+	name: string
+	email: string
+	phone: string
+	cpf: string
+}
 
 type CustomerFormDialogProps = {
-	createPending: boolean;
-	dialogError: string | null;
-	dialogState: CustomerDialogState | null;
-	formState: CustomerFormState;
-	onClose: () => void;
-	onSave: () => void;
+	createPending: boolean
+	dialogError: string | null
+	dialogState: CustomerDialogState | null
+	formState: CustomerFormState
+	onClose: () => void
+	onSave: () => void
 	onStateChange: (
-		updater: (current: CustomerFormState) => CustomerFormState,
-	) => void;
-	updatePending: boolean;
-};
+		updater: (current: CustomerFormState) => CustomerFormState
+	) => void
+	updatePending: boolean
+}
 
 type CustomerDeleteDialogProps = {
-	deleteError: string | null;
-	deletePending: boolean;
-	deleteTarget: CustomerRecord | null;
-	onClose: () => void;
-	onConfirm: () => void;
-};
+	deleteError: string | null
+	deletePending: boolean
+	deleteTarget: CustomerRecord | null
+	onClose: () => void
+	onConfirm: () => void
+}
 
 type CustomerDetailsDialogProps = {
-	item: CustomerCatalogItem | null;
-	onClose: () => void;
-};
+	item: CustomerCatalogItem | null
+	onClose: () => void
+}
 
 type CustomerModalHeaderProps = {
-	description: string;
-	icon?: LucideIcon;
-	title: string;
-};
+	description: string
+	icon?: LucideIcon
+	title: string
+}
 
 type CustomerModalSectionProps = {
-	children: ReactNode;
-	description?: string;
-	title: string;
-};
+	children: ReactNode
+	description?: string
+	title: string
+}
 
 type CustomerModalInfoBannerProps = {
-	children: ReactNode;
-	tone?: 'info' | 'danger';
-};
+	children: ReactNode
+	tone?: "info" | "danger"
+}
 
 type CustomerFieldControlProps = {
-	children: ReactNode;
-	icon: LucideIcon;
-};
+	children: ReactNode
+	icon: LucideIcon
+}
 
 type CustomerDetailProps = {
-	children: ReactNode;
-	icon: LucideIcon;
-	label: string;
-};
+	children: ReactNode
+	icon: LucideIcon
+	label: string
+}
 
 const customerModalContentClass =
-	'flex max-h-[92vh] max-w-5xl flex-col overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]';
+	"flex max-h-[92vh] max-w-5xl flex-col overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]"
 
 const customerFormInputClass =
-	'h-11 rounded-xl border-[#cfd8e6] bg-white pl-10 text-sm shadow-none focus-visible:border-[#f05a28]/45 focus-visible:ring-2 focus-visible:ring-[#f05a28]/10';
+	"h-11 rounded-xl border-[#cfd8e6] bg-white pl-10 text-sm shadow-none focus-visible:border-[#f05a28]/45 focus-visible:ring-2 focus-visible:ring-[#f05a28]/10"
 
 const emptyCustomerForm: CustomerFormState = {
-	name: '',
-	email: '',
-	phone: '',
-	cpf: '',
-};
+	name: "",
+	email: "",
+	phone: "",
+	cpf: "",
+}
 
 function toCustomerFormState(
-	customer: CustomerRecord | null,
+	customer: CustomerRecord | null
 ): CustomerFormState {
 	if (!customer) {
-		return emptyCustomerForm;
+		return emptyCustomerForm
 	}
 
 	return {
 		name: customer.name,
-		email: customer.email ?? '',
-		phone: customer.phone ?? '',
-		cpf: customer.cpf ?? '',
-	};
+		email: customer.email ?? "",
+		phone: customer.phone ?? "",
+		cpf: customer.cpf ?? "",
+	}
 }
 
 function toCustomerPayload(
-	form: CustomerFormState,
+	form: CustomerFormState
 ): CustomerMutationInput | null {
-	const name = form.name.trim();
+	const name = form.name.trim()
 	if (!name) {
-		return null;
+		return null
 	}
 
 	return {
@@ -147,59 +147,59 @@ function toCustomerPayload(
 		email: form.email.trim() ? form.email.trim() : null,
 		phone: form.phone.trim() ? form.phone.trim() : null,
 		cpf: form.cpf.trim() ? form.cpf.trim() : null,
-	};
+	}
 }
 
 function formatCustomerStatus(status: CustomerCatalogStatus) {
 	switch (status) {
-		case 'ACTIVE':
-			return 'Ativo';
-		case 'INACTIVE':
-			return 'Inativo';
+		case "ACTIVE":
+			return "Ativo"
+		case "INACTIVE":
+			return "Inativo"
 		default: {
-			const _exhaustive: never = status;
-			return _exhaustive;
+			const _exhaustive: never = status
+			return _exhaustive
 		}
 	}
 }
 
 function formatDateTime(value: Date | null) {
 	if (!value) {
-		return 'Sem atividade';
+		return "Sem atividade"
 	}
 
-	return value.toLocaleString('pt-BR', {
-		dateStyle: 'short',
-		timeStyle: 'short',
-	});
+	return value.toLocaleString("pt-BR", {
+		dateStyle: "short",
+		timeStyle: "short",
+	})
 }
 
 function formatCustomerSource(value: string | null) {
 	switch (value) {
-		case 'INDICATION':
-			return 'Indicação';
-		case 'WEBSITE':
-			return 'Site / Formulário';
-		case 'WHATSAPP':
-			return 'WhatsApp';
-		case 'INSTAGRAM':
-			return 'Instagram';
-		case 'FACEBOOK':
-			return 'Facebook';
-		case 'MERCADO_LIVRE':
-			return 'Mercado Livre';
-		case 'PHONE':
-			return 'Telefone';
-		case 'SOCIAL_MEDIA':
-			return 'Redes sociais';
-		case 'WALK_IN':
-			return 'Loja física';
-		case 'Cadastro':
-			return 'Cadastro';
+		case "INDICATION":
+			return "Indicação"
+		case "WEBSITE":
+			return "Site / Formulário"
+		case "WHATSAPP":
+			return "WhatsApp"
+		case "INSTAGRAM":
+			return "Instagram"
+		case "FACEBOOK":
+			return "Facebook"
+		case "MERCADO_LIVRE":
+			return "Mercado Livre"
+		case "PHONE":
+			return "Telefone"
+		case "SOCIAL_MEDIA":
+			return "Redes sociais"
+		case "WALK_IN":
+			return "Loja física"
+		case "Cadastro":
+			return "Cadastro"
 		case null:
-			return 'Não informada';
+			return "Não informada"
 		default:
-			return value;
+			return value
 	}
 }
 
@@ -209,13 +209,13 @@ function CustomerModalHeader({
 	title,
 }: CustomerModalHeaderProps) {
 	return (
-		<DialogHeader className="border-b-0 px-7 pb-4 pt-7 md:px-8">
+		<DialogHeader className="border-b-0 px-7 pt-7 pb-4 md:px-8">
 			<div className="flex items-start gap-4 pr-10">
 				<div className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-[#ff5a1f]/10 bg-[#ff5a1f]/10 text-[#ff4f17]">
 					<Icon className="size-8" />
 				</div>
 				<div className="min-w-0 pt-0.5">
-					<p className="text-[0.7rem] font-bold uppercase tracking-[0.26em] text-[#ff4f17]">
+					<p className="text-[0.7rem] font-bold tracking-[0.26em] text-[#ff4f17] uppercase">
 						Clientes
 					</p>
 					<DialogTitle className="mt-1 text-2xl font-bold tracking-normal text-[#121a2b]">
@@ -227,21 +227,21 @@ function CustomerModalHeader({
 				</div>
 			</div>
 		</DialogHeader>
-	);
+	)
 }
 
 function CustomerModalInfoBanner({
 	children,
-	tone = 'info',
+	tone = "info",
 }: CustomerModalInfoBannerProps) {
-	const isDanger = tone === 'danger';
+	const isDanger = tone === "danger"
 
 	return (
 		<div
 			className={
 				isDanger
-					? 'flex items-center gap-3 rounded-xl border border-red-100 bg-red-50/60 px-4 py-3 text-sm text-[#7f1d1d]'
-					: 'flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-3 text-sm text-[#506078]'
+					? "flex items-center gap-3 rounded-xl border border-red-100 bg-red-50/60 px-4 py-3 text-sm text-[#7f1d1d]"
+					: "flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-3 text-sm text-[#506078]"
 			}
 		>
 			{isDanger ? (
@@ -251,7 +251,7 @@ function CustomerModalInfoBanner({
 			)}
 			<p className="leading-6">{children}</p>
 		</div>
-	);
+	)
 }
 
 function CustomerModalSection({
@@ -269,7 +269,7 @@ function CustomerModalSection({
 			</div>
 			{children}
 		</section>
-	);
+	)
 }
 
 function CustomerFieldControl({
@@ -278,24 +278,24 @@ function CustomerFieldControl({
 }: CustomerFieldControlProps) {
 	return (
 		<div className="relative">
-			<Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
+			<Icon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 			{children}
 		</div>
-	);
+	)
 }
 
 function CustomerDetail({ children, icon: Icon, label }: CustomerDetailProps) {
 	return (
 		<div className="rounded-xl border border-[#e7edf5] bg-[#f8fafc] p-4">
-			<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
+			<p className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-[#667085] uppercase">
 				<Icon className="size-3.5" />
 				{label}
 			</p>
-			<p className="mt-2 break-words text-sm font-medium text-[#101828]">
+			<p className="mt-2 text-sm font-medium break-words text-[#101828]">
 				{children}
 			</p>
 		</div>
-	);
+	)
 }
 
 function CustomerFormDialog({
@@ -308,8 +308,8 @@ function CustomerFormDialog({
 	onStateChange,
 	updatePending,
 }: CustomerFormDialogProps) {
-	const isEditMode = dialogState?.mode === 'edit';
-	const isPending = createPending || updatePending;
+	const isEditMode = dialogState?.mode === "edit"
+	const isPending = createPending || updatePending
 
 	return (
 		<Dialog
@@ -320,21 +320,21 @@ function CustomerFormDialog({
 				<CustomerModalHeader
 					description={
 						isEditMode
-							? 'Atualize os dados comerciais mantendo a consistência do cadastro operacional.'
-							: 'Cadastre um cliente no CRM para relacionar leads, contatos e negociações.'
+							? "Atualize os dados comerciais mantendo a consistência do cadastro operacional."
+							: "Cadastre um cliente no CRM para relacionar leads, contatos e negociações."
 					}
 					icon={UserRound}
-					title={isEditMode ? 'Editar cliente' : 'Novo cliente'}
+					title={isEditMode ? "Editar cliente" : "Novo cliente"}
 				/>
 
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					onSubmit={(event) => {
-						event.preventDefault();
-						onSave();
+						event.preventDefault()
+						onSave()
 					}}
 				>
-					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pb-6 pt-3 md:px-8">
+					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
 						{dialogError ? (
 							<div className="flex items-start gap-2 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
 								<AlertCircle className="mt-0.5 size-4 shrink-0" />
@@ -429,7 +429,7 @@ function CustomerFormDialog({
 						</CustomerModalSection>
 					</div>
 
-					<DialogFooter className="shrink-0 gap-3 border-t-0 px-7 pb-6 pt-3 md:flex-row md:px-8">
+					<DialogFooter className="shrink-0 gap-3 border-t-0 px-7 pt-3 pb-6 md:flex-row md:px-8">
 						<Button
 							className="rounded-lg"
 							onClick={onClose}
@@ -445,16 +445,16 @@ function CustomerFormDialog({
 						>
 							<Save className="size-4" />
 							{isPending
-								? 'Salvando...'
+								? "Salvando..."
 								: isEditMode
-									? 'Salvar alterações'
-									: 'Criar cliente'}
+									? "Salvar alterações"
+									: "Criar cliente"}
 						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 function CustomerDeleteDialog({
@@ -475,7 +475,7 @@ function CustomerDeleteDialog({
 					icon={Trash2}
 					title="Excluir cliente"
 				/>
-				<div className="space-y-4 px-7 pb-5 pt-3">
+				<div className="space-y-4 px-7 pt-3 pb-5">
 					<CustomerModalInfoBanner tone="danger">
 						Excluir um cliente pode afetar históricos e vínculos usados pelo
 						CRM.
@@ -487,9 +487,9 @@ function CustomerDeleteDialog({
 						<div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50/60 px-4 py-4 text-sm text-[#7f1d1d]">
 							<Trash2 className="mt-0.5 size-4 shrink-0 text-red-600" />
 							<p>
-								Cliente:{' '}
+								Cliente:{" "}
 								<span className="font-semibold">
-									{deleteTarget?.name ?? 'Não selecionado'}
+									{deleteTarget?.name ?? "Não selecionado"}
 								</span>
 							</p>
 						</div>
@@ -501,7 +501,7 @@ function CustomerDeleteDialog({
 						</div>
 					) : null}
 				</div>
-				<DialogFooter className="border-t-0 px-7 pb-6 pt-1">
+				<DialogFooter className="border-t-0 px-7 pt-1 pb-6">
 					<Button
 						className="rounded-lg"
 						onClick={onClose}
@@ -517,17 +517,17 @@ function CustomerDeleteDialog({
 						type="button"
 					>
 						<Trash2 className="size-4" />
-						{deletePending ? 'Excluindo...' : 'Excluir cliente'}
+						{deletePending ? "Excluindo..." : "Excluir cliente"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 	if (!item) {
-		return null;
+		return null
 	}
 
 	return (
@@ -538,7 +538,7 @@ function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 					icon={UserRound}
 					title={item.customer.name}
 				/>
-				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pb-7 pt-3 md:px-8">
+				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pt-3 pb-7 md:px-8">
 					<div className="grid gap-4 lg:grid-cols-2">
 						<CustomerModalSection
 							description="Dados de identificação e contato do cadastro."
@@ -549,13 +549,13 @@ function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 									{item.customer.name}
 								</CustomerDetail>
 								<CustomerDetail icon={IdCard} label="CPF">
-									{item.customer.cpf ?? 'Não informado'}
+									{item.customer.cpf ?? "Não informado"}
 								</CustomerDetail>
 								<CustomerDetail icon={Mail} label="E-mail">
-									{item.customer.email ?? 'Não informado'}
+									{item.customer.email ?? "Não informado"}
 								</CustomerDetail>
 								<CustomerDetail icon={Phone} label="Telefone">
-									{item.customer.phone ?? 'Não informado'}
+									{item.customer.phone ?? "Não informado"}
 								</CustomerDetail>
 							</div>
 						</CustomerModalSection>
@@ -566,7 +566,7 @@ function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 						>
 							<div className="grid gap-4 text-sm md:grid-cols-2">
 								<CustomerDetail icon={Store} label="Loja vinculada">
-									{item.primaryStoreName ?? 'Não vinculada'}
+									{item.primaryStoreName ?? "Não vinculada"}
 								</CustomerDetail>
 								<CustomerDetail icon={Activity} label="Origem">
 									{formatCustomerSource(item.source)}
@@ -603,7 +603,7 @@ function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 				</div>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 export {
@@ -613,5 +613,5 @@ export {
 	CustomerFormDialog,
 	toCustomerFormState,
 	toCustomerPayload,
-};
-export type { CustomerDialogState, CustomerFormState };
+}
+export type { CustomerDialogState, CustomerFormState }

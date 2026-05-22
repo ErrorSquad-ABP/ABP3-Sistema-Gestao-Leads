@@ -1,14 +1,14 @@
-'use client';
+"use client"
 
-import { Edit3, MoreHorizontal, Trash2, UserRound } from 'lucide-react';
+import { Edit3, MoreHorizontal, Trash2, UserRound } from "lucide-react"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu"
 import {
 	Table,
 	TableBody,
@@ -16,45 +16,45 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table"
 
-import type { TeamRecord } from '../model/teams.model';
+import type { TeamRecord } from "../model/teams.model"
 
 type TeamTableRow = {
-	colorClass: string;
-	initials: string;
-	leadCount: number | null;
-	managerEmail: string | null;
-	managerInitials: string;
-	managerName: string;
-	memberCount: number;
-	openDealsCount: number | null;
-	storeName: string;
-	team: TeamRecord;
-	conversionRate: number;
-};
+	colorClass: string
+	initials: string
+	leadCount: number | null
+	managerEmail: string | null
+	managerInitials: string
+	managerName: string
+	memberCount: number
+	openDealsCount: number | null
+	storeName: string
+	team: TeamRecord
+	conversionRate: number
+}
 
 type TeamsTableProps = {
-	onDelete: (team: TeamRecord) => void;
-	onEdit: (team: TeamRecord) => void;
-	rows: TeamTableRow[];
-};
+	onDelete: (team: TeamRecord) => void
+	onEdit: (team: TeamRecord) => void
+	rows: TeamTableRow[]
+}
 
-const MEMBER_MARKERS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+const MEMBER_MARKERS = ["one", "two", "three", "four", "five", "six", "seven"]
 
 function formatCount(value: number) {
-	return Math.round(value).toLocaleString('pt-BR');
+	return Math.round(value).toLocaleString("pt-BR")
 }
 
 function MemberPreview({
 	colorClass,
 	memberCount,
 }: {
-	colorClass: string;
-	memberCount: number;
+	colorClass: string
+	memberCount: number
 }) {
-	const visibleMembers = Math.min(memberCount, 7);
-	const hiddenMembers = Math.max(0, memberCount - visibleMembers);
+	const visibleMembers = Math.min(memberCount, 7)
+	const hiddenMembers = Math.max(0, memberCount - visibleMembers)
 
 	return (
 		<div className="flex items-center gap-1.5">
@@ -71,7 +71,7 @@ function MemberPreview({
 				</span>
 			) : null}
 		</div>
-	);
+	)
 }
 
 function TeamsTable({ onDelete, onEdit, rows }: TeamsTableProps) {
@@ -138,7 +138,7 @@ function TeamsTable({ onDelete, onEdit, rows }: TeamsTableProps) {
 											{row.managerName}
 										</p>
 										<p className="truncate text-[11px] text-[#667085]">
-											{row.managerEmail ?? 'Sem gerente definido'}
+											{row.managerEmail ?? "Sem gerente definido"}
 										</p>
 									</div>
 								</div>
@@ -156,14 +156,14 @@ function TeamsTable({ onDelete, onEdit, rows }: TeamsTableProps) {
 							</TableCell>
 							<TableCell className="py-3">
 								<p className="text-xs font-bold text-[#101828]">
-									{row.leadCount === null ? '...' : formatCount(row.leadCount)}
+									{row.leadCount === null ? "..." : formatCount(row.leadCount)}
 								</p>
 								<p className="text-[11px] text-[#079455]">atribuídos</p>
 							</TableCell>
 							<TableCell className="py-3">
 								<p className="text-xs font-bold text-[#101828]">
 									{row.openDealsCount === null
-										? '...'
+										? "..."
 										: formatCount(row.openDealsCount)}
 								</p>
 								<p className="text-[11px] text-[#667085]">em negociação</p>
@@ -172,10 +172,10 @@ function TeamsTable({ onDelete, onEdit, rows }: TeamsTableProps) {
 								<span
 									className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${
 										row.conversionRate >= 25
-											? 'bg-[#dcfae6] text-[#079455]'
+											? "bg-[#dcfae6] text-[#079455]"
 											: row.conversionRate >= 20
-												? 'bg-[#fff3ee] text-[#f4511e]'
-												: 'bg-[#eef2f6] text-[#667085]'
+												? "bg-[#fff3ee] text-[#f4511e]"
+												: "bg-[#eef2f6] text-[#667085]"
 									}`}
 								>
 									{row.conversionRate}%
@@ -216,8 +216,8 @@ function TeamsTable({ onDelete, onEdit, rows }: TeamsTableProps) {
 				</TableBody>
 			</Table>
 		</div>
-	);
+	)
 }
 
-export { TeamsTable };
-export type { TeamTableRow };
+export { TeamsTable }
+export type { TeamTableRow }

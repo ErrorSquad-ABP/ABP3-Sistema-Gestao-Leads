@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
 	Building2,
@@ -10,47 +10,47 @@ import {
 	Tag,
 	Trophy,
 	UsersRound,
-} from 'lucide-react';
+} from "lucide-react"
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
-type MetricTone = 'amber' | 'blue' | 'green' | 'orange' | 'purple';
+type MetricTone = "amber" | "blue" | "green" | "orange" | "purple"
 
 type StoresPageHeaderProps = {
-	canManageStores: boolean;
-	onCreate: () => void;
-	onExport: () => void;
-	onRegionFilterChange: (value: string) => void;
-	onSearchChange: (value: string) => void;
-	regionFilter: string;
-	regionOptions: Array<[string, string]>;
-	search: string;
-};
+	canManageStores: boolean
+	onCreate: () => void
+	onExport: () => void
+	onRegionFilterChange: (value: string) => void
+	onSearchChange: (value: string) => void
+	regionFilter: string
+	regionOptions: Array<[string, string]>
+	search: string
+}
 
 type StoresMetricsGridProps = {
-	activeStores: number;
-	averageLeads: number;
-	averageConversionRate: number;
-	openDeals: number;
-	storesCount: number;
-	totalLeads: number;
-	uniqueStates: string[];
-};
+	activeStores: number
+	averageLeads: number
+	averageConversionRate: number
+	openDeals: number
+	storesCount: number
+	totalLeads: number
+	uniqueStates: string[]
+}
 
 function getMetricToneClass(tone: MetricTone) {
 	switch (tone) {
-		case 'amber':
-			return 'bg-[#fff7e6] text-[#f79009]';
-		case 'blue':
-			return 'bg-[#eff6ff] text-[#2563eb]';
-		case 'green':
-			return 'bg-[#ecfdf3] text-[#079455]';
-		case 'orange':
-			return 'bg-[#fff3ee] text-[#f4511e]';
-		case 'purple':
-			return 'bg-[#f4edff] text-[#7f35e8]';
+		case "amber":
+			return "bg-[#fff7e6] text-[#f79009]"
+		case "blue":
+			return "bg-[#eff6ff] text-[#2563eb]"
+		case "green":
+			return "bg-[#ecfdf3] text-[#079455]"
+		case "orange":
+			return "bg-[#fff3ee] text-[#f4511e]"
+		case "purple":
+			return "bg-[#f4edff] text-[#7f35e8]"
 	}
 }
 
@@ -61,13 +61,13 @@ function StoreMetricCard({
 	tone,
 	value,
 }: {
-	helper: string;
-	icon: typeof Building2;
-	label: string;
-	tone: MetricTone;
-	value: string;
+	helper: string
+	icon: typeof Building2
+	label: string
+	tone: MetricTone
+	value: string
 }) {
-	const toneClass = getMetricToneClass(tone);
+	const toneClass = getMetricToneClass(tone)
 
 	return (
 		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
@@ -86,7 +86,7 @@ function StoreMetricCard({
 				</div>
 			</CardContent>
 		</Card>
-	);
+	)
 }
 
 function StoresPageHeader({
@@ -112,7 +112,7 @@ function StoresPageHeader({
 			</div>
 			<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
 				<div className="relative">
-					<Search className="-translate-y-1/2 absolute top-1/2 left-3.5 size-4 text-[#667085]" />
+					<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
 					<Input
 						className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[340px]"
 						onChange={(event) => onSearchChange(event.target.value)}
@@ -121,7 +121,7 @@ function StoresPageHeader({
 					/>
 				</div>
 				<div className="relative">
-					<Filter className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 size-4 text-[#1f2a44]" />
+					<Filter className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#1f2a44]" />
 					<select
 						className="h-11 appearance-none rounded-xl border border-[#d8e0ea] bg-white pr-8 pl-10 text-xs font-semibold text-[#1f2a44] outline-none"
 						onChange={(event) => onRegionFilterChange(event.target.value)}
@@ -154,7 +154,7 @@ function StoresPageHeader({
 				</Button>
 			</div>
 		</header>
-	);
+	)
 }
 
 function StoresMetricsGrid({
@@ -193,7 +193,7 @@ function StoresMetricsGrid({
 				helper={
 					uniqueStates.length > 0
 						? `${uniqueStates.length} regiões com operação`
-						: 'Sem cobertura'
+						: "Sem cobertura"
 				}
 				icon={Tag}
 				label="Negociações abertas"
@@ -204,7 +204,7 @@ function StoresMetricsGrid({
 				helper={
 					totalLeads > 0
 						? `${averageConversionRate}% sobre leads`
-						: 'Sem leads no período'
+						: "Sem leads no período"
 				}
 				icon={Trophy}
 				label="Taxa de conversão média"
@@ -212,7 +212,7 @@ function StoresMetricsGrid({
 				value={`${averageConversionRate}%`}
 			/>
 		</div>
-	);
+	)
 }
 
-export { StoresMetricsGrid, StoresPageHeader };
+export { StoresMetricsGrid, StoresPageHeader }

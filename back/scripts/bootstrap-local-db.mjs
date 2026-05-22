@@ -10,8 +10,6 @@ const { Client } = pg;
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, '..', '..');
-const seedMode = process.env.LOCAL_DB_SEED_MODE ?? 'dashboard';
-
 async function runWorkspaceScript(script, extraEnv = {}) {
 	const env = { ...process.env, ...extraEnv };
 	const { stdout, stderr } = await execFileAsync(
@@ -62,10 +60,8 @@ async function main() {
 		return;
 	}
 
-	console.log(
-		`[local-db] empty database detected, running seed (SEED_MODE=${seedMode})...`,
-	);
-	await runWorkspaceScript('prisma:seed', { SEED_MODE: seedMode });
+	console.log('[local-db] empty database detected, running demo seed...');
+	await runWorkspaceScript('prisma:seed');
 }
 
 main().catch((error) => {

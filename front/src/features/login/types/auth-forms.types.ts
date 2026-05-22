@@ -1,12 +1,12 @@
 type RegisterInput = {
-	confirmPassword: string;
-	email: string;
-	name: string;
-	password: string;
-};
+	confirmPassword: string
+	email: string
+	name: string
+	password: string
+}
 
 type ForgotPasswordInput = {
-	email: string;
-};
+	email: string
+}
 
-export type { ForgotPasswordInput, RegisterInput };
+export type { ForgotPasswordInput, RegisterInput }

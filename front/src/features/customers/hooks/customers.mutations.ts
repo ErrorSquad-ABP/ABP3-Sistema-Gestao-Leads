@@ -2,22 +2,22 @@ import {
 	useCreateCustomerMutation as useCreateCustomerCatalogMutation,
 	useDeleteCustomerMutation as useDeleteCustomerCatalogMutation,
 	useUpdateCustomerMutation as useUpdateCustomerCatalogMutation,
-} from '@/features/leads/hooks/leads.catalog.mutations';
+} from "@/features/leads/hooks/leads.catalog.mutations"
 
 function useCreateCustomerMutation() {
-	return useCreateCustomerCatalogMutation();
+	return useCreateCustomerCatalogMutation()
 }
 
 function useUpdateCustomerMutation() {
-	return useUpdateCustomerCatalogMutation();
+	return useUpdateCustomerCatalogMutation()
 }
 
 function useDeleteCustomerMutation() {
-	return useDeleteCustomerCatalogMutation();
+	return useDeleteCustomerCatalogMutation()
 }
 
 export {
 	useCreateCustomerMutation,
 	useDeleteCustomerMutation,
 	useUpdateCustomerMutation,
-};
+}

@@ -1,18 +1,18 @@
-import type { LeadTeam } from '@/features/leads/model/leads.model';
+import type { LeadTeam } from "@/features/leads/model/leads.model"
 
-type TeamRecord = LeadTeam;
+type TeamRecord = LeadTeam
 
 type TeamMutationInput = {
-	name: string;
-	storeId: string;
-	managerId?: string | null;
-};
+	name: string
+	storeId: string
+	managerId?: string | null
+}
 
 type TeamUpdateInput = {
-	name?: string;
-	storeId?: string;
-};
+	name?: string
+	storeId?: string
+}
 
-type TeamDialogMode = 'create' | 'edit';
+type TeamDialogMode = "create" | "edit"
 
-export type { TeamDialogMode, TeamMutationInput, TeamRecord, TeamUpdateInput };
+export type { TeamDialogMode, TeamMutationInput, TeamRecord, TeamUpdateInput }

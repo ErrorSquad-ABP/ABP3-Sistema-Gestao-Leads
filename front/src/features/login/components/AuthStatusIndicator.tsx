@@ -1,14 +1,14 @@
-'use client';
+"use client"
 
-import { Info } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { Info } from "lucide-react"
+import type { ReactNode } from "react"
 
 type AuthStatusIndicatorProps = {
-	icon: ReactNode;
-	id: string;
-	label: string;
-	message: string;
-};
+	icon: ReactNode
+	id: string
+	label: string
+	message: string
+}
 
 function AuthStatusIndicator({
 	icon,
@@ -17,18 +17,18 @@ function AuthStatusIndicator({
 	message,
 }: AuthStatusIndicatorProps) {
 	return (
-		<div className="fixed right-5 top-5 z-30">
+		<div className="fixed top-5 right-5 z-30">
 			<div className="group relative">
 				<button
 					aria-describedby={id}
 					aria-label={label}
-					className="flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent-soft)]"
+					className="flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent-soft)] focus-visible:outline-none"
 					type="button"
 				>
 					{icon}
 				</button>
 				<div
-					className="pointer-events-none absolute right-0 top-12 w-72 rounded-2xl border border-border bg-card px-3 py-2.5 text-sm leading-6 text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+					className="pointer-events-none absolute top-12 right-0 w-72 rounded-2xl border border-border bg-card px-3 py-2.5 text-sm leading-6 text-muted-foreground opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100"
 					id={id}
 					role="tooltip"
 				>
@@ -43,7 +43,7 @@ function AuthStatusIndicator({
 				</div>
 			</div>
 		</div>
-	);
+	)
 }
 
-export { AuthStatusIndicator };
+export { AuthStatusIndicator }

@@ -1,89 +1,89 @@
-import Image from 'next/image';
+import Image from "next/image"
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import {
 	ArrowRight,
 	CalendarDays,
 	type LucideIcon,
 	ShoppingBag,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type DashboardMetric = {
-	label: string;
-	value: string;
-	percentage: string;
-	isPositive?: boolean;
-};
+	label: string
+	value: string
+	percentage: string
+	isPositive?: boolean
+}
 
 type MainDashboardData = {
-	title: string;
-	description: string;
-	metrics: DashboardMetric[];
-};
+	title: string
+	description: string
+	metrics: DashboardMetric[]
+}
 
 type StatItem = {
-	title: string;
-	value: string;
-	percentage: string;
-	icon: LucideIcon;
-	isPositive?: boolean;
-};
+	title: string
+	value: string
+	percentage: string
+	icon: LucideIcon
+	isPositive?: boolean
+}
 
 type StatisticsBlockProps = {
-	mainDashboard?: MainDashboardData;
-	secondaryStats?: StatItem[];
-};
+	mainDashboard?: MainDashboardData
+	secondaryStats?: StatItem[]
+}
 
 const mainDashboardData: MainDashboardData = {
-	title: 'Analytics Dashboard',
-	description: 'Check all the statistics',
+	title: "Analytics Dashboard",
+	description: "Check all the statistics",
 	metrics: [
 		{
-			label: 'Earnings',
-			value: '$27,850',
-			percentage: '+18%',
+			label: "Earnings",
+			value: "$27,850",
+			percentage: "+18%",
 			isPositive: true,
 		},
 		{
-			label: 'Expense',
-			value: '$18,453',
-			percentage: '-5%',
+			label: "Expense",
+			value: "$18,453",
+			percentage: "-5%",
 			isPositive: false,
 		},
 	],
-};
+}
 
 const secondaryStatsData: StatItem[] = [
 	{
-		title: 'Weekly Sales',
-		value: '$4,587',
-		percentage: '+18%',
+		title: "Weekly Sales",
+		value: "$4,587",
+		percentage: "+18%",
 		icon: CalendarDays,
 		isPositive: true,
 	},
 	{
-		title: 'Purchase Orders',
-		value: '230',
-		percentage: '+18%',
+		title: "Purchase Orders",
+		value: "230",
+		percentage: "+18%",
 		icon: ShoppingBag,
 		isPositive: true,
 	},
-];
+]
 
 const StatisticsBlock = ({
 	mainDashboard = mainDashboardData,
 	secondaryStats = secondaryStatsData,
 }: StatisticsBlockProps) => {
 	return (
-		<div className="grid grid-cols-12 gap-6 h-full">
-			<div className="col-span-12 xl:col-span-6 h-full">
-				<Card className="p-0 ring-0 border rounded-2xl relative h-full">
+		<div className="grid h-full grid-cols-12 gap-6">
+			<div className="col-span-12 h-full xl:col-span-6">
+				<Card className="relative h-full rounded-2xl border p-0 ring-0">
 					<CardContent className="p-0">
-						<div className="ps-6 py-4 flex flex-col gap-9 justify-between">
+						<div className="flex flex-col justify-between gap-9 py-4 ps-6">
 							<div>
 								<p className="text-lg font-medium text-card-foreground">
 									{mainDashboard.title}
@@ -105,10 +105,10 @@ const StatisticsBlock = ({
 												</p>
 												<Badge
 													className={cn(
-														'font-normal text-muted-foreground',
+														"font-normal text-muted-foreground",
 														metric.isPositive
-															? 'bg-teal-400/10 '
-															: 'bg-red-500/10',
+															? "bg-teal-400/10"
+															: "bg-red-500/10"
 													)}
 												>
 													{metric.percentage}
@@ -116,7 +116,7 @@ const StatisticsBlock = ({
 											</div>
 										</div>
 										{index < mainDashboard.metrics.length - 1 && (
-											<Separator orientation="vertical" className={'h-12'} />
+											<Separator orientation="vertical" className={"h-12"} />
 										)}
 									</div>
 								))}
@@ -128,7 +128,7 @@ const StatisticsBlock = ({
 							alt=""
 							width={211}
 							height={168}
-							className="absolute bottom-0 right-0 hidden sm:block"
+							className="absolute right-0 bottom-0 hidden sm:block"
 						/>
 					</CardContent>
 				</Card>
@@ -138,9 +138,9 @@ const StatisticsBlock = ({
 					key={stat.title}
 					className="col-span-12 sm:col-span-6 xl:col-span-3"
 				>
-					<Card className="py-6 ring-0 border rounded-2xl">
-						<CardContent className="px-6 flex items-start justify-between">
-							<div className="flex flex-col gap-5 justify-between">
+					<Card className="rounded-2xl border py-6 ring-0">
+						<CardContent className="flex items-start justify-between px-6">
+							<div className="flex flex-col justify-between gap-5">
 								<div className="flex flex-col gap-1">
 									<p className="text-lg font-medium text-card-foreground">
 										{stat.title}
@@ -151,10 +151,10 @@ const StatisticsBlock = ({
 										</p>
 										<Badge
 											className={cn(
-												'font-normal text-muted-foreground',
+												"font-normal text-muted-foreground",
 												stat.isPositive !== false
-													? 'bg-teal-400/10'
-													: 'bg-red-500/10',
+													? "bg-teal-400/10"
+													: "bg-red-500/10"
 											)}
 										>
 											{stat.percentage}
@@ -163,16 +163,16 @@ const StatisticsBlock = ({
 								</div>
 								{/* button */}
 								<Button
-									variant={'outline'}
+									variant={"outline"}
 									className={
-										'flex items-center gap-1.5 w-fit rounded-xl cursor-pointer shadow-xs h-9'
+										"flex h-9 w-fit cursor-pointer items-center gap-1.5 rounded-xl shadow-xs"
 									}
 								>
 									<span>See Report</span>
 									<ArrowRight size={16} />
 								</Button>
 							</div>
-							<div className="p-3 rounded-full outline">
+							<div className="rounded-full p-3 outline">
 								<stat.icon size={16} />
 							</div>
 						</CardContent>
@@ -180,7 +180,7 @@ const StatisticsBlock = ({
 				</div>
 			))}
 		</div>
-	);
-};
+	)
+}
 
-export default StatisticsBlock;
+export default StatisticsBlock

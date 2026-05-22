@@ -1,17 +1,17 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react"
 
-import { requireUserWithRouteAccess } from '@/lib/auth/session';
+import { requireUserWithRouteAccess } from "@/lib/auth/session"
 
 type OperationalDashboardLayoutProps = {
-	children: ReactNode;
-};
+	children: ReactNode
+}
 
 async function OperationalDashboardLayout({
 	children,
 }: OperationalDashboardLayoutProps) {
-	await requireUserWithRouteAccess('dashboardOperational');
+	await requireUserWithRouteAccess("dashboardOperational")
 
-	return children;
+	return children
 }
 
-export default OperationalDashboardLayout;
+export default OperationalDashboardLayout

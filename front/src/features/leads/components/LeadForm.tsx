@@ -1,12 +1,12 @@
-'use client';
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCheck, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { ZodError } from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { CheckCheck, Plus, Trash2 } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import { ZodError } from "zod"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	Dialog,
 	DialogContent,
@@ -14,16 +14,16 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { isApiError } from '@/lib/http/api-error';
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import type { AuthenticatedUser } from "@/features/login/types/login.types"
+import { isApiError } from "@/lib/http/api-error"
 
-import { leadSourceOptions, leadStatusOptions } from '../lib/lead-list-labels';
+import { leadSourceOptions, leadStatusOptions } from "../lib/lead-list-labels"
 import {
 	leadFormSchema,
 	reassignLeadSchema,
-} from '../schemas/lead-management.schema';
+} from "../schemas/lead-management.schema"
 import type {
 	CreateLeadInput,
 	LeadFormValues,
@@ -35,93 +35,89 @@ import type {
 	ReassignLeadFormValues,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from '../model/leads.model';
+} from "../model/leads.model"
 
 type LeadFormDialogProps = {
-	customers: { id: string; name: string }[];
-	isPending: boolean;
-	mode: 'create' | 'edit';
-	onClose: () => void;
-	onSubmit: (values: CreateLeadInput | UpdateLeadInput) => Promise<void>;
-	open: boolean;
-	owners: LeadOwnerRecord[];
-	stores: LeadStore[];
-	targetLead: LeadListItem | null;
-	user: AuthenticatedUser;
-};
+	customers: { id: string; name: string }[]
+	isPending: boolean
+	mode: "create" | "edit"
+	onClose: () => void
+	onSubmit: (values: CreateLeadInput | UpdateLeadInput) => Promise<void>
+	open: boolean
+	owners: LeadOwnerRecord[]
+	stores: LeadStore[]
+	targetLead: LeadListItem | null
+	user: AuthenticatedUser
+}
 
 type LeadReassignDialogProps = {
-	currentOwnerLabel: string;
-	isPending: boolean;
-	onClose: () => void;
-	onSubmit: (values: ReassignLeadInput) => Promise<void>;
-	open: boolean;
-	ownerOptions: { value: string; label: string }[];
-	targetLead: LeadListItem | null;
-	user: AuthenticatedUser;
-};
+	currentOwnerLabel: string
+	isPending: boolean
+	onClose: () => void
+	onSubmit: (values: ReassignLeadInput) => Promise<void>
+	open: boolean
+	ownerOptions: { value: string; label: string }[]
+	targetLead: LeadListItem | null
+	user: AuthenticatedUser
+}
 
 type LeadConfirmDialogProps = {
-	confirmLabel: string;
-	description: string;
-	error: string | null;
-	icon: 'convert' | 'delete';
-	isPending: boolean;
-	onClose: () => void;
-	onConfirm: () => Promise<void>;
-	open: boolean;
-	title: string;
-};
+	confirmLabel: string
+	description: string
+	error: string | null
+	icon: "convert" | "delete"
+	isPending: boolean
+	onClose: () => void
+	onConfirm: () => Promise<void>
+	open: boolean
+	title: string
+}
 
 const leadFormSelectClass =
-	'flex h-11 w-full rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45';
+	"flex h-11 w-full rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
 
 function getLeadsErrorMessage(error: unknown) {
 	if (error instanceof ZodError) {
-		return error.issues[0]?.message ?? 'Dados inválidos. Revise o formulário.';
+		return error.issues[0]?.message ?? "Dados inválidos. Revise o formulário."
 	}
 	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
+		return "Não foi possível concluir a operação agora. Tente novamente em instantes."
 	}
 
 	if (error.status === 400) {
-		return (
-			error.message || 'Os dados do lead não passaram na validação da API.'
-		);
+		return error.message || "Os dados do lead não passaram na validação da API."
 	}
 
 	if (error.status === 403) {
-		return (
-			error.message || 'O seu perfil não tem permissão para esta operação.'
-		);
+		return error.message || "O seu perfil não tem permissão para esta operação."
 	}
 
 	if (error.status === 404) {
-		return error.message || 'O lead selecionado não foi encontrado.';
+		return error.message || "O lead selecionado não foi encontrado."
 	}
 
-	return error.message;
+	return error.message
 }
 
 function buildOwnerOptions(params: {
-	leadOwners: LeadOwnerRecord[];
-	selectedStoreId: string;
+	leadOwners: LeadOwnerRecord[]
+	selectedStoreId: string
 }) {
-	const ownerMap = new Map<string, string>();
+	const ownerMap = new Map<string, string>()
 
 	for (const owner of params.leadOwners) {
 		if (
 			params.selectedStoreId.length > 0 &&
 			!owner.storeIds.includes(params.selectedStoreId)
 		) {
-			continue;
+			continue
 		}
-		ownerMap.set(owner.id, `${owner.name} · ${owner.email}`);
+		ownerMap.set(owner.id, `${owner.name} · ${owner.email}`)
 	}
 
 	return [...ownerMap.entries()]
 		.map(([value, label]) => ({ value, label }))
-		.sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+		.sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
 }
 
 function LeadFormDialog({
@@ -136,43 +132,43 @@ function LeadFormDialog({
 	targetLead,
 	user,
 }: LeadFormDialogProps) {
-	const isEditMode = mode === 'edit';
-	const [submitError, setSubmitError] = useState<string | null>(null);
+	const isEditMode = mode === "edit"
+	const [submitError, setSubmitError] = useState<string | null>(null)
 	const form = useForm<LeadFormValues>({
 		resolver: zodResolver(leadFormSchema),
 		defaultValues: {
-			customerId: '',
-			storeId: '',
-			ownerUserId: user.role === 'ATTENDANT' ? user.id : '',
-			source: 'whatsapp',
-			status: 'NEW',
+			customerId: "",
+			storeId: "",
+			ownerUserId: user.role === "ATTENDANT" ? user.id : "",
+			source: "whatsapp",
+			status: "NEW",
 		},
-	});
+	})
 	const selectedCustomerId = useWatch({
 		control: form.control,
-		name: 'customerId',
-	});
+		name: "customerId",
+	})
 	const selectedStoreId = useWatch({
 		control: form.control,
-		name: 'storeId',
-	});
+		name: "storeId",
+	})
 	const sourceValue = useWatch({
 		control: form.control,
-		name: 'source',
-	});
+		name: "source",
+	})
 	const ownerUserIdValue = useWatch({
 		control: form.control,
-		name: 'ownerUserId',
-	});
+		name: "ownerUserId",
+	})
 	const statusValue = useWatch({
 		control: form.control,
-		name: 'status',
-	});
+		name: "status",
+	})
 
 	useEffect(() => {
 		if (!open) {
-			form.reset();
-			return;
+			form.reset()
+			return
 		}
 
 		if (isEditMode && targetLead) {
@@ -180,20 +176,20 @@ function LeadFormDialog({
 				customerId: targetLead.customerId,
 				storeId: targetLead.storeId,
 				ownerUserId:
-					user.role === 'ATTENDANT' ? user.id : (targetLead.ownerUserId ?? ''),
+					user.role === "ATTENDANT" ? user.id : (targetLead.ownerUserId ?? ""),
 				source: targetLead.source as LeadSource,
 				status: targetLead.status as LeadStatus,
-			});
-			return;
+			})
+			return
 		}
 
 		form.reset({
-			customerId: customers[0]?.id ?? '',
-			storeId: stores[0]?.id ?? '',
-			ownerUserId: user.role === 'ATTENDANT' ? user.id : '',
-			source: 'whatsapp',
-			status: 'NEW',
-		});
+			customerId: customers[0]?.id ?? "",
+			storeId: stores[0]?.id ?? "",
+			ownerUserId: user.role === "ATTENDANT" ? user.id : "",
+			source: "whatsapp",
+			status: "NEW",
+		})
 	}, [
 		customers,
 		form,
@@ -203,31 +199,31 @@ function LeadFormDialog({
 		targetLead,
 		user.id,
 		user.role,
-	]);
+	])
 
 	useEffect(() => {
 		if (!open || isEditMode) {
-			return;
+			return
 		}
 
-		const customerIds = new Set(customers.map((customer) => customer.id));
-		const storeIds = new Set(stores.map((store) => store.id));
-		const currentCustomerId = form.getValues('customerId');
+		const customerIds = new Set(customers.map((customer) => customer.id))
+		const storeIds = new Set(stores.map((store) => store.id))
+		const currentCustomerId = form.getValues("customerId")
 		if (!currentCustomerId || !customerIds.has(currentCustomerId)) {
-			const nextCustomerId = customers[0]?.id ?? '';
+			const nextCustomerId = customers[0]?.id ?? ""
 			if (nextCustomerId) {
-				form.setValue('customerId', nextCustomerId, { shouldValidate: true });
+				form.setValue("customerId", nextCustomerId, { shouldValidate: true })
 			}
 		}
 
-		const currentStoreId = form.getValues('storeId');
+		const currentStoreId = form.getValues("storeId")
 		if (!currentStoreId || !storeIds.has(currentStoreId)) {
-			const nextStoreId = stores[0]?.id ?? '';
+			const nextStoreId = stores[0]?.id ?? ""
 			if (nextStoreId) {
-				form.setValue('storeId', nextStoreId, { shouldValidate: true });
+				form.setValue("storeId", nextStoreId, { shouldValidate: true })
 			}
 		}
-	}, [open, isEditMode, customers, stores, form]);
+	}, [open, isEditMode, customers, stores, form])
 
 	const ownerOptions = useMemo(
 		() =>
@@ -235,12 +231,12 @@ function LeadFormDialog({
 				leadOwners: owners,
 				selectedStoreId,
 			}),
-		[owners, selectedStoreId],
-	);
-	const allowOwnerSelect = user.role !== 'ATTENDANT' && ownerOptions.length > 0;
+		[owners, selectedStoreId]
+	)
+	const allowOwnerSelect = user.role !== "ATTENDANT" && ownerOptions.length > 0
 
 	async function handleSubmit(values: LeadFormValues) {
-		setSubmitError(null);
+		setSubmitError(null)
 
 		try {
 			if (isEditMode) {
@@ -250,19 +246,19 @@ function LeadFormDialog({
 					ownerUserId: values.ownerUserId || null,
 					source: values.source,
 					status: values.status,
-				});
+				})
 			} else {
 				await onSubmit({
 					customerId: values.customerId,
 					storeId: values.storeId,
 					ownerUserId: values.ownerUserId || null,
 					source: values.source,
-				});
+				})
 			}
 
-			onClose();
+			onClose()
 		} catch (error) {
-			setSubmitError(getLeadsErrorMessage(error));
+			setSubmitError(getLeadsErrorMessage(error))
 		}
 	}
 
@@ -270,30 +266,30 @@ function LeadFormDialog({
 		<Dialog
 			onOpenChange={(nextOpen) => {
 				if (nextOpen) {
-					return;
+					return
 				}
-				setSubmitError(null);
-				onClose();
+				setSubmitError(null)
+				onClose()
 			}}
 			open={open}
 		>
-			<DialogContent className="flex min-h-136 max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-152">
+			<DialogContent className="flex max-h-[84vh] min-h-136 max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-152">
 				<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 					<div className="flex items-center gap-4">
 						<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">
 							<Plus className="size-6" />
 						</div>
 						<div className="space-y-1">
-							<p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#d96c3f]">
+							<p className="text-[0.72rem] font-semibold tracking-[0.24em] text-[#d96c3f] uppercase">
 								Leads
 							</p>
 							<DialogTitle>
-								{isEditMode ? 'Editar lead operacional' : 'Novo lead'}
+								{isEditMode ? "Editar lead operacional" : "Novo lead"}
 							</DialogTitle>
 							<DialogDescription className="max-w-2xl">
 								{isEditMode
-									? 'Atualize cliente, loja, origem, responsável e estado sem perder a consistência operacional do funil.'
-									: 'Registre um novo lead com cliente, loja, origem e responsável dentro do seu escopo.'}
+									? "Atualize cliente, loja, origem, responsável e estado sem perder a consistência operacional do funil."
+									: "Registre um novo lead com cliente, loja, origem e responsável dentro do seu escopo."}
 							</DialogDescription>
 						</div>
 					</div>
@@ -303,7 +299,7 @@ function LeadFormDialog({
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
-					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pb-8 pt-7">
+					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pt-7 pb-8">
 						{submitError ? (
 							<div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
 								{submitError}
@@ -327,7 +323,7 @@ function LeadFormDialog({
 									className={leadFormSelectClass}
 									id="lead-form-customer"
 									onChange={(event) =>
-										form.setValue('customerId', event.target.value, {
+										form.setValue("customerId", event.target.value, {
 											shouldDirty: true,
 											shouldValidate: true,
 										})
@@ -373,7 +369,7 @@ function LeadFormDialog({
 										className={leadFormSelectClass}
 										id="lead-form-store"
 										onChange={(event) =>
-											form.setValue('storeId', event.target.value, {
+											form.setValue("storeId", event.target.value, {
 												shouldDirty: true,
 												shouldValidate: true,
 											})
@@ -403,12 +399,12 @@ function LeadFormDialog({
 										id="lead-form-source"
 										onChange={(event) =>
 											form.setValue(
-												'source',
+												"source",
 												event.target.value as LeadSource,
 												{
 													shouldDirty: true,
 													shouldValidate: true,
-												},
+												}
 											)
 										}
 										value={sourceValue}
@@ -428,7 +424,7 @@ function LeadFormDialog({
 
 								<div className="space-y-1.5">
 									<Label htmlFor="lead-form-owner">Responsável</Label>
-									{user.role === 'ATTENDANT' ? (
+									{user.role === "ATTENDANT" ? (
 										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
 											{user.name} (você)
 										</div>
@@ -437,7 +433,7 @@ function LeadFormDialog({
 											className={leadFormSelectClass}
 											id="lead-form-owner"
 											onChange={(event) =>
-												form.setValue('ownerUserId', event.target.value, {
+												form.setValue("ownerUserId", event.target.value, {
 													shouldDirty: true,
 													shouldValidate: true,
 												})
@@ -456,7 +452,7 @@ function LeadFormDialog({
 											Selecione uma loja com responsáveis disponíveis.
 										</div>
 									)}
-									{user.role !== 'ATTENDANT' && !allowOwnerSelect ? (
+									{user.role !== "ATTENDANT" && !allowOwnerSelect ? (
 										<p className="text-xs text-[#6b7687]">
 											Não há responsáveis elegíveis para a loja selecionada
 											dentro do seu escopo atual.
@@ -477,12 +473,12 @@ function LeadFormDialog({
 											id="lead-form-status"
 											onChange={(event) =>
 												form.setValue(
-													'status',
+													"status",
 													event.target.value as LeadStatus,
 													{
 														shouldDirty: true,
 														shouldValidate: true,
-													},
+													}
 												)
 											}
 											value={statusValue}
@@ -504,7 +500,7 @@ function LeadFormDialog({
 						</div>
 					</div>
 
-					<DialogFooter className="shrink-0 px-8 pb-6 pt-4">
+					<DialogFooter className="shrink-0 px-8 pt-4 pb-6">
 						<Button
 							className="rounded-md"
 							onClick={onClose}
@@ -520,17 +516,17 @@ function LeadFormDialog({
 						>
 							{isPending
 								? isEditMode
-									? 'Salvando...'
-									: 'Criando...'
+									? "Salvando..."
+									: "Criando..."
 								: isEditMode
-									? 'Salvar alterações'
-									: 'Criar lead'}
+									? "Salvar alterações"
+									: "Criar lead"}
 						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 function LeadReassignDialog({
@@ -543,49 +539,49 @@ function LeadReassignDialog({
 	targetLead,
 	user,
 }: LeadReassignDialogProps) {
-	const [submitError, setSubmitError] = useState<string | null>(null);
+	const [submitError, setSubmitError] = useState<string | null>(null)
 	const form = useForm<ReassignLeadFormValues>({
 		resolver: zodResolver(reassignLeadSchema),
 		defaultValues: {
-			ownerUserId: '',
+			ownerUserId: "",
 		},
-	});
+	})
 	const ownerUserIdValue = useWatch({
 		control: form.control,
-		name: 'ownerUserId',
-	});
+		name: "ownerUserId",
+	})
 
 	useEffect(() => {
 		if (!open) {
-			form.reset({ ownerUserId: '' });
-			return;
+			form.reset({ ownerUserId: "" })
+			return
 		}
 
 		form.reset({
-			ownerUserId: targetLead?.ownerUserId ?? '',
-		});
-	}, [form, open, targetLead]);
+			ownerUserId: targetLead?.ownerUserId ?? "",
+		})
+	}, [form, open, targetLead])
 
 	async function handleSubmit(values: ReassignLeadFormValues) {
-		setSubmitError(null);
+		setSubmitError(null)
 		try {
-			await onSubmit({ ownerUserId: values.ownerUserId || null });
-			onClose();
+			await onSubmit({ ownerUserId: values.ownerUserId || null })
+			onClose()
 		} catch (error) {
-			setSubmitError(getLeadsErrorMessage(error));
+			setSubmitError(getLeadsErrorMessage(error))
 		}
 	}
 
-	const allowOwnerSelect = ownerOptions.length > 0;
+	const allowOwnerSelect = ownerOptions.length > 0
 
 	return (
 		<Dialog
 			onOpenChange={(nextOpen) => {
 				if (nextOpen) {
-					return;
+					return
 				}
-				setSubmitError(null);
-				onClose();
+				setSubmitError(null)
+				onClose()
 			}}
 			open={open}
 		>
@@ -602,7 +598,7 @@ function LeadReassignDialog({
 					onSubmit={form.handleSubmit(handleSubmit)}
 				>
 					<div className="rounded-xl border border-border/75 bg-[#f8fafc] px-3 py-3 text-sm text-[#6b7687]">
-						Responsável atual:{' '}
+						Responsável atual:{" "}
 						<span className="font-medium text-[#1b2430]">
 							{currentOwnerLabel}
 						</span>
@@ -618,10 +614,10 @@ function LeadReassignDialog({
 						<Label htmlFor="lead-reassign-owner">Novo responsável</Label>
 						{allowOwnerSelect ? (
 							<select
-								className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+								className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 								id="lead-reassign-owner"
 								onChange={(event) =>
-									form.setValue('ownerUserId', event.target.value, {
+									form.setValue("ownerUserId", event.target.value, {
 										shouldDirty: true,
 										shouldValidate: true,
 									})
@@ -637,9 +633,9 @@ function LeadReassignDialog({
 							</select>
 						) : (
 							<div className="flex h-10 items-center rounded-md border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
-								{user.role === 'ATTENDANT'
-									? 'Reatribuição indisponível para este papel'
-									: 'Nenhum responsável elegível dentro do seu escopo.'}
+								{user.role === "ATTENDANT"
+									? "Reatribuição indisponível para este papel"
+									: "Nenhum responsável elegível dentro do seu escopo."}
 							</div>
 						)}
 						{!allowOwnerSelect ? (
@@ -655,7 +651,7 @@ function LeadReassignDialog({
 						) : null}
 					</div>
 
-					<DialogFooter className="px-0 pb-0 pt-4">
+					<DialogFooter className="px-0 pt-4 pb-0">
 						<Button
 							className="rounded-md"
 							onClick={onClose}
@@ -669,13 +665,13 @@ function LeadReassignDialog({
 							disabled={isPending}
 							type="submit"
 						>
-							{isPending ? 'Aplicando...' : 'Aplicar reatribuição'}
+							{isPending ? "Aplicando..." : "Aplicar reatribuição"}
 						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 function LeadConfirmDialog({
@@ -701,7 +697,7 @@ function LeadConfirmDialog({
 				</DialogHeader>
 				<div className="space-y-4 px-6 py-5">
 					<div className="flex items-start gap-3 rounded-xl border border-border/75 bg-[#f8fafc] px-4 py-4 text-sm text-[#6b7687]">
-						{icon === 'convert' ? (
+						{icon === "convert" ? (
 							<CheckCheck className="mt-0.5 size-4 text-[#d96c3f]" />
 						) : (
 							<Trash2 className="mt-0.5 size-4 text-destructive" />
@@ -727,16 +723,16 @@ function LeadConfirmDialog({
 						className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
 						disabled={isPending}
 						onClick={() => {
-							void onConfirm();
+							void onConfirm()
 						}}
 						type="button"
 					>
-						{isPending ? 'Processando...' : confirmLabel}
+						{isPending ? "Processando..." : confirmLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 export {
@@ -745,4 +741,4 @@ export {
 	LeadConfirmDialog,
 	LeadFormDialog,
 	LeadReassignDialog,
-};
+}

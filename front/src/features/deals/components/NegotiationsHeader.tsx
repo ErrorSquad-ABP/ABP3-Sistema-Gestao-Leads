@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 function NegotiationsHeader() {
 	return (
@@ -10,7 +10,7 @@ function NegotiationsHeader() {
 				Gerencie seu funil e feche mais negócios.
 			</p>
 		</div>
-	);
+	)
 }
 
-export { NegotiationsHeader };
+export { NegotiationsHeader }

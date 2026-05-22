@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { queryKeys } from '@/lib/constants/query-keys';
+import { queryKeys } from "@/lib/constants/query-keys"
 
 import {
 	convertLead,
@@ -8,31 +8,31 @@ import {
 	deleteLead,
 	reassignLead,
 	updateLead,
-} from '../api/leads.service';
+} from "../api/leads.service"
 import type {
 	CreateLeadInput,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from '../model/leads.model';
+} from "../model/leads.model"
 
 function useCreateLeadMutation() {
-	const queryClient = useQueryClient();
+	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: (input: CreateLeadInput) => createLead(input),
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.catalogRoot,
-			});
+			})
 		},
-	});
+	})
 }
 
 function useUpdateLeadMutation() {
-	const queryClient = useQueryClient();
+	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: (input: { leadId: string; payload: UpdateLeadInput }) =>
@@ -40,22 +40,22 @@ function useUpdateLeadMutation() {
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.catalogRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(variables.leadId),
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detailHub(variables.leadId),
-			});
+			})
 		},
-	});
+	})
 }
 
 function useReassignLeadMutation() {
-	const queryClient = useQueryClient();
+	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: (input: { leadId: string; payload: ReassignLeadInput }) =>
@@ -63,62 +63,62 @@ function useReassignLeadMutation() {
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.catalogRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(variables.leadId),
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detailHub(variables.leadId),
-			});
+			})
 		},
-	});
+	})
 }
 
 function useConvertLeadMutation() {
-	const queryClient = useQueryClient();
+	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: (leadId: string) => convertLead(leadId),
 		onSuccess: async (_data, leadId) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.catalogRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(leadId),
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detailHub(leadId),
-			});
+			})
 		},
-	});
+	})
 }
 
 function useDeleteLeadMutation() {
-	const queryClient = useQueryClient();
+	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: (leadId: string) => deleteLead(leadId),
 		onSuccess: async (_data, leadId) => {
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.listRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.catalogRoot,
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detail(leadId),
-			});
+			})
 			await queryClient.invalidateQueries({
 				queryKey: queryKeys.leads.detailHub(leadId),
-			});
+			})
 		},
-	});
+	})
 }
 
 export {
@@ -127,4 +127,4 @@ export {
 	useDeleteLeadMutation,
 	useReassignLeadMutation,
 	useUpdateLeadMutation,
-};
+}

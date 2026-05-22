@@ -1,14 +1,14 @@
-'use client';
+"use client"
 
-import { Building2, Edit3, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Building2, Edit3, MoreHorizontal, Trash2 } from "lucide-react"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu"
 import {
 	Table,
 	TableBody,
@@ -16,27 +16,27 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table"
 
-import type { StoreTableRow } from '../lib/store-catalog-view';
-import type { StoreRecord } from '../model/stores.model';
+import type { StoreTableRow } from "../lib/store-catalog-view"
+import type { StoreRecord } from "../model/stores.model"
 
 type StoresTableProps = {
-	canManageStores: boolean;
-	onDelete: (store: StoreRecord) => void;
-	onEdit: (store: StoreRecord) => void;
-	rows: StoreTableRow[];
-};
+	canManageStores: boolean
+	onDelete: (store: StoreRecord) => void
+	onEdit: (store: StoreRecord) => void
+	rows: StoreTableRow[]
+}
 
 function formatCount(value: number) {
-	return Math.round(value).toLocaleString('pt-BR');
+	return Math.round(value).toLocaleString("pt-BR")
 }
 
 function getTeamLabel(count: number) {
 	if (count === 1) {
-		return '1 equipe';
+		return "1 equipe"
 	}
-	return `${count} equipes`;
+	return `${count} equipes`
 }
 
 function StoresTable({
@@ -110,7 +110,7 @@ function StoresTable({
 											{row.ownerName}
 										</p>
 										<p className="truncate text-[11px] text-[#667085]">
-											{row.ownerEmail ?? 'Gerente'}
+											{row.ownerEmail ?? "Gerente"}
 										</p>
 									</div>
 								</div>
@@ -183,7 +183,7 @@ function StoresTable({
 				</TableBody>
 			</Table>
 		</div>
-	);
+	)
 }
 
-export { StoresTable };
+export { StoresTable }

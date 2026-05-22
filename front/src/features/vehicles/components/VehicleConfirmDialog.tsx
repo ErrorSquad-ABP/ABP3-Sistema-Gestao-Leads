@@ -1,26 +1,26 @@
-'use client';
+"use client"
 
-import { Trash2 } from 'lucide-react';
+import { Trash2 } from "lucide-react"
 
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog"
 import {
 	VehicleModalHeader,
 	VehicleModalInfoBanner,
 	VehicleModalSection,
 	vehicleModalContentClass,
-} from './VehicleModalLayout';
+} from "./VehicleModalLayout"
 
 type VehicleConfirmDialogProps = {
-	confirmLabel: string;
-	description: string;
-	error: string | null;
-	isPending: boolean;
-	onClose: () => void;
-	onConfirm: () => Promise<void>;
-	open: boolean;
-	title: string;
-};
+	confirmLabel: string
+	description: string
+	error: string | null
+	isPending: boolean
+	onClose: () => void
+	onConfirm: () => Promise<void>
+	open: boolean
+	title: string
+}
 
 function VehicleConfirmDialog({
 	confirmLabel,
@@ -40,7 +40,7 @@ function VehicleConfirmDialog({
 					icon={Trash2}
 					title={title}
 				/>
-				<div className="space-y-4 px-7 pb-5 pt-3">
+				<div className="space-y-4 px-7 pt-3 pb-5">
 					<VehicleModalInfoBanner>{description}</VehicleModalInfoBanner>
 					<VehicleModalSection
 						description="Confirme a ação para aplicar a alteração no catálogo."
@@ -57,7 +57,7 @@ function VehicleConfirmDialog({
 						</div>
 					) : null}
 				</div>
-				<DialogFooter className="border-t-0 px-7 pb-6 pt-1">
+				<DialogFooter className="border-t-0 px-7 pt-1 pb-6">
 					<Button
 						className="rounded-lg"
 						onClick={onClose}
@@ -72,12 +72,12 @@ function VehicleConfirmDialog({
 						onClick={() => void onConfirm()}
 						type="button"
 					>
-						{isPending ? 'Processando...' : confirmLabel}
+						{isPending ? "Processando..." : confirmLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
-export { VehicleConfirmDialog };
+export { VehicleConfirmDialog }

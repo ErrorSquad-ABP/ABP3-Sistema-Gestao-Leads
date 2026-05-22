@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
 	ChevronDown,
@@ -12,11 +12,11 @@ import {
 	Tag,
 	Trophy,
 	User,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
+} from "lucide-react"
+import { useMemo, useState } from "react"
+import { toast } from "sonner"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	Dialog,
 	DialogContent,
@@ -24,193 +24,190 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useLeadCustomersQuery } from '@/features/leads/hooks/leads.catalog.queries';
-import { useLeadsListQuery } from '@/features/leads/hooks/leads.queries';
-import type { LeadListItem } from '@/features/leads/model/leads.model';
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
-import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
-import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
-import { ApiError } from '@/lib/http/api-error';
-import { useCreateDealForLeadMutation } from '../hooks/deals.mutations';
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useLeadCustomersQuery } from "@/features/leads/hooks/leads.catalog.queries"
+import { useLeadsListQuery } from "@/features/leads/hooks/leads.queries"
+import type { LeadListItem } from "@/features/leads/model/leads.model"
+import type { AuthenticatedUser } from "@/features/login/types/login.types"
+import { useVehiclesListQuery } from "@/features/vehicles/hooks/vehicles.queries"
+import { formatVehicleDealSelectLabel } from "@/features/vehicles/lib/vehicle-formatters"
+import type { Vehicle } from "@/features/vehicles/model/vehicles.model"
+import { ApiError } from "@/lib/http/api-error"
+import { useCreateDealForLeadMutation } from "../hooks/deals.mutations"
 import {
 	apiDecimalStringToCentsDigits,
 	centsDigitsToApiDecimalString,
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
-} from '../lib/deal-money-input';
-import { dealDarkSidebarToast } from '../lib/deal-toast-style';
-import type {
-	DealCreateFormInput,
-	DealCreateInput,
-} from '../model/deals.model';
-import { dealCreateSchema } from '../schemas/deal-management.schema';
-import { getDealsErrorMessage } from './DealFormDialog';
+} from "../lib/deal-money-input"
+import { dealDarkSidebarToast } from "../lib/deal-toast-style"
+import type { DealCreateFormInput, DealCreateInput } from "../model/deals.model"
+import { dealCreateSchema } from "../schemas/deal-management.schema"
+import { getDealsErrorMessage } from "./DealFormDialog"
 
 type DealCreateDialogProps = {
-	onClose: () => void;
-	open: boolean;
-	user: AuthenticatedUser;
-};
+	onClose: () => void
+	open: boolean
+	user: AuthenticatedUser
+}
 
 function getLeadOptionLabel(
 	lead: LeadListItem,
-	customers: { id: string; name: string }[],
+	customers: { id: string; name: string }[]
 ) {
 	const customerName =
 		customers.find((customer) => customer.id === lead.customerId)?.name ??
-		'Cliente não identificado';
-	return `${customerName} · ${lead.id.slice(0, 8)}`;
+		"Cliente não identificado"
+	return `${customerName} · ${lead.id.slice(0, 8)}`
 }
 
 function normalizeSearch(value: string) {
-	return value.trim().toLowerCase();
+	return value.trim().toLowerCase()
 }
 
 const fieldShellClass =
-	'relative flex h-10 items-center rounded-xl border border-[#d9dee7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.025)] transition-colors focus-within:border-[#d76b34]/45';
+	"relative flex h-10 items-center rounded-xl border border-[#d9dee7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.025)] transition-colors focus-within:border-[#d76b34]/45"
 
 const inputClass =
-	'h-full rounded-xl border-0 bg-transparent px-3 text-[13px] shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0';
+	"h-full rounded-xl border-0 bg-transparent px-3 text-[13px] shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0"
 
 const searchableInputClass =
-	'h-full w-full rounded-xl border-0 bg-transparent py-0 pl-10 pr-9 text-[13px] text-[#1b2430] shadow-none outline-none placeholder:text-[#9aa3b2] focus-visible:border-transparent focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60';
+	"h-full w-full rounded-xl border-0 bg-transparent py-0 pl-10 pr-9 text-[13px] text-[#1b2430] shadow-none outline-none placeholder:text-[#9aa3b2] focus-visible:border-transparent focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
 
 const dropdownPanelClass =
-	'absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-36 overflow-y-auto rounded-xl border border-[#e5e9f0] bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.12)]';
+	"absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-36 overflow-y-auto rounded-xl border border-[#e5e9f0] bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.12)]"
 
 const dropdownItemClass =
-	'w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35';
+	"w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35"
 
 function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
-	const leadsQuery = useLeadsListQuery(user, 1, { withoutOpenDeal: true });
-	const customersQuery = useLeadCustomersQuery();
-	const leads = useMemo(() => leadsQuery.data ?? [], [leadsQuery.data]);
+	const leadsQuery = useLeadsListQuery(user, 1, { withoutOpenDeal: true })
+	const customersQuery = useLeadCustomersQuery()
+	const leads = useMemo(() => leadsQuery.data ?? [], [leadsQuery.data])
 
-	const [leadId, setLeadId] = useState('');
+	const [leadId, setLeadId] = useState("")
 	const selectedLead = useMemo(
 		() => leads.find((lead) => lead.id === leadId) ?? null,
-		[leadId, leads],
-	);
-	const createMutation = useCreateDealForLeadMutation(leadId);
+		[leadId, leads]
+	)
+	const createMutation = useCreateDealForLeadMutation(leadId)
 	const vehiclesQuery = useVehiclesListQuery(
-		{ status: 'AVAILABLE' },
+		{ status: "AVAILABLE" },
 		{
 			enabled: Boolean(open && selectedLead),
-		},
-	);
+		}
+	)
 	const availableVehicles = useMemo(
 		() =>
 			(vehiclesQuery.data ?? []).filter(
 				(vehicle) =>
 					vehicle.storeId === selectedLead?.storeId &&
-					vehicle.status === 'AVAILABLE',
+					vehicle.status === "AVAILABLE"
 			),
-		[selectedLead?.storeId, vehiclesQuery.data],
-	);
+		[selectedLead?.storeId, vehiclesQuery.data]
+	)
 
-	const [vehicleId, setVehicleId] = useState('');
-	const [leadSearch, setLeadSearch] = useState('');
-	const [vehicleSearch, setVehicleSearch] = useState('');
-	const [leadDropdownOpen, setLeadDropdownOpen] = useState(false);
-	const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
-	const [title, setTitle] = useState('');
-	const [valueCentsDigits, setValueCentsDigits] = useState('');
-	const [dialogError, setDialogError] = useState<string | null>(null);
+	const [vehicleId, setVehicleId] = useState("")
+	const [leadSearch, setLeadSearch] = useState("")
+	const [vehicleSearch, setVehicleSearch] = useState("")
+	const [leadDropdownOpen, setLeadDropdownOpen] = useState(false)
+	const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false)
+	const [title, setTitle] = useState("")
+	const [valueCentsDigits, setValueCentsDigits] = useState("")
+	const [dialogError, setDialogError] = useState<string | null>(null)
 
 	const filteredLeads = useMemo(() => {
-		const search = normalizeSearch(leadSearch);
+		const search = normalizeSearch(leadSearch)
 		if (!search) {
-			return leads;
+			return leads
 		}
 		return leads.filter((lead) =>
 			normalizeSearch(
-				getLeadOptionLabel(lead, customersQuery.data ?? []),
-			).includes(search),
-		);
-	}, [customersQuery.data, leadSearch, leads]);
+				getLeadOptionLabel(lead, customersQuery.data ?? [])
+			).includes(search)
+		)
+	}, [customersQuery.data, leadSearch, leads])
 
 	const filteredVehicles = useMemo(() => {
-		const search = normalizeSearch(vehicleSearch);
+		const search = normalizeSearch(vehicleSearch)
 		if (!search) {
-			return availableVehicles;
+			return availableVehicles
 		}
 		return availableVehicles.filter((vehicle) =>
-			normalizeSearch(formatVehicleDealSelectLabel(vehicle)).includes(search),
-		);
-	}, [availableVehicles, vehicleSearch]);
+			normalizeSearch(formatVehicleDealSelectLabel(vehicle)).includes(search)
+		)
+	}, [availableVehicles, vehicleSearch])
 
 	function resetForm() {
-		setLeadId('');
-		setVehicleId('');
-		setLeadSearch('');
-		setVehicleSearch('');
-		setLeadDropdownOpen(false);
-		setVehicleDropdownOpen(false);
-		setTitle('');
-		setValueCentsDigits('');
-		setDialogError(null);
+		setLeadId("")
+		setVehicleId("")
+		setLeadSearch("")
+		setVehicleSearch("")
+		setLeadDropdownOpen(false)
+		setVehicleDropdownOpen(false)
+		setTitle("")
+		setValueCentsDigits("")
+		setDialogError(null)
 	}
 
 	function handleSelectLead(lead: LeadListItem) {
-		setLeadId(lead.id);
-		setLeadSearch(getLeadOptionLabel(lead, customersQuery.data ?? []));
-		setVehicleId('');
-		setVehicleSearch('');
-		setValueCentsDigits('');
-		setLeadDropdownOpen(false);
+		setLeadId(lead.id)
+		setLeadSearch(getLeadOptionLabel(lead, customersQuery.data ?? []))
+		setVehicleId("")
+		setVehicleSearch("")
+		setValueCentsDigits("")
+		setLeadDropdownOpen(false)
 	}
 
 	function handleSelectVehicle(vehicle: Vehicle) {
-		setVehicleId(vehicle.id);
-		setVehicleSearch(formatVehicleDealSelectLabel(vehicle));
-		setValueCentsDigits(apiDecimalStringToCentsDigits(vehicle.price));
-		setVehicleDropdownOpen(false);
+		setVehicleId(vehicle.id)
+		setVehicleSearch(formatVehicleDealSelectLabel(vehicle))
+		setValueCentsDigits(apiDecimalStringToCentsDigits(vehicle.price))
+		setVehicleDropdownOpen(false)
 	}
 
 	async function handleCreateSubmit() {
 		if (!leadId) {
-			const message = 'Selecione um lead para criar a negociação.';
-			setDialogError(message);
+			const message = "Selecione um lead para criar a negociação."
+			setDialogError(message)
 			toast.warning(message, {
-				id: 'deal-create-missing-lead',
+				id: "deal-create-missing-lead",
 				...dealDarkSidebarToast,
-			});
-			return;
+			})
+			return
 		}
-		setDialogError(null);
+		setDialogError(null)
 		try {
-			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits);
+			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits)
 			const parsed = dealCreateSchema.parse({
 				vehicleId,
 				title,
 				value: valueAsApi,
-				stage: 'INITIAL_CONTACT',
-			} satisfies DealCreateFormInput) as DealCreateInput;
-			await createMutation.mutateAsync(parsed);
-			toast.success('Negociação criada com sucesso.', {
+				stage: "INITIAL_CONTACT",
+			} satisfies DealCreateFormInput) as DealCreateInput
+			await createMutation.mutateAsync(parsed)
+			toast.success("Negociação criada com sucesso.", {
 				...dealDarkSidebarToast,
-			});
-			resetForm();
-			onClose();
+			})
+			resetForm()
+			onClose()
 		} catch (error) {
-			const message = getDealsErrorMessage(error);
-			setDialogError(message);
+			const message = getDealsErrorMessage(error)
+			setDialogError(message)
 			toast.error(message, {
 				...dealDarkSidebarToast,
-			});
+			})
 		}
 	}
 
 	return (
 		<Dialog
 			onOpenChange={(nextOpen) => {
-				if (nextOpen) return;
-				resetForm();
-				onClose();
+				if (nextOpen) return
+				resetForm()
+				onClose()
 			}}
 			open={open}
 		>
@@ -220,7 +217,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						<CirclePlus className="size-6" />
 					</div>
 					<div className="min-w-0 space-y-1">
-						<DialogTitle className="text-[1.35rem] font-bold leading-tight tracking-[-0.02em] text-[#1b2430]">
+						<DialogTitle className="text-[1.35rem] leading-tight font-bold tracking-[-0.02em] text-[#1b2430]">
 							Nova negociação
 						</DialogTitle>
 						<DialogDescription className="space-y-0 text-[12.5px] leading-[18px] text-[#7a8494]">
@@ -246,7 +243,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						>
 							{leadsQuery.error instanceof ApiError
 								? leadsQuery.error.message
-								: 'Não foi possível carregar os leads.'}
+								: "Não foi possível carregar os leads."}
 						</div>
 					) : null}
 					<div className="space-y-1">
@@ -264,23 +261,23 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								disabled={leadsQuery.isPending || leads.length === 0}
 								id="deal-create-lead"
 								onChange={(e) => {
-									setLeadSearch(e.target.value);
-									setLeadId('');
-									setVehicleId('');
-									setVehicleSearch('');
-									setValueCentsDigits('');
-									setLeadDropdownOpen(true);
+									setLeadSearch(e.target.value)
+									setLeadId("")
+									setVehicleId("")
+									setVehicleSearch("")
+									setValueCentsDigits("")
+									setLeadDropdownOpen(true)
 								}}
 								onBlur={() => {
-									window.setTimeout(() => setLeadDropdownOpen(false), 120);
+									window.setTimeout(() => setLeadDropdownOpen(false), 120)
 								}}
 								onFocus={() => setLeadDropdownOpen(true)}
 								placeholder={
 									leadsQuery.isPending
-										? 'Carregando leads...'
+										? "Carregando leads..."
 										: leads.length === 0
-											? 'Nenhum lead disponível'
-											: 'Selecione um lead'
+											? "Nenhum lead disponível"
+											: "Selecione um lead"
 								}
 								value={leadSearch}
 							/>
@@ -293,8 +290,8 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 												key={lead.id}
 												className={dropdownItemClass}
 												onMouseDown={(event) => {
-													event.preventDefault();
-													handleSelectLead(lead);
+													event.preventDefault()
+													handleSelectLead(lead)
 												}}
 												type="button"
 											>
@@ -318,7 +315,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 							className="text-[12.5px] font-semibold text-[#1b2430]"
 							htmlFor="deal-create-vehicle"
 						>
-							Veículo{' '}
+							Veículo{" "}
 							<span className="text-[color:var(--brand-accent)]">*</span>
 						</Label>
 						<div className={fieldShellClass}>
@@ -329,21 +326,21 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								disabled={!leadId || vehiclesQuery.isPending}
 								id="deal-create-vehicle"
 								onChange={(e) => {
-									setVehicleSearch(e.target.value);
-									setVehicleId('');
-									setValueCentsDigits('');
-									setVehicleDropdownOpen(true);
+									setVehicleSearch(e.target.value)
+									setVehicleId("")
+									setValueCentsDigits("")
+									setVehicleDropdownOpen(true)
 								}}
 								onBlur={() => {
-									window.setTimeout(() => setVehicleDropdownOpen(false), 120);
+									window.setTimeout(() => setVehicleDropdownOpen(false), 120)
 								}}
 								onFocus={() => setVehicleDropdownOpen(true)}
 								placeholder={
 									vehiclesQuery.isPending
-										? 'Carregando veículos disponíveis...'
+										? "Carregando veículos disponíveis..."
 										: !leadId
-											? 'Buscar veículo disponível...'
-											: 'Buscar veículo disponível...'
+											? "Buscar veículo disponível..."
+											: "Buscar veículo disponível..."
 								}
 								value={vehicleSearch}
 							/>
@@ -359,8 +356,8 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 												key={vehicle.id}
 												className={dropdownItemClass}
 												onMouseDown={(event) => {
-													event.preventDefault();
-													handleSelectVehicle(vehicle);
+													event.preventDefault()
+													handleSelectVehicle(vehicle)
 												}}
 												type="button"
 											>
@@ -379,11 +376,11 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 							<p className="text-[11.5px] leading-4 text-destructive">
 								{vehiclesQuery.error instanceof ApiError
 									? vehiclesQuery.error.message
-									: 'Não foi possível carregar veículos disponíveis.'}
+									: "Não foi possível carregar veículos disponíveis."}
 							</p>
 						) : vehiclesQuery.isSuccess &&
-							leadId &&
-							availableVehicles.length === 0 ? (
+						  leadId &&
+						  availableVehicles.length === 0 ? (
 							<p className="text-[11.5px] leading-4 text-[#6b7687]">
 								Nenhum veículo livre para negociação na loja deste lead.
 							</p>
@@ -408,7 +405,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								className="text-[12.5px] font-semibold text-[#1b2430]"
 								htmlFor="deal-create-title"
 							>
-								Título{' '}
+								Título{" "}
 								<span className="text-[color:var(--brand-accent)]">*</span>
 							</Label>
 							<div className={fieldShellClass}>
@@ -430,7 +427,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								className="text-[12.5px] font-semibold text-[#1b2430]"
 								htmlFor="deal-create-value"
 							>
-								Valor{' '}
+								Valor{" "}
 								<span className="text-[color:var(--brand-accent)]">*</span>
 							</Label>
 							<div className={fieldShellClass}>
@@ -444,7 +441,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 									inputMode="numeric"
 									onChange={(e) =>
 										setValueCentsDigits(
-											sanitizeMoneyDigitsInput(e.target.value),
+											sanitizeMoneyDigitsInput(e.target.value)
 										)
 									}
 									placeholder="R$ 0,00"
@@ -522,12 +519,12 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						onClick={() => void handleCreateSubmit()}
 					>
 						<Rocket className="size-4" />
-						{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
+						{createMutation.isPending ? "Criando..." : "Criar negociação"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
-export { DealCreateDialog };
+export { DealCreateDialog }

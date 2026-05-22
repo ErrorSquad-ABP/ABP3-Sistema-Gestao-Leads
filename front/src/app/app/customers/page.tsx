@@ -1,7 +1,7 @@
-import { CustomersManagementScreen } from '@/features/customers/components/CustomersManagementScreen';
+import { CustomersManagementScreen } from "@/features/customers/components/CustomersManagementScreen"
 
 function CustomersPage() {
-	return <CustomersManagementScreen />;
+	return <CustomersManagementScreen />
 }
 
-export default CustomersPage;
+export default CustomersPage

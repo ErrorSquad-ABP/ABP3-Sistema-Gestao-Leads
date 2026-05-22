@@ -1,7 +1,7 @@
-import { redirectToHomeRouteForRequestUser } from '@/lib/auth/session';
+import { redirectToHomeRouteForRequestUser } from "@/lib/auth/session"
 
 async function AppEntryPage() {
-	await redirectToHomeRouteForRequestUser();
+	await redirectToHomeRouteForRequestUser()
 }
 
-export default AppEntryPage;
+export default AppEntryPage

@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from "zod"
 
-import { ApiError } from '@/lib/http/api-error';
+import { ApiError } from "@/lib/http/api-error"
 
 const leadDetailSchema = z.object({
 	id: z.string().uuid(),
@@ -10,7 +10,7 @@ const leadDetailSchema = z.object({
 	source: z.string(),
 	status: z.string(),
 	vehicleInterestText: z.string().nullable(),
-});
+})
 
 const leadDetailHubSchema = z.object({
 	lead: z.object({
@@ -51,7 +51,7 @@ const leadDetailHubSchema = z.object({
 			closedAt: z.string().datetime().nullable(),
 			createdAt: z.string().datetime(),
 			updatedAt: z.string().datetime(),
-		}),
+		})
 	),
 	timeline: z.array(
 		z.object({
@@ -68,7 +68,7 @@ const leadDetailHubSchema = z.object({
 				.nullable(),
 			metadata: z.record(z.string(), z.unknown()).nullable(),
 			createdAt: z.string().datetime(),
-		}),
+		})
 	),
 	permissions: z.object({
 		canEdit: z.boolean(),
@@ -76,26 +76,26 @@ const leadDetailHubSchema = z.object({
 		canConvert: z.boolean(),
 		canManageDeals: z.boolean(),
 	}),
-});
+})
 
 function parseLeadDetailResponse(data: unknown) {
-	const parsed = leadDetailSchema.safeParse(data);
+	const parsed = leadDetailSchema.safeParse(data)
 	if (!parsed.success) {
-		throw new ApiError('Resposta da API em formato inesperado.', 502, {
-			code: 'leads.detail.invalid_response_shape',
-		});
+		throw new ApiError("Resposta da API em formato inesperado.", 502, {
+			code: "leads.detail.invalid_response_shape",
+		})
 	}
-	return parsed.data;
+	return parsed.data
 }
 
 function parseLeadDetailHubResponse(data: unknown) {
-	const parsed = leadDetailHubSchema.safeParse(data);
+	const parsed = leadDetailHubSchema.safeParse(data)
 	if (!parsed.success) {
-		throw new ApiError('Resposta da API em formato inesperado.', 502, {
-			code: 'leads.detail_hub.invalid_response_shape',
-		});
+		throw new ApiError("Resposta da API em formato inesperado.", 502, {
+			code: "leads.detail_hub.invalid_response_shape",
+		})
 	}
-	return parsed.data;
+	return parsed.data
 }
 
 export {
@@ -103,4 +103,4 @@ export {
 	leadDetailSchema,
 	parseLeadDetailHubResponse,
 	parseLeadDetailResponse,
-};
+}

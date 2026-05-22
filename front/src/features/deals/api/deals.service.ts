@@ -1,110 +1,110 @@
-import { apiFetch } from '@/lib/http/api-client';
+import { apiFetch } from "@/lib/http/api-client"
 
 import {
 	parseDealPipelineResponse,
 	parseDealPipelineStageResponse,
 	parseDealsByLeadListResponse,
 	parseDealsPagedResponse,
-} from '../schemas/deal-list.schema';
+} from "../schemas/deal-list.schema"
 import {
 	parseDealHistoryResponse,
 	parseDealResponse,
-} from '../schemas/deal.schema';
+} from "../schemas/deal.schema"
 import type {
 	DealCreateInput,
 	DealPipelineQuery,
 	DealPipelineStageQuery,
 	DealUpdateInput,
-} from '../model/deals.model';
+} from "../model/deals.model"
 
 type ListDealsQuery = {
-	storeId?: string;
-	ownerUserId?: string;
-	status?: 'OPEN' | 'WON' | 'LOST';
-	page: number;
-	limit: number;
-};
+	storeId?: string
+	ownerUserId?: string
+	status?: "OPEN" | "WON" | "LOST"
+	page: number
+	limit: number
+}
 
 function dealsListQuery(query: ListDealsQuery) {
 	const params = new URLSearchParams({
 		page: String(query.page),
 		limit: String(query.limit),
-	});
+	})
 	if (query.storeId) {
-		params.set('storeId', query.storeId);
+		params.set("storeId", query.storeId)
 	}
 	if (query.ownerUserId) {
-		params.set('ownerUserId', query.ownerUserId);
+		params.set("ownerUserId", query.ownerUserId)
 	}
 	if (query.status) {
-		params.set('status', query.status);
+		params.set("status", query.status)
 	}
-	return params.toString();
+	return params.toString()
 }
 
 function dealsPipelineQuery(
-	query: DealPipelineQuery | Omit<DealPipelineStageQuery, 'stage'>,
+	query: DealPipelineQuery | Omit<DealPipelineStageQuery, "stage">
 ) {
 	const params = new URLSearchParams({
 		pageSize: String(query.pageSize),
-	});
-	if ('page' in query) {
-		params.set('page', String(query.page));
+	})
+	if ("page" in query) {
+		params.set("page", String(query.page))
 	}
 	if (query.status) {
-		params.set('status', query.status);
+		params.set("status", query.status)
 	}
 	if (query.importance) {
-		params.set('importance', query.importance);
+		params.set("importance", query.importance)
 	}
 	if (query.valueSort) {
-		params.set('valueSort', query.valueSort);
+		params.set("valueSort", query.valueSort)
 	}
-	const search = query.search?.trim();
+	const search = query.search?.trim()
 	if (search) {
-		params.set('search', search);
+		params.set("search", search)
 	}
-	return params.toString();
+	return params.toString()
 }
 
 async function listDealsPaged(query: ListDealsQuery, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/deals?${dealsListQuery(query)}`, {
 		signal,
-	});
-	return parseDealsPagedResponse(raw);
+	})
+	return parseDealsPagedResponse(raw)
 }
 
 async function getDealsPipeline(
 	query: DealPipelineQuery,
-	signal?: AbortSignal,
+	signal?: AbortSignal
 ) {
 	const raw = await apiFetch<unknown>(
 		`/api/deals/pipeline?${dealsPipelineQuery(query)}`,
-		{ signal },
-	);
-	return parseDealPipelineResponse(raw);
+		{ signal }
+	)
+	return parseDealPipelineResponse(raw)
 }
 
 async function getDealsPipelineStage(
 	query: DealPipelineStageQuery,
-	signal?: AbortSignal,
+	signal?: AbortSignal
 ) {
-	const { stage, ...params } = query;
+	const { stage, ...params } = query
 	const raw = await apiFetch<unknown>(
 		`/api/deals/pipeline/stages/${stage}?${dealsPipelineQuery(params)}`,
-		{ signal },
-	);
-	return parseDealPipelineStageResponse(raw);
+		{ signal }
+	)
+	return parseDealPipelineStageResponse(raw)
 }
 
 async function listDealsByLead(leadId: string, signal?: AbortSignal) {
-	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/deals`, { signal });
-	return parseDealsByLeadListResponse(raw);
+	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/deals`, { signal })
+	return parseDealsByLeadListResponse(raw)
 }
 
 async function createDealForLead(leadId: string, input: DealCreateInput) {
 	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/deals`, {
-		method: 'POST',
+		method: "POST",
 		body: {
 			vehicleId: input.vehicleId,
 			title: input.title,
@@ -112,32 +112,32 @@ async function createDealForLead(leadId: string, input: DealCreateInput) {
 			importance: input.importance,
 			stage: input.stage,
 		},
-	});
-	return parseDealResponse(raw);
+	})
+	return parseDealResponse(raw)
 }
 
 async function findDeal(dealId: string, signal?: AbortSignal) {
-	const raw = await apiFetch<unknown>(`/api/deals/${dealId}`, { signal });
-	return parseDealResponse(raw);
+	const raw = await apiFetch<unknown>(`/api/deals/${dealId}`, { signal })
+	return parseDealResponse(raw)
 }
 
 async function listDealHistory(dealId: string, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/deals/${dealId}/history`, {
 		signal,
-	});
-	return parseDealHistoryResponse(raw);
+	})
+	return parseDealHistoryResponse(raw)
 }
 
 async function updateDeal(dealId: string, input: DealUpdateInput) {
 	const raw = await apiFetch<unknown>(`/api/deals/${dealId}`, {
-		method: 'PATCH',
+		method: "PATCH",
 		body: input,
-	});
-	return parseDealResponse(raw);
+	})
+	return parseDealResponse(raw)
 }
 
 async function deleteDeal(dealId: string) {
-	await apiFetch(`/api/deals/${dealId}`, { method: 'DELETE' });
+	await apiFetch(`/api/deals/${dealId}`, { method: "DELETE" })
 }
 
 export {
@@ -150,5 +150,5 @@ export {
 	listDealsByLead,
 	listDealsPaged,
 	updateDeal,
-};
-export type { ListDealsQuery };
+}
+export type { ListDealsQuery }

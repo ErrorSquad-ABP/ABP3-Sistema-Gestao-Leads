@@ -1,20 +1,20 @@
-import { z } from 'zod';
+import { z } from "zod"
 
-import { ApiError } from '@/lib/http/api-error';
+import { ApiError } from "@/lib/http/api-error"
 
 const analyticDashboardFilterModeValues = [
-	'week',
-	'month',
-	'year',
-	'custom',
-] as const;
+	"week",
+	"month",
+	"year",
+	"custom",
+] as const
 
 const analyticDashboardScopeValues = [
-	'attendant',
-	'manager',
-	'general_manager',
-	'full',
-] as const;
+	"attendant",
+	"manager",
+	"general_manager",
+	"full",
+] as const
 
 const analyticDashboardFilterSchema = z.object({
 	mode: z.enum(analyticDashboardFilterModeValues),
@@ -22,7 +22,7 @@ const analyticDashboardFilterSchema = z.object({
 	endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 	scope: z.enum(analyticDashboardScopeValues),
 	top: z.number().int().min(1).nullable(),
-});
+})
 
 const analyticDashboardSummarySchema = z.object({
 	totalLeads: z.number().int().min(0),
@@ -31,7 +31,7 @@ const analyticDashboardSummarySchema = z.object({
 	lostLeads: z.number().int().min(0).optional().default(0),
 	finalizedLeads: z.number().int().min(0).optional().default(0),
 	conversionRate: z.number().min(0),
-});
+})
 
 const analyticDashboardKpiSchema = z.object({
 	value: z.number().min(0),
@@ -39,7 +39,7 @@ const analyticDashboardKpiSchema = z.object({
 	delta: z.number(),
 	deltaPercentage: z.number().nullable(),
 	deltaPoints: z.number().optional(),
-});
+})
 
 const analyticDashboardPerformanceItemSchema = z.object({
 	id: z.string().min(1),
@@ -51,20 +51,20 @@ const analyticDashboardPerformanceItemSchema = z.object({
 	openDeals: z.number().int().min(0),
 	wonDeals: z.number().int().min(0),
 	lostDeals: z.number().int().min(0),
-});
+})
 
 const analyticDashboardDistributionItemSchema = z.object({
 	key: z.string().min(1),
 	label: z.string().min(1),
 	count: z.number().int().min(0),
-});
+})
 
 const analyticDashboardAverageTimeSchema = z.object({
 	hours: z.number().min(0).nullable(),
 	leadsWithInteraction: z.number().int().min(0),
 	isApproximate: z.boolean(),
 	methodology: z.string().min(1),
-});
+})
 
 const analyticDashboardTrendPointSchema = z.object({
 	date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -73,7 +73,7 @@ const analyticDashboardTrendPointSchema = z.object({
 	lostLeads: z.number().int().min(0),
 	conversionRate: z.number().min(0),
 	averageTimeToFirstInteractionHours: z.number().min(0).nullable(),
-});
+})
 
 const analyticDashboardSchema = z.object({
 	filter: analyticDashboardFilterSchema,
@@ -92,20 +92,20 @@ const analyticDashboardSchema = z.object({
 	importanceDistribution: z.array(analyticDashboardDistributionItemSchema),
 	finalizationReasons: z.array(analyticDashboardDistributionItemSchema),
 	averageTimeToFirstInteraction: analyticDashboardAverageTimeSchema,
-});
+})
 
 function parseAnalyticDashboardResponse(data: unknown) {
-	const parsed = analyticDashboardSchema.safeParse(data);
+	const parsed = analyticDashboardSchema.safeParse(data)
 	if (!parsed.success) {
-		throw new ApiError('Resposta da API em formato inesperado.', 502, {
-			code: 'analytic-dashboard.invalid_response_shape',
-		});
+		throw new ApiError("Resposta da API em formato inesperado.", 502, {
+			code: "analytic-dashboard.invalid_response_shape",
+		})
 	}
-	return parsed.data;
+	return parsed.data
 }
 
 export {
 	analyticDashboardFilterModeValues,
 	analyticDashboardSchema,
 	parseAnalyticDashboardResponse,
-};
+}

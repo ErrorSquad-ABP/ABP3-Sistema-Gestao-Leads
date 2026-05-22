@@ -1,40 +1,40 @@
-'use client';
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { AlertCircle } from "lucide-react"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { appRoutes } from '@/lib/routes/app-routes';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { appRoutes } from "@/lib/routes/app-routes"
+import { cn } from "@/lib/utils"
 
-import { registerSchema } from '../schemas/register.schema';
-import type { RegisterInput } from '../types/auth-forms.types';
-import { AuthAccentLink } from './AuthAccentLink';
-import { AuthScreenLayout } from './AuthScreenLayout';
-import { AuthToast } from './AuthToast';
+import { registerSchema } from "../schemas/register.schema"
+import type { RegisterInput } from "../types/auth-forms.types"
+import { AuthAccentLink } from "./AuthAccentLink"
+import { AuthScreenLayout } from "./AuthScreenLayout"
+import { AuthToast } from "./AuthToast"
 
 const registerFieldClass =
-	'h-10 rounded-md border-border bg-card px-3 text-[0.85rem] text-foreground shadow-none placeholder:text-muted-foreground/80 focus-visible:border-primary/45';
+	"h-10 rounded-md border-border bg-card px-3 text-[0.85rem] text-foreground shadow-none placeholder:text-muted-foreground/80 focus-visible:border-primary/45"
 
 function RegisterForm() {
-	const [toastVisible, setToastVisible] = useState(false);
+	const [toastVisible, setToastVisible] = useState(false)
 	const form = useForm<RegisterInput>({
 		resolver: zodResolver(registerSchema),
 		defaultValues: {
-			name: '',
-			email: '',
-			password: '',
-			confirmPassword: '',
+			name: "",
+			email: "",
+			password: "",
+			confirmPassword: "",
 		},
-	});
+	})
 
 	const handleSubmit = form.handleSubmit(() => {
-		setToastVisible(true);
-	});
+		setToastVisible(true)
+	})
 
 	return (
 		<AuthScreenLayout
@@ -66,13 +66,13 @@ function RegisterForm() {
 							className={cn(
 								registerFieldClass,
 								form.formState.errors.name
-									? 'border-destructive focus-visible:border-destructive'
-									: null,
+									? "border-destructive focus-visible:border-destructive"
+									: null
 							)}
 							id="name"
 							placeholder="Digite seu nome"
 							type="text"
-							{...form.register('name')}
+							{...form.register("name")}
 						/>
 						{form.formState.errors.name ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -94,14 +94,14 @@ function RegisterForm() {
 							className={cn(
 								registerFieldClass,
 								form.formState.errors.email
-									? 'border-destructive focus-visible:border-destructive'
-									: null,
+									? "border-destructive focus-visible:border-destructive"
+									: null
 							)}
 							id="email"
 							inputMode="email"
 							placeholder="exemplo@leadcrm.com"
 							type="email"
-							{...form.register('email')}
+							{...form.register("email")}
 						/>
 						{form.formState.errors.email ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -123,13 +123,13 @@ function RegisterForm() {
 							className={cn(
 								registerFieldClass,
 								form.formState.errors.password
-									? 'border-destructive focus-visible:border-destructive'
-									: null,
+									? "border-destructive focus-visible:border-destructive"
+									: null
 							)}
 							id="password"
 							placeholder="Crie uma senha"
 							type="password"
-							{...form.register('password')}
+							{...form.register("password")}
 						/>
 						{form.formState.errors.password ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -151,13 +151,13 @@ function RegisterForm() {
 							className={cn(
 								registerFieldClass,
 								form.formState.errors.confirmPassword
-									? 'border-destructive focus-visible:border-destructive'
-									: null,
+									? "border-destructive focus-visible:border-destructive"
+									: null
 							)}
 							id="confirmPassword"
 							placeholder="Repita a senha"
 							type="password"
-							{...form.register('confirmPassword')}
+							{...form.register("confirmPassword")}
 						/>
 						{form.formState.errors.confirmPassword ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -178,7 +178,7 @@ function RegisterForm() {
 				<p className="text-center text-[0.82rem]">
 					<span className="text-muted-foreground">Já tem uma conta? </span>
 					<AuthAccentLink
-						className="inline-block whitespace-nowrap text-[0.82rem] font-medium"
+						className="inline-block text-[0.82rem] font-medium whitespace-nowrap"
 						href={appRoutes.auth.login}
 					>
 						Entrar
@@ -186,7 +186,7 @@ function RegisterForm() {
 				</p>
 			</form>
 		</AuthScreenLayout>
-	);
+	)
 }
 
-export { RegisterForm };
+export { RegisterForm }

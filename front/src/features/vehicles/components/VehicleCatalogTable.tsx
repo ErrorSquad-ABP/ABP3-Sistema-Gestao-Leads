@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import {
 	Archive,
 	ArrowDown,
@@ -13,16 +13,16 @@ import {
 	PencilLine,
 	Trash2,
 	UsersRound,
-} from 'lucide-react';
+} from "lucide-react"
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu"
 import {
 	Table,
 	TableBody,
@@ -30,160 +30,160 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { appRoutes } from '@/lib/routes/app-routes';
+} from "@/components/ui/table"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { appRoutes } from "@/lib/routes/app-routes"
 
 import type {
 	Vehicle,
 	VehicleCatalogItem,
 	VehicleStatus,
-} from '../model/vehicles.model';
+} from "../model/vehicles.model"
 import {
 	formatDaysInStock,
 	formatFuelType,
 	formatMileage,
 	formatVehiclePriceBRL,
-} from '../lib/vehicle-formatters';
-import { formatVehicleStatusLabel } from '../lib/vehicle-labels';
-import { VehicleImage } from './VehicleImage';
+} from "../lib/vehicle-formatters"
+import { formatVehicleStatusLabel } from "../lib/vehicle-labels"
+import { VehicleImage } from "./VehicleImage"
 import {
 	VehicleModalHeader,
 	VehicleModalSection,
 	vehicleModalContentClass,
-} from './VehicleModalLayout';
+} from "./VehicleModalLayout"
 
 type VehicleCatalogTableProps = {
-	items: readonly VehicleCatalogItem[];
-	onDeactivate: (vehicle: Vehicle) => void;
-	onDelete: (vehicle: Vehicle) => void;
-	onEdit: (vehicle: Vehicle) => void;
-	onOpenDetails: (vehicle: Vehicle) => void;
-};
+	items: readonly VehicleCatalogItem[]
+	onDeactivate: (vehicle: Vehicle) => void
+	onDelete: (vehicle: Vehicle) => void
+	onEdit: (vehicle: Vehicle) => void
+	onOpenDetails: (vehicle: Vehicle) => void
+}
 
 type InterestCategory = {
-	readonly label: string;
-	readonly className: string;
-	readonly tone: 'hot' | 'warm' | 'purple' | 'neutral' | 'stable';
-};
+	readonly label: string
+	readonly className: string
+	readonly tone: "hot" | "warm" | "purple" | "neutral" | "stable"
+}
 
 const statusStyles: Record<
 	VehicleStatus,
 	{ readonly className: string; readonly subtitle: string }
 > = {
 	AVAILABLE: {
-		className: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-		subtitle: 'Pronto para venda',
+		className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+		subtitle: "Pronto para venda",
 	},
 	RESERVED: {
-		className: 'border-orange-100 bg-orange-50 text-orange-700',
-		subtitle: 'Em negociação',
+		className: "border-orange-100 bg-orange-50 text-orange-700",
+		subtitle: "Em negociação",
 	},
 	SOLD: {
-		className: 'border-violet-100 bg-violet-50 text-violet-700',
-		subtitle: 'Negócio fechado',
+		className: "border-violet-100 bg-violet-50 text-violet-700",
+		subtitle: "Negócio fechado",
 	},
 	INACTIVE: {
-		className: 'border-slate-100 bg-slate-100 text-slate-600',
-		subtitle: 'Fora do catálogo',
+		className: "border-slate-100 bg-slate-100 text-slate-600",
+		subtitle: "Fora do catálogo",
 	},
-};
+}
 
 function getInterestCategory(dealCount: number): InterestCategory {
 	if (dealCount >= 5) {
 		return {
-			label: 'Em alta',
-			className: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-			tone: 'hot',
-		};
+			label: "Em alta",
+			className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+			tone: "hot",
+		}
 	}
 	if (dealCount >= 3) {
 		return {
-			label: 'Quente',
-			className: 'border-orange-100 bg-orange-50 text-orange-700',
-			tone: 'warm',
-		};
+			label: "Quente",
+			className: "border-orange-100 bg-orange-50 text-orange-700",
+			tone: "warm",
+		}
 	}
 	if (dealCount >= 2) {
 		return {
-			label: 'Alta demanda',
-			className: 'border-violet-100 bg-violet-50 text-violet-700',
-			tone: 'purple',
-		};
+			label: "Alta demanda",
+			className: "border-violet-100 bg-violet-50 text-violet-700",
+			tone: "purple",
+		}
 	}
 	if (dealCount === 1) {
 		return {
-			label: 'Atenção',
-			className: 'border-slate-100 bg-slate-100 text-slate-600',
-			tone: 'neutral',
-		};
+			label: "Atenção",
+			className: "border-slate-100 bg-slate-100 text-slate-600",
+			tone: "neutral",
+		}
 	}
 	return {
-		label: 'Estável',
-		className: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-		tone: 'stable',
-	};
+		label: "Estável",
+		className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+		tone: "stable",
+	}
 }
 
 function getPriceComparisonMeta(item: VehicleCatalogItem) {
 	switch (item.priceComparison) {
-		case 'ABOVE_AVERAGE':
+		case "ABOVE_AVERAGE":
 			return {
-				label: 'acima da média',
-				className: 'bg-emerald-50 text-emerald-700',
+				label: "acima da média",
+				className: "bg-emerald-50 text-emerald-700",
 				Icon: ArrowUp,
-			};
-		case 'BELOW_AVERAGE':
+			}
+		case "BELOW_AVERAGE":
 			return {
-				label: 'abaixo da média',
-				className: 'bg-blue-50 text-blue-700',
+				label: "abaixo da média",
+				className: "bg-blue-50 text-blue-700",
 				Icon: ArrowDown,
-			};
-		case 'AT_AVERAGE':
+			}
+		case "AT_AVERAGE":
 			return {
-				label: 'na média',
-				className: 'bg-slate-100 text-slate-600',
+				label: "na média",
+				className: "bg-slate-100 text-slate-600",
 				Icon: null,
-			};
+			}
 		case null:
-			return null;
+			return null
 		default: {
-			const _exhaustive: never = item.priceComparison;
-			return _exhaustive;
+			const _exhaustive: never = item.priceComparison
+			return _exhaustive
 		}
 	}
 }
 
 function InterestBars({ count }: { readonly count: number }) {
-	const activeBars = Math.min(3, Math.max(1, count));
+	const activeBars = Math.min(3, Math.max(1, count))
 
 	return (
 		<div className="mt-1 flex items-center gap-1" aria-hidden="true">
 			{[0, 1, 2].map((bar) => (
 				<span
 					className={`h-1 w-5 rounded-full ${
-						bar < activeBars ? 'bg-[#f05a28]' : 'bg-orange-100'
+						bar < activeBars ? "bg-[#f05a28]" : "bg-orange-100"
 					}`}
 					key={bar}
 				/>
 			))}
 		</div>
-	);
+	)
 }
 
 const dealStageLabels: Readonly<Record<string, string>> = {
-	INITIAL_CONTACT: 'Contato inicial',
-	NEGOTIATION: 'Negociação',
-	PROPOSAL: 'Proposta',
-	CLOSING: 'Fechamento',
-};
+	INITIAL_CONTACT: "Contato inicial",
+	NEGOTIATION: "Negociação",
+	PROPOSAL: "Proposta",
+	CLOSING: "Fechamento",
+}
 
 function formatCompactDate(value: Date) {
-	return value.toLocaleDateString('pt-BR', {
-		day: '2-digit',
-		month: '2-digit',
-		year: '2-digit',
-	});
+	return value.toLocaleDateString("pt-BR", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "2-digit",
+	})
 }
 
 function VehicleCatalogTable({
@@ -193,26 +193,26 @@ function VehicleCatalogTable({
 	onEdit,
 	onOpenDetails,
 }: VehicleCatalogTableProps) {
-	const router = useRouter();
+	const router = useRouter()
 	const [interestPickerItem, setInterestPickerItem] =
-		useState<VehicleCatalogItem | null>(null);
+		useState<VehicleCatalogItem | null>(null)
 
 	function openLead(leadId: string) {
-		router.push(`${appRoutes.app.leads}/${leadId}`);
+		router.push(`${appRoutes.app.leads}/${leadId}`)
 	}
 
 	function handleInterestDetails(item: VehicleCatalogItem) {
 		if (item.interests.length === 1 && item.interests[0]) {
-			openLead(item.interests[0].leadId);
-			return;
+			openLead(item.interests[0].leadId)
+			return
 		}
 
 		if (item.interests.length > 1) {
-			setInterestPickerItem(item);
-			return;
+			setInterestPickerItem(item)
+			return
 		}
 
-		onOpenDetails(item.vehicle);
+		onOpenDetails(item.vehicle)
 	}
 
 	if (items.length === 0) {
@@ -220,7 +220,7 @@ function VehicleCatalogTable({
 			<div className="rounded-xl border border-[#dde4ed] bg-white px-4 py-12 text-center text-sm text-[#667085]">
 				Nenhum veículo encontrado.
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -249,10 +249,10 @@ function VehicleCatalogTable({
 				</TableHeader>
 				<TableBody>
 					{items.map((item) => {
-						const interest = getInterestCategory(item.dealCount);
-						const priceMeta = getPriceComparisonMeta(item);
-						const PriceIcon = priceMeta?.Icon;
-						const status = statusStyles[item.vehicle.status];
+						const interest = getInterestCategory(item.dealCount)
+						const priceMeta = getPriceComparisonMeta(item)
+						const PriceIcon = priceMeta?.Icon
+						const status = statusStyles[item.vehicle.status]
 
 						return (
 							<TableRow
@@ -278,14 +278,14 @@ function VehicleCatalogTable({
 												{item.vehicle.brand} {item.vehicle.model}
 											</p>
 											<p className="truncate text-xs text-[#667085]">
-												{item.vehicle.version ?? 'Sem versão'} ·{' '}
-												{item.vehicle.plate ?? 'Sem placa'}
+												{item.vehicle.version ?? "Sem versão"} ·{" "}
+												{item.vehicle.plate ?? "Sem placa"}
 											</p>
 											<Badge
 												className={`mt-1 rounded-md border px-1.5 py-0 text-[0.65rem] font-semibold ${interest.className}`}
 												variant="outline"
 											>
-												{interest.tone === 'hot' || interest.tone === 'warm' ? (
+												{interest.tone === "hot" || interest.tone === "warm" ? (
 													<Flame className="mr-1 size-3" />
 												) : null}
 												{interest.label}
@@ -297,7 +297,7 @@ function VehicleCatalogTable({
 									{item.storeName}
 								</TableCell>
 								<TableCell className="text-sm text-[#667085]">
-									{item.vehicle.manufactureYear ?? item.vehicle.modelYear} /{' '}
+									{item.vehicle.manufactureYear ?? item.vehicle.modelYear} /{" "}
 									{item.vehicle.modelYear}
 								</TableCell>
 								<TableCell className="text-sm text-[#667085]">
@@ -339,7 +339,7 @@ function VehicleCatalogTable({
 											<p className="inline-flex items-center gap-1 text-sm font-semibold text-[#344054]">
 												<Flame className="size-4 fill-[#f05a28] text-[#f05a28]" />
 												{item.dealCount} lead
-												{item.dealCount === 1 ? '' : 's'}
+												{item.dealCount === 1 ? "" : "s"}
 											</p>
 											<InterestBars count={item.dealCount} />
 											<button
@@ -412,7 +412,7 @@ function VehicleCatalogTable({
 									</div>
 								</TableCell>
 							</TableRow>
-						);
+						)
 					})}
 				</TableBody>
 			</Table>
@@ -420,7 +420,7 @@ function VehicleCatalogTable({
 				open={interestPickerItem !== null}
 				onOpenChange={(open) => {
 					if (!open) {
-						setInterestPickerItem(null);
+						setInterestPickerItem(null)
 					}
 				}}
 			>
@@ -429,12 +429,12 @@ function VehicleCatalogTable({
 						description={
 							interestPickerItem
 								? `${interestPickerItem.vehicle.brand} ${interestPickerItem.vehicle.model} possui ${interestPickerItem.interests.length} leads vinculados.`
-								: 'Selecione um lead para abrir o detalhe.'
+								: "Selecione um lead para abrir o detalhe."
 						}
 						icon={UsersRound}
 						title="Leads interessados"
 					/>
-					<div className="max-h-[28rem] overflow-y-auto px-7 pb-6 pt-3">
+					<div className="max-h-[28rem] overflow-y-auto px-7 pt-3 pb-6">
 						<VehicleModalSection
 							description="Escolha qual negociação deseja consultar."
 							title="Interesses vinculados"
@@ -472,7 +472,7 @@ function VehicleCatalogTable({
 				</DialogContent>
 			</Dialog>
 		</div>
-	);
+	)
 }
 
-export { VehicleCatalogTable };
+export { VehicleCatalogTable }

@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
 	ArrowDown,
@@ -11,8 +11,8 @@ import {
 	LineChart as LineChartIcon,
 	Target,
 	XCircle,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
+} from "lucide-react"
+import { useMemo, useState } from "react"
 import {
 	Area,
 	AreaChart,
@@ -29,190 +29,190 @@ import {
 	Tooltip,
 	XAxis,
 	YAxis,
-} from 'recharts';
+} from "recharts"
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError } from '@/lib/http/api-error';
-import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
+import type { AuthenticatedUser } from "@/features/login/types/login.types"
+import { ApiError } from "@/lib/http/api-error"
+import { cn } from "@/lib/utils"
 
-import { useAnalyticDashboardQuery } from '../hooks/analytic-dashboard.queries';
-import { validateDraftFilter } from '../lib/analytic-dashboard-filters';
+import { useAnalyticDashboardQuery } from "../hooks/analytic-dashboard.queries"
+import { validateDraftFilter } from "../lib/analytic-dashboard-filters"
 import type {
 	AnalyticDashboard,
 	AnalyticDashboardFilterMode,
 	AnalyticDashboardQuery,
-} from '../model/analytic-dashboard.model';
+} from "../model/analytic-dashboard.model"
 
 const FILTER_OPTIONS: {
-	value: AnalyticDashboardFilterMode;
-	label: string;
+	value: AnalyticDashboardFilterMode
+	label: string
 }[] = [
-	{ value: 'week', label: 'Semana' },
-	{ value: 'month', label: 'Mês' },
-	{ value: 'year', label: 'Ano' },
-	{ value: 'custom', label: 'Personalizado' },
-];
+	{ value: "week", label: "Semana" },
+	{ value: "month", label: "Mês" },
+	{ value: "year", label: "Ano" },
+	{ value: "custom", label: "Personalizado" },
+]
 
-const TEAM_COLORS = ['#ff5722', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6'];
+const TEAM_COLORS = ["#ff5722", "#22c55e", "#3b82f6", "#f59e0b", "#8b5cf6"]
 const IMPORTANCE_COLORS: Record<string, string> = {
-	COLD: '#2f6bed',
-	WARM: '#ff7a1a',
-	HOT: '#ef4444',
-};
+	COLD: "#2f6bed",
+	WARM: "#ff7a1a",
+	HOT: "#ef4444",
+}
 const IMPORTANCE_LABELS = new Map([
-	['COLD', 'Frias'],
-	['WARM', 'Mornas'],
-	['HOT', 'Quentes'],
-]);
+	["COLD", "Frias"],
+	["WARM", "Mornas"],
+	["HOT", "Quentes"],
+])
 const REASON_LABELS = new Map([
-	['NO_INTEREST', 'Sem interesse'],
-	['PRICE_EXPECTATION', 'Preço fora da expectativa'],
-	['BOUGHT_ELSEWHERE', 'Comprou em outra loja'],
-	['NO_RESPONSE', 'Não retornou contato'],
-	['VEHICLE_UNAVAILABLE', 'Veículo indisponível'],
-	['OTHER', 'Outros'],
-]);
-const KPI_SKELETON_KEYS = ['conversion', 'converted', 'lost', 'average-time'];
+	["NO_INTEREST", "Sem interesse"],
+	["PRICE_EXPECTATION", "Preço fora da expectativa"],
+	["BOUGHT_ELSEWHERE", "Comprou em outra loja"],
+	["NO_RESPONSE", "Não retornou contato"],
+	["VEHICLE_UNAVAILABLE", "Veículo indisponível"],
+	["OTHER", "Outros"],
+])
+const KPI_SKELETON_KEYS = ["conversion", "converted", "lost", "average-time"]
 
 type TooltipPayloadItem = {
-	readonly color?: string;
-	readonly dataKey?: string | number;
-	readonly name?: string | number;
+	readonly color?: string
+	readonly dataKey?: string | number
+	readonly name?: string | number
 	readonly payload?: {
-		readonly chartLabel?: string;
-		readonly label?: string;
-		readonly name?: string;
-	};
-	readonly value?: string | number | null;
-};
+		readonly chartLabel?: string
+		readonly label?: string
+		readonly name?: string
+	}
+	readonly value?: string | number | null
+}
 
 type ChartTooltipProps = {
-	readonly active?: boolean;
-	readonly label?: string | number;
-	readonly payload?: readonly TooltipPayloadItem[];
-};
+	readonly active?: boolean
+	readonly label?: string | number
+	readonly payload?: readonly TooltipPayloadItem[]
+}
 
-type TrendPoint = AnalyticDashboard['trend']['points'][number];
+type TrendPoint = AnalyticDashboard["trend"]["points"][number]
 
 function toDateInputValue(date: Date) {
-	const year = String(date.getFullYear());
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const day = String(date.getDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
+	const year = String(date.getFullYear())
+	const month = String(date.getMonth() + 1).padStart(2, "0")
+	const day = String(date.getDate()).padStart(2, "0")
+	return `${year}-${month}-${day}`
 }
 
 function todayInputValue() {
-	return toDateInputValue(new Date());
+	return toDateInputValue(new Date())
 }
 
 function thirtyDaysAgoInputValue() {
-	const date = new Date();
-	date.setDate(date.getDate() - 29);
-	return toDateInputValue(date);
+	const date = new Date()
+	date.setDate(date.getDate() - 29)
+	return toDateInputValue(date)
 }
 
 function parseIsoDate(value: string) {
-	return new Date(`${value}T00:00:00.000Z`);
+	return new Date(`${value}T00:00:00.000Z`)
 }
 
 function formatCount(value: number) {
-	return new Intl.NumberFormat('pt-BR').format(value);
+	return new Intl.NumberFormat("pt-BR").format(value)
 }
 
 function formatPercent(value: number) {
-	return `${new Intl.NumberFormat('pt-BR', {
+	return `${new Intl.NumberFormat("pt-BR", {
 		maximumFractionDigits: 1,
 		minimumFractionDigits: 0,
-	}).format(value)}%`;
+	}).format(value)}%`
 }
 
 function formatDateShort(value: string) {
-	const [year, month, day] = value.split('-');
-	return `${day}/${month}/${year}`;
+	const [year, month, day] = value.split("-")
+	return `${day}/${month}/${year}`
 }
 
 function formatHours(value: number | null) {
 	if (value == null) {
-		return 'Sem dados';
+		return "Sem dados"
 	}
 
 	if (value < 1) {
-		return `${Math.round(value * 60)}min`;
+		return `${Math.round(value * 60)}min`
 	}
 
-	const hours = Math.floor(value);
-	const minutes = Math.round((value - hours) * 60);
-	return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+	const hours = Math.floor(value)
+	const minutes = Math.round((value - hours) * 60)
+	return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
 }
 
 function formatDeltaPercent(value: number | null) {
 	if (value == null) {
-		return '0%';
+		return "0%"
 	}
 
-	return `${value > 0 ? '+' : ''}${formatPercent(value)}`;
+	return `${value > 0 ? "+" : ""}${formatPercent(value)}`
 }
 
 function formatDeltaPoints(value: number | undefined) {
-	const delta = value ?? 0;
-	return `${delta > 0 ? '+' : ''}${new Intl.NumberFormat('pt-BR', {
+	const delta = value ?? 0
+	return `${delta > 0 ? "+" : ""}${new Intl.NumberFormat("pt-BR", {
 		maximumFractionDigits: 1,
 		minimumFractionDigits: 1,
-	}).format(delta)} p.p.`;
+	}).format(delta)} p.p.`
 }
 
 function getErrorMessage(error: unknown) {
 	if (error instanceof ApiError) {
-		return error.message;
+		return error.message
 	}
 
-	return 'Não foi possível carregar o dashboard analítico.';
+	return "Não foi possível carregar o dashboard analítico."
 }
 
 function getPeriodLabel(dashboard: AnalyticDashboard | undefined) {
 	if (!dashboard) {
-		return 'Período selecionado';
+		return "Período selecionado"
 	}
 
 	return `${formatDateShort(dashboard.filter.startDate)} - ${formatDateShort(
-		dashboard.filter.endDate,
-	)}`;
+		dashboard.filter.endDate
+	)}`
 }
 
 function getImportanceLabel(key: string) {
-	return IMPORTANCE_LABELS.get(key) ?? key;
+	return IMPORTANCE_LABELS.get(key) ?? key
 }
 
 function getReasonLabel(key: string) {
-	return REASON_LABELS.get(key) ?? key;
+	return REASON_LABELS.get(key) ?? key
 }
 
 function getReasonChartLabel(label: string) {
 	switch (label) {
-		case 'Preço fora da expectativa':
-			return 'Preço';
-		case 'Não retornou contato':
-			return 'Não retornou';
-		case 'Comprou em outra loja':
-			return 'Outra loja';
-		case 'Veículo indisponível':
-			return 'Veículo indisponível';
+		case "Preço fora da expectativa":
+			return "Preço"
+		case "Não retornou contato":
+			return "Não retornou"
+		case "Comprou em outra loja":
+			return "Outra loja"
+		case "Veículo indisponível":
+			return "Veículo indisponível"
 		default:
-			return label;
+			return label
 	}
 }
 
 function normalizeChartValue(value: number, max: number) {
 	if (max <= 0) {
-		return 0;
+		return 0
 	}
 
-	return Math.max(5, (value / max) * 100);
+	return Math.max(5, (value / max) * 100)
 }
 
 function bucketTrend(points: readonly TrendPoint[]) {
@@ -225,50 +225,50 @@ function bucketTrend(points: readonly TrendPoint[]) {
 			conversionRate: point.conversionRate,
 			averageTimeToFirstInteractionHours:
 				point.averageTimeToFirstInteractionHours,
-		}));
+		}))
 	}
 
 	const buckets = new Map<
 		string,
 		{
-			totalLeads: number;
-			convertedLeads: number;
-			lostLeads: number;
-			averageTimeSum: number;
-			averageTimeCount: number;
+			totalLeads: number
+			convertedLeads: number
+			lostLeads: number
+			averageTimeSum: number
+			averageTimeCount: number
 		}
-	>();
+	>()
 
 	for (const point of points) {
-		const date = parseIsoDate(point.date);
+		const date = parseIsoDate(point.date)
 		const key =
 			points.length > 120
-				? `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
+				? `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
 				: `Sem ${Math.ceil(date.getUTCDate() / 7)}/${String(
-						date.getUTCMonth() + 1,
-					).padStart(2, '0')}`;
+						date.getUTCMonth() + 1
+					).padStart(2, "0")}`
 		const current = buckets.get(key) ?? {
 			totalLeads: 0,
 			convertedLeads: 0,
 			lostLeads: 0,
 			averageTimeSum: 0,
 			averageTimeCount: 0,
-		};
-
-		current.totalLeads += point.totalLeads;
-		current.convertedLeads += point.convertedLeads;
-		current.lostLeads += point.lostLeads;
-
-		if (point.averageTimeToFirstInteractionHours != null) {
-			current.averageTimeSum += point.averageTimeToFirstInteractionHours;
-			current.averageTimeCount += 1;
 		}
 
-		buckets.set(key, current);
+		current.totalLeads += point.totalLeads
+		current.convertedLeads += point.convertedLeads
+		current.lostLeads += point.lostLeads
+
+		if (point.averageTimeToFirstInteractionHours != null) {
+			current.averageTimeSum += point.averageTimeToFirstInteractionHours
+			current.averageTimeCount += 1
+		}
+
+		buckets.set(key, current)
 	}
 
 	return Array.from(buckets.entries()).map(([label, bucket]) => {
-		const finalized = bucket.convertedLeads + bucket.lostLeads;
+		const finalized = bucket.convertedLeads + bucket.lostLeads
 		return {
 			label,
 			totalLeads: bucket.totalLeads,
@@ -280,20 +280,20 @@ function bucketTrend(points: readonly TrendPoint[]) {
 				bucket.averageTimeCount > 0
 					? bucket.averageTimeSum / bucket.averageTimeCount
 					: null,
-		};
-	});
+		}
+	})
 }
 
 function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 	if (!active || !payload?.length) {
-		return null;
+		return null
 	}
 
-	const firstItem = payload[0];
+	const firstItem = payload[0]
 	const title =
 		firstItem?.payload?.label ??
 		firstItem?.payload?.name ??
-		(label == null ? null : String(label));
+		(label == null ? null : String(label))
 
 	return (
 		<div className="rounded-xl border border-[#dde6f1] bg-white px-3 py-2 text-xs shadow-lg">
@@ -307,7 +307,7 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 						item.payload?.label ??
 						item.payload?.name ??
 						item.dataKey ??
-						'Valor';
+						"Valor"
 
 					return (
 						<div key={`${item.dataKey}-${itemName}`} className="flex gap-2">
@@ -319,53 +319,49 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 								{String(itemName)}: {formatCount(Number(item.value ?? 0))}
 							</span>
 						</div>
-					);
+					)
 				})}
 			</div>
 		</div>
-	);
+	)
 }
 
 type DeltaBadgeProps = {
-	value: string;
-	direction: 'up' | 'down' | 'flat';
-	tone: 'good' | 'bad' | 'neutral';
-};
+	value: string
+	direction: "up" | "down" | "flat"
+	tone: "good" | "bad" | "neutral"
+}
 
 function DeltaBadge({ direction, tone, value }: DeltaBadgeProps) {
 	const Icon =
-		direction === 'up'
-			? ArrowUp
-			: direction === 'down'
-				? ArrowDown
-				: ArrowRight;
+		direction === "up" ? ArrowUp : direction === "down" ? ArrowDown : ArrowRight
 	const toneClass =
-		tone === 'good'
-			? 'text-[#009966]'
-			: tone === 'bad'
-				? 'text-[#ef4444]'
-				: 'text-[#64748b]';
+		tone === "good"
+			? "text-[#009966]"
+			: tone === "bad"
+				? "text-[#ef4444]"
+				: "text-[#64748b]"
 
 	return (
 		<span
-			className={cn('inline-flex items-center gap-1 font-semibold', toneClass)}
+			className={cn("inline-flex items-center gap-1 font-semibold", toneClass)}
 		>
 			<Icon className="size-3" />
 			{value}
 		</span>
-	);
+	)
 }
 
 type KpiCardProps = {
-	title: string;
-	value: string;
-	subtitle: string;
-	icon: typeof Target;
-	iconTone: string;
-	lineColor: string;
-	points: { label: string; value: number }[];
-	delta: DeltaBadgeProps;
-};
+	title: string
+	value: string
+	subtitle: string
+	icon: typeof Target
+	iconTone: string
+	lineColor: string
+	points: { label: string; value: number }[]
+	delta: DeltaBadgeProps
+}
 
 function KpiCard({
 	delta,
@@ -383,15 +379,15 @@ function KpiCard({
 				<div className="flex items-start gap-3">
 					<div
 						className={cn(
-							'grid size-12 shrink-0 place-items-center rounded-full',
-							iconTone,
+							"grid size-12 shrink-0 place-items-center rounded-full",
+							iconTone
 						)}
 					>
 						<Icon className="size-6" />
 					</div>
 					<div className="min-w-0">
 						<p className="text-xs font-semibold text-[#2d3a56]">{title}</p>
-						<p className="mt-1.5 text-3xl font-bold leading-none tracking-tight text-[#06142b]">
+						<p className="mt-1.5 text-3xl leading-none font-bold tracking-tight text-[#06142b]">
 							{value}
 						</p>
 						<p className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-[#66708a]">
@@ -415,7 +411,7 @@ function KpiCard({
 				</div>
 			</CardContent>
 		</Card>
-	);
+	)
 }
 
 function KpiSkeleton() {
@@ -428,11 +424,11 @@ function KpiSkeleton() {
 				<Skeleton className="h-4 w-44 bg-[#edf2f7]" />
 			</CardContent>
 		</Card>
-	);
+	)
 }
 
 function SectionTitle({ title }: { title: string }) {
-	return <h2 className="text-base font-bold text-[#06142b]">{title}</h2>;
+	return <h2 className="text-base font-bold text-[#06142b]">{title}</h2>
 }
 
 function CardAction({ children }: { children: string }) {
@@ -441,57 +437,57 @@ function CardAction({ children }: { children: string }) {
 			{children}
 			<ArrowRight className="size-3" />
 		</span>
-	);
+	)
 }
 
 function DonutCenter({ total }: { total: number }) {
 	return (
 		<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 			<div>
-				<p className="text-2xl font-bold leading-none text-[#06142b]">
+				<p className="text-2xl leading-none font-bold text-[#06142b]">
 					{formatCount(total)}
 				</p>
 				<p className="mt-1 text-[10px] font-semibold text-[#66708a]">Total</p>
 			</div>
 		</div>
-	);
+	)
 }
 
 type AnalyticDashboardPageContentProps = {
-	user: AuthenticatedUser;
-};
+	user: AuthenticatedUser
+}
 
 function AnalyticDashboardPageContent({
 	user,
 }: AnalyticDashboardPageContentProps) {
-	const [mode, setMode] = useState<AnalyticDashboardFilterMode>('month');
-	const [referenceDate, setReferenceDate] = useState(todayInputValue);
-	const [startDate, setStartDate] = useState(thirtyDaysAgoInputValue);
-	const [endDate, setEndDate] = useState(todayInputValue);
+	const [mode, setMode] = useState<AnalyticDashboardFilterMode>("month")
+	const [referenceDate, setReferenceDate] = useState(todayInputValue)
+	const [startDate, setStartDate] = useState(thirtyDaysAgoInputValue)
+	const [endDate, setEndDate] = useState(todayInputValue)
 	const [validationMessage, setValidationMessage] = useState<string | null>(
-		null,
-	);
+		null
+	)
 	const [query, setQuery] = useState<AnalyticDashboardQuery>({
-		mode: 'month',
+		mode: "month",
 		referenceDate,
 		top: 8,
-	});
+	})
 
-	const dashboardQuery = useAnalyticDashboardQuery(query);
-	const dashboard = dashboardQuery.data;
+	const dashboardQuery = useAnalyticDashboardQuery(query)
+	const dashboard = dashboardQuery.data
 
 	const trendData = useMemo(
 		() => bucketTrend(dashboard?.trend.points ?? []),
-		[dashboard?.trend.points],
-	);
+		[dashboard?.trend.points]
+	)
 	const teamDistribution = useMemo(
 		() => dashboard?.byTeam.slice(0, 5) ?? [],
-		[dashboard?.byTeam],
-	);
+		[dashboard?.byTeam]
+	)
 	const attendantDistribution = useMemo(
 		() => dashboard?.byAttendant.slice(0, 8) ?? [],
-		[dashboard?.byAttendant],
-	);
+		[dashboard?.byAttendant]
+	)
 	const finalizationData = useMemo(
 		() =>
 			(dashboard?.finalizationReasons ?? []).map((item) => ({
@@ -499,52 +495,52 @@ function AnalyticDashboardPageContent({
 				label: getReasonLabel(item.key),
 				chartLabel: getReasonChartLabel(getReasonLabel(item.key)),
 			})),
-		[dashboard?.finalizationReasons],
-	);
+		[dashboard?.finalizationReasons]
+	)
 	const importanceData = useMemo(
 		() =>
 			(dashboard?.importanceDistribution ?? []).map((item) => ({
 				...item,
 				label: getImportanceLabel(item.key),
-				color: IMPORTANCE_COLORS[item.key] ?? '#94a3b8',
+				color: IMPORTANCE_COLORS[item.key] ?? "#94a3b8",
 			})),
-		[dashboard?.importanceDistribution],
-	);
+		[dashboard?.importanceDistribution]
+	)
 	const conversionSplit = useMemo(
 		() =>
 			dashboard
 				? [
 						{
-							key: 'converted',
-							label: 'Convertidos',
+							key: "converted",
+							label: "Convertidos",
 							count: dashboard.summary.convertedLeads,
-							color: '#22c55e',
+							color: "#22c55e",
 						},
 						{
-							key: 'notConverted',
-							label: 'Não convertidos',
+							key: "notConverted",
+							label: "Não convertidos",
 							count: dashboard.summary.notConvertedLeads,
-							color: '#ef4444',
+							color: "#ef4444",
 						},
 					]
 				: [],
-		[dashboard],
-	);
+		[dashboard]
+	)
 
-	const hasData = Boolean(dashboard && dashboard.summary.totalLeads > 0);
+	const hasData = Boolean(dashboard && dashboard.summary.totalLeads > 0)
 
 	function applyFilter(nextMode = mode) {
-		const message = validateDraftFilter(user, nextMode, startDate, endDate);
-		setValidationMessage(message);
+		const message = validateDraftFilter(user, nextMode, startDate, endDate)
+		setValidationMessage(message)
 
 		if (message) {
-			return;
+			return
 		}
 
 		setQuery(
-			nextMode === 'custom'
+			nextMode === "custom"
 				? {
-						mode: 'custom',
+						mode: "custom",
 						startDate,
 						endDate,
 						top: 8,
@@ -553,14 +549,14 @@ function AnalyticDashboardPageContent({
 						mode: nextMode,
 						referenceDate,
 						top: 8,
-					},
-		);
+					}
+		)
 	}
 
 	function selectMode(nextMode: AnalyticDashboardFilterMode) {
-		setMode(nextMode);
-		if (nextMode !== 'custom') {
-			applyFilter(nextMode);
+		setMode(nextMode)
+		if (nextMode !== "custom") {
+			applyFilter(nextMode)
 		}
 	}
 
@@ -568,125 +564,125 @@ function AnalyticDashboardPageContent({
 		dashboard && trendData.length > 0
 			? [
 					{
-						title: 'Taxa de conversão',
+						title: "Taxa de conversão",
 						value: formatPercent(dashboard.kpis.conversionRate.value),
-						subtitle: 'vs. período anterior',
+						subtitle: "vs. período anterior",
 						icon: Target,
-						iconTone: 'bg-[#fff1e8] text-[#ff5722]',
-						lineColor: '#ff5722',
+						iconTone: "bg-[#fff1e8] text-[#ff5722]",
+						lineColor: "#ff5722",
 						points: trendData.map((point) => ({
 							label: point.label,
 							value: point.conversionRate,
 						})),
 						delta: {
 							value: formatDeltaPoints(
-								dashboard.kpis.conversionRate.deltaPoints,
+								dashboard.kpis.conversionRate.deltaPoints
 							),
 							direction:
 								dashboard.kpis.conversionRate.delta > 0
-									? 'up'
+									? "up"
 									: dashboard.kpis.conversionRate.delta < 0
-										? 'down'
-										: 'flat',
+										? "down"
+										: "flat",
 							tone:
 								dashboard.kpis.conversionRate.delta > 0
-									? 'good'
+									? "good"
 									: dashboard.kpis.conversionRate.delta < 0
-										? 'bad'
-										: 'neutral',
+										? "bad"
+										: "neutral",
 						} satisfies DeltaBadgeProps,
 					},
 					{
-						title: 'Leads convertidos',
+						title: "Leads convertidos",
 						value: formatCount(dashboard.kpis.convertedLeads.value),
-						subtitle: 'vs. período anterior',
+						subtitle: "vs. período anterior",
 						icon: CheckCircle2,
-						iconTone: 'bg-[#e9fbf1] text-[#16a34a]',
-						lineColor: '#16a34a',
+						iconTone: "bg-[#e9fbf1] text-[#16a34a]",
+						lineColor: "#16a34a",
 						points: trendData.map((point) => ({
 							label: point.label,
 							value: point.convertedLeads,
 						})),
 						delta: {
 							value: formatDeltaPercent(
-								dashboard.kpis.convertedLeads.deltaPercentage,
+								dashboard.kpis.convertedLeads.deltaPercentage
 							),
 							direction:
 								dashboard.kpis.convertedLeads.delta > 0
-									? 'up'
+									? "up"
 									: dashboard.kpis.convertedLeads.delta < 0
-										? 'down'
-										: 'flat',
+										? "down"
+										: "flat",
 							tone:
 								dashboard.kpis.convertedLeads.delta > 0
-									? 'good'
+									? "good"
 									: dashboard.kpis.convertedLeads.delta < 0
-										? 'bad'
-										: 'neutral',
+										? "bad"
+										: "neutral",
 						} satisfies DeltaBadgeProps,
 					},
 					{
-						title: 'Leads perdidos',
+						title: "Leads perdidos",
 						value: formatCount(dashboard.kpis.lostLeads.value),
-						subtitle: 'vs. período anterior',
+						subtitle: "vs. período anterior",
 						icon: XCircle,
-						iconTone: 'bg-[#fff0f0] text-[#ef4444]',
-						lineColor: '#ef4444',
+						iconTone: "bg-[#fff0f0] text-[#ef4444]",
+						lineColor: "#ef4444",
 						points: trendData.map((point) => ({
 							label: point.label,
 							value: point.lostLeads,
 						})),
 						delta: {
 							value: formatDeltaPercent(
-								dashboard.kpis.lostLeads.deltaPercentage,
+								dashboard.kpis.lostLeads.deltaPercentage
 							),
 							direction:
 								dashboard.kpis.lostLeads.delta > 0
-									? 'up'
+									? "up"
 									: dashboard.kpis.lostLeads.delta < 0
-										? 'down'
-										: 'flat',
+										? "down"
+										: "flat",
 							tone:
 								dashboard.kpis.lostLeads.delta < 0
-									? 'good'
+									? "good"
 									: dashboard.kpis.lostLeads.delta > 0
-										? 'bad'
-										: 'neutral',
+										? "bad"
+										: "neutral",
 						} satisfies DeltaBadgeProps,
 					},
 					{
-						title: 'Tempo médio até atendimento',
+						title: "Tempo médio até atendimento",
 						value: formatHours(
-							dashboard.kpis.averageTimeToFirstInteraction.value,
+							dashboard.kpis.averageTimeToFirstInteraction.value
 						),
-						subtitle: 'vs. período anterior',
+						subtitle: "vs. período anterior",
 						icon: Clock3,
-						iconTone: 'bg-[#f4eaff] text-[#8b3ff6]',
-						lineColor: '#8b3ff6',
+						iconTone: "bg-[#f4eaff] text-[#8b3ff6]",
+						lineColor: "#8b3ff6",
 						points: trendData.map((point) => ({
 							label: point.label,
 							value: point.averageTimeToFirstInteractionHours ?? 0,
 						})),
 						delta: {
 							value: formatDeltaPercent(
-								dashboard.kpis.averageTimeToFirstInteraction.deltaPercentage,
+								dashboard.kpis.averageTimeToFirstInteraction.deltaPercentage
 							),
 							direction:
 								dashboard.kpis.averageTimeToFirstInteraction.delta > 0
-									? 'up'
+									? "up"
 									: dashboard.kpis.averageTimeToFirstInteraction.delta < 0
-										? 'down'
-										: 'flat',
+										? "down"
+										: "flat",
 							tone:
 								dashboard.kpis.averageTimeToFirstInteraction.delta < 0
-									? 'good'
+									? "good"
 									: dashboard.kpis.averageTimeToFirstInteraction.delta > 0
-										? 'bad'
-										: 'neutral',
+										? "bad"
+										: "neutral",
 						} satisfies DeltaBadgeProps,
 					},
 				]
-			: [];
+			: []
 
 	return (
 		<div className="space-y-4 bg-[#f4f7fa] px-1 pb-4">
@@ -705,10 +701,10 @@ function AnalyticDashboardPageContent({
 						{FILTER_OPTIONS.map((option) => (
 							<button
 								className={cn(
-									'h-9 border-[#e6edf5] border-r px-4 text-[11px] font-semibold transition last:border-r-0',
+									"h-9 border-r border-[#e6edf5] px-4 text-[11px] font-semibold transition last:border-r-0",
 									mode === option.value
-										? 'bg-[#ff5722] text-white shadow-sm'
-										: 'text-[#06142b] hover:bg-[#f8fafc]',
+										? "bg-[#ff5722] text-white shadow-sm"
+										: "text-[#06142b] hover:bg-[#f8fafc]"
 								)}
 								key={option.value}
 								onClick={() => selectMode(option.value)}
@@ -719,7 +715,7 @@ function AnalyticDashboardPageContent({
 						))}
 					</div>
 
-					{mode === 'custom' ? (
+					{mode === "custom" ? (
 						<div className="flex flex-wrap items-center gap-2 rounded-[13px] border border-[#dbe4ef] bg-white p-1.5">
 							<Input
 								className="h-8 w-36 rounded-xl border-[#dbe4ef] text-[11px] font-semibold shadow-none"
@@ -749,12 +745,12 @@ function AnalyticDashboardPageContent({
 							<Input
 								className="sr-only"
 								onChange={(event) => {
-									setReferenceDate(event.target.value);
+									setReferenceDate(event.target.value)
 									setQuery({
 										mode,
 										referenceDate: event.target.value,
 										top: 8,
-									});
+									})
 								}}
 								type="date"
 								value={referenceDate}
@@ -851,7 +847,7 @@ function AnalyticDashboardPageContent({
 												dashboard.summary.totalLeads > 0
 													? (item.totalLeads / dashboard.summary.totalLeads) *
 														100
-													: 0;
+													: 0
 											return (
 												<div
 													className="grid grid-cols-[1rem_1fr_auto] items-center gap-3"
@@ -874,7 +870,7 @@ function AnalyticDashboardPageContent({
 														{formatPercent(percentage)})
 													</span>
 												</div>
-											);
+											)
 										})}
 									</div>
 								</div>
@@ -895,10 +891,10 @@ function AnalyticDashboardPageContent({
 										>
 											<div className="grid size-7 place-items-center rounded-full bg-[#f2d7ca] text-[10px] font-bold text-[#8a3a1d]">
 												{item.name
-													.split(' ')
+													.split(" ")
 													.slice(0, 2)
 													.map((part) => part[0])
-													.join('')}
+													.join("")}
 											</div>
 											<div className="min-w-0">
 												<div className="mb-1 flex items-center justify-between gap-3">
@@ -917,10 +913,10 @@ function AnalyticDashboardPageContent({
 																item.totalLeads,
 																Math.max(
 																	...attendantDistribution.map(
-																		(attendant) => attendant.totalLeads,
+																		(attendant) => attendant.totalLeads
 																	),
-																	0,
-																),
+																	0
+																)
 															)}%`,
 														}}
 													/>
@@ -969,7 +965,7 @@ function AnalyticDashboardPageContent({
 											const percentage =
 												dashboard.summary.totalLeads > 0
 													? (item.count / dashboard.summary.totalLeads) * 100
-													: 0;
+													: 0
 											return (
 												<div
 													className="grid grid-cols-[1rem_1fr_auto] items-center gap-3"
@@ -987,7 +983,7 @@ function AnalyticDashboardPageContent({
 														{formatPercent(percentage)})
 													</span>
 												</div>
-											);
+											)
 										})}
 									</div>
 								</div>
@@ -1147,9 +1143,9 @@ function AnalyticDashboardPageContent({
 											<Area
 												dataKey="totalLeads"
 												dot={{
-													fill: '#ff5722',
+													fill: "#ff5722",
 													r: 3,
-													stroke: '#ffffff',
+													stroke: "#ffffff",
 													strokeWidth: 2,
 												}}
 												fill="url(#analyticTrend)"
@@ -1174,7 +1170,7 @@ function AnalyticDashboardPageContent({
 				</>
 			) : null}
 		</div>
-	);
+	)
 }
 
-export { AnalyticDashboardPageContent };
+export { AnalyticDashboardPageContent }

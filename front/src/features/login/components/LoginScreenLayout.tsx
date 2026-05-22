@@ -1,11 +1,11 @@
-import Image from 'next/image';
-import type { ReactNode } from 'react';
+import Image from "next/image"
+import type { ReactNode } from "react"
 
 type LoginScreenLayoutProps = {
-	children: ReactNode;
-	headline: string;
-	overlay?: ReactNode;
-};
+	children: ReactNode
+	headline: string
+	overlay?: ReactNode
+}
 
 function LoginScreenLayout({
 	children,
@@ -52,7 +52,7 @@ function LoginScreenLayout({
 							</div>
 
 							<div className="mt-auto max-w-[26rem] pb-8">
-								<h2 className="mt-6 text-balance text-[2.65rem] font-semibold leading-[1.04] tracking-[-0.04em]">
+								<h2 className="mt-6 text-[2.65rem] leading-[1.04] font-semibold tracking-[-0.04em] text-balance">
 									{headline}
 								</h2>
 
@@ -69,7 +69,7 @@ function LoginScreenLayout({
 				</div>
 			</div>
 		</main>
-	);
+	)
 }
 
-export { LoginScreenLayout };
+export { LoginScreenLayout }

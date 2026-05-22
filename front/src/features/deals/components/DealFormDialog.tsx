@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod"
 import {
 	Activity,
 	Car,
@@ -23,13 +23,13 @@ import {
 	Tag,
 	Trophy,
 	User,
-} from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { toast } from 'sonner';
-import { ZodError } from 'zod';
+} from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import { toast } from "sonner"
+import { ZodError } from "zod"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	Dialog,
 	DialogContent,
@@ -37,28 +37,28 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useLeadDetailQuery } from '@/features/leads/hooks/leads.queries';
-import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
-import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
-import { isApiError } from '@/lib/http/api-error';
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useLeadDetailQuery } from "@/features/leads/hooks/leads.queries"
+import { useVehiclesListQuery } from "@/features/vehicles/hooks/vehicles.queries"
+import { formatVehicleDealSelectLabel } from "@/features/vehicles/lib/vehicle-formatters"
+import { isApiError } from "@/lib/http/api-error"
 import {
 	dealImportanceOptions,
 	dealLossReasonOptions,
 	dealStageOptions,
 	dealStatusOptions,
-} from '../lib/deal-labels';
-import { useResolvedVehicleLabel } from '../hooks/use-resolved-vehicle-label';
+} from "../lib/deal-labels"
+import { useResolvedVehicleLabel } from "../hooks/use-resolved-vehicle-label"
 import {
 	apiDecimalStringToCentsDigits,
 	centsDigitsToApiDecimalString,
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
-} from '../lib/deal-money-input';
-import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from '../lib/deal-invalid-stage-transition-user-message';
-import { dealDarkSidebarToast } from '../lib/deal-toast-style';
+} from "../lib/deal-money-input"
+import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from "../lib/deal-invalid-stage-transition-user-message"
+import { dealDarkSidebarToast } from "../lib/deal-toast-style"
 import type {
 	Deal,
 	DealImportance,
@@ -67,176 +67,176 @@ import type {
 	DealStatus,
 	DealUpdateFormInput,
 	DealUpdateInput,
-} from '../model/deals.model';
-import { dealUpdateSchema } from '../schemas/deal-management.schema';
+} from "../model/deals.model"
+import { dealUpdateSchema } from "../schemas/deal-management.schema"
 
 type DealFormDialogProps = {
-	isPending: boolean;
-	onClose: () => void;
-	onSubmit: (values: DealUpdateInput) => Promise<void>;
-	open: boolean;
-	targetDeal: Deal | null;
-};
+	isPending: boolean
+	onClose: () => void
+	onSubmit: (values: DealUpdateInput) => Promise<void>
+	open: boolean
+	targetDeal: Deal | null
+}
 
 const fieldShellClass =
-	'relative flex h-10 items-center rounded-xl border border-[#d9dee7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.025)] transition-colors focus-within:border-[#d76b34]/45';
+	"relative flex h-10 items-center rounded-xl border border-[#d9dee7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.025)] transition-colors focus-within:border-[#d76b34]/45"
 
 const inputClass =
-	'h-full rounded-xl border-0 bg-transparent px-3 text-[13px] shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60';
+	"h-full rounded-xl border-0 bg-transparent px-3 text-[13px] shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
 
 const selectButtonClass =
-	'flex h-full w-full items-center rounded-xl border-0 bg-transparent py-0 pl-14 pr-9 text-left text-[13px] text-[#1b2430] outline-none disabled:cursor-not-allowed disabled:opacity-60';
+	"flex h-full w-full items-center rounded-xl border-0 bg-transparent py-0 pl-14 pr-9 text-left text-[13px] text-[#1b2430] outline-none disabled:cursor-not-allowed disabled:opacity-60"
 
 const searchableInputClass =
-	'h-full w-full rounded-xl border-0 bg-transparent py-0 pl-10 pr-9 text-[13px] text-[#1b2430] shadow-none outline-none placeholder:text-[#9aa3b2] focus-visible:border-transparent focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60';
+	"h-full w-full rounded-xl border-0 bg-transparent py-0 pl-10 pr-9 text-[13px] text-[#1b2430] shadow-none outline-none placeholder:text-[#9aa3b2] focus-visible:border-transparent focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
 
 const dropdownPanelClass =
-	'absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-36 overflow-y-auto rounded-xl border border-[#e5e9f0] bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.12)]';
+	"absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-36 overflow-y-auto rounded-xl border border-[#e5e9f0] bg-white p-1 shadow-[0_12px_34px_rgba(15,23,42,0.12)]"
 
 const dropdownItemClass =
-	'w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35';
+	"w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35"
 
-const DEAL_INVALID_STAGE_TRANSITION_CODE = 'deal.invalid_stage_transition';
+const DEAL_INVALID_STAGE_TRANSITION_CODE = "deal.invalid_stage_transition"
 
 function getFriendlyMessageForInvalidStageTransition(apiMessage: string) {
 	if (/negociac[aã]o nova|nova deve iniciar/i.test(apiMessage)) {
-		return 'Negociações novas começam na primeira etapa do funil. Ajuste a etapa e tente de novo.';
+		return "Negociações novas começam na primeira etapa do funil. Ajuste a etapa e tente de novo."
 	}
-	return DEAL_INVALID_STAGE_SKIP_USER_MESSAGE;
+	return DEAL_INVALID_STAGE_SKIP_USER_MESSAGE
 }
 
 function normalizeSearch(value: string) {
-	return value.trim().toLowerCase();
+	return value.trim().toLowerCase()
 }
 
 function getStageVisual(stage: DealStage | undefined) {
 	switch (stage) {
-		case 'INITIAL_CONTACT':
+		case "INITIAL_CONTACT":
 			return {
 				Icon: User,
 				wrapClassName:
-					'bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)]',
-			};
-		case 'NEGOTIATION':
+					"bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)]",
+			}
+		case "NEGOTIATION":
 			return {
 				Icon: Handshake,
-				wrapClassName: 'bg-sky-50 text-sky-600',
-			};
-		case 'PROPOSAL':
+				wrapClassName: "bg-sky-50 text-sky-600",
+			}
+		case "PROPOSAL":
 			return {
 				Icon: ScrollText,
-				wrapClassName: 'bg-violet-50 text-violet-600',
-			};
-		case 'CLOSING':
+				wrapClassName: "bg-violet-50 text-violet-600",
+			}
+		case "CLOSING":
 			return {
 				Icon: MessageSquareText,
-				wrapClassName: 'bg-amber-50 text-amber-600',
-			};
+				wrapClassName: "bg-amber-50 text-amber-600",
+			}
 		default:
 			return {
 				Icon: PhoneCall,
-				wrapClassName: 'bg-slate-100 text-slate-500',
-			};
+				wrapClassName: "bg-slate-100 text-slate-500",
+			}
 	}
 }
 
 function getImportanceVisual(importance: DealImportance | undefined) {
 	switch (importance) {
-		case 'HOT':
+		case "HOT":
 			return {
 				Icon: Flame,
 				wrapClassName:
-					'bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)]',
-			};
-		case 'WARM':
+					"bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)]",
+			}
+		case "WARM":
 			return {
 				Icon: SunMedium,
-				wrapClassName: 'bg-amber-50 text-amber-600',
-			};
-		case 'COLD':
+				wrapClassName: "bg-amber-50 text-amber-600",
+			}
+		case "COLD":
 			return {
 				Icon: Snowflake,
-				wrapClassName: 'bg-sky-50 text-sky-600',
-			};
+				wrapClassName: "bg-sky-50 text-sky-600",
+			}
 		default:
 			return {
 				Icon: Flame,
-				wrapClassName: 'bg-slate-100 text-slate-500',
-			};
+				wrapClassName: "bg-slate-100 text-slate-500",
+			}
 	}
 }
 
 function getStatusVisual(status: DealStatus | undefined) {
 	switch (status) {
-		case 'OPEN':
+		case "OPEN":
 			return {
 				Icon: Activity,
-				wrapClassName: 'bg-emerald-50 text-emerald-600',
-			};
-		case 'WON':
+				wrapClassName: "bg-emerald-50 text-emerald-600",
+			}
+		case "WON":
 			return {
 				Icon: CircleCheck,
-				wrapClassName: 'bg-teal-50 text-teal-600',
-			};
-		case 'LOST':
+				wrapClassName: "bg-teal-50 text-teal-600",
+			}
+		case "LOST":
 			return {
 				Icon: CircleX,
-				wrapClassName: 'bg-rose-50 text-rose-600',
-			};
+				wrapClassName: "bg-rose-50 text-rose-600",
+			}
 		default:
 			return {
 				Icon: Activity,
-				wrapClassName: 'bg-slate-100 text-slate-500',
-			};
+				wrapClassName: "bg-slate-100 text-slate-500",
+			}
 	}
 }
 
 function getSummaryStageTextClass(
 	currentStage: DealStage | undefined,
-	stage: DealStage,
+	stage: DealStage
 ) {
 	if (currentStage !== stage) {
-		return 'space-y-1 text-[10px] font-medium text-[#7a8494]';
+		return "space-y-1 text-[10px] font-medium text-[#7a8494]"
 	}
 	switch (stage) {
-		case 'INITIAL_CONTACT':
-			return 'space-y-1 text-[10px] font-medium text-[color:var(--brand-accent)]';
-		case 'NEGOTIATION':
-			return 'space-y-1 text-[10px] font-medium text-sky-600';
-		case 'PROPOSAL':
-			return 'space-y-1 text-[10px] font-medium text-violet-600';
-		case 'CLOSING':
-			return 'space-y-1 text-[10px] font-medium text-amber-600';
+		case "INITIAL_CONTACT":
+			return "space-y-1 text-[10px] font-medium text-[color:var(--brand-accent)]"
+		case "NEGOTIATION":
+			return "space-y-1 text-[10px] font-medium text-sky-600"
+		case "PROPOSAL":
+			return "space-y-1 text-[10px] font-medium text-violet-600"
+		case "CLOSING":
+			return "space-y-1 text-[10px] font-medium text-amber-600"
 	}
 }
 
 function getSummaryStageIconClass(
 	currentStage: DealStage | undefined,
-	stage: DealStage,
+	stage: DealStage
 ) {
-	const base = 'mx-auto flex size-7 items-center justify-center rounded-full';
+	const base = "mx-auto flex size-7 items-center justify-center rounded-full"
 	if (currentStage !== stage) {
-		return `${base} bg-[#f4f6f8]`;
+		return `${base} bg-[#f4f6f8]`
 	}
-	return `${base} ${getStageVisual(stage).wrapClassName}`;
+	return `${base} ${getStageVisual(stage).wrapClassName}`
 }
 
 function getOptionLabel<T extends string>(
 	options: { value: T; label: string }[],
-	value: T | undefined,
+	value: T | undefined
 ) {
-	return options.find((option) => option.value === value)?.label ?? 'Selecione';
+	return options.find((option) => option.value === value)?.label ?? "Selecione"
 }
 
 function getDealsErrorMessage(error: unknown) {
 	if (error instanceof ZodError) {
-		return error.issues[0]?.message ?? 'Dados inválidos. Revise o formulário.';
+		return error.issues[0]?.message ?? "Dados inválidos. Revise o formulário."
 	}
 	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
+		return "Não foi possível concluir a operação agora. Tente novamente em instantes."
 	}
 	if (error.code === DEAL_INVALID_STAGE_TRANSITION_CODE) {
-		return getFriendlyMessageForInvalidStageTransition(error.message);
+		return getFriendlyMessageForInvalidStageTransition(error.message)
 	}
 	if (
 		error.status === 400 &&
@@ -244,21 +244,19 @@ function getDealsErrorMessage(error: unknown) {
 	) {
 		const raw =
 			error.errors.find((e) => e.code === DEAL_INVALID_STAGE_TRANSITION_CODE)
-				?.message ?? error.message;
-		return getFriendlyMessageForInvalidStageTransition(raw);
+				?.message ?? error.message
+		return getFriendlyMessageForInvalidStageTransition(raw)
 	}
 	if (error.status === 400) {
-		return error.message || 'Os dados não passaram na validação da API.';
+		return error.message || "Os dados não passaram na validação da API."
 	}
 	if (error.status === 403) {
-		return (
-			error.message || 'O seu perfil não tem permissão para esta operação.'
-		);
+		return error.message || "O seu perfil não tem permissão para esta operação."
 	}
 	if (error.status === 404) {
-		return error.message || 'A negociação selecionada não foi encontrada.';
+		return error.message || "A negociação selecionada não foi encontrada."
 	}
-	return error.message;
+	return error.message
 }
 
 function DealFormDialog({
@@ -268,60 +266,60 @@ function DealFormDialog({
 	open,
 	targetDeal,
 }: DealFormDialogProps) {
-	const [submitError, setSubmitError] = useState<string | null>(null);
-	const [valueCentsDigits, setValueCentsDigits] = useState('');
-	const [vehicleSearch, setVehicleSearch] = useState('');
-	const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
-	const [stageDropdownOpen, setStageDropdownOpen] = useState(false);
-	const [importanceDropdownOpen, setImportanceDropdownOpen] = useState(false);
-	const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
-	const [lossReasonDropdownOpen, setLossReasonDropdownOpen] = useState(false);
-	const vehicleSearchRef = useRef<HTMLInputElement | null>(null);
-	const isReadOnly = Boolean(targetDeal && targetDeal.status !== 'OPEN');
+	const [submitError, setSubmitError] = useState<string | null>(null)
+	const [valueCentsDigits, setValueCentsDigits] = useState("")
+	const [vehicleSearch, setVehicleSearch] = useState("")
+	const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false)
+	const [stageDropdownOpen, setStageDropdownOpen] = useState(false)
+	const [importanceDropdownOpen, setImportanceDropdownOpen] = useState(false)
+	const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
+	const [lossReasonDropdownOpen, setLossReasonDropdownOpen] = useState(false)
+	const vehicleSearchRef = useRef<HTMLInputElement | null>(null)
+	const isReadOnly = Boolean(targetDeal && targetDeal.status !== "OPEN")
 
 	const form = useForm<DealUpdateFormInput>({
 		resolver: zodResolver(dealUpdateSchema),
 		defaultValues: {},
-	});
+	})
 
-	const titleValue = useWatch({ control: form.control, name: 'title' });
-	const stageValue = useWatch({ control: form.control, name: 'stage' });
+	const titleValue = useWatch({ control: form.control, name: "title" })
+	const stageValue = useWatch({ control: form.control, name: "stage" })
 	const importanceValue = useWatch({
 		control: form.control,
-		name: 'importance',
-	});
-	const statusValue = useWatch({ control: form.control, name: 'status' });
+		name: "importance",
+	})
+	const statusValue = useWatch({ control: form.control, name: "status" })
 	const lossReasonValue = useWatch({
 		control: form.control,
-		name: 'lossReason',
-	});
-	const stageVisual = getStageVisual(stageValue);
-	const importanceVisual = getImportanceVisual(importanceValue);
-	const statusVisual = getStatusVisual(statusValue);
+		name: "lossReason",
+	})
+	const stageVisual = getStageVisual(stageValue)
+	const importanceVisual = getImportanceVisual(importanceValue)
+	const statusVisual = getStatusVisual(statusValue)
 
-	const leadId = targetDeal?.leadId ?? '';
+	const leadId = targetDeal?.leadId ?? ""
 	const leadQuery = useLeadDetailQuery(leadId, {
 		enabled: Boolean(open && leadId),
-	});
-	const leadStoreId = leadQuery.data?.storeId ?? null;
+	})
+	const leadStoreId = leadQuery.data?.storeId ?? null
 
 	const vehiclesQuery = useVehiclesListQuery(
-		{ status: 'AVAILABLE' },
-		{ enabled: Boolean(open && leadStoreId && !isReadOnly) },
-	);
+		{ status: "AVAILABLE" },
+		{ enabled: Boolean(open && leadStoreId && !isReadOnly) }
+	)
 	const availableVehicles = useMemo(
 		() =>
 			(vehiclesQuery.data ?? []).filter(
 				(vehicle) =>
-					vehicle.storeId === leadStoreId && vehicle.status === 'AVAILABLE',
+					vehicle.storeId === leadStoreId && vehicle.status === "AVAILABLE"
 			),
-		[leadStoreId, vehiclesQuery.data],
-	);
+		[leadStoreId, vehiclesQuery.data]
+	)
 
 	const resolvedCurrentVehicle = useResolvedVehicleLabel(
-		targetDeal?.vehicleId ?? '',
-		targetDeal?.vehicleLabel,
-	);
+		targetDeal?.vehicleId ?? "",
+		targetDeal?.vehicleLabel
+	)
 
 	const vehicleOptions = useMemo(() => {
 		const current = targetDeal
@@ -329,42 +327,42 @@ function DealFormDialog({
 					id: targetDeal.vehicleId,
 					label: resolvedCurrentVehicle.displayLabel,
 				} as const)
-			: null;
+			: null
 
 		const fromAvailable = availableVehicles.map((v) => ({
 			id: v.id,
 			label: formatVehicleDealSelectLabel(v),
-		}));
+		}))
 
-		if (!current) return fromAvailable;
+		if (!current) return fromAvailable
 
-		const hasCurrent = fromAvailable.some((v) => v.id === current.id);
-		return hasCurrent ? fromAvailable : [current, ...fromAvailable];
-	}, [availableVehicles, resolvedCurrentVehicle.displayLabel, targetDeal]);
+		const hasCurrent = fromAvailable.some((v) => v.id === current.id)
+		return hasCurrent ? fromAvailable : [current, ...fromAvailable]
+	}, [availableVehicles, resolvedCurrentVehicle.displayLabel, targetDeal])
 
 	const filteredVehicleOptions = useMemo(() => {
-		const search = normalizeSearch(vehicleSearch);
+		const search = normalizeSearch(vehicleSearch)
 		if (!search) {
-			return vehicleOptions;
+			return vehicleOptions
 		}
 		return vehicleOptions.filter((vehicle) =>
-			normalizeSearch(vehicle.label).includes(search),
-		);
-	}, [vehicleOptions, vehicleSearch]);
+			normalizeSearch(vehicle.label).includes(search)
+		)
+	}, [vehicleOptions, vehicleSearch])
 
 	useEffect(() => {
 		if (!open) {
 			queueMicrotask(() => {
-				form.reset({});
-				setValueCentsDigits('');
-				setVehicleSearch('');
-				setVehicleDropdownOpen(false);
-				setStageDropdownOpen(false);
-				setImportanceDropdownOpen(false);
-				setStatusDropdownOpen(false);
-				setLossReasonDropdownOpen(false);
-			});
-			return;
+				form.reset({})
+				setValueCentsDigits("")
+				setVehicleSearch("")
+				setVehicleDropdownOpen(false)
+				setStageDropdownOpen(false)
+				setImportanceDropdownOpen(false)
+				setStatusDropdownOpen(false)
+				setLossReasonDropdownOpen(false)
+			})
+			return
 		}
 		if (targetDeal) {
 			queueMicrotask(() => {
@@ -375,89 +373,89 @@ function DealFormDialog({
 					importance: targetDeal.importance,
 					status: targetDeal.status,
 					lossReason: targetDeal.lossReason,
-				});
-				setValueCentsDigits(apiDecimalStringToCentsDigits(targetDeal.value));
-				setVehicleSearch(resolvedCurrentVehicle.displayLabel);
-				setVehicleDropdownOpen(false);
-				setStageDropdownOpen(false);
-				setImportanceDropdownOpen(false);
-				setStatusDropdownOpen(false);
-				setLossReasonDropdownOpen(false);
-			});
+				})
+				setValueCentsDigits(apiDecimalStringToCentsDigits(targetDeal.value))
+				setVehicleSearch(resolvedCurrentVehicle.displayLabel)
+				setVehicleDropdownOpen(false)
+				setStageDropdownOpen(false)
+				setImportanceDropdownOpen(false)
+				setStatusDropdownOpen(false)
+				setLossReasonDropdownOpen(false)
+			})
 		} else {
 			queueMicrotask(() => {
-				setValueCentsDigits('');
-				setVehicleSearch('');
-				setVehicleDropdownOpen(false);
-				setStageDropdownOpen(false);
-				setImportanceDropdownOpen(false);
-				setStatusDropdownOpen(false);
-				setLossReasonDropdownOpen(false);
-			});
+				setValueCentsDigits("")
+				setVehicleSearch("")
+				setVehicleDropdownOpen(false)
+				setStageDropdownOpen(false)
+				setImportanceDropdownOpen(false)
+				setStatusDropdownOpen(false)
+				setLossReasonDropdownOpen(false)
+			})
 		}
-	}, [form, open, resolvedCurrentVehicle.displayLabel, targetDeal]);
+	}, [form, open, resolvedCurrentVehicle.displayLabel, targetDeal])
 
 	useEffect(() => {
-		if (statusValue !== 'LOST' && lossReasonValue) {
-			form.setValue('lossReason', null, {
+		if (statusValue !== "LOST" && lossReasonValue) {
+			form.setValue("lossReason", null, {
 				shouldDirty: true,
 				shouldValidate: true,
-			});
+			})
 		}
-	}, [form, lossReasonValue, statusValue]);
+	}, [form, lossReasonValue, statusValue])
 
 	function handleSelectVehicle(option: { id: string; label: string }) {
-		form.setValue('vehicleId', option.id as DealUpdateFormInput['vehicleId'], {
+		form.setValue("vehicleId", option.id as DealUpdateFormInput["vehicleId"], {
 			shouldDirty: true,
 			shouldValidate: true,
-		});
-		setVehicleSearch(option.label);
-		setVehicleDropdownOpen(false);
+		})
+		setVehicleSearch(option.label)
+		setVehicleDropdownOpen(false)
 
-		const picked = availableVehicles.find((v) => v.id === option.id);
+		const picked = availableVehicles.find((v) => v.id === option.id)
 		if (picked) {
-			setValueCentsDigits(apiDecimalStringToCentsDigits(picked.price));
+			setValueCentsDigits(apiDecimalStringToCentsDigits(picked.price))
 		}
 	}
 
 	async function handleSubmit() {
 		if (isReadOnly) {
-			const message = 'Negociação finalizada. Não é possível editar os campos.';
-			setSubmitError(message);
+			const message = "Negociação finalizada. Não é possível editar os campos."
+			setSubmitError(message)
 			toast.warning(message, {
-				id: 'deal-edit-readonly',
+				id: "deal-edit-readonly",
 				...dealDarkSidebarToast,
-			});
-			return;
+			})
+			return
 		}
-		setSubmitError(null);
+		setSubmitError(null)
 		try {
-			const base = form.getValues();
-			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits);
+			const base = form.getValues()
+			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits)
 			const parsed = dealUpdateSchema.parse({
 				...base,
 				value: valueAsApi,
-			} satisfies DealUpdateFormInput);
-			await onSubmit(parsed as DealUpdateInput);
-			toast.success('Negociação alterada com sucesso.', {
+			} satisfies DealUpdateFormInput)
+			await onSubmit(parsed as DealUpdateInput)
+			toast.success("Negociação alterada com sucesso.", {
 				...dealDarkSidebarToast,
-			});
-			onClose();
+			})
+			onClose()
 		} catch (error) {
-			const message = getDealsErrorMessage(error);
-			setSubmitError(message);
+			const message = getDealsErrorMessage(error)
+			setSubmitError(message)
 			toast.error(message, {
 				...dealDarkSidebarToast,
-			});
+			})
 		}
 	}
 
 	return (
 		<Dialog
 			onOpenChange={(nextOpen) => {
-				if (nextOpen) return;
-				setSubmitError(null);
-				onClose();
+				if (nextOpen) return
+				setSubmitError(null)
+				onClose()
 			}}
 			open={open}
 		>
@@ -467,10 +465,10 @@ function DealFormDialog({
 						<PencilLine className="size-6" />
 					</div>
 					<div className="min-w-0 space-y-1">
-						<p className="text-[0.68rem] font-bold uppercase tracking-[0.35em] text-[color:var(--brand-accent)]">
+						<p className="text-[0.68rem] font-bold tracking-[0.35em] text-[color:var(--brand-accent)] uppercase">
 							Negociações
 						</p>
-						<DialogTitle className="text-[1.35rem] font-bold leading-tight tracking-[-0.02em] text-[#1b2430]">
+						<DialogTitle className="text-[1.35rem] leading-tight font-bold tracking-[-0.02em] text-[#1b2430]">
 							Editar negociação
 						</DialogTitle>
 						<DialogDescription className="max-w-2xl text-[13px] leading-5 text-[#7a8494]">
@@ -512,8 +510,8 @@ function DealFormDialog({
 								className="hidden h-9 shrink-0 rounded-xl bg-white px-4 text-[12px] font-semibold text-[#1b2430] shadow-[0_1px_4px_rgba(15,23,42,0.08)] hover:bg-white sm:inline-flex"
 								disabled={isPending || isReadOnly}
 								onClick={() => {
-									vehicleSearchRef.current?.focus();
-									setVehicleDropdownOpen(true);
+									vehicleSearchRef.current?.focus()
+									setVehicleDropdownOpen(true)
 								}}
 								type="button"
 								variant="outline"
@@ -529,22 +527,22 @@ function DealFormDialog({
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-title"
 								>
-									Título{' '}
+									Título{" "}
 									<span className="text-[color:var(--brand-accent)]">*</span>
 								</Label>
 								<div className={fieldShellClass}>
 									<Tag className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
 									<Input
-										className={`${inputClass} pl-10 uppercase tracking-[0.01em]`}
+										className={`${inputClass} pl-10 tracking-[0.01em] uppercase`}
 										disabled={isPending || isReadOnly}
 										id="deal-form-title"
 										onChange={(event) =>
-											form.setValue('title', event.target.value, {
+											form.setValue("title", event.target.value, {
 												shouldDirty: true,
 												shouldValidate: true,
 											})
 										}
-										value={titleValue ?? ''}
+										value={titleValue ?? ""}
 									/>
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
@@ -557,7 +555,7 @@ function DealFormDialog({
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-value"
 								>
-									Valor{' '}
+									Valor{" "}
 									<span className="text-[color:var(--brand-accent)]">*</span>
 								</Label>
 								<div className={fieldShellClass}>
@@ -572,7 +570,7 @@ function DealFormDialog({
 										autoComplete="off"
 										onChange={(event) =>
 											setValueCentsDigits(
-												sanitizeMoneyDigitsInput(event.target.value),
+												sanitizeMoneyDigitsInput(event.target.value)
 											)
 										}
 										placeholder="R$ 0,00"
@@ -589,7 +587,7 @@ function DealFormDialog({
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-vehicle"
 								>
-									Veículo{' '}
+									Veículo{" "}
 									<span className="text-[color:var(--brand-accent)]">*</span>
 								</Label>
 								<div className={fieldShellClass}>
@@ -607,26 +605,26 @@ function DealFormDialog({
 										onBlur={() => {
 											window.setTimeout(
 												() => setVehicleDropdownOpen(false),
-												120,
-											);
+												120
+											)
 										}}
 										onChange={(event) => {
-											setVehicleSearch(event.target.value);
+											setVehicleSearch(event.target.value)
 											form.setValue(
-												'vehicleId',
-												'' as DealUpdateFormInput['vehicleId'],
+												"vehicleId",
+												"" as DealUpdateFormInput["vehicleId"],
 												{
 													shouldDirty: true,
 													shouldValidate: true,
-												},
-											);
-											setVehicleDropdownOpen(true);
+												}
+											)
+											setVehicleDropdownOpen(true)
 										}}
 										onFocus={() => setVehicleDropdownOpen(true)}
 										placeholder={
 											vehiclesQuery.isPending
-												? 'Carregando veículos disponíveis...'
-												: 'Buscar veículo disponível...'
+												? "Carregando veículos disponíveis..."
+												: "Buscar veículo disponível..."
 										}
 										ref={vehicleSearchRef}
 										value={vehicleSearch}
@@ -642,8 +640,8 @@ function DealFormDialog({
 														key={vehicle.id}
 														className={dropdownItemClass}
 														onMouseDown={(event) => {
-															event.preventDefault();
-															handleSelectVehicle(vehicle);
+															event.preventDefault()
+															handleSelectVehicle(vehicle)
 														}}
 														type="button"
 													>
@@ -687,7 +685,7 @@ function DealFormDialog({
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-stage"
 								>
-									Etapa{' '}
+									Etapa{" "}
 									<span className="text-[color:var(--brand-accent)]">*</span>
 								</Label>
 								<div className={fieldShellClass}>
@@ -701,7 +699,7 @@ function DealFormDialog({
 										disabled={isPending || isReadOnly}
 										id="deal-form-stage"
 										onBlur={() => {
-											window.setTimeout(() => setStageDropdownOpen(false), 120);
+											window.setTimeout(() => setStageDropdownOpen(false), 120)
 										}}
 										onClick={() => setStageDropdownOpen((current) => !current)}
 										type="button"
@@ -718,12 +716,12 @@ function DealFormDialog({
 													key={opt.value}
 													className={dropdownItemClass}
 													onMouseDown={(event) => {
-														event.preventDefault();
-														form.setValue('stage', opt.value, {
+														event.preventDefault()
+														form.setValue("stage", opt.value, {
 															shouldDirty: true,
 															shouldValidate: true,
-														});
-														setStageDropdownOpen(false);
+														})
+														setStageDropdownOpen(false)
 													}}
 													type="button"
 												>
@@ -743,7 +741,7 @@ function DealFormDialog({
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-importance"
 								>
-									Importância{' '}
+									Importância{" "}
 									<span className="text-[color:var(--brand-accent)]">*</span>
 								</Label>
 								<div className={fieldShellClass}>
@@ -759,8 +757,8 @@ function DealFormDialog({
 										onBlur={() => {
 											window.setTimeout(
 												() => setImportanceDropdownOpen(false),
-												120,
-											);
+												120
+											)
 										}}
 										onClick={() =>
 											setImportanceDropdownOpen((current) => !current)
@@ -779,12 +777,12 @@ function DealFormDialog({
 													key={opt.value}
 													className={dropdownItemClass}
 													onMouseDown={(event) => {
-														event.preventDefault();
-														form.setValue('importance', opt.value, {
+														event.preventDefault()
+														form.setValue("importance", opt.value, {
 															shouldDirty: true,
 															shouldValidate: true,
-														});
-														setImportanceDropdownOpen(false);
+														})
+														setImportanceDropdownOpen(false)
 													}}
 													type="button"
 												>
@@ -804,7 +802,7 @@ function DealFormDialog({
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-status"
 								>
-									Status{' '}
+									Status{" "}
 									<span className="text-[color:var(--brand-accent)]">*</span>
 								</Label>
 								<div className={fieldShellClass}>
@@ -818,10 +816,7 @@ function DealFormDialog({
 										disabled={isPending || isReadOnly}
 										id="deal-form-status"
 										onBlur={() => {
-											window.setTimeout(
-												() => setStatusDropdownOpen(false),
-												120,
-											);
+											window.setTimeout(() => setStatusDropdownOpen(false), 120)
 										}}
 										onClick={() => setStatusDropdownOpen((current) => !current)}
 										type="button"
@@ -838,12 +833,12 @@ function DealFormDialog({
 													key={opt.value}
 													className={dropdownItemClass}
 													onMouseDown={(event) => {
-														event.preventDefault();
-														form.setValue('status', opt.value, {
+														event.preventDefault()
+														form.setValue("status", opt.value, {
 															shouldDirty: true,
 															shouldValidate: true,
-														});
-														setStatusDropdownOpen(false);
+														})
+														setStatusDropdownOpen(false)
 													}}
 													type="button"
 												>
@@ -857,13 +852,13 @@ function DealFormDialog({
 									A negociação só pode ser editada quando está em aberto.
 								</p>
 							</div>
-							{statusValue === 'LOST' ? (
+							{statusValue === "LOST" ? (
 								<div className="space-y-1 md:col-span-2">
 									<Label
 										className="text-[12.5px] font-semibold text-[#1b2430]"
 										htmlFor="deal-form-loss-reason"
 									>
-										Motivo da perda{' '}
+										Motivo da perda{" "}
 										<span className="text-[color:var(--brand-accent)]">*</span>
 									</Label>
 									<div className={fieldShellClass}>
@@ -877,8 +872,8 @@ function DealFormDialog({
 											onBlur={() => {
 												window.setTimeout(
 													() => setLossReasonDropdownOpen(false),
-													120,
-												);
+													120
+												)
 											}}
 											onClick={() =>
 												setLossReasonDropdownOpen((current) => !current)
@@ -890,7 +885,7 @@ function DealFormDialog({
 													dealLossReasonOptions,
 													(lossReasonValue ?? undefined) as
 														| DealLossReason
-														| undefined,
+														| undefined
 												)}
 											</span>
 										</button>
@@ -902,12 +897,12 @@ function DealFormDialog({
 														key={opt.value}
 														className={dropdownItemClass}
 														onMouseDown={(event) => {
-															event.preventDefault();
-															form.setValue('lossReason', opt.value, {
+															event.preventDefault()
+															form.setValue("lossReason", opt.value, {
 																shouldDirty: true,
 																shouldValidate: true,
-															});
-															setLossReasonDropdownOpen(false);
+															})
+															setLossReasonDropdownOpen(false)
 														}}
 														type="button"
 													>
@@ -942,13 +937,13 @@ function DealFormDialog({
 								<div
 									className={getSummaryStageTextClass(
 										stageValue,
-										'INITIAL_CONTACT',
+										"INITIAL_CONTACT"
 									)}
 								>
 									<span
 										className={getSummaryStageIconClass(
 											stageValue,
-											'INITIAL_CONTACT',
+											"INITIAL_CONTACT"
 										)}
 									>
 										<User className="size-3.5" />
@@ -959,13 +954,13 @@ function DealFormDialog({
 								<div
 									className={getSummaryStageTextClass(
 										stageValue,
-										'NEGOTIATION',
+										"NEGOTIATION"
 									)}
 								>
 									<span
 										className={getSummaryStageIconClass(
 											stageValue,
-											'NEGOTIATION',
+											"NEGOTIATION"
 										)}
 									>
 										<Handshake className="size-3.5" />
@@ -974,10 +969,10 @@ function DealFormDialog({
 								</div>
 								<span className="h-px w-5 bg-[#e5e9f0]" />
 								<div
-									className={getSummaryStageTextClass(stageValue, 'PROPOSAL')}
+									className={getSummaryStageTextClass(stageValue, "PROPOSAL")}
 								>
 									<span
-										className={getSummaryStageIconClass(stageValue, 'PROPOSAL')}
+										className={getSummaryStageIconClass(stageValue, "PROPOSAL")}
 									>
 										<FileText className="size-3.5" />
 									</span>
@@ -985,10 +980,10 @@ function DealFormDialog({
 								</div>
 								<span className="h-px w-5 bg-[#e5e9f0]" />
 								<div
-									className={getSummaryStageTextClass(stageValue, 'CLOSING')}
+									className={getSummaryStageTextClass(stageValue, "CLOSING")}
 								>
 									<span
-										className={getSummaryStageIconClass(stageValue, 'CLOSING')}
+										className={getSummaryStageIconClass(stageValue, "CLOSING")}
 									>
 										<Trophy className="size-3.5" />
 									</span>
@@ -1013,13 +1008,13 @@ function DealFormDialog({
 							type="submit"
 						>
 							<Check className="size-4" />
-							{isPending ? 'Salvando...' : 'Salvar alterações'}
+							{isPending ? "Salvando..." : "Salvar alterações"}
 						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
-export { DealFormDialog, getDealsErrorMessage };
+export { DealFormDialog, getDealsErrorMessage }

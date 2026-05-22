@@ -1,12 +1,9 @@
 import type {
 	AccessGroup,
-	Customer,
-	Deal,
-	Lead,
+	Prisma,
 	Store,
 	Team,
 	User,
-	Vehicle,
 } from '../../src/generated/prisma/client.js';
 import { UserRole } from '../../src/generated/prisma/enums.js';
 
@@ -14,8 +11,10 @@ import { deterministicUuid } from './seed-utils.js';
 
 type SeedAccessGroup = Pick<
 	AccessGroup,
-	'id' | 'name' | 'description' | 'baseRole' | 'featureKeys' | 'isSystemGroup'
->;
+	'id' | 'name' | 'description' | 'baseRole' | 'isSystemGroup'
+> & {
+	featureKeys: Prisma.InputJsonValue;
+};
 
 type SeedStore = Pick<Store, 'id' | 'name'>;
 
@@ -28,56 +27,6 @@ type SeedTeam = Pick<Team, 'id' | 'name' | 'storeId' | 'managerId'> & {
 	memberIds: string[];
 };
 
-type SeedCustomer = Pick<Customer, 'id' | 'name' | 'email' | 'phone' | 'cpf'>;
-
-type SeedLead = Pick<
-	Lead,
-	| 'id'
-	| 'customerId'
-	| 'storeId'
-	| 'ownerUserId'
-	| 'source'
-	| 'status'
-	| 'createdAt'
-	| 'updatedAt'
->;
-
-type SeedDeal = Pick<
-	Deal,
-	| 'id'
-	| 'leadId'
-	| 'vehicleId'
-	| 'title'
-	| 'value'
-	| 'importance'
-	| 'stage'
-	| 'status'
-	| 'lossReason'
-	| 'closedAt'
-	| 'createdAt'
-	| 'updatedAt'
->;
-
-type SeedVehicle = Pick<
-	Vehicle,
-	| 'id'
-	| 'storeId'
-	| 'brand'
-	| 'model'
-	| 'version'
-	| 'modelYear'
-	| 'manufactureYear'
-	| 'color'
-	| 'mileage'
-	| 'supportedFuelType'
-	| 'price'
-	| 'status'
-	| 'plate'
-	| 'vin'
-	| 'createdAt'
-	| 'updatedAt'
->;
-
 type BaseSeedDataset = {
 	accessGroups: SeedAccessGroup[];
 	stores: SeedStore[];
@@ -86,13 +35,6 @@ type BaseSeedDataset = {
 };
 
 type MinimalSeedDataset = BaseSeedDataset;
-
-type DashboardSeedDataset = BaseSeedDataset & {
-	customers: SeedCustomer[];
-	leads: SeedLead[];
-	vehicles: SeedVehicle[];
-	deals: SeedDeal[];
-};
 
 const SYSTEM_ACCESS_GROUPS = [
 	{
@@ -154,7 +96,6 @@ const SYSTEM_ACCESS_GROUPS = [
 
 export {
 	SYSTEM_ACCESS_GROUPS,
-	type DashboardSeedDataset,
 	type MinimalSeedDataset,
 	type SeedTeam,
 	type SeedUser,
