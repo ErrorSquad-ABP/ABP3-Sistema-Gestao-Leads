@@ -406,6 +406,14 @@ Como foi implementado:
 - filtros temporais permitem recortes analíticos;
 - dados são buscados por contratos específicos do backend.
 
+Evolução planejada na Sprint 3 (padronização UX):
+
+- paleta única pastel ancorada em `--brand-accent`, documentada em [`docs/agile/sprint-3-design-system.md`](../agile/sprint-3-design-system.md);
+- KPIs compartilham componente `KpiCard` com mesma intensidade cromática;
+- gráficos seguem regras por tipo (barra única, performance por meta, brand de origem) em vez de arco-íris por série;
+- modais de “ver detalhes” no dashboard analítico concentram leitura sem navegação desnecessária;
+- conforto visual priorizado sobre variedade de cores vibrantes.
+
 Quando aparece:
 
 - ao avaliar desempenho comercial;
