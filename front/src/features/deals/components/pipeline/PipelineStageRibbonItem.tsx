@@ -36,7 +36,7 @@ function PipelineStageRibbonItem({
 				'relative h-[92px] min-w-0',
 				/* “Mordida” com cor do fundo do ribbon: triângulo com vértice à direita da faixa, sem projetar à esquerda. */
 				!isFirst &&
-					'before:pointer-events-none before:absolute before:left-0 before:top-0 before:z-[1] before:h-full before:w-[14px] before:bg-card before:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]',
+					'before:pointer-events-none before:absolute before:top-0 before:left-0 before:z-[1] before:h-full before:w-[14px] before:bg-card before:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]',
 				index <= 1 ? 'bg-[color:var(--brand-accent-soft)]/70' : 'bg-muted',
 			)}
 			style={{
@@ -52,14 +52,14 @@ function PipelineStageRibbonItem({
 				<Icon className="mt-[2px] size-[18px] shrink-0 text-foreground/80" />
 				<div className="min-w-0 flex-1">
 					<div className="min-w-0">
-						<p className="truncate text-[14px] font-extrabold leading-[17px] text-foreground">
+						<p className="truncate text-[14px] leading-[17px] font-extrabold text-foreground">
 							{label}
 						</p>
 					</div>
 					<p className="mt-[5px] text-[12px] leading-[14px] text-muted-foreground">
 						{count} negociações
 					</p>
-					<p className="mt-[7px] min-w-[100px] translate-x-[6px] text-right text-[12px] font-bold leading-[14px] text-foreground">
+					<p className="mt-[7px] min-w-[100px] translate-x-[6px] text-right text-[12px] leading-[14px] font-bold text-foreground">
 						{total}
 					</p>
 				</div>

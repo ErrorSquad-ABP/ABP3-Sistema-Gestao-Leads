@@ -37,7 +37,7 @@ function AuthScreenLayout({
 						<div className="mb-5 flex h-[2.85rem] w-[2.85rem] items-center justify-center rounded-full border border-[color:var(--brand-accent)]/45 bg-white text-[1.26rem] font-semibold tracking-tight text-primary shadow-[0_0_0_4px_rgba(217,108,63,0.08)]">
 							lc
 						</div>
-						<h2 className="max-w-[18rem] text-[2.25rem] font-normal leading-[1.04] tracking-[-0.04em] md:text-[2.48rem]">
+						<h2 className="max-w-[18rem] text-[2.25rem] leading-[1.04] font-normal tracking-[-0.04em] md:text-[2.48rem]">
 							{asideTitle}
 						</h2>
 					</div>
@@ -50,7 +50,7 @@ function AuthScreenLayout({
 								lc
 							</div>
 							<div className="space-y-2">
-								<h1 className="text-balance text-[1.9rem] font-normal tracking-[-0.04em] text-foreground sm:text-[2.15rem]">
+								<h1 className="text-[1.9rem] font-normal tracking-[-0.04em] text-balance text-foreground sm:text-[2.15rem]">
 									{title}
 								</h1>
 								<p className="text-[0.84rem] text-[color:var(--brand-accent)]">

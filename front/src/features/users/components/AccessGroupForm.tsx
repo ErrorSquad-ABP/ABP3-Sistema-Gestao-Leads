@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -147,28 +147,39 @@ function AccessGroupDialog({
 	});
 
 	useEffect(() => {
-		if (!open) {
-			form.reset({
-				name: '',
-				description: '',
-				baseRole: null,
-				featureKeys: ['profile'],
-			});
-			setSubmitError(null);
+		if (!open || !group) {
 			return;
 		}
 
-		if (group) {
-			form.reset({
-				name: group.name,
-				description: group.description,
-				baseRole: group.baseRole,
-				featureKeys: group.featureKeys,
-			});
-		}
+		form.reset({
+			name: group.name,
+			description: group.description,
+			baseRole: group.baseRole,
+			featureKeys: group.featureKeys,
+		});
 	}, [form, group, open]);
 
-	const selectedFeatures = form.watch('featureKeys');
+	function handleDialogOpenChange(nextOpen: boolean) {
+		if (nextOpen) {
+			return;
+		}
+
+		setSubmitError(null);
+		form.reset({
+			name: '',
+			description: '',
+			baseRole: null,
+			featureKeys: ['profile'],
+		});
+		onClose();
+	}
+
+	const selectedFeatures =
+		useWatch({ control: form.control, name: 'featureKeys' }) ?? [];
+	const selectedBaseRole = useWatch({
+		control: form.control,
+		name: 'baseRole',
+	});
 
 	function toggleFeature(featureKey: AccessFeatureKey, checked: boolean) {
 		const current = form.getValues('featureKeys');
@@ -182,7 +193,7 @@ function AccessGroupDialog({
 	}
 
 	return (
-		<Dialog onOpenChange={(nextOpen) => !nextOpen && onClose()} open={open}>
+		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
 			<DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
 				<DialogHeader>
 					<DialogTitle>
@@ -234,7 +245,7 @@ function AccessGroupDialog({
 							<div className="space-y-1.5">
 								<Label htmlFor="access-group-description">Descrição</Label>
 								<textarea
-									className="flex min-h-28 w-full rounded-md border border-[#d6dce5] bg-white px-3 py-2 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+									className="flex min-h-28 w-full rounded-md border border-[#d6dce5] bg-white px-3 py-2 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="access-group-description"
 									placeholder="Explique quando esse grupo deve ser usado."
 									{...form.register('description')}
@@ -249,7 +260,7 @@ function AccessGroupDialog({
 							<div className="space-y-1.5">
 								<Label htmlFor="access-group-role">Papel canônico</Label>
 								<select
-									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="access-group-role"
 									onChange={(event) =>
 										form.setValue(
@@ -261,7 +272,7 @@ function AccessGroupDialog({
 											{ shouldDirty: true, shouldValidate: true },
 										)
 									}
-									value={form.watch('baseRole') ?? 'NONE'}
+									value={selectedBaseRole ?? 'NONE'}
 								>
 									<option value="NONE">Sem vínculo canônico</option>
 									{roleOptions.map((option) => (

@@ -2,9 +2,9 @@ import { OperationalDashboardPageContent } from '@/features/dashboard-operationa
 import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
 async function OperationalDashboardPage() {
-	const user = await requireUserWithRouteAccess('dashboardOperational');
+	await requireUserWithRouteAccess('dashboardOperational');
 
-	return <OperationalDashboardPageContent user={user} />;
+	return <OperationalDashboardPageContent />;
 }
 
 export default OperationalDashboardPage;

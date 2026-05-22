@@ -38,7 +38,7 @@ function DialogOverlay({
 	return (
 		<DialogPrimitive.Overlay
 			className={cn(
-				'fixed inset-0 z-50 bg-black/12 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
+				'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 z-50 bg-black/12 duration-100 supports-backdrop-filter:backdrop-blur-xs',
 				className,
 			)}
 			data-slot="dialog-overlay"
@@ -60,7 +60,7 @@ function DialogContent({
 			<DialogOverlay />
 			<DialogPrimitive.Content
 				className={cn(
-					'fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 gap-0 rounded-2xl border border-border/85 bg-white text-foreground shadow-none duration-200 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
+					'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 gap-0 rounded-2xl border border-border/85 bg-white text-foreground shadow-none duration-200',
 					className,
 				)}
 				data-slot="dialog-content"
@@ -70,7 +70,7 @@ function DialogContent({
 				{showCloseButton ? (
 					<DialogPrimitive.Close asChild>
 						<Button
-							className="absolute right-4 top-4"
+							className="absolute top-4 right-4"
 							size="icon-sm"
 							variant="ghost"
 						>

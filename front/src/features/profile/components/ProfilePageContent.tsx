@@ -247,7 +247,7 @@ function ProfilePageContent({
 								<ShieldCheck className="size-5" />
 							</div>
 							<div className="space-y-2">
-								<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
+								<p className="text-sm font-medium tracking-[0.18em] text-[#d96c3f] uppercase">
 									Conta e segurança
 								</p>
 								<CardTitle className="text-[1.65rem] font-semibold tracking-tight sm:text-[1.9rem]">
@@ -270,7 +270,7 @@ function ProfilePageContent({
 								className="flex min-h-22 flex-col rounded-xl border border-border/80 bg-[#f8fafc]/80 px-4 py-3"
 								key={label}
 							>
-								<div className="mb-2 flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+								<div className="mb-2 flex items-center gap-2 text-[0.72rem] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
 									<Icon
 										aria-hidden
 										className="size-4 shrink-0 text-[#2d3648]/80"
@@ -278,7 +278,7 @@ function ProfilePageContent({
 									{label}
 								</div>
 								<p
-									className="min-w-0 flex-1 wrap-break-word text-sm font-medium leading-snug text-[#1b2430]"
+									className="min-w-0 flex-1 text-sm leading-snug font-medium wrap-break-word text-[#1b2430]"
 									title={value}
 								>
 									{value}
@@ -300,7 +300,7 @@ function ProfilePageContent({
 								<Mail className="size-5" />
 							</div>
 							<div className="min-w-0 space-y-1">
-								<p className="text-xs font-medium uppercase tracking-[0.14em] text-[#d96c3f]">
+								<p className="text-xs font-medium tracking-[0.14em] text-[#d96c3f] uppercase">
 									E-mail
 								</p>
 								<CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
@@ -410,7 +410,7 @@ function ProfilePageContent({
 								<KeyRound className="size-5" />
 							</div>
 							<div className="min-w-0 space-y-1">
-								<p className="text-xs font-medium uppercase tracking-[0.14em] text-[#6b7687]">
+								<p className="text-xs font-medium tracking-[0.14em] text-[#6b7687] uppercase">
 									Senha
 								</p>
 								<CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">

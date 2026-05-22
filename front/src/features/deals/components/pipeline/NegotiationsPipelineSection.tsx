@@ -88,7 +88,7 @@ function NegotiationsPipelineSection({
 				/>
 			</div>
 			{isCollapsed ? (
-				<div className="hidden min-w-0 max-w-full justify-self-stretch lg:block">
+				<div className="hidden max-w-full min-w-0 justify-self-stretch lg:block">
 					<NegotiationsRightSummary deals={summaryDeals} />
 				</div>
 			) : null}

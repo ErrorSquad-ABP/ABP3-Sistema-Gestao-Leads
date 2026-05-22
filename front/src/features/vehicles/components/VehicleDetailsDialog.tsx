@@ -54,7 +54,7 @@ function formatDateTime(value: Date) {
 function VehicleDetail({ children, icon: Icon, label }: VehicleDetailProps) {
 	return (
 		<div className="min-w-0 rounded-xl border border-[#e8edf4] bg-[#f9fbfd] px-3 py-2.5">
-			<p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[#6b7687]">
+			<p className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-[#6b7687] uppercase">
 				<Icon className="size-3.5 shrink-0" />
 				{label}
 			</p>
@@ -87,7 +87,7 @@ function VehicleDetailsDialog({
 					title={`${vehicle.brand} ${vehicle.model}`}
 				/>
 
-				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pb-7 pt-3 md:px-8">
+				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pt-3 pb-7 md:px-8">
 					<VehicleModalInfoBanner>
 						Status atual: {formatVehicleStatus(vehicle.status)} -{' '}
 						{getVehicleStatusSubtitle(vehicle.status)}.

@@ -114,7 +114,7 @@ function TeamFormDialog({
 						<div className="grid gap-2">
 							<Label htmlFor="team-store">Loja</Label>
 							<select
-								className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-ring"
+								className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
 								id="team-store"
 								onChange={(event) =>
 									onStateChange((current) => ({
@@ -136,7 +136,7 @@ function TeamFormDialog({
 					<div className="grid gap-2">
 						<Label htmlFor="team-manager">Gerente da equipe</Label>
 						<select
-							className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-ring"
+							className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
 							id="team-manager"
 							onChange={(event) =>
 								onStateChange((current) => ({

@@ -111,28 +111,23 @@ Observação:
 
 ## 5. Seed
 
-### Seed mínimo
+Um único seed de demonstração (`npm run db:seed`): 4 utilizadores, 5 equipas/lojas e 20 leads completos (ajustável com `SEED_RECORD_COUNT`).
 
 ```bash
 npm run db:seed
 ```
 
-### Seed analítico
+PostgreSQL local secundário:
 
 ```bash
-SEED_MODE=dashboard npm run db:seed
-```
-
-### Seed no PostgreSQL local secundário
-
-```bash
-SEED_MODE=dashboard npm run db:seed:local
+npm run db:seed:local
 ```
 
 Observação:
 
 - no `compose.local`, o seed só roda automaticamente quando a base local está vazia;
-- se já existir utilizador na tabela `User`, o bootstrap local pula o seed para não sobrescrever a base.
+- se já existir utilizador na tabela `User`, o bootstrap local pula o seed para não sobrescrever a base;
+- `npm run db:seed` **substitui** utilizadores e dados operacionais no banco apontado por `DATABASE_URL` (destrutivo).
 
 ## 6. Credenciais bootstrap
 
@@ -140,6 +135,8 @@ Observação:
 | --- | --- | --- |
 | Administrador | `admin@crm.com` | `admin123` |
 | Gerente Geral | `geral@crm.com` | `admin123` |
+| Gerente | `gerente@crm.com` | `admin123` |
+| Atendente | `atendente@crm.com` | `admin123` |
 
 ## 7. Verificação mínima
 
@@ -201,5 +198,5 @@ Depois disso, o fluxo local fica totalmente independente do banco remoto. Se qui
 
 ```bash
 npm run db:migrate:local
-SEED_MODE=dashboard npm run db:seed:local
+npm run db:seed:local
 ```

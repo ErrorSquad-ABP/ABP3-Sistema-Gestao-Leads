@@ -196,7 +196,7 @@ function LeadDealsDialog({
 					<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 						<div className="flex items-center justify-between gap-4">
 							<div className="space-y-1">
-								<p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#d96c3f]">
+								<p className="text-[0.72rem] font-semibold tracking-[0.24em] text-[#d96c3f] uppercase">
 									Lead
 								</p>
 								<DialogTitle>Negociações do lead</DialogTitle>
@@ -207,7 +207,7 @@ function LeadDealsDialog({
 								</DialogDescription>
 							</div>
 							<Button
-								className="rounded-md shadow-none bg-[#2D3648] hover:bg-[#232B3B]"
+								className="rounded-md bg-[#2D3648] shadow-none hover:bg-[#232B3B]"
 								disabled={!leadId || !allowLeadMutations}
 								onClick={() => {
 									if (!allowLeadMutations) return;
@@ -234,7 +234,7 @@ function LeadDealsDialog({
 						</div>
 					</DialogHeader>
 
-					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-8 pb-8 pt-7">
+					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-8 pt-7 pb-8">
 						{listQuery.isError ? (
 							<div
 								className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
@@ -280,7 +280,7 @@ function LeadDealsDialog({
 						) : null}
 					</div>
 
-					<DialogFooter className="px-8 pb-6 pt-4">
+					<DialogFooter className="px-8 pt-4 pb-6">
 						<Button
 							className="rounded-md"
 							onClick={onClose}
@@ -318,7 +318,7 @@ function LeadDealsDialog({
 						<div className="space-y-2">
 							<Label htmlFor="lead-deal-vehicle">Veículo</Label>
 							<select
-								className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45 disabled:cursor-not-allowed disabled:opacity-60"
+								className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45 disabled:cursor-not-allowed disabled:opacity-60"
 								disabled={!leadId || !leadStoreId || vehiclesQuery.isPending}
 								id="lead-deal-vehicle"
 								onChange={(e) => setVehicleId(e.target.value)}

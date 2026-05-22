@@ -75,7 +75,7 @@ function PipelineSummaryCard({ data }: Props) {
 	}
 
 	return (
-		<Card className="min-w-0 max-w-full rounded-xl border border-border/90 bg-white shadow-none">
+		<Card className="max-w-full min-w-0 rounded-xl border border-border/90 bg-white shadow-none">
 			<CardContent className="p-4 pt-4">
 				<h3 className="text-[15px] font-extrabold text-foreground">
 					Resumo do funil
@@ -87,11 +87,11 @@ function PipelineSummaryCard({ data }: Props) {
 						onMouseMove={handleDonutMouseMove}
 					>
 						<div
-							className="h-full w-full rounded-full cursor-help"
+							className="h-full w-full cursor-help rounded-full"
 							style={{ background: conicFromSegments(segments) }}
 						/>
 						<div className="absolute inset-0 m-auto flex h-[58%] w-[58%] min-w-0 flex-col items-center justify-center rounded-full bg-card text-center">
-							<span className="block max-w-[68px] truncate whitespace-nowrap text-center text-[clamp(6px,0.55vw,10px)] font-extrabold leading-none tracking-[-0.05em] text-foreground">
+							<span className="block max-w-[68px] truncate text-center text-[clamp(6px,0.55vw,10px)] leading-none font-extrabold tracking-[-0.05em] whitespace-nowrap text-foreground">
 								{centerValueLabel}
 							</span>
 							<span className="mt-0.5 text-[12px] text-muted-foreground">
@@ -109,7 +109,7 @@ function PipelineSummaryCard({ data }: Props) {
 								<p className="text-[11px] font-semibold text-foreground">
 									{tooltip.segment.label}
 								</p>
-								<p className="mt-0.5 text-[11px] font-bold tabular-nums text-[color:var(--brand-accent)]">
+								<p className="mt-0.5 text-[11px] font-bold text-[color:var(--brand-accent)] tabular-nums">
 									{tooltip.segment.amountLabel}
 								</p>
 							</div>
@@ -133,7 +133,7 @@ function PipelineSummaryCard({ data }: Props) {
 										{s.label}
 									</span>
 								</div>
-								<span className="shrink-0 text-[12px] font-medium tabular-nums text-foreground/90">
+								<span className="shrink-0 text-[12px] font-medium text-foreground/90 tabular-nums">
 									{s.percentage}%
 								</span>
 							</li>

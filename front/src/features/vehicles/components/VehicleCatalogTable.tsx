@@ -434,7 +434,7 @@ function VehicleCatalogTable({
 						icon={UsersRound}
 						title="Leads interessados"
 					/>
-					<div className="max-h-[28rem] overflow-y-auto px-7 pb-6 pt-3">
+					<div className="max-h-[28rem] overflow-y-auto px-7 pt-3 pb-6">
 						<VehicleModalSection
 							description="Escolha qual negociação deseja consultar."
 							title="Interesses vinculados"

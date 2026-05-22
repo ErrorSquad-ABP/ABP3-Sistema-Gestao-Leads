@@ -32,7 +32,7 @@
 		"lint:check": "biome lint .",
 		"check": "biome check --write .",
 		"check:ci": "biome ci .",
-		"lint:eslint": "eslint front/src back/src --ext .ts,.tsx --max-warnings 0",
+		"lint:eslint": "eslint front/src back/src back/prisma --ext .ts,.tsx --max-warnings 0",
 		"lint:eslint:blocking": "npm run lint:eslint",
 		"typecheck": "npm run typecheck --workspaces --if-present",
 		"quality:gate:blocking": "npm run guard:root-package && npm run format:check && npm run lint:check && npm run typecheck && npm run lint:eslint && npm run build",

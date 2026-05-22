@@ -85,10 +85,10 @@ function VehicleFieldControl({
 }: VehicleFieldControlProps) {
 	return (
 		<div className="relative">
-			<Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
+			<Icon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 			{children}
 			{RightIcon ? (
-				<RightIcon className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
+				<RightIcon className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 			) : null}
 		</div>
 	);
@@ -279,7 +279,7 @@ function VehicleFormDialog({
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
-					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pb-6 pt-3 md:px-8">
+					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
 						{submitError ? (
 							<div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
 								{submitError}
@@ -300,13 +300,13 @@ function VehicleFormDialog({
 										className="relative flex h-11 w-full items-center rounded-xl border border-[#cfd8e6] bg-[#f7f9fc] px-10 text-sm text-[#1b2430]"
 										id="vehicle-form-store-readonly"
 									>
-										<Store className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
+										<Store className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 										{storeLabelById[
 											targetVehicle?.storeId ?? selectedStoreId
 										] ??
 											targetVehicle?.storeId ??
 											selectedStoreId}
-										<LockKeyhole className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
+										<LockKeyhole className="absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 									</div>
 								) : (
 									<VehicleFieldControl icon={Store}>
@@ -694,7 +694,7 @@ function VehicleFormDialog({
 						<VehicleStatusSummary status={statusValue} />
 					</div>
 
-					<DialogFooter className="shrink-0 justify-between gap-3 border-t-0 px-7 pb-6 pt-3 md:flex-row md:px-8">
+					<DialogFooter className="shrink-0 justify-between gap-3 border-t-0 px-7 pt-3 pb-6 md:flex-row md:px-8">
 						<div>
 							{isEditMode && targetVehicle && onRequestDeactivate ? (
 								<Button

@@ -22,8 +22,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { isApiError } from '@/lib/http/api-error';
+import { buildConicGradientStopsTo100 } from '@/lib/conic-gradient';
 import { cn } from '@/lib/utils';
 
 import { useOperationalDashboardQuery } from '../hooks/operational-dashboard.queries';
@@ -43,10 +43,6 @@ import type {
 	OperationalDashboardStatusKey,
 	OperationalDashboardTrendPoint,
 } from '../model/operational-dashboard.model';
-
-type OperationalDashboardPageContentProps = {
-	user: AuthenticatedUser;
-};
 
 type PeriodSelection = OperationalDashboardPeriodMode | 'custom';
 
@@ -522,10 +518,10 @@ function KpiCard({
 							<Icon className="size-[18px]" style={{ color }} />
 						</span>
 						<div>
-							<p className="max-w-24 text-xs font-semibold leading-snug text-[#2d3a56]">
+							<p className="max-w-24 text-xs leading-snug font-semibold text-[#2d3a56]">
 								{label}
 							</p>
-							<p className="mt-1 text-2xl font-bold leading-none text-[#06142b]">
+							<p className="mt-1 text-2xl leading-none font-bold text-[#06142b]">
 								{value}
 							</p>
 						</div>
@@ -584,7 +580,7 @@ function FilterBar({
 				{PRESET_LABELS.map((preset) => (
 					<button
 						className={cn(
-							'h-9 border-[#e6edf5] border-r px-3.5 text-[11px] font-semibold last:border-r-0',
+							'h-9 border-r border-[#e6edf5] px-3.5 text-[11px] font-semibold last:border-r-0',
 							periodSelection === preset.value
 								? 'bg-[#fff3ec] text-[#ff4f1f]'
 								: 'text-[#06142b] hover:bg-[#f8fafc]',
@@ -706,18 +702,7 @@ function OriginCard({
 	totalLeads: number;
 }) {
 	const chartItems = buildSourceChartItems(sources);
-	let cursor = 0;
-	const colorStops = chartItems.map((source, index) => {
-		const start = Math.min(cursor, 100);
-		const end =
-			index === chartItems.length - 1
-				? 100
-				: Math.min(cursor + source.percentage, 100);
-		cursor = end;
-		return `${source.color} ${start}% ${end}%`;
-	});
-	const conicStops =
-		colorStops.length > 0 ? colorStops.join(', ') : '#eef2f7 0% 100%';
+	const conicStops = buildConicGradientStopsTo100(chartItems);
 
 	return (
 		<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
@@ -857,7 +842,7 @@ function ImportanceCard({
 										{meta.label}
 									</span>
 								</div>
-								<p className="mt-8 text-5xl font-bold leading-none text-[#06142b]">
+								<p className="mt-8 text-5xl leading-none font-bold text-[#06142b]">
 									{formatCount(item.count)}
 								</p>
 								<p className="mt-4 text-base text-[#40527a]">
@@ -951,9 +936,7 @@ function EmptyDashboardState() {
 	);
 }
 
-function OperationalDashboardPageContent({
-	user: _user,
-}: OperationalDashboardPageContentProps) {
+function OperationalDashboardPageContent() {
 	const [periodSelection, setPeriodSelection] =
 		useState<PeriodSelection>('last30');
 	const [queryInput, setQueryInput] = useState<OperationalDashboardQueryInput>(

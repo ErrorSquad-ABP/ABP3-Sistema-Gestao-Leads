@@ -34,7 +34,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
 		if (item.isSection && item.label) {
 			return (
 				<SidebarGroup key={item.label} className="p-0 pt-5 first:pt-0">
-					<SidebarGroupLabel className="px-1 pb-2 pt-0 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400/90">
+					<SidebarGroupLabel className="px-1 pt-0 pb-2 text-[0.7rem] font-semibold tracking-[0.24em] text-slate-400/90 uppercase">
 						{item.label}
 					</SidebarGroupLabel>
 				</SidebarGroup>
@@ -50,7 +50,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
 							<SidebarMenuItem>
 								<CollapsibleTrigger
 									asChild
-									className="w-full collapsible/button"
+									className="collapsible/button w-full"
 								>
 									<SidebarMenuButton
 										tooltip={item.title}
@@ -60,7 +60,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
 										<span className="group-data-[collapsible=icon]:hidden">
 											{item.title}
 										</span>
-										<ChevronRight className="ml-auto transition-transform duration-200 collapsible/button-[aria-expanded='true']:rotate-90 group-data-[collapsible=icon]:hidden" />
+										<ChevronRight className="collapsible/button-[aria-expanded='true']:rotate-90 ml-auto transition-transform duration-200 group-data-[collapsible=icon]:hidden" />
 									</SidebarMenuButton>
 								</CollapsibleTrigger>
 								<CollapsibleContent>
@@ -116,7 +116,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
 				<SidebarMenuSubItem key={item.title}>
 					<Collapsible>
 						<CollapsibleTrigger className="w-full">
-							<SidebarMenuSubButton className="rounded-xl text-sm px-3 py-2 h-9">
+							<SidebarMenuSubButton className="h-9 rounded-xl px-3 py-2 text-sm">
 								{item.icon && <item.icon />}
 								<span>{item.title}</span>
 								<ChevronRight className="ml-auto transition-transform duration-200 data-[state=open]:rotate-90" />

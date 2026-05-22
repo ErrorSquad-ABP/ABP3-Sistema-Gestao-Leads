@@ -165,7 +165,7 @@ function LoginForm() {
 										className="mt-0.5 size-4 shrink-0"
 									/>
 									<div className="min-w-0">
-										<p className="font-medium leading-5 text-foreground">
+										<p className="leading-5 font-medium text-foreground">
 											Falha no acesso
 										</p>
 										<p className="mt-0.5 leading-5">{loginErrorMessage}</p>
@@ -182,7 +182,7 @@ function LoginForm() {
 										E-mail
 									</Label>
 									<div className="relative">
-										<Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70" />
+										<Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/70" />
 										<Input
 											autoComplete="email"
 											className={cn(
@@ -214,11 +214,11 @@ function LoginForm() {
 										Senha
 									</Label>
 									<div className="relative">
-										<Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70" />
+										<Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground/70" />
 										<Input
 											autoComplete="current-password"
 											className={cn(
-												'h-11 rounded-xl border-border bg-white pl-10 pr-10 text-[0.9rem] text-foreground shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/50',
+												'h-11 rounded-xl border-border bg-white pr-10 pl-10 text-[0.9rem] text-foreground shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/50',
 												form.formState.errors.password
 													? 'border-destructive focus-visible:ring-destructive/20'
 													: null,
@@ -232,7 +232,7 @@ function LoginForm() {
 											aria-label={
 												passwordVisible ? 'Ocultar senha' : 'Mostrar senha'
 											}
-											className="absolute right-2.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground/80 hover:bg-muted/40 hover:text-foreground"
+											className="absolute top-1/2 right-2.5 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground/80 hover:bg-muted/40 hover:text-foreground"
 											onClick={() => setPasswordVisible((prev) => !prev)}
 											type="button"
 										>

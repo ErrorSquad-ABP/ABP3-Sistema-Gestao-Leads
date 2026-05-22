@@ -391,7 +391,7 @@ function KpiCard({
 					</div>
 					<div className="min-w-0">
 						<p className="text-xs font-semibold text-[#2d3a56]">{title}</p>
-						<p className="mt-1.5 text-3xl font-bold leading-none tracking-tight text-[#06142b]">
+						<p className="mt-1.5 text-3xl leading-none font-bold tracking-tight text-[#06142b]">
 							{value}
 						</p>
 						<p className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-[#66708a]">
@@ -448,7 +448,7 @@ function DonutCenter({ total }: { total: number }) {
 	return (
 		<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 			<div>
-				<p className="text-2xl font-bold leading-none text-[#06142b]">
+				<p className="text-2xl leading-none font-bold text-[#06142b]">
 					{formatCount(total)}
 				</p>
 				<p className="mt-1 text-[10px] font-semibold text-[#66708a]">Total</p>
@@ -705,7 +705,7 @@ function AnalyticDashboardPageContent({
 						{FILTER_OPTIONS.map((option) => (
 							<button
 								className={cn(
-									'h-9 border-[#e6edf5] border-r px-4 text-[11px] font-semibold transition last:border-r-0',
+									'h-9 border-r border-[#e6edf5] px-4 text-[11px] font-semibold transition last:border-r-0',
 									mode === option.value
 										? 'bg-[#ff5722] text-white shadow-sm'
 										: 'text-[#06142b] hover:bg-[#f8fafc]',

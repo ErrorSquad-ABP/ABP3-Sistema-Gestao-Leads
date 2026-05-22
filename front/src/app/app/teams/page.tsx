@@ -11,7 +11,7 @@ async function TeamsPage() {
 		redirect(appRoutes.auth.login);
 	}
 
-	return <TeamsManagementScreen user={user} />;
+	return <TeamsManagementScreen />;
 }
 
 export default TeamsPage;

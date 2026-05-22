@@ -311,7 +311,7 @@ function PipelineControls({
 				>
 					<span
 						className={cn(
-							'absolute left-0.5 top-1/2 block size-[14px] -translate-y-1/2 rounded-full bg-white shadow-[0_1px_2px_rgba(15,23,42,0.18)] transition-transform',
+							'absolute top-1/2 left-0.5 block size-[14px] -translate-y-1/2 rounded-full bg-white shadow-[0_1px_2px_rgba(15,23,42,0.18)] transition-transform',
 							showValues ? 'translate-x-[14px]' : 'translate-x-0',
 						)}
 					/>

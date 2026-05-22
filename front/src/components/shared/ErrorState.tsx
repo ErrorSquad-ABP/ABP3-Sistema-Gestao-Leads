@@ -83,8 +83,8 @@ function ErrorState({
 	return (
 		<main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
 			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,108,63,0.12),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(191,168,139,0.14),transparent_28%)]" />
-			<div className="pointer-events-none absolute -left-32 top-20 size-56 rounded-full bg-[#d96c3f]/10 blur-3xl" />
-			<div className="pointer-events-none absolute -bottom-24 -right-16 size-72 rounded-full bg-[#d4b48c]/18 blur-3xl" />
+			<div className="pointer-events-none absolute top-20 -left-32 size-56 rounded-full bg-[#d96c3f]/10 blur-3xl" />
+			<div className="pointer-events-none absolute -right-16 -bottom-24 size-72 rounded-full bg-[#d4b48c]/18 blur-3xl" />
 
 			<Card className="relative w-full max-w-3xl overflow-hidden border-[#e5ddd4] bg-[#fffaf7]/95 backdrop-blur">
 				<div className="h-1.5 w-full bg-[linear-gradient(90deg,#D96C3F_0%,#E8B36A_100%)]" />
@@ -93,10 +93,10 @@ function ErrorState({
 						<Icon className="size-6" />
 					</div>
 					<div className="space-y-2">
-						<p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#D96C3F]">
+						<p className="text-xs font-semibold tracking-[0.22em] text-[#D96C3F] uppercase">
 							{eyebrow}
 						</p>
-						<CardTitle className="text-balance text-[2rem] font-semibold tracking-[-0.04em] text-[#1B2430]">
+						<CardTitle className="text-[2rem] font-semibold tracking-[-0.04em] text-balance text-[#1B2430]">
 							{title}
 						</CardTitle>
 						<CardDescription className="max-w-xl text-[0.95rem] leading-7 text-[#667085]">

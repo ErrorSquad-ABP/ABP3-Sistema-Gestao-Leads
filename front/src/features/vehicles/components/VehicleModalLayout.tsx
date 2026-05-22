@@ -98,13 +98,13 @@ function VehicleModalHeader({
 	title,
 }: VehicleModalHeaderProps) {
 	return (
-		<DialogHeader className="border-b-0 px-7 pb-4 pt-7 md:px-8">
+		<DialogHeader className="border-b-0 px-7 pt-7 pb-4 md:px-8">
 			<div className="flex items-start gap-4 pr-10">
 				<div className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-[#ff5a1f]/10 bg-[#ff5a1f]/10 text-[#ff4f17]">
 					<Icon className="size-8" />
 				</div>
 				<div className="min-w-0 pt-0.5">
-					<p className="text-[0.7rem] font-bold uppercase tracking-[0.26em] text-[#ff4f17]">
+					<p className="text-[0.7rem] font-bold tracking-[0.26em] text-[#ff4f17] uppercase">
 						Veículos
 					</p>
 					<DialogTitle className="mt-1 text-2xl font-bold tracking-normal text-[#121a2b]">

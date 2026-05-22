@@ -29,7 +29,6 @@ services:
       - ./back/.env
     environment:
       DATABASE_URL: postgresql://abp:abp@postgres:5432/lead_management
-      LOCAL_DB_SEED_MODE: dashboard
     command: ['node', 'back/scripts/bootstrap-local-db.mjs']
     restart: 'no'
 

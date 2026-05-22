@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { buildConicGradientStopsAccumulating } from '@/lib/conic-gradient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -555,14 +556,7 @@ function OriginsCard({
 		color: colorForIndex(index),
 		percentage: total > 0 ? Math.round((item.count / total) * 100) : 0,
 	}));
-	let cursor = 0;
-	const gradient = segments
-		.map((item) => {
-			const start = cursor;
-			cursor += item.percentage;
-			return `${item.color} ${start}% ${Math.max(cursor, start + 1)}%`;
-		})
-		.join(',');
+	const gradient = buildConicGradientStopsAccumulating(segments);
 
 	return (
 		<Card className="rounded-3xl border-[#dfe7f1] bg-white">

@@ -95,7 +95,7 @@ function ForgotPasswordForm() {
 					<p className="border-t border-border pt-4 text-center text-[0.82rem]">
 						<span className="text-muted-foreground">Lembrou da senha? </span>
 						<AuthAccentLink
-							className="inline-block whitespace-nowrap text-[0.82rem] font-medium"
+							className="inline-block text-[0.82rem] font-medium whitespace-nowrap"
 							href={appRoutes.auth.login}
 						>
 							Voltar para entrar

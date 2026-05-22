@@ -112,7 +112,7 @@ function StoresPageHeader({
 			</div>
 			<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
 				<div className="relative">
-					<Search className="-translate-y-1/2 absolute top-1/2 left-3.5 size-4 text-[#667085]" />
+					<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
 					<Input
 						className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[340px]"
 						onChange={(event) => onSearchChange(event.target.value)}
@@ -121,7 +121,7 @@ function StoresPageHeader({
 					/>
 				</div>
 				<div className="relative">
-					<Filter className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 size-4 text-[#1f2a44]" />
+					<Filter className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#1f2a44]" />
 					<select
 						className="h-11 appearance-none rounded-xl border border-[#d8e0ea] bg-white pr-8 pl-10 text-xs font-semibold text-[#1f2a44] outline-none"
 						onChange={(event) => onRegionFilterChange(event.target.value)}

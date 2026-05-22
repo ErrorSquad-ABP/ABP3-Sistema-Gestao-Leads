@@ -339,7 +339,7 @@ function timelineMatchesText(event: TimelineEvent, search: string) {
 function DetailMetric({ label, value }: { label: string; value: string }) {
 	return (
 		<div className="rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3">
-			<p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+			<p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 				{label}
 			</p>
 			<p className="mt-1 text-sm font-medium text-[#1b2430]">{value}</p>
@@ -548,7 +548,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								<LayoutList className="size-5" />
 							</div>
 							<div className="space-y-2">
-								<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
+								<p className="text-sm font-medium tracking-[0.18em] text-[#d96c3f] uppercase">
 									Hub de atendimento
 								</p>
 								<CardTitle className="text-[1.9rem] font-semibold tracking-tight">
@@ -572,7 +572,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								Reatribuir
 							</Button>
 							<Button
-								className="rounded-md shadow-none bg-[#2D3648] hover:bg-[#232B3B]"
+								className="rounded-md bg-[#2D3648] shadow-none hover:bg-[#232B3B]"
 								disabled={!detail.permissions.canManageDeals}
 								onClick={() => setDealsOpen(true)}
 								title={
@@ -616,7 +616,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			<div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
 				<Card className="rounded-[1.75rem] border-border/90 bg-white">
 					<CardHeader>
-						<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
+						<p className="text-sm font-medium tracking-[0.18em] text-[#d96c3f] uppercase">
 							Contexto
 						</p>
 						<CardTitle>Cliente e operação</CardTitle>
@@ -637,7 +637,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 							</div>
 						</div>
 						<div className="rounded-2xl border border-border/80 px-4 py-4">
-							<p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+							<p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 								Interesse
 							</p>
 							<p className="mt-2 text-sm text-[#1b2430]">
@@ -672,7 +672,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 
 				<Card className="rounded-[1.75rem] border-border/90 bg-white">
 					<CardHeader>
-						<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
+						<p className="text-sm font-medium tracking-[0.18em] text-[#d96c3f] uppercase">
 							Timeline
 						</p>
 						<CardTitle>Histórico do atendimento</CardTitle>
@@ -694,7 +694,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 							<div className="space-y-2">
 								<Label htmlFor="timeline-field">Tipo de alteração</Label>
 								<select
-									className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+									className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="timeline-field"
 									onChange={(event) => {
 										setTimelineField(event.target.value);
@@ -833,7 +833,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 
 			<Card className="rounded-[1.75rem] border-border/90 bg-white">
 				<CardHeader>
-					<p className="text-sm font-medium uppercase tracking-[0.18em] text-[#d96c3f]">
+					<p className="text-sm font-medium tracking-[0.18em] text-[#d96c3f] uppercase">
 						Negociação
 					</p>
 					<CardTitle>Resumo de negociações</CardTitle>
@@ -898,7 +898,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								className="rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3"
 								key={`${detailItem.label}-${detailItem.value}`}
 							>
-								<p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+								<p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 									{detailItem.label}
 								</p>
 								<p className="mt-1 text-sm text-[#1b2430]">

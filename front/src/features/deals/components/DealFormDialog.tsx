@@ -467,10 +467,10 @@ function DealFormDialog({
 						<PencilLine className="size-6" />
 					</div>
 					<div className="min-w-0 space-y-1">
-						<p className="text-[0.68rem] font-bold uppercase tracking-[0.35em] text-[color:var(--brand-accent)]">
+						<p className="text-[0.68rem] font-bold tracking-[0.35em] text-[color:var(--brand-accent)] uppercase">
 							Negociações
 						</p>
-						<DialogTitle className="text-[1.35rem] font-bold leading-tight tracking-[-0.02em] text-[#1b2430]">
+						<DialogTitle className="text-[1.35rem] leading-tight font-bold tracking-[-0.02em] text-[#1b2430]">
 							Editar negociação
 						</DialogTitle>
 						<DialogDescription className="max-w-2xl text-[13px] leading-5 text-[#7a8494]">
@@ -535,7 +535,7 @@ function DealFormDialog({
 								<div className={fieldShellClass}>
 									<Tag className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
 									<Input
-										className={`${inputClass} pl-10 uppercase tracking-[0.01em]`}
+										className={`${inputClass} pl-10 tracking-[0.01em] uppercase`}
 										disabled={isPending || isReadOnly}
 										id="deal-form-title"
 										onChange={(event) =>
