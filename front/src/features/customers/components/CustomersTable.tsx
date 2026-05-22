@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import {
 	ChevronLeft,
@@ -7,16 +7,16 @@ import {
 	MoreHorizontal,
 	PencilLine,
 	Trash2,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
 	Table,
 	TableBody,
@@ -24,114 +24,114 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table';
 
-import type { CustomerCatalogItem } from "../model/customers.model"
+import type { CustomerCatalogItem } from '../model/customers.model';
 
 type CustomersTableProps = {
-	currentPage: number
-	items: CustomerCatalogItem[]
-	onDelete: (item: CustomerCatalogItem) => void
-	onEdit: (item: CustomerCatalogItem) => void
-	onNextPage: () => void
-	onPageChange: (page: number) => void
-	onPageSizeChange: (pageSize: 6 | 12 | 18 | 24 | 48) => void
-	onPreviousPage: () => void
-	onView: (item: CustomerCatalogItem) => void
-	pageSize: number
-	pageSizeOptions: readonly (6 | 12 | 18 | 24 | 48)[]
-	totalItems: number
-	totalPages: number
-}
+	currentPage: number;
+	items: CustomerCatalogItem[];
+	onDelete: (item: CustomerCatalogItem) => void;
+	onEdit: (item: CustomerCatalogItem) => void;
+	onNextPage: () => void;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (pageSize: 6 | 12 | 18 | 24 | 48) => void;
+	onPreviousPage: () => void;
+	onView: (item: CustomerCatalogItem) => void;
+	pageSize: number;
+	pageSizeOptions: readonly (6 | 12 | 18 | 24 | 48)[];
+	totalItems: number;
+	totalPages: number;
+};
 
-type PaginationItem = number | "ellipsis-start" | "ellipsis-end"
+type PaginationItem = number | 'ellipsis-start' | 'ellipsis-end';
 
 function formatCustomerInitials(name: string) {
-	const words = name.trim().split(/\s+/).filter(Boolean)
+	const words = name.trim().split(/\s+/).filter(Boolean);
 	if (words.length === 0) {
-		return "CL"
+		return 'CL';
 	}
-	const [first = "", second = ""] = words
-	return `${first[0] ?? ""}${second[0] ?? first[1] ?? ""}`.toUpperCase()
+	const [first = '', second = ''] = words;
+	return `${first[0] ?? ''}${second[0] ?? first[1] ?? ''}`.toUpperCase();
 }
 
 function formatCurrency(value: string) {
-	const parsed = Number(value)
+	const parsed = Number(value);
 	if (!Number.isFinite(parsed) || parsed <= 0) {
-		return "R$ 0"
+		return 'R$ 0';
 	}
-	return parsed.toLocaleString("pt-BR", {
-		currency: "BRL",
+	return parsed.toLocaleString('pt-BR', {
+		currency: 'BRL',
 		maximumFractionDigits: 0,
-		style: "currency",
-	})
+		style: 'currency',
+	});
 }
 
 function formatActivityDate(value: Date | null) {
 	if (!value) {
-		return "Sem atividade"
+		return 'Sem atividade';
 	}
 
-	const diffMs = Date.now() - value.getTime()
-	const diffDays = Math.max(0, Math.floor(diffMs / (24 * 60 * 60 * 1000)))
+	const diffMs = Date.now() - value.getTime();
+	const diffDays = Math.max(0, Math.floor(diffMs / (24 * 60 * 60 * 1000)));
 	if (diffDays === 0) {
-		return `Hoje às ${value.toLocaleTimeString("pt-BR", {
-			hour: "2-digit",
-			minute: "2-digit",
-		})}`
+		return `Hoje às ${value.toLocaleTimeString('pt-BR', {
+			hour: '2-digit',
+			minute: '2-digit',
+		})}`;
 	}
 	if (diffDays === 1) {
-		return `Ontem às ${value.toLocaleTimeString("pt-BR", {
-			hour: "2-digit",
-			minute: "2-digit",
-		})}`
+		return `Ontem às ${value.toLocaleTimeString('pt-BR', {
+			hour: '2-digit',
+			minute: '2-digit',
+		})}`;
 	}
-	return `${diffDays} dias atrás`
+	return `${diffDays} dias atrás`;
 }
 
 function formatDealSummary(item: CustomerCatalogItem) {
 	if (item.totalDealsCount === 0) {
-		return "0"
+		return '0';
 	}
 	if (item.wonDealsCount > 0 && item.openDealsCount === 0) {
-		return `${item.wonDealsCount} ${item.wonDealsCount === 1 ? "ganha" : "ganhas"}`
+		return `${item.wonDealsCount} ${item.wonDealsCount === 1 ? 'ganha' : 'ganhas'}`;
 	}
-	return `${item.openDealsCount} ${item.openDealsCount === 1 ? "aberta" : "abertas"}`
+	return `${item.openDealsCount} ${item.openDealsCount === 1 ? 'aberta' : 'abertas'}`;
 }
 
 function buildPaginationItems(
 	currentPage: number,
-	totalPages: number
+	totalPages: number,
 ): PaginationItem[] {
 	if (totalPages <= 5) {
-		return Array.from({ length: totalPages }, (_, index) => index + 1)
+		return Array.from({ length: totalPages }, (_, index) => index + 1);
 	}
 
-	const leadingPages = [1, 2, 3, 4]
+	const leadingPages = [1, 2, 3, 4];
 	if (currentPage <= 4) {
-		return [...leadingPages, "ellipsis-end", totalPages]
+		return [...leadingPages, 'ellipsis-end', totalPages];
 	}
 
 	if (currentPage >= totalPages - 2) {
 		return [
 			1,
-			"ellipsis-start",
+			'ellipsis-start',
 			totalPages - 3,
 			totalPages - 2,
 			totalPages - 1,
 			totalPages,
-		]
+		];
 	}
 
 	return [
 		1,
-		"ellipsis-start",
+		'ellipsis-start',
 		currentPage - 1,
 		currentPage,
 		currentPage + 1,
-		"ellipsis-end",
+		'ellipsis-end',
 		totalPages,
-	]
+	];
 }
 
 function CustomersTable({
@@ -149,10 +149,10 @@ function CustomersTable({
 	totalItems,
 	totalPages,
 }: CustomersTableProps) {
-	const paginationItems = buildPaginationItems(currentPage, totalPages)
+	const paginationItems = buildPaginationItems(currentPage, totalPages);
 	const firstVisibleItem =
-		items.length === 0 ? 0 : (currentPage - 1) * pageSize + 1
-	const lastVisibleItem = Math.min(currentPage * pageSize, totalItems)
+		items.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+	const lastVisibleItem = Math.min(currentPage * pageSize, totalItems);
 
 	return (
 		<div className="overflow-hidden rounded-b-3xl border-t border-[#e7edf5]">
@@ -204,21 +204,21 @@ function CustomersTable({
 								</TableCell>
 								<TableCell>
 									<p className="text-sm font-medium text-[#1e293b]">
-										{item.customer.email ?? "Sem e-mail"}
+										{item.customer.email ?? 'Sem e-mail'}
 									</p>
 									<p className="mt-1 text-xs text-[#667085]">
-										{item.customer.phone ?? "Sem telefone"}
+										{item.customer.phone ?? 'Sem telefone'}
 									</p>
 								</TableCell>
 								<TableCell className="text-sm text-[#667085]">
-									{item.customer.cpf ?? "---"}
+									{item.customer.cpf ?? '---'}
 								</TableCell>
 								<TableCell>
 									<p
 										className={
 											item.wonDealsCount > 0
-												? "text-sm font-semibold text-emerald-600"
-												: "text-sm font-semibold text-[#1e293b]"
+												? 'text-sm font-semibold text-emerald-600'
+												: 'text-sm font-semibold text-[#1e293b]'
 										}
 									>
 										{formatDealSummary(item)}
@@ -226,7 +226,7 @@ function CustomersTable({
 									<p className="mt-1 text-xs text-[#667085]">
 										{item.totalDealsCount > 0
 											? formatCurrency(item.totalDealValue)
-											: "Sem negociações"}
+											: 'Sem negociações'}
 									</p>
 								</TableCell>
 								<TableCell>
@@ -240,19 +240,19 @@ function CustomersTable({
 								<TableCell>
 									<Badge
 										className={
-											item.status === "ACTIVE"
-												? "gap-1.5 rounded-full border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-700"
-												: "gap-1.5 rounded-full border-slate-100 bg-slate-100 px-3 py-1 text-slate-600"
+											item.status === 'ACTIVE'
+												? 'gap-1.5 rounded-full border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-700'
+												: 'gap-1.5 rounded-full border-slate-100 bg-slate-100 px-3 py-1 text-slate-600'
 										}
 									>
 										<span
 											className={
-												item.status === "ACTIVE"
-													? "size-1.5 rounded-full bg-emerald-500"
-													: "size-1.5 rounded-full bg-slate-400"
+												item.status === 'ACTIVE'
+													? 'size-1.5 rounded-full bg-emerald-500'
+													: 'size-1.5 rounded-full bg-slate-400'
 											}
 										/>
-										{item.status === "ACTIVE" ? "Ativo" : "Inativo"}
+										{item.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
 									</Badge>
 								</TableCell>
 								<TableCell className="pr-6">
@@ -306,7 +306,7 @@ function CustomersTable({
 
 			<div className="grid gap-3 border-t border-[#e7edf5] px-7 py-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
 				<p className="text-sm text-[#667085]">
-					Mostrando {firstVisibleItem} a {lastVisibleItem} de {totalItems}{" "}
+					Mostrando {firstVisibleItem} a {lastVisibleItem} de {totalItems}{' '}
 					clientes
 				</p>
 				<div className="flex items-center justify-center gap-2">
@@ -320,7 +320,7 @@ function CustomersTable({
 						<ChevronLeft className="size-4" />
 					</Button>
 					{paginationItems.map((item) =>
-						typeof item === "string" ? (
+						typeof item === 'string' ? (
 							<span
 								className="px-2 text-sm font-semibold text-[#667085]"
 								key={item}
@@ -331,8 +331,8 @@ function CustomersTable({
 							<Button
 								className={
 									item === currentPage
-										? "min-w-9 rounded-lg bg-orange-50 px-3 text-sm font-semibold text-[#f05a28] shadow-none hover:bg-orange-50"
-										: "min-w-9 rounded-lg px-3 text-sm font-semibold text-[#1e293b] shadow-none hover:bg-[#f8fafc]"
+										? 'min-w-9 rounded-lg bg-orange-50 px-3 text-sm font-semibold text-[#f05a28] shadow-none hover:bg-orange-50'
+										: 'min-w-9 rounded-lg px-3 text-sm font-semibold text-[#1e293b] shadow-none hover:bg-[#f8fafc]'
 								}
 								key={item}
 								onClick={() => onPageChange(item)}
@@ -340,7 +340,7 @@ function CustomersTable({
 							>
 								{item}
 							</Button>
-						)
+						),
 					)}
 					<Button
 						className="rounded-lg border-[#d8e0ea]"
@@ -358,7 +358,7 @@ function CustomersTable({
 						className="h-9 rounded-lg border border-[#d8e0ea] bg-white px-3 text-sm font-semibold text-[#1e293b] outline-none"
 						onChange={(event) =>
 							onPageSizeChange(
-								Number(event.target.value) as 6 | 12 | 18 | 24 | 48
+								Number(event.target.value) as 6 | 12 | 18 | 24 | 48,
 							)
 						}
 						value={pageSize}
@@ -372,7 +372,7 @@ function CustomersTable({
 				</label>
 			</div>
 		</div>
-	)
+	);
 }
 
-export { CustomersTable, formatCurrency }
+export { CustomersTable, formatCurrency };

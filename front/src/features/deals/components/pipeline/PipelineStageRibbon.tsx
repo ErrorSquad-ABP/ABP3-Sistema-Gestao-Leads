@@ -1,23 +1,23 @@
-"use client"
+'use client';
 
 import {
 	Handshake,
 	MessageSquareText,
 	PhoneCall,
 	ScrollText,
-} from "lucide-react"
-import type { ComponentType } from "react"
+} from 'lucide-react';
+import type { ComponentType } from 'react';
 
-import type { DealPipelineStage } from "@/features/deals/model/deals.model"
+import type { DealPipelineStage } from '@/features/deals/model/deals.model';
 import {
 	PIPELINE_STAGES,
 	type PipelineStageKey,
-} from "@/features/deals/lib/pipeline"
-import { PipelineStageRibbonItem } from "@/features/deals/components/pipeline/PipelineStageRibbonItem"
+} from '@/features/deals/lib/pipeline';
+import { PipelineStageRibbonItem } from '@/features/deals/components/pipeline/PipelineStageRibbonItem';
 
 type Props = {
-	stages: DealPipelineStage[]
-}
+	stages: DealPipelineStage[];
+};
 
 const iconByStage: Record<
 	PipelineStageKey,
@@ -27,28 +27,28 @@ const iconByStage: Record<
 	NEGOTIATION: Handshake,
 	PROPOSAL: ScrollText,
 	CLOSING: MessageSquareText,
-}
+};
 
 function formatStageTotalValue(value: string | null) {
 	if (value === null) {
-		return "—"
+		return '—';
 	}
-	const parsed = Number(value)
+	const parsed = Number(value);
 	if (!Number.isFinite(parsed)) {
-		return "—"
+		return '—';
 	}
-	return new Intl.NumberFormat("pt-BR", {
-		style: "currency",
-		currency: "BRL",
+	return new Intl.NumberFormat('pt-BR', {
+		style: 'currency',
+		currency: 'BRL',
 		maximumFractionDigits: 0,
-	}).format(parsed)
+	}).format(parsed);
 }
 
 function PipelineStageRibbon({ stages }: Props) {
 	return (
 		<div className="mb-4 grid min-w-0 grid-cols-4 gap-0 overflow-hidden rounded-t-[12px] bg-card">
 			{PIPELINE_STAGES.map((stage, index) => {
-				const pipelineStage = stages.find((item) => item.key === stage.key)
+				const pipelineStage = stages.find((item) => item.key === stage.key);
 				return (
 					<PipelineStageRibbonItem
 						key={stage.key}
@@ -58,10 +58,10 @@ function PipelineStageRibbon({ stages }: Props) {
 						total={formatStageTotalValue(pipelineStage?.totalValue ?? null)}
 						index={index}
 					/>
-				)
+				);
 			})}
 		</div>
-	)
+	);
 }
 
-export { PipelineStageRibbon }
+export { PipelineStageRibbon };

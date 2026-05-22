@@ -1,16 +1,16 @@
-"use client"
+'use client';
 
-import type { Deal } from "@/features/deals/model/deals.model"
-import { NegotiationsActions } from "@/features/deals/components/NegotiationsActions"
-import { NegotiationsHeader } from "@/features/deals/components/NegotiationsHeader"
-import { NegotiationsMetricsGrid } from "@/features/deals/components/NegotiationsMetricsGrid"
+import type { Deal } from '@/features/deals/model/deals.model';
+import { NegotiationsActions } from '@/features/deals/components/NegotiationsActions';
+import { NegotiationsHeader } from '@/features/deals/components/NegotiationsHeader';
+import { NegotiationsMetricsGrid } from '@/features/deals/components/NegotiationsMetricsGrid';
 
 type Props = {
-	search: string
-	onCreateDeal: () => void
-	onSearchChange: (value: string) => void
-	deals: Deal[]
-}
+	search: string;
+	onCreateDeal: () => void;
+	onSearchChange: (value: string) => void;
+	deals: Deal[];
+};
 
 function NegotiationsPageTop({
 	search,
@@ -33,7 +33,7 @@ function NegotiationsPageTop({
 
 			<NegotiationsMetricsGrid deals={deals} />
 		</section>
-	)
+	);
 }
 
-export { NegotiationsPageTop }
+export { NegotiationsPageTop };

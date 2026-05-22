@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import {
 	ChevronLeft,
@@ -12,24 +12,24 @@ import {
 	ShieldCheck,
 	Trash2,
 	UserCog,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
 	Table,
 	TableBody,
@@ -37,49 +37,49 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
-import type { AccessGroup, UserRecord } from "../model/users.model"
+import type { AccessGroup, UserRecord } from '../model/users.model';
 import {
 	getBaseRoleLabel,
 	getFeatureLabels,
 	getRoleBadgeClassName,
-} from "./AccessGroupForm"
-import { formatTeamLabel, getRoleCardCopy, getRoleLabel } from "./UserForm"
+} from './AccessGroupForm';
+import { formatTeamLabel, getRoleCardCopy, getRoleLabel } from './UserForm';
 
 type UsersListSectionProps = {
-	adminCount: number
-	filteredUsers: UserRecord[]
-	isLoading: boolean
-	limit: number
-	onCreate: () => void
-	onDelete: (user: UserRecord) => void
-	onEdit: (user: UserRecord) => void
-	onLimitChange: (value: number) => void
-	onNextPage: () => void
-	onPreviousPage: () => void
-	onRoleFilterChange: (value: "ALL" | UserRecord["role"]) => void
-	onSearchChange: (value: string) => void
-	page: number
-	roleFilter: "ALL" | UserRecord["role"]
-	search: string
-	totalPages: number
-	totalUsers: number
-	users: UserRecord[]
-	usersError: string | null
-	withoutGroupCount: number
-}
+	adminCount: number;
+	filteredUsers: UserRecord[];
+	isLoading: boolean;
+	limit: number;
+	onCreate: () => void;
+	onDelete: (user: UserRecord) => void;
+	onEdit: (user: UserRecord) => void;
+	onLimitChange: (value: number) => void;
+	onNextPage: () => void;
+	onPreviousPage: () => void;
+	onRoleFilterChange: (value: 'ALL' | UserRecord['role']) => void;
+	onSearchChange: (value: string) => void;
+	page: number;
+	roleFilter: 'ALL' | UserRecord['role'];
+	search: string;
+	totalPages: number;
+	totalUsers: number;
+	users: UserRecord[];
+	usersError: string | null;
+	withoutGroupCount: number;
+};
 
 type AccessGroupsSectionProps = {
-	accessGroups: AccessGroup[]
-	error: string | null
-	isLoading: boolean
-	onCreate: () => void
-	onDelete: (group: AccessGroup) => void
-	onEdit: (group: AccessGroup) => void
-}
+	accessGroups: AccessGroup[];
+	error: string | null;
+	isLoading: boolean;
+	onCreate: () => void;
+	onDelete: (group: AccessGroup) => void;
+	onEdit: (group: AccessGroup) => void;
+};
 
 function UsersListSection({
 	adminCount,
@@ -107,10 +107,10 @@ function UsersListSection({
 		<div className="space-y-6">
 			<div className="grid gap-4 lg:grid-cols-4">
 				{[
-					["Total cadastrado", totalUsers],
-					["Nesta página", users.length],
-					["Administradores", adminCount],
-					["Sem grupo", withoutGroupCount],
+					['Total cadastrado', totalUsers],
+					['Nesta página', users.length],
+					['Administradores', adminCount],
+					['Sem grupo', withoutGroupCount],
 				].map(([label, value]) => (
 					<Card
 						className="border-border/75 bg-[#f8fafc] shadow-none"
@@ -155,7 +155,7 @@ function UsersListSection({
 								className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 								onChange={(event) =>
 									onRoleFilterChange(
-										event.target.value as "ALL" | UserRecord["role"]
+										event.target.value as 'ALL' | UserRecord['role'],
 									)
 								}
 								value={roleFilter}
@@ -242,8 +242,8 @@ function UsersListSection({
 											<TableCell>
 												<Badge
 													className={cn(
-														"rounded-md border px-2.5 py-1 text-[0.72rem] font-medium",
-														getRoleBadgeClassName(user.role)
+														'rounded-md border px-2.5 py-1 text-[0.72rem] font-medium',
+														getRoleBadgeClassName(user.role),
 													)}
 													variant="outline"
 												>
@@ -251,7 +251,7 @@ function UsersListSection({
 												</Badge>
 											</TableCell>
 											<TableCell className="text-sm text-[#6b7687]">
-												{user.accessGroup?.name ?? "Sem grupo"}
+												{user.accessGroup?.name ?? 'Sem grupo'}
 											</TableCell>
 											<TableCell className="text-sm text-[#6b7687]">
 												{formatTeamLabel(user.teamId)}
@@ -340,7 +340,7 @@ function UsersListSection({
 				</CardContent>
 			</Card>
 		</div>
-	)
+	);
 }
 
 function AccessGroupsSection({
@@ -394,10 +394,10 @@ function AccessGroupsSection({
 									<div className="space-y-2">
 										<Badge
 											className={cn(
-												"rounded-md border px-2.5 py-1 text-[0.72rem] font-medium",
+												'rounded-md border px-2.5 py-1 text-[0.72rem] font-medium',
 												group.baseRole
 													? getRoleBadgeClassName(group.baseRole)
-													: "border-[#d6dce5] bg-white text-[#6b7687]"
+													: 'border-[#d6dce5] bg-white text-[#6b7687]',
 											)}
 											variant="outline"
 										>
@@ -413,7 +413,7 @@ function AccessGroupsSection({
 
 									<div className="flex items-center gap-2">
 										<div className="flex size-10 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
-											{group.baseRole === "ADMINISTRATOR" ? (
+											{group.baseRole === 'ADMINISTRATOR' ? (
 												<UserCog className="size-4" />
 											) : (
 												<KeyRound className="size-4" />
@@ -481,8 +481,8 @@ function AccessGroupsSection({
 									</p>
 									<p className="mt-3 text-sm leading-6 text-[#6b7687]">
 										{group.isSystemGroup
-											? "Grupo canônico do produto, com vínculo estável ao papel validado no backend."
-											: "Grupo customizado persistido na API. O front já usa seus toggles para esconder ou liberar módulos."}
+											? 'Grupo canônico do produto, com vínculo estável ao papel validado no backend.'
+											: 'Grupo customizado persistido na API. O front já usa seus toggles para esconder ou liberar módulos.'}
 									</p>
 								</div>
 							</CardContent>
@@ -491,36 +491,36 @@ function AccessGroupsSection({
 				</div>
 			)}
 		</div>
-	)
+	);
 }
 
 function UsersTabs(props: {
-	accessGroups: AccessGroup[]
-	accessGroupsError: string | null
-	accessGroupsLoading: boolean
-	adminCount: number
-	filteredUsers: UserRecord[]
-	limit: number
-	onCreateAccessGroup: () => void
-	onCreateUser: () => void
-	onDeleteAccessGroup: (group: AccessGroup) => void
-	onDeleteUser: (user: UserRecord) => void
-	onEditAccessGroup: (group: AccessGroup) => void
-	onEditUser: (user: UserRecord) => void
-	onLimitChange: (value: number) => void
-	onNextPage: () => void
-	onPreviousPage: () => void
-	onRoleFilterChange: (value: "ALL" | UserRecord["role"]) => void
-	onSearchChange: (value: string) => void
-	page: number
-	roleFilter: "ALL" | UserRecord["role"]
-	search: string
-	totalPages: number
-	totalUsers: number
-	users: UserRecord[]
-	usersError: string | null
-	usersLoading: boolean
-	withoutGroupCount: number
+	accessGroups: AccessGroup[];
+	accessGroupsError: string | null;
+	accessGroupsLoading: boolean;
+	adminCount: number;
+	filteredUsers: UserRecord[];
+	limit: number;
+	onCreateAccessGroup: () => void;
+	onCreateUser: () => void;
+	onDeleteAccessGroup: (group: AccessGroup) => void;
+	onDeleteUser: (user: UserRecord) => void;
+	onEditAccessGroup: (group: AccessGroup) => void;
+	onEditUser: (user: UserRecord) => void;
+	onLimitChange: (value: number) => void;
+	onNextPage: () => void;
+	onPreviousPage: () => void;
+	onRoleFilterChange: (value: 'ALL' | UserRecord['role']) => void;
+	onSearchChange: (value: string) => void;
+	page: number;
+	roleFilter: 'ALL' | UserRecord['role'];
+	search: string;
+	totalPages: number;
+	totalUsers: number;
+	users: UserRecord[];
+	usersError: string | null;
+	usersLoading: boolean;
+	withoutGroupCount: number;
 }) {
 	return (
 		<Tabs className="space-y-0" defaultValue="users">
@@ -571,7 +571,7 @@ function UsersTabs(props: {
 				/>
 			</TabsContent>
 		</Tabs>
-	)
+	);
 }
 
-export { AccessGroupsSection, UsersListSection, UsersTabs }
+export { AccessGroupsSection, UsersListSection, UsersTabs };

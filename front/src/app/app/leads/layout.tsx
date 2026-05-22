@@ -1,15 +1,15 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react';
 
-import { requireUserWithRouteAccess } from "@/lib/auth/session"
+import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
 type LeadsLayoutProps = {
-	children: ReactNode
-}
+	children: ReactNode;
+};
 
 async function LeadsLayout({ children }: LeadsLayoutProps) {
-	await requireUserWithRouteAccess("leads")
+	await requireUserWithRouteAccess('leads');
 
-	return children
+	return children;
 }
 
-export default LeadsLayout
+export default LeadsLayout;

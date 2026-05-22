@@ -1,11 +1,11 @@
-import type { LeadStore } from "@/features/leads/model/leads.model"
+import type { LeadStore } from '@/features/leads/model/leads.model';
 
-type StoreRecord = LeadStore
+type StoreRecord = LeadStore;
 
 type StoreMutationInput = {
-	name: string
-}
+	name: string;
+};
 
-type StoreDialogMode = "create" | "edit"
+type StoreDialogMode = 'create' | 'edit';
 
-export type { StoreDialogMode, StoreMutationInput, StoreRecord }
+export type { StoreDialogMode, StoreMutationInput, StoreRecord };

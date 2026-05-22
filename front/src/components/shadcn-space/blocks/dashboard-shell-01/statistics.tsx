@@ -1,78 +1,78 @@
-import Image from "next/image"
+import Image from 'next/image';
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
 	ArrowRight,
 	CalendarDays,
 	type LucideIcon,
 	ShoppingBag,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type DashboardMetric = {
-	label: string
-	value: string
-	percentage: string
-	isPositive?: boolean
-}
+	label: string;
+	value: string;
+	percentage: string;
+	isPositive?: boolean;
+};
 
 type MainDashboardData = {
-	title: string
-	description: string
-	metrics: DashboardMetric[]
-}
+	title: string;
+	description: string;
+	metrics: DashboardMetric[];
+};
 
 type StatItem = {
-	title: string
-	value: string
-	percentage: string
-	icon: LucideIcon
-	isPositive?: boolean
-}
+	title: string;
+	value: string;
+	percentage: string;
+	icon: LucideIcon;
+	isPositive?: boolean;
+};
 
 type StatisticsBlockProps = {
-	mainDashboard?: MainDashboardData
-	secondaryStats?: StatItem[]
-}
+	mainDashboard?: MainDashboardData;
+	secondaryStats?: StatItem[];
+};
 
 const mainDashboardData: MainDashboardData = {
-	title: "Analytics Dashboard",
-	description: "Check all the statistics",
+	title: 'Analytics Dashboard',
+	description: 'Check all the statistics',
 	metrics: [
 		{
-			label: "Earnings",
-			value: "$27,850",
-			percentage: "+18%",
+			label: 'Earnings',
+			value: '$27,850',
+			percentage: '+18%',
 			isPositive: true,
 		},
 		{
-			label: "Expense",
-			value: "$18,453",
-			percentage: "-5%",
+			label: 'Expense',
+			value: '$18,453',
+			percentage: '-5%',
 			isPositive: false,
 		},
 	],
-}
+};
 
 const secondaryStatsData: StatItem[] = [
 	{
-		title: "Weekly Sales",
-		value: "$4,587",
-		percentage: "+18%",
+		title: 'Weekly Sales',
+		value: '$4,587',
+		percentage: '+18%',
 		icon: CalendarDays,
 		isPositive: true,
 	},
 	{
-		title: "Purchase Orders",
-		value: "230",
-		percentage: "+18%",
+		title: 'Purchase Orders',
+		value: '230',
+		percentage: '+18%',
 		icon: ShoppingBag,
 		isPositive: true,
 	},
-]
+];
 
 const StatisticsBlock = ({
 	mainDashboard = mainDashboardData,
@@ -105,10 +105,10 @@ const StatisticsBlock = ({
 												</p>
 												<Badge
 													className={cn(
-														"font-normal text-muted-foreground",
+														'font-normal text-muted-foreground',
 														metric.isPositive
-															? "bg-teal-400/10"
-															: "bg-red-500/10"
+															? 'bg-teal-400/10'
+															: 'bg-red-500/10',
 													)}
 												>
 													{metric.percentage}
@@ -116,7 +116,7 @@ const StatisticsBlock = ({
 											</div>
 										</div>
 										{index < mainDashboard.metrics.length - 1 && (
-											<Separator orientation="vertical" className={"h-12"} />
+											<Separator orientation="vertical" className={'h-12'} />
 										)}
 									</div>
 								))}
@@ -151,10 +151,10 @@ const StatisticsBlock = ({
 										</p>
 										<Badge
 											className={cn(
-												"font-normal text-muted-foreground",
+												'font-normal text-muted-foreground',
 												stat.isPositive !== false
-													? "bg-teal-400/10"
-													: "bg-red-500/10"
+													? 'bg-teal-400/10'
+													: 'bg-red-500/10',
 											)}
 										>
 											{stat.percentage}
@@ -163,9 +163,9 @@ const StatisticsBlock = ({
 								</div>
 								{/* button */}
 								<Button
-									variant={"outline"}
+									variant={'outline'}
 									className={
-										"flex h-9 w-fit cursor-pointer items-center gap-1.5 rounded-xl shadow-xs"
+										'flex h-9 w-fit cursor-pointer items-center gap-1.5 rounded-xl shadow-xs'
 									}
 								>
 									<span>See Report</span>
@@ -180,7 +180,7 @@ const StatisticsBlock = ({
 				</div>
 			))}
 		</div>
-	)
-}
+	);
+};
 
-export default StatisticsBlock
+export default StatisticsBlock;

@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { Plus } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
-import { toast } from "sonner"
+import { Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
@@ -12,42 +12,42 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useVehiclesListQuery } from "@/features/vehicles/hooks/vehicles.queries"
-import { formatVehicleDealSelectLabel } from "@/features/vehicles/lib/vehicle-formatters"
-import { ApiError } from "@/lib/http/api-error"
-import { useDealsByLeadQuery } from "../hooks/deals.queries"
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
+import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
+import { ApiError } from '@/lib/http/api-error';
+import { useDealsByLeadQuery } from '../hooks/deals.queries';
 import {
 	useCreateDealForLeadMutation,
 	useDeleteDealMutation,
 	useUpdateDealMutation,
-} from "../hooks/deals.mutations"
-import { getDealFormEditBlockReason } from "../lib/deal-edit-guard"
+} from '../hooks/deals.mutations';
+import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
 import {
 	centsDigitsToApiDecimalString,
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
-} from "../lib/deal-money-input"
-import { dealDarkSidebarToast } from "../lib/deal-toast-style"
+} from '../lib/deal-money-input';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealCreateFormInput,
 	DealCreateInput,
-} from "../model/deals.model"
-import { dealCreateSchema } from "../schemas/deal-management.schema"
-import { DealConfirmDialog } from "./DealConfirmDialog"
-import { DealDetailsDialog } from "./DealDetailsDialog"
-import { DealFormDialog, getDealsErrorMessage } from "./DealFormDialog"
-import { DealsTable } from "./DealsTable"
+} from '../model/deals.model';
+import { dealCreateSchema } from '../schemas/deal-management.schema';
+import { DealConfirmDialog } from './DealConfirmDialog';
+import { DealDetailsDialog } from './DealDetailsDialog';
+import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
+import { DealsTable } from './DealsTable';
 
 type LeadDealsDialogProps = {
-	leadId: string | null
-	leadStoreId?: string | null
-	onClose: () => void
-	open: boolean
-}
+	leadId: string | null;
+	leadStoreId?: string | null;
+	onClose: () => void;
+	open: boolean;
+};
 
 function LeadDealsDialog({
 	leadId,
@@ -55,125 +55,125 @@ function LeadDealsDialog({
 	onClose,
 	open,
 }: LeadDealsDialogProps) {
-	const safeLeadId = leadId ?? ""
+	const safeLeadId = leadId ?? '';
 	const listQuery = useDealsByLeadQuery(safeLeadId, {
 		enabled: open && Boolean(leadId),
-	})
+	});
 	const deals = useMemo(
 		() => listQuery.data?.items ?? [],
-		[listQuery.data?.items]
-	)
-	const canMutateLead = listQuery.data?.canMutateLead ?? false
+		[listQuery.data?.items],
+	);
+	const canMutateLead = listQuery.data?.canMutateLead ?? false;
 	/** Só confia no payload após sucesso: evita affordance de mutação em erro/loading. */
-	const allowLeadMutations = listQuery.isSuccess && canMutateLead
+	const allowLeadMutations = listQuery.isSuccess && canMutateLead;
 
 	const vehiclesQuery = useVehiclesListQuery(
 		{
-			status: "AVAILABLE",
+			status: 'AVAILABLE',
 			storeId: leadStoreId ?? undefined,
 		},
 		{
 			enabled: Boolean(leadId && leadStoreId && open && allowLeadMutations),
-		}
-	)
+		},
+	);
 	const availableVehicles = useMemo(
 		() => vehiclesQuery.data ?? [],
-		[vehiclesQuery.data]
-	)
+		[vehiclesQuery.data],
+	);
 
-	const createMutation = useCreateDealForLeadMutation(safeLeadId)
-	const updateMutation = useUpdateDealMutation()
-	const deleteMutation = useDeleteDealMutation()
+	const createMutation = useCreateDealForLeadMutation(safeLeadId);
+	const updateMutation = useUpdateDealMutation();
+	const deleteMutation = useDeleteDealMutation();
 
-	const [createOpen, setCreateOpen] = useState(false)
-	const [detailsOpen, setDetailsOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [dialogError, setDialogError] = useState<string | null>(null)
-	const [targetDeal, setTargetDeal] = useState<Deal | null>(null)
+	const [createOpen, setCreateOpen] = useState(false);
+	const [detailsOpen, setDetailsOpen] = useState(false);
+	const [editOpen, setEditOpen] = useState(false);
+	const [deleteOpen, setDeleteOpen] = useState(false);
+	const [dialogError, setDialogError] = useState<string | null>(null);
+	const [targetDeal, setTargetDeal] = useState<Deal | null>(null);
 
-	const [vehicleId, setVehicleId] = useState("")
-	const [title, setTitle] = useState("")
-	const [valueCentsDigits, setValueCentsDigits] = useState("")
+	const [vehicleId, setVehicleId] = useState('');
+	const [title, setTitle] = useState('');
+	const [valueCentsDigits, setValueCentsDigits] = useState('');
 
 	useEffect(() => {
 		if (!open || !listQuery.isSuccess || canMutateLead) {
-			return
+			return;
 		}
 		queueMicrotask(() => {
-			setCreateOpen(false)
-			setEditOpen(false)
-			setDeleteOpen(false)
-			setDialogError(null)
-		})
-	}, [open, listQuery.isSuccess, canMutateLead])
+			setCreateOpen(false);
+			setEditOpen(false);
+			setDeleteOpen(false);
+			setDialogError(null);
+		});
+	}, [open, listQuery.isSuccess, canMutateLead]);
 
 	function resetCreateForm() {
-		setVehicleId("")
-		setTitle("")
-		setValueCentsDigits("")
-		setDialogError(null)
+		setVehicleId('');
+		setTitle('');
+		setValueCentsDigits('');
+		setDialogError(null);
 	}
 
 	async function handleCreateSubmit() {
 		if (!leadId || !allowLeadMutations) {
-			return
+			return;
 		}
-		setDialogError(null)
+		setDialogError(null);
 		try {
-			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits)
+			const valueAsApi = centsDigitsToApiDecimalString(valueCentsDigits);
 			const parsed = dealCreateSchema.parse({
 				vehicleId,
 				title,
 				value: valueAsApi,
-			} satisfies DealCreateFormInput) as DealCreateInput
-			await createMutation.mutateAsync(parsed)
-			setCreateOpen(false)
-			resetCreateForm()
+			} satisfies DealCreateFormInput) as DealCreateInput;
+			await createMutation.mutateAsync(parsed);
+			setCreateOpen(false);
+			resetCreateForm();
 		} catch (error) {
-			setDialogError(getDealsErrorMessage(error))
+			setDialogError(getDealsErrorMessage(error));
 		}
 	}
 
 	function openDetails(deal: Deal) {
-		setTargetDeal(deal)
-		setDetailsOpen(true)
+		setTargetDeal(deal);
+		setDetailsOpen(true);
 	}
 
 	function openEdit(deal: Deal) {
-		const blockReason = getDealFormEditBlockReason(deal)
+		const blockReason = getDealFormEditBlockReason(deal);
 		if (blockReason) {
 			toast.error(blockReason, {
-				id: "deal-edit-blocked",
+				id: 'deal-edit-blocked',
 				...dealDarkSidebarToast,
-			})
-			return
+			});
+			return;
 		}
-		setTargetDeal(deal)
-		setEditOpen(true)
+		setTargetDeal(deal);
+		setEditOpen(true);
 	}
 
 	function openDelete(deal: Deal) {
 		if (!deal.canMutate) {
-			return
+			return;
 		}
-		setDialogError(null)
-		setTargetDeal(deal)
-		setDeleteOpen(true)
+		setDialogError(null);
+		setTargetDeal(deal);
+		setDeleteOpen(true);
 	}
 
 	async function handleDeleteConfirm() {
-		if (!targetDeal) return
-		setDialogError(null)
+		if (!targetDeal) return;
+		setDialogError(null);
 		try {
 			await deleteMutation.mutateAsync({
 				dealId: targetDeal.id,
 				leadId: targetDeal.leadId,
-			})
-			setDeleteOpen(false)
-			setTargetDeal(null)
+			});
+			setDeleteOpen(false);
+			setTargetDeal(null);
 		} catch (error) {
-			setDialogError(getDealsErrorMessage(error))
+			setDialogError(getDealsErrorMessage(error));
 		}
 	}
 
@@ -181,14 +181,14 @@ function LeadDealsDialog({
 		<>
 			<Dialog
 				onOpenChange={(nextOpen) => {
-					if (nextOpen) return
-					setCreateOpen(false)
-					setDetailsOpen(false)
-					setEditOpen(false)
-					setDeleteOpen(false)
-					setTargetDeal(null)
-					resetCreateForm()
-					onClose()
+					if (nextOpen) return;
+					setCreateOpen(false);
+					setDetailsOpen(false);
+					setEditOpen(false);
+					setDeleteOpen(false);
+					setTargetDeal(null);
+					resetCreateForm();
+					onClose();
 				}}
 				open={open}
 			>
@@ -202,29 +202,29 @@ function LeadDealsDialog({
 								<DialogTitle>Negociações do lead</DialogTitle>
 								<DialogDescription className="max-w-2xl">
 									{listQuery.isSuccess && !canMutateLead
-										? "Acompanhe as negociações deste lead. Seu perfil permite apenas consulta neste atendimento."
-										: "Crie e acompanhe negociações relacionadas ao lead selecionado."}
+										? 'Acompanhe as negociações deste lead. Seu perfil permite apenas consulta neste atendimento.'
+										: 'Crie e acompanhe negociações relacionadas ao lead selecionado.'}
 								</DialogDescription>
 							</div>
 							<Button
 								className="rounded-md bg-[#2D3648] shadow-none hover:bg-[#232B3B]"
 								disabled={!leadId || !allowLeadMutations}
 								onClick={() => {
-									if (!allowLeadMutations) return
-									setCreateOpen(true)
-									setDialogError(null)
+									if (!allowLeadMutations) return;
+									setCreateOpen(true);
+									setDialogError(null);
 								}}
 								title={(() => {
 									if (listQuery.isPending) {
-										return "Carregando negociações e verificando permissões..."
+										return 'Carregando negociações e verificando permissões...';
 									}
 									if (listQuery.isError) {
-										return "Não foi possível carregar as negociações. Tente novamente antes de criar."
+										return 'Não foi possível carregar as negociações. Tente novamente antes de criar.';
 									}
 									if (listQuery.isSuccess && !canMutateLead) {
-										return "Sem permissão para criar ou alterar negociações deste lead."
+										return 'Sem permissão para criar ou alterar negociações deste lead.';
 									}
-									return undefined
+									return undefined;
 								})()}
 								type="button"
 							>
@@ -243,7 +243,7 @@ function LeadDealsDialog({
 								<p>
 									{listQuery.error instanceof ApiError
 										? listQuery.error.message
-										: "Não foi possível carregar as negociações do lead."}
+										: 'Não foi possível carregar as negociações do lead.'}
 								</p>
 								<Button
 									className="mt-3 rounded-md shadow-none"
@@ -295,9 +295,9 @@ function LeadDealsDialog({
 
 			<Dialog
 				onOpenChange={(nextOpen) => {
-					if (nextOpen) return
-					setCreateOpen(false)
-					resetCreateForm()
+					if (nextOpen) return;
+					setCreateOpen(false);
+					resetCreateForm();
 				}}
 				open={createOpen}
 			>
@@ -326,10 +326,10 @@ function LeadDealsDialog({
 							>
 								<option value="">
 									{vehiclesQuery.isPending
-										? "Carregando veículos disponíveis..."
+										? 'Carregando veículos disponíveis...'
 										: !leadStoreId
-											? "Lead sem loja definida"
-											: "Selecione um veículo"}
+											? 'Lead sem loja definida'
+											: 'Selecione um veículo'}
 								</option>
 								{availableVehicles.map((vehicle) => (
 									<option key={vehicle.id} value={vehicle.id}>
@@ -352,7 +352,7 @@ function LeadDealsDialog({
 								<p className="text-xs text-destructive">
 									{vehiclesQuery.error instanceof ApiError
 										? vehiclesQuery.error.message
-										: "Não foi possível carregar veículos disponíveis."}
+										: 'Não foi possível carregar veículos disponíveis.'}
 								</p>
 							) : null}
 						</div>
@@ -397,7 +397,7 @@ function LeadDealsDialog({
 							}
 							onClick={() => void handleCreateSubmit()}
 						>
-							{createMutation.isPending ? "Criando..." : "Criar negociação"}
+							{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -406,8 +406,8 @@ function LeadDealsDialog({
 			<DealDetailsDialog
 				deal={targetDeal}
 				onClose={() => {
-					setDetailsOpen(false)
-					setTargetDeal(null)
+					setDetailsOpen(false);
+					setTargetDeal(null);
 				}}
 				open={detailsOpen}
 			/>
@@ -415,15 +415,15 @@ function LeadDealsDialog({
 			<DealFormDialog
 				isPending={updateMutation.isPending}
 				onClose={() => {
-					setEditOpen(false)
-					setTargetDeal(null)
+					setEditOpen(false);
+					setTargetDeal(null);
 				}}
 				onSubmit={async (values) => {
-					if (!targetDeal) return
+					if (!targetDeal) return;
 					await updateMutation.mutateAsync({
 						dealId: targetDeal.id,
 						payload: values,
-					})
+					});
 				}}
 				open={editOpen}
 				targetDeal={targetDeal}
@@ -434,21 +434,21 @@ function LeadDealsDialog({
 				description={
 					targetDeal
 						? `A negociação "${targetDeal.title}" será removida permanentemente.`
-						: "Confirme a exclusão da negociação selecionada."
+						: 'Confirme a exclusão da negociação selecionada.'
 				}
 				error={dialogError}
 				isPending={deleteMutation.isPending}
 				onClose={() => {
-					setDeleteOpen(false)
-					setTargetDeal(null)
-					setDialogError(null)
+					setDeleteOpen(false);
+					setTargetDeal(null);
+					setDialogError(null);
 				}}
 				onConfirm={handleDeleteConfirm}
 				open={deleteOpen}
 				title="Excluir negociação"
 			/>
 		</>
-	)
+	);
 }
 
-export { LeadDealsDialog }
+export { LeadDealsDialog };

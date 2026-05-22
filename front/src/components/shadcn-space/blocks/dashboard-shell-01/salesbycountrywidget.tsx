@@ -1,108 +1,108 @@
-"use client"
+'use client';
 
-import React, { useRef } from "react"
-import Image from "next/image"
-import { Separator } from "@/components/ui/separator"
+import React, { useRef } from 'react';
+import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Icon } from "@iconify/react"
+} from '@/components/ui/dropdown-menu';
+import { Icon } from '@iconify/react';
 import {
 	Card,
 	CardTitle,
 	CardHeader,
 	CardContent,
 	CardAction,
-} from "@/components/ui/card"
-import { motion, useInView } from "motion/react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+} from '@/components/ui/card';
+import { motion, useInView } from 'motion/react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const DEFAULT_DROPDOWN_ITEMS = [
-	{ title: "Action", link: "#" },
-	{ title: "Another action", link: "#" },
-	{ title: "Something else", link: "#" },
-]
+	{ title: 'Action', link: '#' },
+	{ title: 'Another action', link: '#' },
+	{ title: 'Something else', link: '#' },
+];
 
 const DEFAULT_TRANS_DATA = [
 	{
-		img: "https://images.shadcnspace.com/assets/flags/flag-us.svg",
-		title: "PayPal Transfer",
-		country: "United states",
-		rank: "$8,567k",
-		badgeData: "+4.7%",
-		badgeBG: "bg-teal-400/10",
+		img: 'https://images.shadcnspace.com/assets/flags/flag-us.svg',
+		title: 'PayPal Transfer',
+		country: 'United states',
+		rank: '$8,567k',
+		badgeData: '+4.7%',
+		badgeBG: 'bg-teal-400/10',
 	},
 	{
-		img: "https://images.shadcnspace.com/assets/flags/flag-brazil.svg",
-		title: "Wallet",
-		country: "Brazil",
-		rank: "$2,415k",
-		badgeData: "-1.7%",
-		badgeBG: "bg-orange-400/10",
+		img: 'https://images.shadcnspace.com/assets/flags/flag-brazil.svg',
+		title: 'Wallet',
+		country: 'Brazil',
+		rank: '$2,415k',
+		badgeData: '-1.7%',
+		badgeBG: 'bg-orange-400/10',
 	},
 	{
-		img: "https://images.shadcnspace.com/assets/flags/flag-india.svg",
-		title: "Credit Card",
-		country: "India",
-		rank: "$865k",
-		badgeData: "+4.7%",
-		badgeBG: "bg-teal-400/10",
+		img: 'https://images.shadcnspace.com/assets/flags/flag-india.svg',
+		title: 'Credit Card',
+		country: 'India',
+		rank: '$865k',
+		badgeData: '+4.7%',
+		badgeBG: 'bg-teal-400/10',
 	},
 	{
-		img: "https://images.shadcnspace.com/assets/flags/flag-australia.svg",
-		title: "Bank Transfer",
-		country: "Australia",
-		rank: "$745k",
-		badgeData: "-1.7%",
-		badgeBG: "bg-orange-400/10",
+		img: 'https://images.shadcnspace.com/assets/flags/flag-australia.svg',
+		title: 'Bank Transfer',
+		country: 'Australia',
+		rank: '$745k',
+		badgeData: '-1.7%',
+		badgeBG: 'bg-orange-400/10',
 	},
 	{
-		img: "https://images.shadcnspace.com/assets/flags/flag-france.svg",
-		title: "Refund",
-		country: "France",
-		rank: "$45",
-		badgeData: "+4.7%",
-		badgeBG: "bg-teal-400/10",
+		img: 'https://images.shadcnspace.com/assets/flags/flag-france.svg',
+		title: 'Refund',
+		country: 'France',
+		rank: '$45',
+		badgeData: '+4.7%',
+		badgeBG: 'bg-teal-400/10',
 	},
 	{
-		img: "https://images.shadcnspace.com/assets/flags/flag-china.svg",
-		title: "Refund",
-		country: "China",
-		rank: "$12k",
-		badgeData: "+4.7%",
-		badgeBG: "bg-teal-400/10",
+		img: 'https://images.shadcnspace.com/assets/flags/flag-china.svg',
+		title: 'Refund',
+		country: 'China',
+		rank: '$12k',
+		badgeData: '+4.7%',
+		badgeBG: 'bg-teal-400/10',
 	},
-]
+];
 
 interface TransactionProps {
-	img: string
-	title: string
-	country: string
-	rank: string
-	badgeData: string
-	badgeBG: string
+	img: string;
+	title: string;
+	country: string;
+	rank: string;
+	badgeData: string;
+	badgeBG: string;
 }
 
 interface DropdownItemProps {
-	title: string
-	link?: string
+	title: string;
+	link?: string;
 }
 
 interface WidgetProps {
-	recentTransData?: TransactionProps[]
-	dropdownItems?: DropdownItemProps[]
+	recentTransData?: TransactionProps[];
+	dropdownItems?: DropdownItemProps[];
 }
 
 const SalesByCountryWidget = ({
 	recentTransData = DEFAULT_TRANS_DATA,
 	dropdownItems = DEFAULT_DROPDOWN_ITEMS,
 }: WidgetProps) => {
-	const ref = useRef(null)
-	const isInView = useInView(ref, { once: true, amount: 0.2 })
+	const ref = useRef(null);
+	const isInView = useInView(ref, { once: true, amount: 0.2 });
 
 	return (
 		<Card className="h-full gap-6 py-6">
@@ -125,7 +125,7 @@ const SalesByCountryWidget = ({
 						<DropdownMenuContent>
 							{dropdownItems.map((item) => (
 								<DropdownMenuItem
-									key={`${item.title}-${item.link ?? ""}`}
+									key={`${item.title}-${item.link ?? ''}`}
 									className="cursor-pointer font-normal"
 								>
 									{item.link ? (
@@ -146,7 +146,7 @@ const SalesByCountryWidget = ({
 					ref={ref}
 					className="flex flex-col gap-3"
 					initial="hidden"
-					animate={isInView ? "visible" : "hidden"}
+					animate={isInView ? 'visible' : 'hidden'}
 					variants={{
 						visible: {
 							transition: {
@@ -167,7 +167,7 @@ const SalesByCountryWidget = ({
 									visible: { opacity: 1, y: 0 },
 								}}
 								transition={{
-									type: "spring",
+									type: 'spring',
 									stiffness: 300,
 									damping: 24,
 								}}
@@ -176,10 +176,10 @@ const SalesByCountryWidget = ({
 							>
 								<motion.div
 									className={cn(
-										`flex h-8 w-8 items-center justify-center overflow-hidden rounded-full`
+										`flex h-8 w-8 items-center justify-center overflow-hidden rounded-full`,
 									)}
 									whileHover={{ rotate: 5, scale: 1.1 }}
-									transition={{ type: "spring", stiffness: 400 }}
+									transition={{ type: 'spring', stiffness: 400 }}
 								>
 									<Image
 										src={item.img}
@@ -199,7 +199,7 @@ const SalesByCountryWidget = ({
 										</p>
 									</div>
 									<Badge
-										className={cn(`${item.badgeBG}`, "text-muted-foreground")}
+										className={cn(`${item.badgeBG}`, 'text-muted-foreground')}
 									>
 										{item.badgeData}
 									</Badge>
@@ -211,7 +211,7 @@ const SalesByCountryWidget = ({
 				</motion.div>
 			</CardContent>
 		</Card>
-	)
-}
+	);
+};
 
-export default SalesByCountryWidget
+export default SalesByCountryWidget;

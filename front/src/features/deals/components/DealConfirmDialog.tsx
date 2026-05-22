@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { Trash2 } from "lucide-react"
+import { Trash2 } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
@@ -10,18 +10,18 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog';
 
 type DealConfirmDialogProps = {
-	confirmLabel: string
-	description: string
-	error: string | null
-	isPending: boolean
-	onClose: () => void
-	onConfirm: () => Promise<void>
-	open: boolean
-	title: string
-}
+	confirmLabel: string;
+	description: string;
+	error: string | null;
+	isPending: boolean;
+	onClose: () => void;
+	onConfirm: () => Promise<void>;
+	open: boolean;
+	title: string;
+};
 
 function DealConfirmDialog({
 	confirmLabel,
@@ -69,12 +69,12 @@ function DealConfirmDialog({
 						onClick={() => void onConfirm()}
 						type="button"
 					>
-						{isPending ? "Processando..." : confirmLabel}
+						{isPending ? 'Processando...' : confirmLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }
 
-export { DealConfirmDialog }
+export { DealConfirmDialog };

@@ -1,36 +1,36 @@
-"use client"
+'use client';
 
-import { Plus } from "lucide-react"
-import type { DragEvent } from "react"
+import { Plus } from 'lucide-react';
+import type { DragEvent } from 'react';
 
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { dealAllowsKanbanStageDrag } from "@/features/deals/lib/deal-edit-guard"
-import type { Deal, DealStage } from "@/features/deals/model/deals.model"
-import { NegotiationPipelineDealCard } from "@/features/deals/components/pipeline/NegotiationPipelineDealCard"
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { dealAllowsKanbanStageDrag } from '@/features/deals/lib/deal-edit-guard';
+import type { Deal, DealStage } from '@/features/deals/model/deals.model';
+import { NegotiationPipelineDealCard } from '@/features/deals/components/pipeline/NegotiationPipelineDealCard';
 
 type Props = {
-	title: string
-	stage: DealStage
-	deals: Deal[]
-	showValues: boolean
-	onOpenDetails: (deal: Deal) => void
-	onEdit?: (deal: Deal) => void
-	onDelete?: (deal: Deal) => void
-	onCreateDeal: () => void
-	draggedDealId?: string | null
-	dragOverStage?: DealStage | null
-	isDragTargetAllowed?: boolean
-	updatingDealId?: string | null
-	onCardDragStart?: (deal: Deal) => void
-	onCardDragEnd?: () => void
-	onColumnDragOver?: (stage: DealStage) => void
-	onColumnDragLeave?: (stage: DealStage) => void
-	onColumnDrop?: (stage: DealStage) => void
-	hasNextPage?: boolean
-	isLoadingMore?: boolean
-	onLoadMore?: () => void
-}
+	title: string;
+	stage: DealStage;
+	deals: Deal[];
+	showValues: boolean;
+	onOpenDetails: (deal: Deal) => void;
+	onEdit?: (deal: Deal) => void;
+	onDelete?: (deal: Deal) => void;
+	onCreateDeal: () => void;
+	draggedDealId?: string | null;
+	dragOverStage?: DealStage | null;
+	isDragTargetAllowed?: boolean;
+	updatingDealId?: string | null;
+	onCardDragStart?: (deal: Deal) => void;
+	onCardDragEnd?: () => void;
+	onColumnDragOver?: (stage: DealStage) => void;
+	onColumnDragLeave?: (stage: DealStage) => void;
+	onColumnDrop?: (stage: DealStage) => void;
+	hasNextPage?: boolean;
+	isLoadingMore?: boolean;
+	onLoadMore?: () => void;
+};
 
 function PipelineStageColumn({
 	title,
@@ -54,33 +54,33 @@ function PipelineStageColumn({
 	isLoadingMore = false,
 	onLoadMore,
 }: Props) {
-	const isDragOver = dragOverStage === stage
+	const isDragOver = dragOverStage === stage;
 
 	function handleDragOver(event: DragEvent<HTMLDivElement>) {
 		if (!draggedDealId) {
-			return
+			return;
 		}
-		event.preventDefault()
-		event.dataTransfer.dropEffect = isDragTargetAllowed ? "move" : "none"
-		onColumnDragOver?.(stage)
+		event.preventDefault();
+		event.dataTransfer.dropEffect = isDragTargetAllowed ? 'move' : 'none';
+		onColumnDragOver?.(stage);
 	}
 
 	function handleDrop(event: DragEvent<HTMLDivElement>) {
 		if (!draggedDealId) {
-			return
+			return;
 		}
-		event.preventDefault()
-		onColumnDrop?.(stage)
+		event.preventDefault();
+		onColumnDrop?.(stage);
 	}
 
 	return (
 		<div
 			className={cn(
-				"min-w-0 pb-2 transition-all duration-200 ease-out",
+				'min-w-0 pb-2 transition-all duration-200 ease-out',
 				isDragOver && isDragTargetAllowed
-					? "bg-muted/20 ring-1 ring-border/80"
-					: "",
-				isDragOver && !isDragTargetAllowed ? "bg-destructive/5" : ""
+					? 'bg-muted/20 ring-1 ring-border/80'
+					: '',
+				isDragOver && !isDragTargetAllowed ? 'bg-destructive/5' : '',
 			)}
 			onDragOver={handleDragOver}
 			onDragLeave={() => onColumnDragLeave?.(stage)}
@@ -120,7 +120,7 @@ function PipelineStageColumn({
 						disabled={isLoadingMore}
 						onClick={onLoadMore}
 					>
-						{isLoadingMore ? "Carregando..." : "Carregar mais"}
+						{isLoadingMore ? 'Carregando...' : 'Carregar mais'}
 					</Button>
 				) : null}
 
@@ -128,14 +128,14 @@ function PipelineStageColumn({
 					type="button"
 					onClick={onCreateDeal}
 					className={cn(
-						"mt-3 inline-flex h-7 w-full items-center justify-center gap-[7px] border-0 bg-transparent text-[13px] text-muted-foreground hover:text-foreground"
+						'mt-3 inline-flex h-7 w-full items-center justify-center gap-[7px] border-0 bg-transparent text-[13px] text-muted-foreground hover:text-foreground',
 					)}
 				>
 					<Plus className="size-4" /> Adicionar negócio
 				</button>
 			</div>
 		</div>
-	)
+	);
 }
 
-export { PipelineStageColumn }
+export { PipelineStageColumn };

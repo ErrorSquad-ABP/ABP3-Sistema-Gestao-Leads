@@ -1,32 +1,32 @@
-import assert from "node:assert/strict"
-import { describe, it } from "node:test"
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 
-import { ApiError } from "@/lib/http/api-error"
+import { ApiError } from '@/lib/http/api-error';
 
-import { parseOperationalDashboardResponse } from "./operational-dashboard.schema"
+import { parseOperationalDashboardResponse } from './operational-dashboard.schema';
 
-const STORE_ID = "550e8400-e29b-41d4-a716-446655440000"
+const STORE_ID = '550e8400-e29b-41d4-a716-446655440000';
 
-describe("parseOperationalDashboardResponse", () => {
-	it("parses the RF04 operational dashboard contract", () => {
+describe('parseOperationalDashboardResponse', () => {
+	it('parses the RF04 operational dashboard contract', () => {
 		const parsed = parseOperationalDashboardResponse({
 			distributions: {
-				byImportance: [{ count: 2, key: "HOT", percentage: 100 }],
-				bySource: [{ count: 2, key: "whatsapp", percentage: 100 }],
-				byStatus: [{ count: 2, key: "NEW", percentage: 100 }],
+				byImportance: [{ count: 2, key: 'HOT', percentage: 100 }],
+				bySource: [{ count: 2, key: 'whatsapp', percentage: 100 }],
+				byStatus: [{ count: 2, key: 'NEW', percentage: 100 }],
 				byStore: [
 					{
 						count: 2,
 						percentage: 100,
 						storeId: STORE_ID,
-						storeName: "Loja Matriz",
+						storeName: 'Loja Matriz',
 					},
 				],
 			},
 			period: {
 				days: 30,
-				endDate: "2026-05-20T00:00:00.000Z",
-				startDate: "2026-04-20T00:00:00.000Z",
+				endDate: '2026-05-20T00:00:00.000Z',
+				startDate: '2026-04-20T00:00:00.000Z',
 			},
 			kpis: {
 				activeLeads: {
@@ -59,7 +59,7 @@ describe("parseOperationalDashboardResponse", () => {
 				},
 			},
 			scope: {
-				role: "ADMINISTRATOR",
+				role: 'ADMINISTRATOR',
 				storeIds: null,
 			},
 			totals: {
@@ -72,19 +72,19 @@ describe("parseOperationalDashboardResponse", () => {
 						activeLeads: 1,
 						conversionRate: 50,
 						convertedLeads: 1,
-						date: "2026-05-19",
+						date: '2026-05-19',
 						totalLeads: 2,
 					},
 				],
 			},
-		})
+		});
 
-		assert.equal(parsed.totals.totalLeads, 2)
-		assert.equal(parsed.kpis.conversionRate.deltaPoints, 50)
-		assert.equal(parsed.distributions.byStore[0]?.storeName, "Loja Matriz")
-	})
+		assert.equal(parsed.totals.totalLeads, 2);
+		assert.equal(parsed.kpis.conversionRate.deltaPoints, 50);
+		assert.equal(parsed.distributions.byStore[0]?.storeName, 'Loja Matriz');
+	});
 
-	it("rejects malformed responses", () => {
+	it('rejects malformed responses', () => {
 		assert.throws(
 			() =>
 				parseOperationalDashboardResponse({
@@ -93,7 +93,7 @@ describe("parseOperationalDashboardResponse", () => {
 					scope: {},
 					totals: {},
 				}),
-			ApiError
-		)
-	})
-})
+			ApiError,
+		);
+	});
+});

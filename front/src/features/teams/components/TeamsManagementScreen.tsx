@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { useQueries } from "@tanstack/react-query"
+import { useQueries } from '@tanstack/react-query';
 import {
 	ChartNoAxesColumnIncreasing,
 	CheckCircle2,
@@ -12,28 +12,28 @@ import {
 	Target,
 	Trophy,
 	UsersRound,
-} from "lucide-react"
-import { useMemo, useState, useSyncExternalStore } from "react"
+} from 'lucide-react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { fetchLeadCatalog } from "@/features/leads/api/leads.service"
-import { useLeadOwnersQuery } from "@/features/leads/hooks/leads.catalog.queries"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
+import { useLeadOwnersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import type {
 	LeadOwnerRecord,
 	LeadStore,
-} from "@/features/leads/model/leads.model"
-import { useStoresQuery } from "@/features/stores/hooks/stores.queries"
+} from '@/features/leads/model/leads.model';
+import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
 import {
 	useAssignTeamManagerMutation,
 	useCreateTeamMutation,
 	useDeleteTeamMutation,
 	useUpdateTeamMutation,
-} from "@/features/teams/hooks/teams.mutations"
-import { useTeamsQuery } from "@/features/teams/hooks/teams.queries"
-import type { TeamRecord } from "@/features/teams/model/teams.model"
-import { isApiError } from "@/lib/http/api-error"
+} from '@/features/teams/hooks/teams.mutations';
+import { useTeamsQuery } from '@/features/teams/hooks/teams.queries';
+import type { TeamRecord } from '@/features/teams/model/teams.model';
+import { isApiError } from '@/lib/http/api-error';
 
 import {
 	emptyTeamForm,
@@ -42,42 +42,42 @@ import {
 	toTeamPayload,
 	type TeamDialogState,
 	type TeamFormState,
-} from "./TeamForm"
-import { TeamsTable, type TeamTableRow } from "./TeamsTable"
+} from './TeamForm';
+import { TeamsTable, type TeamTableRow } from './TeamsTable';
 
-type MetricTone = "blue" | "green" | "orange" | "purple"
-type PaginationItem = number | "ellipsis-start" | "ellipsis-end"
+type MetricTone = 'blue' | 'green' | 'orange' | 'purple';
+type PaginationItem = number | 'ellipsis-start' | 'ellipsis-end';
 
-const TEAMS_PAGE_SIZE = 6
+const TEAMS_PAGE_SIZE = 6;
 const TEAM_COLORS = [
-	"text-[#f4511e]",
-	"text-[#7f35e8]",
-	"text-[#2563eb]",
-	"text-[#f79009]",
-	"text-[#079455]",
-	"text-[#0ba5ec]",
-] as const
+	'text-[#f4511e]',
+	'text-[#7f35e8]',
+	'text-[#2563eb]',
+	'text-[#f79009]',
+	'text-[#079455]',
+	'text-[#0ba5ec]',
+] as const;
 const DISTRIBUTION_COLORS = [
-	"#f4511e",
-	"#ff9b85",
-	"#a855f7",
-	"#5b8def",
-	"#f7b731",
-] as const
+	'#f4511e',
+	'#ff9b85',
+	'#a855f7',
+	'#5b8def',
+	'#f7b731',
+] as const;
 
 function getTeamsErrorMessage(error: unknown) {
 	if (!isApiError(error)) {
-		return "Não foi possível concluir a operação agora."
+		return 'Não foi possível concluir a operação agora.';
 	}
-	return error.message
+	return error.message;
 }
 
 function normalizeSearch(value: string) {
 	return value
-		.normalize("NFD")
-		.replace(/\p{Diacritic}/gu, "")
+		.normalize('NFD')
+		.replace(/\p{Diacritic}/gu, '')
 		.toLowerCase()
-		.trim()
+		.trim();
 }
 
 function getInitials(value: string, fallback: string) {
@@ -85,98 +85,98 @@ function getInitials(value: string, fallback: string) {
 		.split(/\s+/)
 		.filter(Boolean)
 		.map((part) => part[0])
-		.join("")
+		.join('')
 		.slice(0, 2)
-		.toUpperCase()
-	return initials || fallback
+		.toUpperCase();
+	return initials || fallback;
 }
 
 function formatCount(value: number) {
-	return Math.round(value).toLocaleString("pt-BR")
+	return Math.round(value).toLocaleString('pt-BR');
 }
 
 function getConversionRate(convertedCount: number, totalCount: number) {
 	if (totalCount <= 0) {
-		return 0
+		return 0;
 	}
-	return Math.round((convertedCount / totalCount) * 100)
+	return Math.round((convertedCount / totalCount) * 100);
 }
 
 function buildPaginationItems(
 	currentPage: number,
-	totalPages: number
+	totalPages: number,
 ): PaginationItem[] {
 	if (totalPages <= 5) {
-		return Array.from({ length: totalPages }, (_, index) => index + 1)
+		return Array.from({ length: totalPages }, (_, index) => index + 1);
 	}
 
 	if (currentPage <= 4) {
-		return [1, 2, 3, 4, "ellipsis-end", totalPages]
+		return [1, 2, 3, 4, 'ellipsis-end', totalPages];
 	}
 
 	if (currentPage >= totalPages - 2) {
 		return [
 			1,
-			"ellipsis-start",
+			'ellipsis-start',
 			totalPages - 3,
 			totalPages - 2,
 			totalPages - 1,
 			totalPages,
-		]
+		];
 	}
 
 	return [
 		1,
-		"ellipsis-start",
+		'ellipsis-start',
 		currentPage - 1,
 		currentPage,
 		currentPage + 1,
-		"ellipsis-end",
+		'ellipsis-end',
 		totalPages,
-	]
+	];
 }
 
 async function fetchTeamMetrics(
 	teamId: string,
 	storeId: string,
-	signal: AbortSignal
+	signal: AbortSignal,
 ) {
 	const [catalog, negotiatingCatalog] = await Promise.all([
-		fetchLeadCatalog({ limit: 1, page: 1, sort: "recent", storeId }, signal),
+		fetchLeadCatalog({ limit: 1, page: 1, sort: 'recent', storeId }, signal),
 		fetchLeadCatalog(
 			{
 				limit: 1,
 				page: 1,
-				sort: "recent",
-				status: "NEGOTIATING",
+				sort: 'recent',
+				status: 'NEGOTIATING',
 				storeId,
 			},
-			signal
+			signal,
 		),
-	])
+	]);
 
 	return {
 		conversionRate: catalog.summary.conversionRate,
 		convertedCount: catalog.summary.converted,
 		openDealsCount: Math.max(
 			catalog.funnel.openDeals,
-			negotiatingCatalog.total
+			negotiatingCatalog.total,
 		),
 		teamId,
 		total: catalog.total,
-	}
+	};
 }
 
 function getMetricToneClass(tone: MetricTone) {
 	switch (tone) {
-		case "blue":
-			return "bg-[#eff6ff] text-[#2563eb]"
-		case "green":
-			return "bg-[#ecfdf3] text-[#079455]"
-		case "orange":
-			return "bg-[#fff3ee] text-[#f4511e]"
-		case "purple":
-			return "bg-[#f4edff] text-[#7f35e8]"
+		case 'blue':
+			return 'bg-[#eff6ff] text-[#2563eb]';
+		case 'green':
+			return 'bg-[#ecfdf3] text-[#079455]';
+		case 'orange':
+			return 'bg-[#fff3ee] text-[#f4511e]';
+		case 'purple':
+			return 'bg-[#f4edff] text-[#7f35e8]';
 	}
 }
 
@@ -187,11 +187,11 @@ function TeamMetricCard({
 	tone,
 	value,
 }: {
-	helper: string
-	icon: typeof UsersRound
-	label: string
-	tone: MetricTone
-	value: string
+	helper: string;
+	icon: typeof UsersRound;
+	label: string;
+	tone: MetricTone;
+	value: string;
 }) {
 	return (
 		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
@@ -210,15 +210,15 @@ function TeamMetricCard({
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function getOwnerById(owners: LeadOwnerRecord[]) {
-	return new Map(owners.map((owner) => [owner.id, owner]))
+	return new Map(owners.map((owner) => [owner.id, owner]));
 }
 
 function getStoreById(stores: LeadStore[]) {
-	return new Map(stores.map((store) => [store.id, store]))
+	return new Map(stores.map((store) => [store.id, store]));
 }
 
 function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
@@ -226,9 +226,9 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 		Map<
 			string,
 			{
-				memberCount: number
-				storeName: string
-				teamCount: number
+				memberCount: number;
+				storeName: string;
+				teamCount: number;
 			}
 		>
 	>((distribution, row) => {
@@ -236,24 +236,24 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 			memberCount: 0,
 			storeName: row.storeName,
 			teamCount: 0,
-		}
-		current.memberCount += row.memberCount
-		current.teamCount += 1
-		distribution.set(row.storeName, current)
-		return distribution
-	}, new Map())
+		};
+		current.memberCount += row.memberCount;
+		current.teamCount += 1;
+		distribution.set(row.storeName, current);
+		return distribution;
+	}, new Map());
 	const rankedRows = [...distributionRows.values()]
 		.sort(
 			(left, right) =>
 				right.memberCount - left.memberCount ||
-				left.storeName.localeCompare(right.storeName, "pt-BR")
+				left.storeName.localeCompare(right.storeName, 'pt-BR'),
 		)
-		.slice(0, 5)
+		.slice(0, 5);
 	const membersTotal = [...distributionRows.values()].reduce(
 		(total, row) => total + row.memberCount,
-		0
-	)
-	const maxMembers = Math.max(1, ...rankedRows.map((row) => row.memberCount))
+		0,
+	);
+	const maxMembers = Math.max(1, ...rankedRows.map((row) => row.memberCount));
 
 	return (
 		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
@@ -277,11 +277,11 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 					{rankedRows.map((row, index) => {
 						const percentage = membersTotal
 							? Math.round((row.memberCount / membersTotal) * 100)
-							: 0
+							: 0;
 						const width = Math.max(
 							8,
-							Math.round((row.memberCount / maxMembers) * 100)
-						)
+							Math.round((row.memberCount / maxMembers) * 100),
+						);
 						return (
 							<div className="space-y-2" key={row.storeName}>
 								<div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
@@ -290,8 +290,8 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 											{row.storeName}
 										</p>
 										<p className="text-xs text-[#667085]">
-											{formatCount(row.memberCount)} membros · {row.teamCount}{" "}
-											{row.teamCount === 1 ? "equipe" : "equipes"}
+											{formatCount(row.memberCount)} membros · {row.teamCount}{' '}
+											{row.teamCount === 1 ? 'equipe' : 'equipes'}
 										</p>
 									</div>
 									<p className="text-sm font-bold text-[#101828]">
@@ -309,12 +309,12 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 									/>
 								</div>
 							</div>
-						)
+						);
 					})}
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function LeadershipHighlightsCard({ rows }: { rows: TeamTableRow[] }) {
@@ -324,9 +324,9 @@ function LeadershipHighlightsCard({ rows }: { rows: TeamTableRow[] }) {
 			(left, right) =>
 				right.conversionRate - left.conversionRate ||
 				(right.leadCount ?? 0) - (left.leadCount ?? 0) ||
-				left.managerName.localeCompare(right.managerName, "pt-BR")
+				left.managerName.localeCompare(right.managerName, 'pt-BR'),
 		)
-		.slice(0, 5)
+		.slice(0, 5);
 
 	return (
 		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
@@ -346,10 +346,10 @@ function LeadershipHighlightsCard({ rows }: { rows: TeamTableRow[] }) {
 							<span
 								className={`flex size-6 items-center justify-center rounded-lg text-xs font-bold ${
 									index === 0
-										? "bg-[#f4511e] text-white"
+										? 'bg-[#f4511e] text-white'
 										: index === 1
-											? "bg-[#f4edff] text-[#7f35e8]"
-											: "bg-[#eff6ff] text-[#2563eb]"
+											? 'bg-[#f4edff] text-[#7f35e8]'
+											: 'bg-[#eff6ff] text-[#2563eb]'
 								}`}
 							>
 								{index + 1}
@@ -373,60 +373,60 @@ function LeadershipHighlightsCard({ rows }: { rows: TeamTableRow[] }) {
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function TeamsManagementScreen() {
-	const storesQuery = useStoresQuery()
-	const teamsQuery = useTeamsQuery()
-	const ownersQuery = useLeadOwnersQuery()
+	const storesQuery = useStoresQuery();
+	const teamsQuery = useTeamsQuery();
+	const ownersQuery = useLeadOwnersQuery();
 
-	const createTeamMutation = useCreateTeamMutation()
-	const assignTeamManagerMutation = useAssignTeamManagerMutation()
-	const updateTeamMutation = useUpdateTeamMutation()
-	const deleteTeamMutation = useDeleteTeamMutation()
+	const createTeamMutation = useCreateTeamMutation();
+	const assignTeamManagerMutation = useAssignTeamManagerMutation();
+	const updateTeamMutation = useUpdateTeamMutation();
+	const deleteTeamMutation = useDeleteTeamMutation();
 
 	const [teamDialogState, setTeamDialogState] =
-		useState<TeamDialogState | null>(null)
-	const [deleteTarget, setDeleteTarget] = useState<TeamRecord | null>(null)
+		useState<TeamDialogState | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<TeamRecord | null>(null);
 	const [teamFormState, setTeamFormState] =
-		useState<TeamFormState>(emptyTeamForm)
-	const [dialogError, setDialogError] = useState<string | null>(null)
-	const [deleteError, setDeleteError] = useState<string | null>(null)
-	const [search, setSearch] = useState("")
-	const [storeFilter, setStoreFilter] = useState("ALL")
-	const [page, setPage] = useState(1)
+		useState<TeamFormState>(emptyTeamForm);
+	const [dialogError, setDialogError] = useState<string | null>(null);
+	const [deleteError, setDeleteError] = useState<string | null>(null);
+	const [search, setSearch] = useState('');
+	const [storeFilter, setStoreFilter] = useState('ALL');
+	const [page, setPage] = useState(1);
 	const isHydrated = useSyncExternalStore(
 		() => () => {},
 		() => true,
-		() => false
-	)
+		() => false,
+	);
 
-	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data])
-	const teams = useMemo(() => teamsQuery.data ?? [], [teamsQuery.data])
-	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data])
-	const ownerById = useMemo(() => getOwnerById(owners), [owners])
-	const storeById = useMemo(() => getStoreById(stores), [stores])
+	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
+	const teams = useMemo(() => teamsQuery.data ?? [], [teamsQuery.data]);
+	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data]);
+	const ownerById = useMemo(() => getOwnerById(owners), [owners]);
+	const storeById = useMemo(() => getStoreById(stores), [stores]);
 
 	const leadCountQueries = useQueries({
 		queries: teams.map((team) => ({
 			enabled: teams.length > 0,
 			queryFn: ({ signal }: { signal: AbortSignal }) =>
 				fetchTeamMetrics(team.id, team.storeId, signal),
-			queryKey: ["teams", "metrics", team.id],
+			queryKey: ['teams', 'metrics', team.id],
 		})),
-	})
+	});
 
 	const metricsByTeamId = useMemo(() => {
 		const metricsByTeam = new Map<
 			string,
 			{
-				conversionRate: number
-				convertedCount: number
-				openDealsCount: number
-				total: number
+				conversionRate: number;
+				convertedCount: number;
+				openDealsCount: number;
+				total: number;
 			}
-		>()
+		>();
 		for (const query of leadCountQueries) {
 			if (query.data) {
 				metricsByTeam.set(query.data.teamId, {
@@ -434,156 +434,156 @@ function TeamsManagementScreen() {
 					convertedCount: query.data.convertedCount,
 					openDealsCount: query.data.openDealsCount,
 					total: query.data.total,
-				})
+				});
 			}
 		}
-		return metricsByTeam
-	}, [leadCountQueries])
+		return metricsByTeam;
+	}, [leadCountQueries]);
 
 	const rows = useMemo<TeamTableRow[]>(
 		() =>
 			teams.map((team) => {
-				const manager = team.managerId ? ownerById.get(team.managerId) : null
-				const store = storeById.get(team.storeId)
-				const metrics = metricsByTeamId.get(team.id)
-				const teamIndex = teams.findIndex((item) => item.id === team.id)
+				const manager = team.managerId ? ownerById.get(team.managerId) : null;
+				const store = storeById.get(team.storeId);
+				const metrics = metricsByTeamId.get(team.id);
+				const teamIndex = teams.findIndex((item) => item.id === team.id);
 				return {
 					colorClass: TEAM_COLORS[teamIndex % TEAM_COLORS.length],
 					conversionRate: metrics?.conversionRate ?? 0,
-					initials: getInitials(team.name, "EQ"),
+					initials: getInitials(team.name, 'EQ'),
 					leadCount: metrics?.total ?? null,
 					managerEmail: manager?.email ?? null,
-					managerInitials: getInitials(manager?.name ?? "", "GG"),
-					managerName: manager?.name ?? "Sem gerente",
+					managerInitials: getInitials(manager?.name ?? '', 'GG'),
+					managerName: manager?.name ?? 'Sem gerente',
 					memberCount: team.memberUserIds.length,
 					openDealsCount: metrics?.openDealsCount ?? null,
-					storeName: store?.name ?? "Loja vinculada",
+					storeName: store?.name ?? 'Loja vinculada',
 					team,
-				}
+				};
 			}),
-		[metricsByTeamId, ownerById, storeById, teams]
-	)
+		[metricsByTeamId, ownerById, storeById, teams],
+	);
 
 	const filteredRows = useMemo(() => {
-		const searchTerm = normalizeSearch(search)
+		const searchTerm = normalizeSearch(search);
 		return rows.filter((row) => {
 			const matchesSearch =
 				!searchTerm ||
 				normalizeSearch(
-					`${row.team.name} ${row.storeName} ${row.managerName} ${row.managerEmail ?? ""}`
-				).includes(searchTerm)
+					`${row.team.name} ${row.storeName} ${row.managerName} ${row.managerEmail ?? ''}`,
+				).includes(searchTerm);
 			const matchesStore =
-				storeFilter === "ALL" || row.team.storeId === storeFilter
-			return matchesSearch && matchesStore
-		})
-	}, [rows, search, storeFilter])
+				storeFilter === 'ALL' || row.team.storeId === storeFilter;
+			return matchesSearch && matchesStore;
+		});
+	}, [rows, search, storeFilter]);
 
 	const totalPages = Math.max(
 		1,
-		Math.ceil(filteredRows.length / TEAMS_PAGE_SIZE)
-	)
-	const safePage = Math.min(page, totalPages)
-	const paginationItems = buildPaginationItems(safePage, totalPages)
+		Math.ceil(filteredRows.length / TEAMS_PAGE_SIZE),
+	);
+	const safePage = Math.min(page, totalPages);
+	const paginationItems = buildPaginationItems(safePage, totalPages);
 	const paginatedRows = filteredRows.slice(
 		(safePage - 1) * TEAMS_PAGE_SIZE,
-		safePage * TEAMS_PAGE_SIZE
-	)
-	const totalMembers = rows.reduce((total, row) => total + row.memberCount, 0)
+		safePage * TEAMS_PAGE_SIZE,
+	);
+	const totalMembers = rows.reduce((total, row) => total + row.memberCount, 0);
 	const totalAssignedLeads = rows.reduce(
 		(total, row) => total + (row.leadCount ?? 0),
-		0
-	)
+		0,
+	);
 	const totalOpenDeals = rows.reduce(
 		(total, row) => total + (row.openDealsCount ?? 0),
-		0
-	)
+		0,
+	);
 	const totalConvertedLeads = rows.reduce((total, row) => {
-		const leadCount = row.leadCount ?? 0
-		return total + Math.round((leadCount * row.conversionRate) / 100)
-	}, 0)
+		const leadCount = row.leadCount ?? 0;
+		return total + Math.round((leadCount * row.conversionRate) / 100);
+	}, 0);
 	const averageConversionRate = getConversionRate(
 		totalConvertedLeads,
-		totalAssignedLeads
-	)
+		totalAssignedLeads,
+	);
 	const isLoading =
-		teamsQuery.isLoading || ownersQuery.isLoading || storesQuery.isLoading
+		teamsQuery.isLoading || ownersQuery.isLoading || storesQuery.isLoading;
 	const errorMessage = teamsQuery.isError
 		? getTeamsErrorMessage(teamsQuery.error)
 		: ownersQuery.isError
 			? getTeamsErrorMessage(ownersQuery.error)
 			: storesQuery.isError
 				? getTeamsErrorMessage(storesQuery.error)
-				: null
+				: null;
 
 	function openCreateTeamDialog() {
-		setDialogError(null)
+		setDialogError(null);
 		setTeamFormState({
 			...emptyTeamForm,
-			storeId: stores[0]?.id ?? "",
-		})
-		setTeamDialogState({ mode: "create", team: null })
+			storeId: stores[0]?.id ?? '',
+		});
+		setTeamDialogState({ mode: 'create', team: null });
 	}
 
 	function openEditTeamDialog(team: TeamRecord) {
-		setDialogError(null)
+		setDialogError(null);
 		setTeamFormState({
 			name: team.name,
 			storeId: team.storeId,
-			managerId: team.managerId ?? "",
-		})
-		setTeamDialogState({ mode: "edit", team })
+			managerId: team.managerId ?? '',
+		});
+		setTeamDialogState({ mode: 'edit', team });
 	}
 
 	async function handleTeamSubmit() {
-		const payload = toTeamPayload(teamFormState)
+		const payload = toTeamPayload(teamFormState);
 		if (!payload) {
-			setDialogError("Informe nome e loja da equipe.")
-			return
+			setDialogError('Informe nome e loja da equipe.');
+			return;
 		}
 
-		setDialogError(null)
+		setDialogError(null);
 		try {
-			if (teamDialogState?.mode === "edit" && teamDialogState.team) {
+			if (teamDialogState?.mode === 'edit' && teamDialogState.team) {
 				await updateTeamMutation.mutateAsync({
 					id: teamDialogState.team.id,
 					body: {
 						name: payload.name,
 						storeId: payload.storeId,
 					},
-				})
-				const nextManagerId = payload.managerId
+				});
+				const nextManagerId = payload.managerId;
 				if (nextManagerId !== (teamDialogState.team.managerId ?? null)) {
 					await assignTeamManagerMutation.mutateAsync({
 						id: teamDialogState.team.id,
 						managerId: nextManagerId,
-					})
+					});
 				}
 			} else {
 				await createTeamMutation.mutateAsync({
 					name: payload.name,
 					storeId: payload.storeId,
 					managerId: payload.managerId,
-				})
+				});
 			}
 
-			setTeamDialogState(null)
-			setTeamFormState(emptyTeamForm)
+			setTeamDialogState(null);
+			setTeamFormState(emptyTeamForm);
 		} catch (error) {
-			setDialogError(getTeamsErrorMessage(error))
+			setDialogError(getTeamsErrorMessage(error));
 		}
 	}
 
 	async function handleDeleteConfirm() {
 		if (!deleteTarget) {
-			return
+			return;
 		}
 
-		setDeleteError(null)
+		setDeleteError(null);
 		try {
-			await deleteTeamMutation.mutateAsync(deleteTarget.id)
-			setDeleteTarget(null)
+			await deleteTeamMutation.mutateAsync(deleteTarget.id);
+			setDeleteTarget(null);
 		} catch (error) {
-			setDeleteError(getTeamsErrorMessage(error))
+			setDeleteError(getTeamsErrorMessage(error));
 		}
 	}
 
@@ -605,8 +605,8 @@ function TeamsManagementScreen() {
 						<Input
 							className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[340px]"
 							onChange={(event) => {
-								setSearch(event.target.value)
-								setPage(1)
+								setSearch(event.target.value);
+								setPage(1);
 							}}
 							placeholder="Buscar por equipe, loja ou gerente..."
 							value={search}
@@ -617,8 +617,8 @@ function TeamsManagementScreen() {
 						<select
 							className="h-11 appearance-none rounded-xl border border-[#d8e0ea] bg-white pr-8 pl-10 text-xs font-semibold text-[#1f2a44] outline-none"
 							onChange={(event) => {
-								setStoreFilter(event.target.value)
-								setPage(1)
+								setStoreFilter(event.target.value);
+								setPage(1);
 							}}
 							value={storeFilter}
 						>
@@ -693,8 +693,8 @@ function TeamsManagementScreen() {
 						) : (
 							<TeamsTable
 								onDelete={(team) => {
-									setDeleteError(null)
-									setDeleteTarget(team)
+									setDeleteError(null);
+									setDeleteTarget(team);
 								}}
 								onEdit={openEditTeamDialog}
 								rows={paginatedRows}
@@ -703,11 +703,11 @@ function TeamsManagementScreen() {
 
 						<div className="grid items-center gap-3 text-xs text-[#667085] md:grid-cols-[1fr_auto_1fr]">
 							<span>
-								Mostrando{" "}
+								Mostrando{' '}
 								{paginatedRows.length === 0
 									? 0
-									: (safePage - 1) * TEAMS_PAGE_SIZE + 1}{" "}
-								a {Math.min(safePage * TEAMS_PAGE_SIZE, filteredRows.length)} de{" "}
+									: (safePage - 1) * TEAMS_PAGE_SIZE + 1}{' '}
+								a {Math.min(safePage * TEAMS_PAGE_SIZE, filteredRows.length)} de{' '}
 								{filteredRows.length} equipes
 							</span>
 							<div className="flex items-center justify-center gap-2">
@@ -721,7 +721,7 @@ function TeamsManagementScreen() {
 									<ChevronLeft className="size-3.5" />
 								</Button>
 								{paginationItems.map((item) =>
-									typeof item === "string" ? (
+									typeof item === 'string' ? (
 										<span
 											className="px-1 text-xs font-semibold text-[#667085]"
 											key={item}
@@ -732,17 +732,17 @@ function TeamsManagementScreen() {
 										<Button
 											className={
 												item === safePage
-													? "size-8 rounded-xl border border-[#ffb199] bg-[#fff3ee] text-xs font-semibold text-[#f4511e] shadow-none hover:bg-[#fff3ee]"
-													: "size-8 rounded-xl text-xs font-semibold text-[#1f2a44] shadow-none hover:bg-[#f8fafc]"
+													? 'size-8 rounded-xl border border-[#ffb199] bg-[#fff3ee] text-xs font-semibold text-[#f4511e] shadow-none hover:bg-[#fff3ee]'
+													: 'size-8 rounded-xl text-xs font-semibold text-[#1f2a44] shadow-none hover:bg-[#f8fafc]'
 											}
 											key={item}
 											onClick={() => setPage(item)}
 											size="icon"
-											variant={item === safePage ? "outline" : "ghost"}
+											variant={item === safePage ? 'outline' : 'ghost'}
 										>
 											{item}
 										</Button>
-									)
+									),
 								)}
 								<Button
 									className="size-8 rounded-xl border-[#d8e0ea]"
@@ -779,11 +779,11 @@ function TeamsManagementScreen() {
 					assignTeamManagerMutation.isPending
 				}
 				onClose={() => {
-					setTeamDialogState(null)
-					setDialogError(null)
+					setTeamDialogState(null);
+					setDialogError(null);
 				}}
 				onSave={() => {
-					void handleTeamSubmit()
+					void handleTeamSubmit();
 				}}
 				onStateChange={setTeamFormState}
 				owners={owners}
@@ -794,16 +794,16 @@ function TeamsManagementScreen() {
 				deleteError={deleteError}
 				isPending={deleteTeamMutation.isPending}
 				onClose={() => {
-					setDeleteTarget(null)
-					setDeleteError(null)
+					setDeleteTarget(null);
+					setDeleteError(null);
 				}}
 				onConfirm={() => {
-					void handleDeleteConfirm()
+					void handleDeleteConfirm();
 				}}
 				target={deleteTarget}
 			/>
 		</div>
-	)
+	);
 }
 
-export { TeamsManagementScreen }
+export { TeamsManagementScreen };

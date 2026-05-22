@@ -1,16 +1,16 @@
-import { ArrowUpRight, LayoutPanelTop, Sparkles } from "lucide-react"
+import { ArrowUpRight, LayoutPanelTop, Sparkles } from 'lucide-react';
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card';
 
 type AppRoutePlaceholderProps = {
-	title: string
-	description: string
-}
+	title: string;
+	description: string;
+};
 
 function AppRoutePlaceholder({ title, description }: AppRoutePlaceholderProps) {
 	return (
@@ -57,7 +57,7 @@ function AppRoutePlaceholder({ title, description }: AppRoutePlaceholderProps) {
 				</CardContent>
 			</Card>
 		</section>
-	)
+	);
 }
 
-export { AppRoutePlaceholder }
+export { AppRoutePlaceholder };

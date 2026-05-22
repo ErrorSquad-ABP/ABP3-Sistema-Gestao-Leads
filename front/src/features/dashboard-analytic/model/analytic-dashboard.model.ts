@@ -1,24 +1,24 @@
-import type { z } from "zod"
+import type { z } from 'zod';
 
 import type {
 	analyticDashboardFilterModeValues,
 	analyticDashboardSchema,
-} from "../schemas/analytic-dashboard.schema"
+} from '../schemas/analytic-dashboard.schema';
 
-type AnalyticDashboard = z.infer<typeof analyticDashboardSchema>
+type AnalyticDashboard = z.infer<typeof analyticDashboardSchema>;
 type AnalyticDashboardFilterMode =
-	(typeof analyticDashboardFilterModeValues)[number]
+	(typeof analyticDashboardFilterModeValues)[number];
 
 type AnalyticDashboardQuery = {
-	mode: AnalyticDashboardFilterMode
-	referenceDate?: string
-	startDate?: string
-	endDate?: string
-	top?: number
-}
+	mode: AnalyticDashboardFilterMode;
+	referenceDate?: string;
+	startDate?: string;
+	endDate?: string;
+	top?: number;
+};
 
 export type {
 	AnalyticDashboard,
 	AnalyticDashboardFilterMode,
 	AnalyticDashboardQuery,
-}
+};

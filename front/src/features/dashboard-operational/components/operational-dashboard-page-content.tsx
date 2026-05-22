@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { Icon } from "@iconify/react"
-import { useMemo, useState } from "react"
-import type { ComponentType, CSSProperties, ReactNode } from "react"
+import { Icon } from '@iconify/react';
+import { useMemo, useState } from 'react';
+import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import {
 	CalendarDays,
 	CheckCircle2,
@@ -16,22 +16,22 @@ import {
 	Target,
 	TrendingUp,
 	UsersRound,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Skeleton } from "@/components/ui/skeleton"
-import { isApiError } from "@/lib/http/api-error"
-import { buildConicGradientStopsTo100 } from "@/lib/conic-gradient"
-import { cn } from "@/lib/utils"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { isApiError } from '@/lib/http/api-error';
+import { buildConicGradientStopsTo100 } from '@/lib/conic-gradient';
+import { cn } from '@/lib/utils';
 
-import { useOperationalDashboardQuery } from "../hooks/operational-dashboard.queries"
+import { useOperationalDashboardQuery } from '../hooks/operational-dashboard.queries';
 import {
 	buildCustomPeriodQuery,
 	buildPresetPeriodQuery,
 	type OperationalDashboardPeriodMode,
-} from "../lib/operational-dashboard-period"
+} from '../lib/operational-dashboard-period';
 import type {
 	DashboardDistributionItem,
 	DashboardStoreDistributionItem,
@@ -42,257 +42,257 @@ import type {
 	OperationalDashboardSourceKey,
 	OperationalDashboardStatusKey,
 	OperationalDashboardTrendPoint,
-} from "../model/operational-dashboard.model"
+} from '../model/operational-dashboard.model';
 
-type PeriodSelection = OperationalDashboardPeriodMode | "custom"
+type PeriodSelection = OperationalDashboardPeriodMode | 'custom';
 
 type SparklineMetric =
-	| "totalLeads"
-	| "activeLeads"
-	| "convertedLeads"
-	| "conversionRate"
+	| 'totalLeads'
+	| 'activeLeads'
+	| 'convertedLeads'
+	| 'conversionRate';
 
 type StatusBarRow = {
-	key: string
-	label: string
-	count: number
-	percentage: number
-	color: string
-}
+	key: string;
+	label: string;
+	count: number;
+	percentage: number;
+	color: string;
+};
 
 type SourceChartItem = {
-	color: string
-	count: number
-	icon: ReactNode
-	iconBackground: string
-	key: string
-	label: string
-	percentage: number
-}
+	color: string;
+	count: number;
+	icon: ReactNode;
+	iconBackground: string;
+	key: string;
+	label: string;
+	percentage: number;
+};
 
 type KpiCardProps = {
-	color: string
-	gradient: string
-	icon: ComponentType<{ className?: string; style?: CSSProperties }>
-	kpi: OperationalDashboardKpi
-	label: string
-	metric: SparklineMetric
-	trend: OperationalDashboardTrendPoint[]
-	value: string
-}
+	color: string;
+	gradient: string;
+	icon: ComponentType<{ className?: string; style?: CSSProperties }>;
+	kpi: OperationalDashboardKpi;
+	label: string;
+	metric: SparklineMetric;
+	trend: OperationalDashboardTrendPoint[];
+	value: string;
+};
 
 const PRESET_LABELS: {
-	label: string
-	value: OperationalDashboardPeriodMode
+	label: string;
+	value: OperationalDashboardPeriodMode;
 }[] = [
-	{ label: "Últimos 30 dias", value: "last30" },
-	{ label: "Semana", value: "week" },
-	{ label: "Mês", value: "month" },
-	{ label: "Ano", value: "year" },
-]
+	{ label: 'Últimos 30 dias', value: 'last30' },
+	{ label: 'Semana', value: 'week' },
+	{ label: 'Mês', value: 'month' },
+	{ label: 'Ano', value: 'year' },
+];
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 function formatCount(value: number) {
-	return value.toLocaleString("pt-BR")
+	return value.toLocaleString('pt-BR');
 }
 
 function formatPercentage(value: number) {
-	return `${value.toLocaleString("pt-BR", {
+	return `${value.toLocaleString('pt-BR', {
 		maximumFractionDigits: 1,
 		minimumFractionDigits: 0,
-	})}%`
+	})}%`;
 }
 
 function formatDelta(kpi: OperationalDashboardKpi) {
 	if (kpi.deltaPoints !== null) {
-		return `${kpi.deltaPoints > 0 ? "+" : ""}${kpi.deltaPoints.toLocaleString(
-			"pt-BR",
-			{ maximumFractionDigits: 1 }
-		)} p.p.`
+		return `${kpi.deltaPoints > 0 ? '+' : ''}${kpi.deltaPoints.toLocaleString(
+			'pt-BR',
+			{ maximumFractionDigits: 1 },
+		)} p.p.`;
 	}
 
 	if (kpi.deltaPercentage === null) {
-		return kpi.value > 0 ? "novo no período" : "sem variação"
+		return kpi.value > 0 ? 'novo no período' : 'sem variação';
 	}
 
-	return `${kpi.deltaPercentage > 0 ? "+" : ""}${kpi.deltaPercentage.toLocaleString(
-		"pt-BR",
-		{ maximumFractionDigits: 1 }
-	)}%`
+	return `${kpi.deltaPercentage > 0 ? '+' : ''}${kpi.deltaPercentage.toLocaleString(
+		'pt-BR',
+		{ maximumFractionDigits: 1 },
+	)}%`;
 }
 
 function formatDateOnly(value: string) {
-	const [year, month, day] = value.slice(0, 10).split("-")
-	return `${day}/${month}/${year}`
+	const [year, month, day] = value.slice(0, 10).split('-');
+	return `${day}/${month}/${year}`;
 }
 
 function formatExclusivePeriod(startDateIso: string, endDateIso: string) {
-	const exclusiveEnd = new Date(endDateIso)
-	const inclusiveEnd = new Date(exclusiveEnd.getTime() - DAY_IN_MS)
+	const exclusiveEnd = new Date(endDateIso);
+	const inclusiveEnd = new Date(exclusiveEnd.getTime() - DAY_IN_MS);
 	return `${formatDateOnly(startDateIso)} - ${formatDateOnly(
-		inclusiveEnd.toISOString()
-	)}`
+		inclusiveEnd.toISOString(),
+	)}`;
 }
 
 function getStatusLabel(key: OperationalDashboardStatusKey) {
 	switch (key) {
-		case "NEW":
-			return "Novo"
-		case "CONTACTED":
-			return "Contactado"
-		case "QUALIFIED":
-			return "Em negociação"
-		case "DISQUALIFIED":
-			return "Perdido"
-		case "CONVERTED":
-			return "Convertido"
+		case 'NEW':
+			return 'Novo';
+		case 'CONTACTED':
+			return 'Contactado';
+		case 'QUALIFIED':
+			return 'Em negociação';
+		case 'DISQUALIFIED':
+			return 'Perdido';
+		case 'CONVERTED':
+			return 'Convertido';
 	}
 }
 
 function getStatusColor(key: OperationalDashboardStatusKey) {
 	switch (key) {
-		case "NEW":
-			return "#2563eb"
-		case "CONTACTED":
-			return "#60a5fa"
-		case "QUALIFIED":
-			return "#22c55e"
-		case "CONVERTED":
-			return "#ff4f1f"
-		case "DISQUALIFIED":
-			return "#ef4444"
+		case 'NEW':
+			return '#2563eb';
+		case 'CONTACTED':
+			return '#60a5fa';
+		case 'QUALIFIED':
+			return '#22c55e';
+		case 'CONVERTED':
+			return '#ff4f1f';
+		case 'DISQUALIFIED':
+			return '#ef4444';
 	}
 }
 
 function getSourceLabel(key: OperationalDashboardSourceKey) {
 	switch (key) {
-		case "store-visit":
-			return "Visita em Loja"
-		case "phone-call":
-			return "Telefone"
-		case "whatsapp":
-			return "WhatsApp"
-		case "instagram":
-			return "Instagram"
-		case "facebook":
-			return "Facebook"
-		case "mercado-livre":
-			return "Mercado Livre"
-		case "indication":
-			return "Indicação"
-		case "digital-form":
-			return "Site / Formulário"
-		case "other":
-			return "Outros"
+		case 'store-visit':
+			return 'Visita em Loja';
+		case 'phone-call':
+			return 'Telefone';
+		case 'whatsapp':
+			return 'WhatsApp';
+		case 'instagram':
+			return 'Instagram';
+		case 'facebook':
+			return 'Facebook';
+		case 'mercado-livre':
+			return 'Mercado Livre';
+		case 'indication':
+			return 'Indicação';
+		case 'digital-form':
+			return 'Site / Formulário';
+		case 'other':
+			return 'Outros';
 	}
 }
 
 function getSourceIcon(key: OperationalDashboardSourceKey) {
 	switch (key) {
-		case "store-visit":
-			return Store
-		case "phone-call":
-			return Phone
-		case "whatsapp":
-			return Phone
-		case "instagram":
-			return Target
-		case "facebook":
-			return UsersRound
-		case "mercado-livre":
-			return ClipboardList
-		case "indication":
-			return UsersRound
-		case "digital-form":
-			return Globe2
-		case "other":
-			return ClipboardList
+		case 'store-visit':
+			return Store;
+		case 'phone-call':
+			return Phone;
+		case 'whatsapp':
+			return Phone;
+		case 'instagram':
+			return Target;
+		case 'facebook':
+			return UsersRound;
+		case 'mercado-livre':
+			return ClipboardList;
+		case 'indication':
+			return UsersRound;
+		case 'digital-form':
+			return Globe2;
+		case 'other':
+			return ClipboardList;
 	}
 }
 
 function getSourceIconElement(
-	key: OperationalDashboardSourceKey | "other-sources",
-	color: string
+	key: OperationalDashboardSourceKey | 'other-sources',
+	color: string,
 ) {
 	switch (key) {
-		case "whatsapp":
+		case 'whatsapp':
 			return (
 				<Icon
 					className="size-3.5 text-[#25d366]"
 					icon="simple-icons:whatsapp"
 				/>
-			)
-		case "instagram":
+			);
+		case 'instagram':
 			return (
 				<Icon
 					className="size-3.5 text-[#e4405f]"
 					icon="simple-icons:instagram"
 				/>
-			)
-		case "facebook":
+			);
+		case 'facebook':
 			return (
 				<Icon
 					className="size-3.5 text-[#1877f2]"
 					icon="simple-icons:facebook"
 				/>
-			)
-		case "mercado-livre":
+			);
+		case 'mercado-livre':
 			return (
 				<Icon
 					className="size-4 text-[#101828]"
 					icon="arcticons:mercado-libre"
 				/>
-			)
+			);
 		default: {
 			const SourceIcon =
-				key === "other-sources" ? ClipboardList : getSourceIcon(key)
-			return <SourceIcon className="size-3.5" style={{ color }} />
+				key === 'other-sources' ? ClipboardList : getSourceIcon(key);
+			return <SourceIcon className="size-3.5" style={{ color }} />;
 		}
 	}
 }
 
 function getSourceIconBackground(
-	key: OperationalDashboardSourceKey | "other-sources",
-	color: string
+	key: OperationalDashboardSourceKey | 'other-sources',
+	color: string,
 ) {
 	switch (key) {
-		case "whatsapp":
-			return "#e7f8ee"
-		case "instagram":
-			return "#fff0f5"
-		case "facebook":
-			return "#eaf2ff"
-		case "mercado-livre":
-			return "#fff7c2"
+		case 'whatsapp':
+			return '#e7f8ee';
+		case 'instagram':
+			return '#fff0f5';
+		case 'facebook':
+			return '#eaf2ff';
+		case 'mercado-livre':
+			return '#fff7c2';
 		default:
-			return `${color}18`
+			return `${color}18`;
 	}
 }
 
 function getPaletteColor(index: number) {
 	switch (index % 6) {
 		case 0:
-			return "#22c55e"
+			return '#22c55e';
 		case 1:
-			return "#ec4899"
+			return '#ec4899';
 		case 2:
-			return "#2563eb"
+			return '#2563eb';
 		case 3:
-			return "#f97316"
+			return '#f97316';
 		case 4:
-			return "#7c3aed"
+			return '#7c3aed';
 		default:
-			return "#94a3b8"
+			return '#94a3b8';
 	}
 }
 
 function buildSourceChartItems(
-	items: DashboardDistributionItem<OperationalDashboardSourceKey>[]
+	items: DashboardDistributionItem<OperationalDashboardSourceKey>[],
 ): SourceChartItem[] {
 	const sortedSources = [...items]
 		.filter((item) => item.count > 0)
-		.sort((left, right) => right.count - left.count)
+		.sort((left, right) => right.count - left.count);
 
 	if (sortedSources.length <= 5) {
 		return sortedSources.map((source, index) => ({
@@ -301,12 +301,12 @@ function buildSourceChartItems(
 			icon: getSourceIconElement(source.key, getPaletteColor(index)),
 			iconBackground: getSourceIconBackground(
 				source.key,
-				getPaletteColor(index)
+				getPaletteColor(index),
 			),
 			key: source.key,
 			label: getSourceLabel(source.key),
 			percentage: source.percentage,
-		}))
+		}));
 	}
 
 	const visibleSources = sortedSources.slice(0, 4).map((source, index) => ({
@@ -317,116 +317,116 @@ function buildSourceChartItems(
 		key: source.key,
 		label: getSourceLabel(source.key),
 		percentage: source.percentage,
-	}))
-	const remainingSources = sortedSources.slice(4)
+	}));
+	const remainingSources = sortedSources.slice(4);
 	const remainingCount = remainingSources.reduce(
 		(total, source) => total + source.count,
-		0
-	)
+		0,
+	);
 	const remainingPercentage = remainingSources.reduce(
 		(total, source) => total + source.percentage,
-		0
-	)
+		0,
+	);
 
 	return [
 		...visibleSources,
 		{
-			color: "#94a3b8",
+			color: '#94a3b8',
 			count: remainingCount,
-			icon: getSourceIconElement("other-sources", "#94a3b8"),
-			iconBackground: getSourceIconBackground("other-sources", "#94a3b8"),
-			key: "other-sources",
-			label: "Outras origens",
+			icon: getSourceIconElement('other-sources', '#94a3b8'),
+			iconBackground: getSourceIconBackground('other-sources', '#94a3b8'),
+			key: 'other-sources',
+			label: 'Outras origens',
 			percentage: remainingPercentage,
 		},
-	]
+	];
 }
 
 function getImportanceMeta(key: OperationalDashboardImportanceKey) {
 	switch (key) {
-		case "COLD":
+		case 'COLD':
 			return {
-				background: "bg-[#f4f8ff]",
-				bar: "bg-[#2563eb]",
-				border: "border-[#cfe0ff]",
+				background: 'bg-[#f4f8ff]',
+				bar: 'bg-[#2563eb]',
+				border: 'border-[#cfe0ff]',
 				icon: Snowflake,
-				iconColor: "text-[#2563eb]",
-				label: "Frio",
-			}
-		case "WARM":
+				iconColor: 'text-[#2563eb]',
+				label: 'Frio',
+			};
+		case 'WARM':
 			return {
-				background: "bg-[#fffaf0]",
-				bar: "bg-[#f97316]",
-				border: "border-[#fed7aa]",
+				background: 'bg-[#fffaf0]',
+				bar: 'bg-[#f97316]',
+				border: 'border-[#fed7aa]',
 				icon: Flame,
-				iconColor: "text-[#f97316]",
-				label: "Morno",
-			}
-		case "HOT":
+				iconColor: 'text-[#f97316]',
+				label: 'Morno',
+			};
+		case 'HOT':
 			return {
-				background: "bg-[#fff5f5]",
-				bar: "bg-[#ef4444]",
-				border: "border-[#fecaca]",
+				background: 'bg-[#fff5f5]',
+				bar: 'bg-[#ef4444]',
+				border: 'border-[#fecaca]',
 				icon: Flame,
-				iconColor: "text-[#ef4444]",
-				label: "Quente",
-			}
+				iconColor: 'text-[#ef4444]',
+				label: 'Quente',
+			};
 	}
 }
 
 function getTrendValue(
 	point: OperationalDashboardTrendPoint,
-	metric: SparklineMetric
+	metric: SparklineMetric,
 ) {
 	switch (metric) {
-		case "totalLeads":
-			return point.totalLeads
-		case "activeLeads":
-			return point.activeLeads
-		case "convertedLeads":
-			return point.convertedLeads
-		case "conversionRate":
-			return point.conversionRate
+		case 'totalLeads':
+			return point.totalLeads;
+		case 'activeLeads':
+			return point.activeLeads;
+		case 'convertedLeads':
+			return point.convertedLeads;
+		case 'conversionRate':
+			return point.conversionRate;
 	}
 }
 
 function getSparklineValues(
 	points: OperationalDashboardTrendPoint[],
-	metric: SparklineMetric
+	metric: SparklineMetric,
 ) {
 	if (points.length <= 70) {
-		return points.map((point) => getTrendValue(point, metric))
+		return points.map((point) => getTrendValue(point, metric));
 	}
 
-	const bucketSize = points.length > 180 ? 30 : 7
-	const values: number[] = []
+	const bucketSize = points.length > 180 ? 30 : 7;
+	const values: number[] = [];
 
 	for (let index = 0; index < points.length; index += bucketSize) {
-		const bucket = points.slice(index, index + bucketSize)
+		const bucket = points.slice(index, index + bucketSize);
 
-		if (metric === "conversionRate") {
+		if (metric === 'conversionRate') {
 			const totalLeads = bucket.reduce(
 				(total, point) => total + point.totalLeads,
-				0
-			)
+				0,
+			);
 			const convertedLeads = bucket.reduce(
 				(total, point) => total + point.convertedLeads,
-				0
-			)
-			values.push(totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0)
-			continue
+				0,
+			);
+			values.push(totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0);
+			continue;
 		}
 
 		values.push(
-			bucket.reduce((total, point) => total + getTrendValue(point, metric), 0)
-		)
+			bucket.reduce((total, point) => total + getTrendValue(point, metric), 0),
+		);
 	}
 
-	return values
+	return values;
 }
 
 function toStatusRows(
-	items: DashboardDistributionItem<OperationalDashboardStatusKey>[]
+	items: DashboardDistributionItem<OperationalDashboardStatusKey>[],
 ): StatusBarRow[] {
 	return items.map((item) => ({
 		color: getStatusColor(item.key),
@@ -434,18 +434,18 @@ function toStatusRows(
 		key: item.key,
 		label: getStatusLabel(item.key),
 		percentage: item.percentage,
-	}))
+	}));
 }
 
 function getTopStores(items: DashboardStoreDistributionItem[]) {
 	return [...items]
 		.filter((item) => item.count > 0)
 		.sort((left, right) => right.count - left.count)
-		.slice(0, 5)
+		.slice(0, 5);
 }
 
 function isEmptyDashboard(dashboard: OperationalDashboardData) {
-	return dashboard.totals.totalLeads === 0
+	return dashboard.totals.totalLeads === 0;
 }
 
 function Sparkline({
@@ -453,24 +453,24 @@ function Sparkline({
 	metric,
 	points,
 }: {
-	color: string
-	metric: SparklineMetric
-	points: OperationalDashboardTrendPoint[]
+	color: string;
+	metric: SparklineMetric;
+	points: OperationalDashboardTrendPoint[];
 }) {
-	const values = getSparklineValues(points, metric)
-	const max = Math.max(...values, 1)
-	const min = Math.min(...values, 0)
-	const range = Math.max(max - min, 1)
+	const values = getSparklineValues(points, metric);
+	const max = Math.max(...values, 1);
+	const min = Math.min(...values, 0);
+	const range = Math.max(max - min, 1);
 	const path = values
 		.map((value, index) => {
-			const x = values.length <= 1 ? 0 : (index / (values.length - 1)) * 136
-			const y = 44 - ((value - min) / range) * 35
-			return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`
+			const x = values.length <= 1 ? 0 : (index / (values.length - 1)) * 136;
+			const y = 44 - ((value - min) / range) * 35;
+			return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
 		})
-		.join(" ")
+		.join(' ');
 
 	if (values.length === 0) {
-		return <div className="h-12 w-32" />
+		return <div className="h-12 w-32" />;
 	}
 
 	return (
@@ -490,7 +490,7 @@ function Sparkline({
 				strokeWidth="2.5"
 			/>
 		</svg>
-	)
+	);
 }
 
 function KpiCard({
@@ -503,8 +503,8 @@ function KpiCard({
 	trend,
 	value,
 }: KpiCardProps) {
-	const isPositive = kpi.delta > 0
-	const isNegative = kpi.delta < 0
+	const isPositive = kpi.delta > 0;
+	const isNegative = kpi.delta < 0;
 
 	return (
 		<Card className="overflow-hidden rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
@@ -529,15 +529,15 @@ function KpiCard({
 					<p className="mt-3.5 flex items-center gap-1.5 text-[11px] text-[#66708a]">
 						<TrendingUp
 							className={cn(
-								"size-3",
-								isNegative ? "rotate-180 text-red-500" : "text-[#009966]"
+								'size-3',
+								isNegative ? 'rotate-180 text-red-500' : 'text-[#009966]',
 							)}
 						/>
 						<span
 							className={cn(
-								"font-semibold",
-								isPositive && "text-[#009966]",
-								isNegative && "text-red-500"
+								'font-semibold',
+								isPositive && 'text-[#009966]',
+								isNegative && 'text-red-500',
 							)}
 						>
 							{formatDelta(kpi)}
@@ -548,7 +548,7 @@ function KpiCard({
 				<Sparkline color={color} metric={metric} points={trend} />
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function FilterBar({
@@ -563,16 +563,16 @@ function FilterBar({
 	periodLabel,
 	periodSelection,
 }: {
-	customEndDate: string
-	customError: string | null
-	customStartDate: string
-	onApplyCustom: () => void
-	onCustomEndChange: (value: string) => void
-	onCustomStartChange: (value: string) => void
-	onPresetChange: (mode: OperationalDashboardPeriodMode) => void
-	onSelectCustom: () => void
-	periodLabel?: string
-	periodSelection: PeriodSelection
+	customEndDate: string;
+	customError: string | null;
+	customStartDate: string;
+	onApplyCustom: () => void;
+	onCustomEndChange: (value: string) => void;
+	onCustomStartChange: (value: string) => void;
+	onPresetChange: (mode: OperationalDashboardPeriodMode) => void;
+	onSelectCustom: () => void;
+	periodLabel?: string;
+	periodSelection: PeriodSelection;
 }) {
 	return (
 		<div className="flex flex-wrap items-center justify-end gap-2.5">
@@ -580,10 +580,10 @@ function FilterBar({
 				{PRESET_LABELS.map((preset) => (
 					<button
 						className={cn(
-							"h-9 border-r border-[#e6edf5] px-3.5 text-[11px] font-semibold last:border-r-0",
+							'h-9 border-r border-[#e6edf5] px-3.5 text-[11px] font-semibold last:border-r-0',
 							periodSelection === preset.value
-								? "bg-[#fff3ec] text-[#ff4f1f]"
-								: "text-[#06142b] hover:bg-[#f8fafc]"
+								? 'bg-[#fff3ec] text-[#ff4f1f]'
+								: 'text-[#06142b] hover:bg-[#f8fafc]',
 						)}
 						key={preset.value}
 						onClick={() => onPresetChange(preset.value)}
@@ -594,10 +594,10 @@ function FilterBar({
 				))}
 				<button
 					className={cn(
-						"h-9 px-3.5 text-[11px] font-semibold",
-						periodSelection === "custom"
-							? "bg-[#fff3ec] text-[#ff4f1f]"
-							: "text-[#06142b] hover:bg-[#f8fafc]"
+						'h-9 px-3.5 text-[11px] font-semibold',
+						periodSelection === 'custom'
+							? 'bg-[#fff3ec] text-[#ff4f1f]'
+							: 'text-[#06142b] hover:bg-[#f8fafc]',
 					)}
 					onClick={onSelectCustom}
 					type="button"
@@ -607,9 +607,9 @@ function FilterBar({
 			</div>
 			<div className="flex h-9 items-center gap-1.5 rounded-[13px] border border-[#dbe4ef] bg-white px-3 text-[11px] font-semibold text-[#2d3a56]">
 				<CalendarDays className="size-3 text-[#66708a]" />
-				<span>{periodLabel ?? "Período aplicado"}</span>
+				<span>{periodLabel ?? 'Período aplicado'}</span>
 			</div>
-			{periodSelection === "custom" ? (
+			{periodSelection === 'custom' ? (
 				<div className="flex basis-full flex-col gap-2 rounded-[14px] border border-[#dbe4ef] bg-white p-2 sm:flex-row sm:items-center lg:basis-auto">
 					<Input
 						className="h-8 rounded-xl border-[#dbe4ef] text-[11px]"
@@ -638,11 +638,11 @@ function FilterBar({
 				</div>
 			) : null}
 		</div>
-	)
+	);
 }
 
 function StatusCard({ rows }: { rows: StatusBarRow[] }) {
-	const maxCount = Math.max(...rows.map((row) => row.count), 1)
+	const maxCount = Math.max(...rows.map((row) => row.count), 1);
 
 	return (
 		<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
@@ -687,22 +687,22 @@ function StatusCard({ rows }: { rows: StatusBarRow[] }) {
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function SectionHeader({ title }: { title: string }) {
-	return <h2 className="text-base font-bold text-[#06142b]">{title}</h2>
+	return <h2 className="text-base font-bold text-[#06142b]">{title}</h2>;
 }
 
 function OriginCard({
 	sources,
 	totalLeads,
 }: {
-	sources: DashboardDistributionItem<OperationalDashboardSourceKey>[]
-	totalLeads: number
+	sources: DashboardDistributionItem<OperationalDashboardSourceKey>[];
+	totalLeads: number;
 }) {
-	const chartItems = buildSourceChartItems(sources)
-	const conicStops = buildConicGradientStopsTo100(chartItems)
+	const chartItems = buildSourceChartItems(sources);
+	const conicStops = buildConicGradientStopsTo100(chartItems);
 
 	return (
 		<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
@@ -748,7 +748,7 @@ function OriginCard({
 											{formatPercentage(source.percentage)}
 										</span>
 									</div>
-								)
+								);
 							})
 						) : (
 							<p className="rounded-2xl border border-dashed border-[#dbe4ef] bg-[#f8fafc] p-5 text-sm text-[#66708a]">
@@ -759,12 +759,12 @@ function OriginCard({
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function StoresCard({ stores }: { stores: DashboardStoreDistributionItem[] }) {
-	const topStores = getTopStores(stores)
-	const maxCount = Math.max(...topStores.map((store) => store.count), 1)
+	const topStores = getTopStores(stores);
+	const maxCount = Math.max(...topStores.map((store) => store.count), 1);
 
 	return (
 		<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
@@ -809,15 +809,15 @@ function StoresCard({ stores }: { stores: DashboardStoreDistributionItem[] }) {
 				)}
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function ImportanceCard({
 	items,
 	totalOpenDeals,
 }: {
-	items: DashboardDistributionItem<OperationalDashboardImportanceKey>[]
-	totalOpenDeals: number
+	items: DashboardDistributionItem<OperationalDashboardImportanceKey>[];
+	totalOpenDeals: number;
 }) {
 	return (
 		<Card className="h-full rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
@@ -825,19 +825,19 @@ function ImportanceCard({
 				<SectionHeader title="Leads por Importância" />
 				<div className="mt-5 grid flex-1 gap-3.5 md:grid-cols-3">
 					{items.map((item) => {
-						const meta = getImportanceMeta(item.key)
-						const Icon = meta.icon
+						const meta = getImportanceMeta(item.key);
+						const Icon = meta.icon;
 						return (
 							<div
 								className={cn(
-									"flex h-full min-h-[260px] flex-col justify-center rounded-[16px] border p-6",
+									'flex h-full min-h-[260px] flex-col justify-center rounded-[16px] border p-6',
 									meta.background,
-									meta.border
+									meta.border,
 								)}
 								key={item.key}
 							>
 								<div className="flex items-center gap-3">
-									<Icon className={cn("size-6", meta.iconColor)} />
+									<Icon className={cn('size-6', meta.iconColor)} />
 									<span className="text-base font-semibold text-[#06142b]">
 										{meta.label}
 									</span>
@@ -850,24 +850,24 @@ function ImportanceCard({
 								</p>
 								<div className="mt-6 h-2.5 overflow-hidden rounded-full bg-white/80">
 									<div
-										className={cn("h-full rounded-full", meta.bar)}
+										className={cn('h-full rounded-full', meta.bar)}
 										style={{ width: `${Math.min(item.percentage, 100)}%` }}
 									/>
 								</div>
 							</div>
-						)
+						);
 					})}
 				</div>
 				<p className="mt-4 text-center text-xs text-[#40527a]">
-					Total:{" "}
+					Total:{' '}
 					<span className="font-bold text-[#06142b]">
 						{formatCount(totalOpenDeals)}
-					</span>{" "}
+					</span>{' '}
 					leads
 				</p>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function DashboardLoadingState() {
@@ -884,15 +884,15 @@ function DashboardLoadingState() {
 				<Skeleton className="h-[286px] rounded-[18px]" />
 			</div>
 		</section>
-	)
+	);
 }
 
 function DashboardErrorState({
 	message,
 	onRetry,
 }: {
-	message: string
-	onRetry: () => void
+	message: string;
+	onRetry: () => void;
 }) {
 	return (
 		<Card className="rounded-[18px] border-red-200 bg-white shadow-sm">
@@ -914,7 +914,7 @@ function DashboardErrorState({
 				</Button>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function EmptyDashboardState() {
@@ -933,56 +933,56 @@ function EmptyDashboardState() {
 				</p>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function OperationalDashboardPageContent() {
 	const [periodSelection, setPeriodSelection] =
-		useState<PeriodSelection>("last30")
+		useState<PeriodSelection>('last30');
 	const [queryInput, setQueryInput] = useState<OperationalDashboardQueryInput>(
-		{}
-	)
-	const [customStartDate, setCustomStartDate] = useState("")
-	const [customEndDate, setCustomEndDate] = useState("")
-	const [customError, setCustomError] = useState<string | null>(null)
-	const dashboardQuery = useOperationalDashboardQuery(queryInput)
+		{},
+	);
+	const [customStartDate, setCustomStartDate] = useState('');
+	const [customEndDate, setCustomEndDate] = useState('');
+	const [customError, setCustomError] = useState<string | null>(null);
+	const dashboardQuery = useOperationalDashboardQuery(queryInput);
 
 	function applyPresetPeriod(mode: OperationalDashboardPeriodMode) {
-		setPeriodSelection(mode)
-		setCustomError(null)
-		setQueryInput(buildPresetPeriodQuery(mode))
+		setPeriodSelection(mode);
+		setCustomError(null);
+		setQueryInput(buildPresetPeriodQuery(mode));
 	}
 
 	function applyCustomPeriod() {
 		if (!customStartDate || !customEndDate) {
-			setCustomError("Informe data inicial e final para aplicar o período.")
-			return
+			setCustomError('Informe data inicial e final para aplicar o período.');
+			return;
 		}
 
 		if (customStartDate > customEndDate) {
-			setCustomError("A data inicial precisa ser anterior ou igual à final.")
-			return
+			setCustomError('A data inicial precisa ser anterior ou igual à final.');
+			return;
 		}
 
-		setPeriodSelection("custom")
-		setCustomError(null)
-		setQueryInput(buildCustomPeriodQuery(customStartDate, customEndDate))
+		setPeriodSelection('custom');
+		setCustomError(null);
+		setQueryInput(buildCustomPeriodQuery(customStartDate, customEndDate));
 	}
 
-	const dashboard = dashboardQuery.data
+	const dashboard = dashboardQuery.data;
 	const statusRows = useMemo(
 		() => (dashboard ? toStatusRows(dashboard.distributions.byStatus) : []),
-		[dashboard]
-	)
+		[dashboard],
+	);
 	const periodLabel = dashboard
 		? formatExclusivePeriod(
 				dashboard.period.startDate,
-				dashboard.period.endDate
+				dashboard.period.endDate,
 			)
-		: undefined
+		: undefined;
 	const errorMessage = isApiError(dashboardQuery.error)
 		? dashboardQuery.error.message
-		: "Não foi possível carregar os indicadores agora."
+		: 'Não foi possível carregar os indicadores agora.';
 
 	return (
 		<section className="space-y-3.5">
@@ -1003,7 +1003,7 @@ function OperationalDashboardPageContent() {
 					onCustomEndChange={setCustomEndDate}
 					onCustomStartChange={setCustomStartDate}
 					onPresetChange={applyPresetPeriod}
-					onSelectCustom={() => setPeriodSelection("custom")}
+					onSelectCustom={() => setPeriodSelection('custom')}
 					periodLabel={periodLabel}
 					periodSelection={periodSelection}
 				/>
@@ -1083,7 +1083,7 @@ function OperationalDashboardPageContent() {
 				</>
 			) : null}
 		</section>
-	)
+	);
 }
 
-export { OperationalDashboardPageContent }
+export { OperationalDashboardPageContent };

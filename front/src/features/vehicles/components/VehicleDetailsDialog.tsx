@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import type { ReactNode } from "react"
-import type { LucideIcon } from "lucide-react"
+import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
 	BadgeDollarSign,
 	Barcode,
@@ -14,17 +14,17 @@ import {
 	Store,
 	Tag,
 	Wrench,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
-import type { Vehicle } from "../model/vehicles.model"
+import type { Vehicle } from '../model/vehicles.model';
 import {
 	formatFuelType,
 	formatMileage,
 	formatVehiclePriceBRL,
 	formatVehicleStatus,
-} from "../lib/vehicle-formatters"
+} from '../lib/vehicle-formatters';
 import {
 	VehicleModalHeader,
 	VehicleModalInfoBanner,
@@ -32,23 +32,23 @@ import {
 	VehicleStatusSummary,
 	getVehicleStatusSubtitle,
 	vehicleModalContentClass,
-} from "./VehicleModalLayout"
+} from './VehicleModalLayout';
 
 type VehicleDetailsDialogProps = {
-	onClose: () => void
-	open: boolean
-	storeLabelById?: Readonly<Record<string, string>>
-	vehicle: Vehicle | null
-}
+	onClose: () => void;
+	open: boolean;
+	storeLabelById?: Readonly<Record<string, string>>;
+	vehicle: Vehicle | null;
+};
 
 type VehicleDetailProps = {
-	children: ReactNode
-	icon: LucideIcon
-	label: string
-}
+	children: ReactNode;
+	icon: LucideIcon;
+	label: string;
+};
 
 function formatDateTime(value: Date) {
-	return value.toLocaleString("pt-BR")
+	return value.toLocaleString('pt-BR');
 }
 
 function VehicleDetail({ children, icon: Icon, label }: VehicleDetailProps) {
@@ -62,7 +62,7 @@ function VehicleDetail({ children, icon: Icon, label }: VehicleDetailProps) {
 				{children}
 			</p>
 		</div>
-	)
+	);
 }
 
 function VehicleDetailsDialog({
@@ -72,7 +72,7 @@ function VehicleDetailsDialog({
 	vehicle,
 }: VehicleDetailsDialogProps) {
 	if (!vehicle) {
-		return null
+		return null;
 	}
 
 	return (
@@ -89,7 +89,7 @@ function VehicleDetailsDialog({
 
 				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pt-3 pb-7 md:px-8">
 					<VehicleModalInfoBanner>
-						Status atual: {formatVehicleStatus(vehicle.status)} -{" "}
+						Status atual: {formatVehicleStatus(vehicle.status)} -{' '}
 						{getVehicleStatusSubtitle(vehicle.status)}.
 					</VehicleModalInfoBanner>
 
@@ -126,16 +126,16 @@ function VehicleDetailsDialog({
 									{vehicle.model}
 								</VehicleDetail>
 								<VehicleDetail icon={Wrench} label="Versão">
-									{vehicle.version ?? "Não informada"}
+									{vehicle.version ?? 'Não informada'}
 								</VehicleDetail>
 								<VehicleDetail icon={Palette} label="Cor">
-									{vehicle.color ?? "Não informada"}
+									{vehicle.color ?? 'Não informada'}
 								</VehicleDetail>
 								<VehicleDetail icon={Calendar} label="Ano do modelo">
 									{vehicle.modelYear}
 								</VehicleDetail>
 								<VehicleDetail icon={Calendar} label="Ano de fabricação">
-									{vehicle.manufactureYear ?? "Não informado"}
+									{vehicle.manufactureYear ?? 'Não informado'}
 								</VehicleDetail>
 							</div>
 						</VehicleModalSection>
@@ -163,10 +163,10 @@ function VehicleDetailsDialog({
 						>
 							<div className="grid gap-4 text-sm md:grid-cols-2">
 								<VehicleDetail icon={IdCard} label="Placa">
-									{vehicle.plate ?? "Não informada"}
+									{vehicle.plate ?? 'Não informada'}
 								</VehicleDetail>
 								<VehicleDetail icon={Barcode} label="Chassi (VIN)">
-									{vehicle.vin ?? "Não informado"}
+									{vehicle.vin ?? 'Não informado'}
 								</VehicleDetail>
 							</div>
 						</VehicleModalSection>
@@ -176,7 +176,7 @@ function VehicleDetailsDialog({
 				</div>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }
 
-export { VehicleDetailsDialog }
+export { VehicleDetailsDialog };

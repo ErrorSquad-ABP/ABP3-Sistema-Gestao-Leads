@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import {
 	CheckCheck,
@@ -8,16 +8,16 @@ import {
 	Handshake,
 	Shuffle,
 	Trash2,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
 	Table,
 	TableBody,
@@ -25,43 +25,43 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table';
 
 import {
 	formatLeadSourceLabel,
 	formatLeadStatusLabel,
 	getLeadSourceBadgeClass,
 	normalizeLeadStatusKey,
-} from "../lib/lead-list-labels"
-import type { LeadListItem } from "../model/leads.model"
+} from '../lib/lead-list-labels';
+import type { LeadListItem } from '../model/leads.model';
 
 type LeadsTableProps = {
-	customerLabelById?: Readonly<Record<string, string>>
-	leads: LeadListItem[]
-	onConvert?: (lead: LeadListItem) => void
-	onDelete?: (lead: LeadListItem) => void
-	onDetail?: (lead: LeadListItem) => void
-	onDeals?: (lead: LeadListItem) => void
-	onEdit?: (lead: LeadListItem) => void
-	onReassign?: (lead: LeadListItem) => void
-	ownerLabelById?: Readonly<Record<string, string>>
-	storeLabelById?: Readonly<Record<string, string>>
-}
+	customerLabelById?: Readonly<Record<string, string>>;
+	leads: LeadListItem[];
+	onConvert?: (lead: LeadListItem) => void;
+	onDelete?: (lead: LeadListItem) => void;
+	onDetail?: (lead: LeadListItem) => void;
+	onDeals?: (lead: LeadListItem) => void;
+	onEdit?: (lead: LeadListItem) => void;
+	onReassign?: (lead: LeadListItem) => void;
+	ownerLabelById?: Readonly<Record<string, string>>;
+	storeLabelById?: Readonly<Record<string, string>>;
+};
 
 function statusBadgeVariant(
-	status: string
-): "default" | "secondary" | "destructive" | "outline" {
+	status: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
 	switch (normalizeLeadStatusKey(status)) {
-		case "CONVERTED":
-			return "default"
-		case "LOST":
-		case "DISQUALIFIED":
-		case "DESQUALIFIED":
-			return "destructive"
-		case "NEW":
-			return "secondary"
+		case 'CONVERTED':
+			return 'default';
+		case 'LOST':
+		case 'DISQUALIFIED':
+		case 'DESQUALIFIED':
+			return 'destructive';
+		case 'NEW':
+			return 'secondary';
 		default:
-			return "outline"
+			return 'outline';
 	}
 }
 
@@ -82,7 +82,7 @@ function LeadsTable({
 			<div className="rounded-2xl border border-border/80 bg-card px-4 py-10 text-center text-sm text-[#6b7687]">
 				Nenhum lead encontrado.
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -122,16 +122,16 @@ function LeadsTable({
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
 								{customerLabelById?.[lead.customerId] ??
-									"Cliente não encontrado"}
+									'Cliente não encontrado'}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
-								{storeLabelById?.[lead.storeId] ?? "Loja não encontrada"}
+								{storeLabelById?.[lead.storeId] ?? 'Loja não encontrada'}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
 								{lead.ownerUserId
 									? (ownerLabelById?.[lead.ownerUserId] ??
-										"Responsável não encontrado")
-									: "Sem responsável"}
+										'Responsável não encontrado')
+									: 'Sem responsável'}
 							</TableCell>
 							<TableCell className="text-right">
 								<DropdownMenu>
@@ -185,7 +185,7 @@ function LeadsTable({
 												Reatribuir
 											</DropdownMenuItem>
 										) : null}
-										{onConvert && lead.status !== "CONVERTED" ? (
+										{onConvert && lead.status !== 'CONVERTED' ? (
 											<DropdownMenuItem
 												className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:bg-[#d96c3f]/10! hover:text-[#D96C3F]!"
 												onSelect={() => onConvert(lead)}
@@ -212,7 +212,7 @@ function LeadsTable({
 				</TableBody>
 			</Table>
 		</div>
-	)
+	);
 }
 
-export { LeadsTable }
+export { LeadsTable };

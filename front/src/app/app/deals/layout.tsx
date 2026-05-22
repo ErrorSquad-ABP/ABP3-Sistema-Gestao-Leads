@@ -1,15 +1,15 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react';
 
-import { requireUserWithRouteAccess } from "@/lib/auth/session"
+import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
 type DealsLayoutProps = {
-	children: ReactNode
-}
+	children: ReactNode;
+};
 
 async function DealsLayout({ children }: DealsLayoutProps) {
-	await requireUserWithRouteAccess("deals")
+	await requireUserWithRouteAccess('deals');
 
-	return children
+	return children;
 }
 
-export default DealsLayout
+export default DealsLayout;

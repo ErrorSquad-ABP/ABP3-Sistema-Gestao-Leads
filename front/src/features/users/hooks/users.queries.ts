@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery } from '@tanstack/react-query';
 
-import { queryKeys } from "@/lib/constants/query-keys"
+import { queryKeys } from '@/lib/constants/query-keys';
 
-import { listAccessGroups, listUsers } from "../api/users.service"
+import { listAccessGroups, listUsers } from '../api/users.service';
 
 function useUsersQuery(page: number, limit: number) {
 	return useQuery({
@@ -12,14 +12,14 @@ function useUsersQuery(page: number, limit: number) {
 				page,
 				limit,
 			}),
-	})
+	});
 }
 
 function useAccessGroupsQuery() {
 	return useQuery({
 		queryKey: queryKeys.users.accessGroups,
 		queryFn: () => listAccessGroups(),
-	})
+	});
 }
 
-export { useAccessGroupsQuery, useUsersQuery }
+export { useAccessGroupsQuery, useUsersQuery };

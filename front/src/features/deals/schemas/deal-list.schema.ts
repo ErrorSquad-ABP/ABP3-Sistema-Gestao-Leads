@@ -1,8 +1,8 @@
-import { z } from "zod"
+import { z } from 'zod';
 
-import { ApiError } from "@/lib/http/api-error"
+import { ApiError } from '@/lib/http/api-error';
 
-import { dealSchema, dealStages } from "./deal.schema"
+import { dealSchema, dealStages } from './deal.schema';
 
 const dealsPagedDataSchema = z.object({
 	items: z.array(dealSchema),
@@ -10,31 +10,31 @@ const dealsPagedDataSchema = z.object({
 	limit: z.number().int().min(1).max(50),
 	total: z.number().int().min(0),
 	totalPages: z.number().int().min(0),
-})
+});
 
 function parseDealsPagedResponse(data: unknown) {
-	const parsed = dealsPagedDataSchema.safeParse(data)
+	const parsed = dealsPagedDataSchema.safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta da API em formato inesperado.", 502, {
-			code: "deals.invalid_paged_response_shape",
-		})
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'deals.invalid_paged_response_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 const dealsByLeadListDataSchema = z.object({
 	items: z.array(dealSchema),
 	canMutateLead: z.boolean(),
-})
+});
 
 function parseDealsByLeadListResponse(data: unknown) {
-	const parsed = dealsByLeadListDataSchema.safeParse(data)
+	const parsed = dealsByLeadListDataSchema.safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta da API em formato inesperado.", 502, {
-			code: "deals.invalid_by_lead_list_shape",
-		})
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'deals.invalid_by_lead_list_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 const dealPipelineStageSchema = z.object({
@@ -47,30 +47,30 @@ const dealPipelineStageSchema = z.object({
 	totalPages: z.number().int().min(0),
 	hasNextPage: z.boolean(),
 	items: z.array(dealSchema),
-})
+});
 
 const dealPipelineResponseSchema = z.object({
 	stages: z.array(dealPipelineStageSchema),
-})
+});
 
 function parseDealPipelineResponse(data: unknown) {
-	const parsed = dealPipelineResponseSchema.safeParse(data)
+	const parsed = dealPipelineResponseSchema.safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta da API em formato inesperado.", 502, {
-			code: "deals.invalid_pipeline_response_shape",
-		})
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'deals.invalid_pipeline_response_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 function parseDealPipelineStageResponse(data: unknown) {
-	const parsed = dealPipelineStageSchema.safeParse(data)
+	const parsed = dealPipelineStageSchema.safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta da API em formato inesperado.", 502, {
-			code: "deals.invalid_pipeline_stage_response_shape",
-		})
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'deals.invalid_pipeline_stage_response_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 export {
@@ -82,4 +82,4 @@ export {
 	parseDealPipelineStageResponse,
 	parseDealsByLeadListResponse,
 	parseDealsPagedResponse,
-}
+};

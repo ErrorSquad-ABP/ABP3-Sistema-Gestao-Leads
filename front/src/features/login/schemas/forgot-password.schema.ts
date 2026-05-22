@@ -1,7 +1,7 @@
-import { z } from "zod"
+import { z } from 'zod';
 
 const forgotPasswordSchema = z.object({
-	email: z.email("Informe um e-mail válido."),
-})
+	email: z.email('Informe um e-mail válido.'),
+});
 
-export { forgotPasswordSchema }
+export { forgotPasswordSchema };

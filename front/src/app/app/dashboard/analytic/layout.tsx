@@ -1,17 +1,17 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react';
 
-import { requireUserWithRouteAccess } from "@/lib/auth/session"
+import { requireUserWithRouteAccess } from '@/lib/auth/session';
 
 type AnalyticDashboardLayoutProps = {
-	children: ReactNode
-}
+	children: ReactNode;
+};
 
 async function AnalyticDashboardLayout({
 	children,
 }: AnalyticDashboardLayoutProps) {
-	await requireUserWithRouteAccess("dashboardAnalytic")
+	await requireUserWithRouteAccess('dashboardAnalytic');
 
-	return children
+	return children;
 }
 
-export default AnalyticDashboardLayout
+export default AnalyticDashboardLayout;

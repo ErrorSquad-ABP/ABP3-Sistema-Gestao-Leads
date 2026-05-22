@@ -1,7 +1,7 @@
-import { useLeadStoresQuery } from "@/features/leads/hooks/leads.catalog.queries"
+import { useLeadStoresQuery } from '@/features/leads/hooks/leads.catalog.queries';
 
 function useStoresQuery() {
-	return useLeadStoresQuery()
+	return useLeadStoresQuery();
 }
 
-export { useStoresQuery }
+export { useStoresQuery };

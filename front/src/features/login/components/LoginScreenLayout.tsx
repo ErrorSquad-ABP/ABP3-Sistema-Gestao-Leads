@@ -1,11 +1,11 @@
-import Image from "next/image"
-import type { ReactNode } from "react"
+import Image from 'next/image';
+import type { ReactNode } from 'react';
 
 type LoginScreenLayoutProps = {
-	children: ReactNode
-	headline: string
-	overlay?: ReactNode
-}
+	children: ReactNode;
+	headline: string;
+	overlay?: ReactNode;
+};
 
 function LoginScreenLayout({
 	children,
@@ -69,7 +69,7 @@ function LoginScreenLayout({
 				</div>
 			</div>
 		</main>
-	)
+	);
 }
 
-export { LoginScreenLayout }
+export { LoginScreenLayout };

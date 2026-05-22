@@ -1,70 +1,70 @@
-"use client"
+'use client';
 
 import {
 	Building2,
 	ChartNoAxesCombined,
 	CheckCircle2,
 	UsersRound,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from '@/components/ui/card';
 
-import type { StoreTableRow } from "../lib/store-catalog-view"
+import type { StoreTableRow } from '../lib/store-catalog-view';
 
 type StoresInsightsAsideProps = {
-	rows: StoreTableRow[]
-	storesCount: number
-}
+	rows: StoreTableRow[];
+	storesCount: number;
+};
 
 const PERFORMANCE_COLORS = [
-	"#ff8a5c",
-	"#a855f7",
-	"#5b8def",
-	"#f7b731",
-	"#34c759",
-] as const
+	'#ff8a5c',
+	'#a855f7',
+	'#5b8def',
+	'#f7b731',
+	'#34c759',
+] as const;
 
 const DISTRIBUTION_TONES = [
 	{
-		bg: "bg-[#fff3ee]",
+		bg: 'bg-[#fff3ee]',
 		icon: Building2,
-		text: "text-[#f4511e]",
+		text: 'text-[#f4511e]',
 	},
 	{
-		bg: "bg-[#f4edff]",
+		bg: 'bg-[#f4edff]',
 		icon: UsersRound,
-		text: "text-[#7f35e8]",
+		text: 'text-[#7f35e8]',
 	},
 	{
-		bg: "bg-[#eff6ff]",
+		bg: 'bg-[#eff6ff]',
 		icon: ChartNoAxesCombined,
-		text: "text-[#2563eb]",
+		text: 'text-[#2563eb]',
 	},
 	{
-		bg: "bg-[#ecfdf3]",
+		bg: 'bg-[#ecfdf3]',
 		icon: CheckCircle2,
-		text: "text-[#079455]",
+		text: 'text-[#079455]',
 	},
 	{
-		bg: "bg-[#fff7e6]",
+		bg: 'bg-[#fff7e6]',
 		icon: Building2,
-		text: "text-[#f79009]",
+		text: 'text-[#f79009]',
 	},
-] as const
+] as const;
 
 const PEOPLE_MARKERS = [
-	"one",
-	"two",
-	"three",
-	"four",
-	"five",
-	"six",
-	"seven",
-	"eight",
-]
+	'one',
+	'two',
+	'three',
+	'four',
+	'five',
+	'six',
+	'seven',
+	'eight',
+];
 
 function formatCount(value: number) {
-	return Math.round(value).toLocaleString("pt-BR")
+	return Math.round(value).toLocaleString('pt-BR');
 }
 
 function getTopStores(rows: StoreTableRow[]) {
@@ -73,19 +73,19 @@ function getTopStores(rows: StoreTableRow[]) {
 			(left, right) =>
 				right.leadCount - left.leadCount ||
 				right.openDealsCount - left.openDealsCount ||
-				left.store.name.localeCompare(right.store.name, "pt-BR")
+				left.store.name.localeCompare(right.store.name, 'pt-BR'),
 		)
-		.slice(0, 5)
+		.slice(0, 5);
 }
 
 function getDistributionRows(rows: StoreTableRow[], storesCount: number) {
-	const distribution = new Map<string, number>()
+	const distribution = new Map<string, number>();
 
 	for (const row of rows) {
 		distribution.set(
 			row.distributionRegion,
-			(distribution.get(row.distributionRegion) ?? 0) + 1
-		)
+			(distribution.get(row.distributionRegion) ?? 0) + 1,
+		);
 	}
 
 	return [...distribution.entries()]
@@ -97,14 +97,14 @@ function getDistributionRows(rows: StoreTableRow[], storesCount: number) {
 		.sort(
 			(left, right) =>
 				right.count - left.count ||
-				left.label.localeCompare(right.label, "pt-BR")
+				left.label.localeCompare(right.label, 'pt-BR'),
 		)
-		.slice(0, 5)
+		.slice(0, 5);
 }
 
 function StorePerformanceCard({ rows }: { rows: StoreTableRow[] }) {
-	const topStores = getTopStores(rows)
-	const maxLeads = Math.max(1, ...topStores.map((row) => row.leadCount))
+	const topStores = getTopStores(rows);
+	const maxLeads = Math.max(1, ...topStores.map((row) => row.leadCount));
 
 	return (
 		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
@@ -140,7 +140,7 @@ function StorePerformanceCard({ rows }: { rows: StoreTableRow[] }) {
 								</span>
 							</div>
 							{topStores.map((row, index) => {
-								const barWidth = Math.max((row.leadCount / maxLeads) * 100, 8)
+								const barWidth = Math.max((row.leadCount / maxLeads) * 100, 8);
 								return (
 									<div
 										className="grid items-center gap-4 md:grid-cols-[132px_minmax(160px,1fr)_88px_104px_88px]"
@@ -182,7 +182,7 @@ function StorePerformanceCard({ rows }: { rows: StoreTableRow[] }) {
 											<p className="text-[11px] text-[#079455]">conversão</p>
 										</div>
 									</div>
-								)
+								);
 							})}
 						</>
 					) : (
@@ -193,14 +193,14 @@ function StorePerformanceCard({ rows }: { rows: StoreTableRow[] }) {
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function StoreDistributionCard({
 	rows,
 	storesCount,
 }: StoresInsightsAsideProps) {
-	const distributionRows = getDistributionRows(rows, storesCount)
+	const distributionRows = getDistributionRows(rows, storesCount);
 
 	return (
 		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
@@ -215,9 +215,10 @@ function StoreDistributionCard({
 				<div className="divide-y divide-[#eef2f6]">
 					{distributionRows.length > 0 ? (
 						distributionRows.map((row, index) => {
-							const tone = DISTRIBUTION_TONES[index % DISTRIBUTION_TONES.length]
-							const Icon = tone.icon
-							const peopleCount = Math.max(1, Math.min(row.count, 8))
+							const tone =
+								DISTRIBUTION_TONES[index % DISTRIBUTION_TONES.length];
+							const Icon = tone.icon;
+							const peopleCount = Math.max(1, Math.min(row.count, 8));
 							return (
 								<div
 									className="grid grid-cols-[44px_minmax(0,1fr)_92px_44px] items-center gap-3 py-3 first:pt-0 last:pb-0"
@@ -233,7 +234,7 @@ function StoreDistributionCard({
 											{row.label}
 										</p>
 										<p className="text-[11px] text-[#667085]">
-											{row.count} {row.count === 1 ? "loja" : "lojas"}
+											{row.count} {row.count === 1 ? 'loja' : 'lojas'}
 										</p>
 									</div>
 									<div className={`flex justify-end gap-1 ${tone.text}`}>
@@ -248,7 +249,7 @@ function StoreDistributionCard({
 										{row.percentage}%
 									</p>
 								</div>
-							)
+							);
 						})
 					) : (
 						<p className="rounded-2xl border border-[#e6ecf3] bg-[#f8fafc] px-4 py-8 text-sm text-[#667085]">
@@ -258,7 +259,7 @@ function StoreDistributionCard({
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function StoresInsightsAside({ rows, storesCount }: StoresInsightsAsideProps) {
@@ -267,7 +268,7 @@ function StoresInsightsAside({ rows, storesCount }: StoresInsightsAsideProps) {
 			<StorePerformanceCard rows={rows} />
 			<StoreDistributionCard rows={rows} storesCount={storesCount} />
 		</section>
-	)
+	);
 }
 
-export { StoresInsightsAside }
+export { StoresInsightsAside };

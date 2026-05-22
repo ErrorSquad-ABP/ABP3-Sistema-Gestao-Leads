@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { queryKeys } from "@/lib/constants/query-keys"
+import { queryKeys } from '@/lib/constants/query-keys';
 
 import {
 	findDeal,
@@ -10,19 +10,19 @@ import {
 	listDealsByLead,
 	listDealsPaged,
 	type ListDealsQuery,
-} from "../api/deals.service"
+} from '../api/deals.service';
 import type {
 	DealPipelineQuery,
 	DealPipelineResponse,
 	DealStage,
-} from "../model/deals.model"
+} from '../model/deals.model';
 
 function useDealsListQuery(query: ListDealsQuery) {
 	return useQuery({
 		queryKey: queryKeys.deals.list(query),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			listDealsPaged(query, signal),
-	})
+	});
 }
 
 function useDealsPipelineQuery(query: DealPipelineQuery) {
@@ -30,12 +30,12 @@ function useDealsPipelineQuery(query: DealPipelineQuery) {
 		queryKey: queryKeys.deals.pipeline(query),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			getDealsPipeline(query, signal),
-	})
+	});
 }
 
 function useLoadMorePipelineStageMutation(query: DealPipelineQuery) {
-	const queryClient = useQueryClient()
-	const pipelineQueryKey = queryKeys.deals.pipeline(query)
+	const queryClient = useQueryClient();
+	const pipelineQueryKey = queryKeys.deals.pipeline(query);
 
 	return useMutation({
 		mutationFn: (input: { stage: DealStage; page: number }) =>
@@ -49,7 +49,7 @@ function useLoadMorePipelineStageMutation(query: DealPipelineQuery) {
 				pipelineQueryKey,
 				(current) => {
 					if (!current) {
-						return current
+						return current;
 					}
 					return {
 						stages: current.stages.map((stage) =>
@@ -58,31 +58,31 @@ function useLoadMorePipelineStageMutation(query: DealPipelineQuery) {
 										...nextStage,
 										items: [...stage.items, ...nextStage.items],
 									}
-								: stage
+								: stage,
 						),
-					}
-				}
-			)
+					};
+				},
+			);
 		},
-	})
+	});
 }
 
 type DealsByLeadQueryOptions = {
 	/** Se `false`, a query não corre (ex.: diálogo fechado). */
-	enabled?: boolean
-}
+	enabled?: boolean;
+};
 
 function useDealsByLeadQuery(
 	leadId: string,
-	options?: DealsByLeadQueryOptions
+	options?: DealsByLeadQueryOptions,
 ) {
-	const enabledByOption = options?.enabled !== false
+	const enabledByOption = options?.enabled !== false;
 	return useQuery({
 		queryKey: queryKeys.deals.byLead(leadId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			listDealsByLead(leadId, signal),
 		enabled: enabledByOption && Boolean(leadId),
-	})
+	});
 }
 
 function useDealDetailQuery(dealId: string) {
@@ -90,24 +90,24 @@ function useDealDetailQuery(dealId: string) {
 		queryKey: queryKeys.deals.detail(dealId),
 		queryFn: ({ signal }: { signal: AbortSignal }) => findDeal(dealId, signal),
 		enabled: Boolean(dealId),
-	})
+	});
 }
 
 type DealHistoryQueryOptions = {
-	enabled?: boolean
-}
+	enabled?: boolean;
+};
 
 function useDealHistoryQuery(
 	dealId: string,
-	options?: DealHistoryQueryOptions
+	options?: DealHistoryQueryOptions,
 ) {
-	const enabledByProp = options?.enabled !== false
+	const enabledByProp = options?.enabled !== false;
 	return useQuery({
 		queryKey: queryKeys.deals.history(dealId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			listDealHistory(dealId, signal),
 		enabled: enabledByProp && Boolean(dealId),
-	})
+	});
 }
 
 export {
@@ -117,5 +117,5 @@ export {
 	useDealsPipelineQuery,
 	useDealsListQuery,
 	useLoadMorePipelineStageMutation,
-}
-export type { DealsByLeadQueryOptions }
+};
+export type { DealsByLeadQueryOptions };

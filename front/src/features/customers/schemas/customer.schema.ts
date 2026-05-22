@@ -1,14 +1,14 @@
-import { z } from "zod"
+import { z } from 'zod';
 
-import { ApiError } from "@/lib/http/api-error"
+import { ApiError } from '@/lib/http/api-error';
 
-const customerStatusValues = ["ACTIVE", "INACTIVE"] as const
+const customerStatusValues = ['ACTIVE', 'INACTIVE'] as const;
 const customerCatalogSorts = [
-	"recent",
-	"deals_desc",
-	"value_desc",
-	"name_asc",
-] as const
+	'recent',
+	'deals_desc',
+	'value_desc',
+	'name_asc',
+] as const;
 
 const customerSchema = z.object({
 	id: z.string().uuid(),
@@ -16,7 +16,7 @@ const customerSchema = z.object({
 	email: z.string().email().nullable(),
 	phone: z.string().nullable(),
 	cpf: z.string().nullable(),
-})
+});
 
 const customerCatalogItemSchema = z.object({
 	customer: customerSchema,
@@ -30,12 +30,12 @@ const customerCatalogItemSchema = z.object({
 	lastActivityLabel: z.string(),
 	status: z.enum(customerStatusValues),
 	source: z.string().nullable(),
-})
+});
 
 const customerCatalogBreakdownItemSchema = z.object({
 	label: z.string(),
 	count: z.number().int(),
-})
+});
 
 const customerCatalogSchema = z.object({
 	items: z.array(customerCatalogItemSchema),
@@ -52,16 +52,16 @@ const customerCatalogSchema = z.object({
 	limit: z.number().int(),
 	total: z.number().int(),
 	totalPages: z.number().int(),
-})
+});
 
 function parseCustomerCatalogResponse(data: unknown) {
-	const parsed = customerCatalogSchema.safeParse(data)
+	const parsed = customerCatalogSchema.safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta de clientes em formato inesperado.", 502, {
-			code: "customers.invalid_catalog_response_shape",
-		})
+		throw new ApiError('Resposta de clientes em formato inesperado.', 502, {
+			code: 'customers.invalid_catalog_response_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 export {
@@ -70,4 +70,4 @@ export {
 	customerSchema,
 	customerStatusValues,
 	parseCustomerCatalogResponse,
-}
+};

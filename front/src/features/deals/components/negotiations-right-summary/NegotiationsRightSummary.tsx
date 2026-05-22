@@ -1,25 +1,25 @@
-"use client"
+'use client';
 
-import { useMemo } from "react"
+import { useMemo } from 'react';
 
-import type { Deal } from "@/features/deals/model/deals.model"
+import type { Deal } from '@/features/deals/model/deals.model';
 
-import { ImportantActivitiesCard } from "./ImportantActivitiesCard"
-import { ImportanceSummaryCard } from "./ImportanceSummaryCard"
-import { PipelineSummaryCard } from "./PipelineSummaryCard"
+import { ImportantActivitiesCard } from './ImportantActivitiesCard';
+import { ImportanceSummaryCard } from './ImportanceSummaryCard';
+import { PipelineSummaryCard } from './PipelineSummaryCard';
 import {
 	buildImportanceFromDeals,
 	buildPipelineSummaryFromDeals,
 	IMPORTANT_ACTIVITIES_MOCK,
-} from "./negotiations-right-summary.data"
+} from './negotiations-right-summary.data';
 
 type Props = {
-	deals: Deal[]
-}
+	deals: Deal[];
+};
 
 function NegotiationsRightSummary({ deals }: Props) {
-	const pipeline = useMemo(() => buildPipelineSummaryFromDeals(deals), [deals])
-	const importance = useMemo(() => buildImportanceFromDeals(deals), [deals])
+	const pipeline = useMemo(() => buildPipelineSummaryFromDeals(deals), [deals]);
+	const importance = useMemo(() => buildImportanceFromDeals(deals), [deals]);
 
 	return (
 		<aside
@@ -30,7 +30,7 @@ function NegotiationsRightSummary({ deals }: Props) {
 			<ImportanceSummaryCard data={importance} />
 			<ImportantActivitiesCard items={IMPORTANT_ACTIVITIES_MOCK} />
 		</aside>
-	)
+	);
 }
 
-export { NegotiationsRightSummary }
+export { NegotiationsRightSummary };

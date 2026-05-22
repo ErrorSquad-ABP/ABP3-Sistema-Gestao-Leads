@@ -1,19 +1,19 @@
-import { z } from "zod"
+import { z } from 'zod';
 
-import { ApiError } from "@/lib/http/api-error"
+import { ApiError } from '@/lib/http/api-error';
 
-const vehicleStatuses = ["AVAILABLE", "RESERVED", "SOLD", "INACTIVE"] as const
+const vehicleStatuses = ['AVAILABLE', 'RESERVED', 'SOLD', 'INACTIVE'] as const;
 
 const supportedFuelTypes = [
-	"GASOLINE",
-	"ETHANOL",
-	"FLEX",
-	"DIESEL",
-	"ELECTRIC",
-	"HYBRID",
-	"PLUG_IN_HYBRID",
-	"CNG",
-] as const
+	'GASOLINE',
+	'ETHANOL',
+	'FLEX',
+	'DIESEL',
+	'ELECTRIC',
+	'HYBRID',
+	'PLUG_IN_HYBRID',
+	'CNG',
+] as const;
 
 const vehicleSchema = z.object({
 	id: z.string().uuid(),
@@ -41,22 +41,22 @@ const vehicleSchema = z.object({
 	imageExpiresAt: z.coerce.date().nullable().optional(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
-})
+});
 
 const vehicleCatalogSorts = [
-	"recent",
-	"price_asc",
-	"price_desc",
-	"mileage_asc",
-	"mileage_desc",
-	"interest_desc",
-] as const
+	'recent',
+	'price_asc',
+	'price_desc',
+	'mileage_asc',
+	'mileage_desc',
+	'interest_desc',
+] as const;
 
 const vehiclePriceComparisons = [
-	"ABOVE_AVERAGE",
-	"BELOW_AVERAGE",
-	"AT_AVERAGE",
-] as const
+	'ABOVE_AVERAGE',
+	'BELOW_AVERAGE',
+	'AT_AVERAGE',
+] as const;
 
 const vehicleCatalogItemSchema = z.object({
 	vehicle: vehicleSchema,
@@ -71,11 +71,11 @@ const vehicleCatalogItemSchema = z.object({
 			dealStage: z.string(),
 			dealStatus: z.string(),
 			createdAt: z.coerce.date(),
-		})
+		}),
 	),
 	daysInStock: z.number().int(),
 	priceComparison: z.enum(vehiclePriceComparisons).nullable(),
-})
+});
 
 const vehicleCatalogSchema = z.object({
 	items: z.array(vehicleCatalogItemSchema),
@@ -91,36 +91,36 @@ const vehicleCatalogSchema = z.object({
 	limit: z.number().int(),
 	total: z.number().int(),
 	totalPages: z.number().int(),
-})
+});
 
 function parseVehicleResponse(data: unknown) {
-	const parsed = vehicleSchema.safeParse(data)
+	const parsed = vehicleSchema.safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta da API em formato inesperado.", 502, {
-			code: "vehicles.invalid_response_shape",
-		})
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'vehicles.invalid_response_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 function parseVehiclesResponse(data: unknown) {
-	const parsed = z.array(vehicleSchema).safeParse(data)
+	const parsed = z.array(vehicleSchema).safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta da API em formato inesperado.", 502, {
-			code: "vehicles.invalid_list_response_shape",
-		})
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'vehicles.invalid_list_response_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 function parseVehicleCatalogResponse(data: unknown) {
-	const parsed = vehicleCatalogSchema.safeParse(data)
+	const parsed = vehicleCatalogSchema.safeParse(data);
 	if (!parsed.success) {
-		throw new ApiError("Resposta da API em formato inesperado.", 502, {
-			code: "vehicles.invalid_catalog_response_shape",
-		})
+		throw new ApiError('Resposta da API em formato inesperado.', 502, {
+			code: 'vehicles.invalid_catalog_response_shape',
+		});
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 export {
@@ -133,4 +133,4 @@ export {
 	vehiclePriceComparisons,
 	vehicleSchema,
 	vehicleStatuses,
-}
+};

@@ -1,15 +1,15 @@
-"use client"
+'use client';
 
-import { Plus, Search } from "lucide-react"
+import { Plus, Search } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Props = {
-	search: string
-	onCreateDeal: () => void
-	onSearchChange: (value: string) => void
-}
+	search: string;
+	onCreateDeal: () => void;
+	onSearchChange: (value: string) => void;
+};
 
 function NegotiationsActions({ search, onCreateDeal, onSearchChange }: Props) {
 	return (
@@ -33,7 +33,7 @@ function NegotiationsActions({ search, onCreateDeal, onSearchChange }: Props) {
 				Nova negociação
 			</Button>
 		</div>
-	)
+	);
 }
 
-export { NegotiationsActions }
+export { NegotiationsActions };

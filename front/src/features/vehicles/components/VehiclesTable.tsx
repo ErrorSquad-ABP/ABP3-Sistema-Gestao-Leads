@@ -1,15 +1,15 @@
-"use client"
+'use client';
 
-import { MoreHorizontal, PencilLine, Trash2 } from "lucide-react"
+import { MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
 	Table,
 	TableBody,
@@ -17,23 +17,23 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table';
 
-import type { Vehicle } from "../model/vehicles.model"
+import type { Vehicle } from '../model/vehicles.model';
 import {
 	formatFuelType,
 	formatMileage,
 	formatVehiclePriceBRL,
 	formatVehicleStatus,
-} from "../lib/vehicle-formatters"
+} from '../lib/vehicle-formatters';
 
 type VehiclesTableProps = {
-	storeLabelById?: Readonly<Record<string, string>>
-	vehicles: Vehicle[]
-	onDeactivate?: (vehicle: Vehicle) => void
-	onEdit?: (vehicle: Vehicle) => void
-	onOpenDetails?: (vehicle: Vehicle) => void
-}
+	storeLabelById?: Readonly<Record<string, string>>;
+	vehicles: Vehicle[];
+	onDeactivate?: (vehicle: Vehicle) => void;
+	onEdit?: (vehicle: Vehicle) => void;
+	onOpenDetails?: (vehicle: Vehicle) => void;
+};
 
 function VehiclesTable({
 	storeLabelById,
@@ -47,7 +47,7 @@ function VehiclesTable({
 			<div className="rounded-2xl border border-border/80 bg-card px-4 py-10 text-center text-sm text-[#6b7687]">
 				Nenhum veículo encontrado.
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -80,7 +80,7 @@ function VehiclesTable({
 									{vehicle.brand} {vehicle.model}
 								</p>
 								<p className="mt-0.5 text-sm text-[#6b7687]">
-									{vehicle.version ?? "Sem versão"}
+									{vehicle.version ?? 'Sem versão'}
 								</p>
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
@@ -146,7 +146,7 @@ function VehiclesTable({
 				</TableBody>
 			</Table>
 		</div>
-	)
+	);
 }
 
-export { VehiclesTable }
+export { VehiclesTable };

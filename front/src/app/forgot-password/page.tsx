@@ -1,16 +1,16 @@
-import type { Metadata } from "next"
+import type { Metadata } from 'next';
 
-import { ForgotPasswordForm } from "@/features/login/components/ForgotPasswordForm"
+import { ForgotPasswordForm } from '@/features/login/components/ForgotPasswordForm';
 
 const metadata: Metadata = {
-	title: "Recuperação de Acesso | Sistema de Gestão de Leads",
+	title: 'Recuperação de Acesso | Sistema de Gestão de Leads',
 	description:
-		"Orientações para regularização de acesso ao Sistema de Gestão de Leads.",
-}
+		'Orientações para regularização de acesso ao Sistema de Gestão de Leads.',
+};
 
 function ForgotPasswordPage() {
-	return <ForgotPasswordForm />
+	return <ForgotPasswordForm />;
 }
 
-export { metadata }
-export default ForgotPasswordPage
+export { metadata };
+export default ForgotPasswordPage;

@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react"
+import { Icon } from '@iconify/react';
 import {
 	CheckCircle2,
 	ChevronLeft,
@@ -14,18 +14,18 @@ import {
 	Store,
 	Trash2,
 	UserRound,
-} from "lucide-react"
+} from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge"
-import { buildConicGradientStopsAccumulating } from "@/lib/conic-gradient"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from '@/components/ui/badge';
+import { buildConicGradientStopsAccumulating } from '@/lib/conic-gradient';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
 	Table,
 	TableBody,
@@ -33,38 +33,38 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table';
 
 import {
 	formatLeadSourceLabel,
 	formatLeadStatusLabel,
 	normalizeLeadSourceKey,
 	normalizeLeadStatusKey,
-} from "../lib/lead-list-labels"
-import type { LeadCatalogItem, LeadListItem } from "../model/leads.model"
+} from '../lib/lead-list-labels';
+import type { LeadCatalogItem, LeadListItem } from '../model/leads.model';
 
-const pageSizeOptions = [10, 20, 30, 40, 50] as const
+const pageSizeOptions = [10, 20, 30, 40, 50] as const;
 
 function formatCount(value: number) {
-	return value.toLocaleString("pt-BR")
+	return value.toLocaleString('pt-BR');
 }
 
 function formatDateDistance(date: Date | null) {
 	if (!date) {
-		return "Sem atividade"
+		return 'Sem atividade';
 	}
-	const diffMs = Date.now() - date.getTime()
-	const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)))
+	const diffMs = Date.now() - date.getTime();
+	const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 	if (diffDays === 0) {
-		return `Hoje às ${date.toLocaleTimeString("pt-BR", {
-			hour: "2-digit",
-			minute: "2-digit",
-		})}`
+		return `Hoje às ${date.toLocaleTimeString('pt-BR', {
+			hour: '2-digit',
+			minute: '2-digit',
+		})}`;
 	}
 	if (diffDays === 1) {
-		return "Ontem"
+		return 'Ontem';
 	}
-	return `${diffDays} dias atrás`
+	return `${diffDays} dias atrás`;
 }
 
 function getInitials(name: string) {
@@ -73,91 +73,91 @@ function getInitials(name: string) {
 		.filter(Boolean)
 		.slice(0, 2)
 		.map((part) => part[0])
-		.join("")
-		.toUpperCase()
-	return initials || "LD"
+		.join('')
+		.toUpperCase();
+	return initials || 'LD';
 }
 
 function statusBadgeClass(status: string) {
 	switch (normalizeLeadStatusKey(status)) {
-		case "NEW":
-			return "border-blue-100 bg-blue-50 text-blue-700"
-		case "CONTACTED":
-			return "border-orange-100 bg-orange-50 text-orange-700"
-		case "QUALIFIED":
-			return "border-emerald-100 bg-emerald-50 text-emerald-700"
-		case "CONVERTED":
-			return "border-violet-100 bg-violet-50 text-violet-700"
-		case "LOST":
-		case "DISQUALIFIED":
-		case "DESQUALIFIED":
-			return "border-slate-200 bg-slate-100 text-slate-600"
+		case 'NEW':
+			return 'border-blue-100 bg-blue-50 text-blue-700';
+		case 'CONTACTED':
+			return 'border-orange-100 bg-orange-50 text-orange-700';
+		case 'QUALIFIED':
+			return 'border-emerald-100 bg-emerald-50 text-emerald-700';
+		case 'CONVERTED':
+			return 'border-violet-100 bg-violet-50 text-violet-700';
+		case 'LOST':
+		case 'DISQUALIFIED':
+		case 'DESQUALIFIED':
+			return 'border-slate-200 bg-slate-100 text-slate-600';
 		default:
-			return "border-slate-200 bg-slate-50 text-slate-600"
+			return 'border-slate-200 bg-slate-50 text-slate-600';
 	}
 }
 
 function SourceIcon({ value }: { readonly value: string }) {
 	switch (normalizeLeadSourceKey(value)) {
-		case "WHATSAPP":
+		case 'WHATSAPP':
 			return (
 				<Icon className="size-4 text-[#25d366]" icon="simple-icons:whatsapp" />
-			)
-		case "INSTAGRAM":
+			);
+		case 'INSTAGRAM':
 			return (
 				<Icon className="size-4 text-[#e4405f]" icon="simple-icons:instagram" />
-			)
-		case "FACEBOOK":
+			);
+		case 'FACEBOOK':
 			return (
 				<Icon className="size-4 text-[#1877f2]" icon="simple-icons:facebook" />
-			)
-		case "MERCADO_LIVRE":
+			);
+		case 'MERCADO_LIVRE':
 			return (
 				<Icon
 					className="size-5 text-[#101828]"
 					icon="arcticons:mercado-libre"
 				/>
-			)
-		case "PHONE":
-		case "PHONE_CALL":
-			return <Phone className="size-4 text-[#2563eb]" />
-		case "WALK_IN":
-		case "STORE_VISIT":
-			return <Store className="size-4 text-[#f97316]" />
-		case "INDICATION":
-			return <UserRound className="size-4 text-[#10b981]" />
-		case "WEBSITE":
-		case "DIGITAL_FORM":
-			return <Globe2 className="size-4 text-[#2563eb]" />
+			);
+		case 'PHONE':
+		case 'PHONE_CALL':
+			return <Phone className="size-4 text-[#2563eb]" />;
+		case 'WALK_IN':
+		case 'STORE_VISIT':
+			return <Store className="size-4 text-[#f97316]" />;
+		case 'INDICATION':
+			return <UserRound className="size-4 text-[#10b981]" />;
+		case 'WEBSITE':
+		case 'DIGITAL_FORM':
+			return <Globe2 className="size-4 text-[#2563eb]" />;
 		default:
-			return <Circle className="size-3 text-[#98a2b3]" />
+			return <Circle className="size-3 text-[#98a2b3]" />;
 	}
 }
 
 function paginationItems(totalPages: number) {
 	if (totalPages <= 5) {
-		return Array.from({ length: totalPages }, (_, index) => index + 1)
+		return Array.from({ length: totalPages }, (_, index) => index + 1);
 	}
-	return [1, 2, 3, 4, "ellipsis", totalPages] as const
+	return [1, 2, 3, 4, 'ellipsis', totalPages] as const;
 }
 
 type LeadsListCardProps = {
-	currentPage: number
-	items: readonly LeadCatalogItem[]
-	onConvert?: (lead: LeadListItem) => void
-	onDeals?: (lead: LeadListItem) => void
-	onDelete?: (lead: LeadListItem) => void
-	onDetail: (lead: LeadListItem) => void
-	onEdit: (lead: LeadListItem) => void
-	onNextPage: () => void
-	onPageChange: (page: number) => void
-	onPageSizeChange: (size: (typeof pageSizeOptions)[number]) => void
-	onPreviousPage: () => void
-	onReassign?: (lead: LeadListItem) => void
-	pageSize: (typeof pageSizeOptions)[number]
-	totalItems: number
-	totalPages: number
-}
+	currentPage: number;
+	items: readonly LeadCatalogItem[];
+	onConvert?: (lead: LeadListItem) => void;
+	onDeals?: (lead: LeadListItem) => void;
+	onDelete?: (lead: LeadListItem) => void;
+	onDetail: (lead: LeadListItem) => void;
+	onEdit: (lead: LeadListItem) => void;
+	onNextPage: () => void;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (size: (typeof pageSizeOptions)[number]) => void;
+	onPreviousPage: () => void;
+	onReassign?: (lead: LeadListItem) => void;
+	pageSize: (typeof pageSizeOptions)[number];
+	totalItems: number;
+	totalPages: number;
+};
 
 function LeadsListCard({
 	currentPage,
@@ -176,8 +176,8 @@ function LeadsListCard({
 	totalItems,
 	totalPages,
 }: LeadsListCardProps) {
-	const from = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1
-	const to = Math.min(currentPage * pageSize, totalItems)
+	const from = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+	const to = Math.min(currentPage * pageSize, totalItems);
 
 	return (
 		<Card className="overflow-hidden rounded-3xl border-[#dfe7f1] bg-white">
@@ -217,10 +217,10 @@ function LeadsListCard({
 													{item.customer.name}
 												</p>
 												<p className="text-xs text-[#667085]">
-													{item.customer.email ?? "Sem e-mail"}
+													{item.customer.email ?? 'Sem e-mail'}
 												</p>
 												<p className="text-xs text-[#667085]">
-													{item.customer.phone ?? "Sem telefone"}
+													{item.customer.phone ?? 'Sem telefone'}
 												</p>
 											</div>
 										</div>
@@ -242,7 +242,7 @@ function LeadsListCard({
 										</div>
 									</TableCell>
 									<TableCell className="text-sm text-[#344054]">
-										{item.owner?.name ?? "Sem responsável"}
+										{item.owner?.name ?? 'Sem responsável'}
 									</TableCell>
 									<TableCell>
 										<p className="text-sm font-medium text-[#344054]">
@@ -290,7 +290,7 @@ function LeadsListCard({
 							<ChevronLeft className="size-4" />
 						</Button>
 						{paginationItems(Math.max(totalPages, 1)).map((item) =>
-							item === "ellipsis" ? (
+							item === 'ellipsis' ? (
 								<span className="px-2 text-sm text-[#667085]" key="ellipsis">
 									...
 								</span>
@@ -298,8 +298,8 @@ function LeadsListCard({
 								<Button
 									className={
 										item === currentPage
-											? "size-9 rounded-lg bg-[#fff1eb] text-[#f05a28] hover:bg-[#fff1eb]"
-											: "size-9 rounded-lg text-[#101828]"
+											? 'size-9 rounded-lg bg-[#fff1eb] text-[#f05a28] hover:bg-[#fff1eb]'
+											: 'size-9 rounded-lg text-[#101828]'
 									}
 									key={item}
 									onClick={() => onPageChange(item)}
@@ -308,7 +308,7 @@ function LeadsListCard({
 								>
 									{item}
 								</Button>
-							)
+							),
 						)}
 						<Button
 							className="size-9 rounded-lg border-[#d8e0ea]"
@@ -326,7 +326,9 @@ function LeadsListCard({
 							className="h-9 rounded-lg border border-[#d8e0ea] bg-white px-3 text-sm outline-none"
 							onChange={(event) =>
 								onPageSizeChange(
-									Number(event.target.value) as (typeof pageSizeOptions)[number]
+									Number(
+										event.target.value,
+									) as (typeof pageSizeOptions)[number],
 								)
 							}
 							value={pageSize}
@@ -341,18 +343,18 @@ function LeadsListCard({
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 type LeadActionsProps = {
-	lead: LeadListItem
-	onConvert?: (lead: LeadListItem) => void
-	onDeals?: (lead: LeadListItem) => void
-	onDelete?: (lead: LeadListItem) => void
-	onDetail?: (lead: LeadListItem) => void
-	onEdit?: (lead: LeadListItem) => void
-	onReassign?: (lead: LeadListItem) => void
-}
+	lead: LeadListItem;
+	onConvert?: (lead: LeadListItem) => void;
+	onDeals?: (lead: LeadListItem) => void;
+	onDelete?: (lead: LeadListItem) => void;
+	onDetail?: (lead: LeadListItem) => void;
+	onEdit?: (lead: LeadListItem) => void;
+	onReassign?: (lead: LeadListItem) => void;
+};
 
 function LeadActions({
 	lead,
@@ -401,7 +403,7 @@ function LeadActions({
 						Reatribuir
 					</DropdownMenuItem>
 				) : null}
-				{onConvert && lead.status !== "CONVERTED" ? (
+				{onConvert && lead.status !== 'CONVERTED' ? (
 					<DropdownMenuItem onSelect={() => onConvert(lead)}>
 						<CheckCircle2 className="size-4" />
 						Converter
@@ -418,7 +420,7 @@ function LeadActions({
 				) : null}
 			</DropdownMenuContent>
 		</DropdownMenu>
-	)
+	);
 }
 
 function FunnelCard({
@@ -427,49 +429,49 @@ function FunnelCard({
 	totalLeads,
 	withInteraction,
 }: {
-	readonly converted: number
-	readonly openDeals: number
-	readonly totalLeads: number
-	readonly withInteraction: number
+	readonly converted: number;
+	readonly openDeals: number;
+	readonly totalLeads: number;
+	readonly withInteraction: number;
 }) {
 	const rows = [
 		{
-			label: "Total de leads",
+			label: 'Total de leads',
 			value: totalLeads,
-			color: "#1f2937",
-			width: "100%",
-			height: "36px",
-			clipPath: "polygon(2% 0, 98% 0, 91% 100%, 9% 100%)",
-			borderRadius: "14px 14px 7px 7px",
+			color: '#1f2937',
+			width: '100%',
+			height: '36px',
+			clipPath: 'polygon(2% 0, 98% 0, 91% 100%, 9% 100%)',
+			borderRadius: '14px 14px 7px 7px',
 		},
 		{
-			label: "Leads com interação",
+			label: 'Leads com interação',
 			value: withInteraction,
-			color: "#f05a28",
-			width: "78%",
-			height: "36px",
-			clipPath: "polygon(4% 0, 96% 0, 88% 100%, 12% 100%)",
-			borderRadius: "12px 12px 7px 7px",
+			color: '#f05a28',
+			width: '78%',
+			height: '36px',
+			clipPath: 'polygon(4% 0, 96% 0, 88% 100%, 12% 100%)',
+			borderRadius: '12px 12px 7px 7px',
 		},
 		{
-			label: "Negociações abertas",
+			label: 'Negociações abertas',
 			value: openDeals,
-			color: "#fbbf24",
-			width: "56%",
-			height: "36px",
-			clipPath: "polygon(6% 0, 94% 0, 84% 100%, 16% 100%)",
-			borderRadius: "10px 10px 7px 7px",
+			color: '#fbbf24',
+			width: '56%',
+			height: '36px',
+			clipPath: 'polygon(6% 0, 94% 0, 84% 100%, 16% 100%)',
+			borderRadius: '10px 10px 7px 7px',
 		},
 		{
-			label: "Leads convertidos",
+			label: 'Leads convertidos',
 			value: converted,
-			color: "#94a3b8",
-			width: "34%",
-			height: "28px",
-			clipPath: "polygon(10% 0, 90% 0, 78% 100%, 22% 100%)",
-			borderRadius: "8px 8px 6px 6px",
+			color: '#94a3b8',
+			width: '34%',
+			height: '28px',
+			clipPath: 'polygon(10% 0, 90% 0, 78% 100%, 22% 100%)',
+			borderRadius: '8px 8px 6px 6px',
 		},
-	] as const
+	] as const;
 
 	return (
 		<Card className="rounded-3xl border-[#dfe7f1] bg-white">
@@ -521,7 +523,7 @@ function FunnelCard({
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
 function OriginsCard({
@@ -529,23 +531,23 @@ function OriginsCard({
 	total,
 }: {
 	readonly origins: readonly {
-		readonly label: string
-		readonly count: number
-	}[]
-	readonly total: number
+		readonly label: string;
+		readonly count: number;
+	}[];
+	readonly total: number;
 }) {
 	function colorForIndex(index: number) {
 		switch (index) {
 			case 0:
-				return "#22c55e"
+				return '#22c55e';
 			case 1:
-				return "#ec4899"
+				return '#ec4899';
 			case 2:
-				return "#f97316"
+				return '#f97316';
 			case 3:
-				return "#3b82f6"
+				return '#3b82f6';
 			default:
-				return "#94a3b8"
+				return '#94a3b8';
 		}
 	}
 
@@ -553,8 +555,8 @@ function OriginsCard({
 		...item,
 		color: colorForIndex(index),
 		percentage: total > 0 ? Math.round((item.count / total) * 100) : 0,
-	}))
-	const gradient = buildConicGradientStopsAccumulating(segments)
+	}));
+	const gradient = buildConicGradientStopsAccumulating(segments);
 
 	return (
 		<Card className="rounded-3xl border-[#dfe7f1] bg-white">
@@ -577,7 +579,7 @@ function OriginsCard({
 						<div
 							className="relative flex size-40 items-center justify-center rounded-full"
 							style={{
-								background: `conic-gradient(${gradient || "#e5e7eb 0% 100%"})`,
+								background: `conic-gradient(${gradient || '#e5e7eb 0% 100%'})`,
 							}}
 						>
 							<div className="flex size-24 flex-col items-center justify-center rounded-full bg-white">
@@ -615,7 +617,7 @@ function OriginsCard({
 				</div>
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
-export { FunnelCard, formatCount, LeadsListCard, OriginsCard, pageSizeOptions }
+export { FunnelCard, formatCount, LeadsListCard, OriginsCard, pageSizeOptions };

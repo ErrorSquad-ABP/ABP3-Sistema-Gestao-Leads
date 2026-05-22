@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation';
 
-import { appRoutes } from "@/lib/routes/app-routes"
+import { appRoutes } from '@/lib/routes/app-routes';
 
 function RegisterPage() {
-	redirect(appRoutes.auth.login)
+	redirect(appRoutes.auth.login);
 }
 
-export default RegisterPage
+export default RegisterPage;

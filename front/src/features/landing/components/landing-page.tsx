@@ -1,78 +1,78 @@
 type Highlight = {
-	id: string
-	title: string
-	description: string
-}
+	id: string;
+	title: string;
+	description: string;
+};
 
 type ApiStatusSnapshot = {
-	endpoint: string
-	mode: "online" | "offline"
-	service: string
-	status: string
-	timestamp: string | null
-}
+	endpoint: string;
+	mode: 'online' | 'offline';
+	service: string;
+	status: string;
+	timestamp: string | null;
+};
 
 const pillars: Highlight[] = [
 	{
-		id: "architecture",
-		title: "Apps separadas",
+		id: 'architecture',
+		title: 'Apps separadas',
 		description:
-			"Frontend em Next.js e API em NestJS separados, conectados por HTTP/JSON dentro do mesmo repositório.",
+			'Frontend em Next.js e API em NestJS separados, conectados por HTTP/JSON dentro do mesmo repositório.',
 	},
 	{
-		id: "analytics",
-		title: "Dashboard analítico",
+		id: 'analytics',
+		title: 'Dashboard analítico',
 		description:
-			"Leitura operacional e gerencial com filtros temporais e indicadores de conversão.",
+			'Leitura operacional e gerencial com filtros temporais e indicadores de conversão.',
 	},
 	{
-		id: "security",
-		title: "Segurança no servidor",
+		id: 'security',
+		title: 'Segurança no servidor',
 		description:
-			"RBAC, JWT, hashing seguro e autorização concentrada no backend.",
+			'RBAC, JWT, hashing seguro e autorização concentrada no backend.',
 	},
-]
+];
 
 const plannedModules: Highlight[] = [
 	{
-		id: "auth",
-		title: "Autenticação",
+		id: 'auth',
+		title: 'Autenticação',
 		description:
-			"Login com e-mail e senha, emissão de JWT e manutenção de credenciais.",
+			'Login com e-mail e senha, emissão de JWT e manutenção de credenciais.',
 	},
 	{
-		id: "leads",
-		title: "Leads e clientes",
+		id: 'leads',
+		title: 'Leads e clientes',
 		description:
-			"Captação multicanal, vínculo com cliente, loja e atendente responsável.",
+			'Captação multicanal, vínculo com cliente, loja e atendente responsável.',
 	},
 	{
-		id: "negotiations",
-		title: "Negociações",
+		id: 'negotiations',
+		title: 'Negociações',
 		description:
-			"Estágio, status, importância, encerramento e histórico de mudanças.",
+			'Estágio, status, importância, encerramento e histórico de mudanças.',
 	},
 	{
-		id: "dashboards",
-		title: "Indicadores",
+		id: 'dashboards',
+		title: 'Indicadores',
 		description:
-			"Painéis operacionais e analíticos para atendente, gerente, gerente geral e admin.",
+			'Painéis operacionais e analíticos para atendente, gerente, gerente geral e admin.',
 	},
-]
+];
 
 type LandingPageProps = {
-	apiStatus: ApiStatusSnapshot
-}
+	apiStatus: ApiStatusSnapshot;
+};
 
 function formatTimestamp(timestamp: string | null) {
 	if (!timestamp) {
-		return "API ainda não respondeu nesta sessão."
+		return 'API ainda não respondeu nesta sessão.';
 	}
 
-	return new Intl.DateTimeFormat("pt-BR", {
-		dateStyle: "short",
-		timeStyle: "medium",
-	}).format(new Date(timestamp))
+	return new Intl.DateTimeFormat('pt-BR', {
+		dateStyle: 'short',
+		timeStyle: 'medium',
+	}).format(new Date(timestamp));
 }
 
 function LandingPage({ apiStatus }: LandingPageProps) {
@@ -84,7 +84,7 @@ function LandingPage({ apiStatus }: LandingPageProps) {
 				</div>
 				<h1>Sistema de Gestão de Leads com Dashboard Analítico</h1>
 				<p className="hero__summary">
-					Base inicial em single repository com <code>front</code> em{" "}
+					Base inicial em single repository com <code>front</code> em{' '}
 					<code>Next.js</code> e <code>back</code> em <code>NestJS</code>,
 					preparada para evoluir com fronteira HTTP clara, backend modular e
 					PostgreSQL como núcleo analítico e transacional.
@@ -104,7 +104,7 @@ function LandingPage({ apiStatus }: LandingPageProps) {
 				</div>
 				<div className={`status__pill status__pill--${apiStatus.mode}`}>
 					<strong>
-						{apiStatus.mode === "online" ? "API online" : "API offline"}
+						{apiStatus.mode === 'online' ? 'API online' : 'API offline'}
 					</strong>
 					<span>{apiStatus.endpoint}</span>
 				</div>
@@ -175,8 +175,8 @@ function LandingPage({ apiStatus }: LandingPageProps) {
 				</div>
 			</section>
 		</main>
-	)
+	);
 }
 
-export type { ApiStatusSnapshot }
-export { LandingPage }
+export type { ApiStatusSnapshot };
+export { LandingPage };

@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { AlertCircle, ShieldCheck } from "lucide-react"
+import { AlertCircle, ShieldCheck } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
@@ -10,64 +10,64 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type {
 	LeadOwnerRecord,
 	LeadStore,
-} from "@/features/leads/model/leads.model"
+} from '@/features/leads/model/leads.model';
 
-import type { TeamDialogMode, TeamRecord } from "../model/teams.model"
+import type { TeamDialogMode, TeamRecord } from '../model/teams.model';
 
 type TeamDialogState = {
-	mode: TeamDialogMode
-	team: TeamRecord | null
-}
+	mode: TeamDialogMode;
+	team: TeamRecord | null;
+};
 
 type TeamFormState = {
-	name: string
-	storeId: string
-	managerId: string
-}
+	name: string;
+	storeId: string;
+	managerId: string;
+};
 
 type TeamFormDialogProps = {
-	dialogError: string | null
-	dialogState: TeamDialogState | null
-	formState: TeamFormState
-	isPending: boolean
-	onClose: () => void
-	onSave: () => void
-	onStateChange: (updater: (current: TeamFormState) => TeamFormState) => void
-	owners: LeadOwnerRecord[]
-	stores: LeadStore[]
-}
+	dialogError: string | null;
+	dialogState: TeamDialogState | null;
+	formState: TeamFormState;
+	isPending: boolean;
+	onClose: () => void;
+	onSave: () => void;
+	onStateChange: (updater: (current: TeamFormState) => TeamFormState) => void;
+	owners: LeadOwnerRecord[];
+	stores: LeadStore[];
+};
 
 type TeamDeleteDialogProps = {
-	deleteError: string | null
-	isPending: boolean
-	onClose: () => void
-	onConfirm: () => void
-	target: TeamRecord | null
-}
+	deleteError: string | null;
+	isPending: boolean;
+	onClose: () => void;
+	onConfirm: () => void;
+	target: TeamRecord | null;
+};
 
 const emptyTeamForm: TeamFormState = {
-	name: "",
-	storeId: "",
-	managerId: "",
-}
+	name: '',
+	storeId: '',
+	managerId: '',
+};
 
 function toTeamPayload(formState: TeamFormState): TeamFormPayload | null {
-	const name = formState.name.trim()
+	const name = formState.name.trim();
 	if (!name || !formState.storeId) {
-		return null
+		return null;
 	}
 
 	return {
 		name,
 		storeId: formState.storeId,
 		managerId: formState.managerId || null,
-	}
+	};
 }
 
 function TeamFormDialog({
@@ -89,7 +89,7 @@ function TeamFormDialog({
 			<DialogContent className="max-w-xl">
 				<DialogHeader>
 					<DialogTitle>
-						{dialogState?.mode === "edit" ? "Editar equipe" : "Nova equipe"}
+						{dialogState?.mode === 'edit' ? 'Editar equipe' : 'Nova equipe'}
 					</DialogTitle>
 					<DialogDescription>
 						Vincule a equipe a uma loja e, se desejar, a um gerente de
@@ -174,12 +174,12 @@ function TeamFormDialog({
 						disabled={isPending}
 						onClick={onSave}
 					>
-						{isPending ? "Salvando..." : "Salvar equipe"}
+						{isPending ? 'Salvando...' : 'Salvar equipe'}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }
 
 function TeamDeleteDialog({
@@ -223,12 +223,12 @@ function TeamDeleteDialog({
 						onClick={onConfirm}
 						variant="destructive"
 					>
-						{isPending ? "Excluindo..." : "Excluir"}
+						{isPending ? 'Excluindo...' : 'Excluir'}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }
 
 export {
@@ -238,9 +238,9 @@ export {
 	toTeamPayload,
 	type TeamDialogState,
 	type TeamFormState,
-}
+};
 type TeamFormPayload = {
-	name: string
-	storeId: string
-	managerId: string | null
-}
+	name: string;
+	storeId: string;
+	managerId: string | null;
+};

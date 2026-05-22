@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import { Info } from "lucide-react"
-import type { ReactNode } from "react"
+import { Info } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 type AuthStatusIndicatorProps = {
-	icon: ReactNode
-	id: string
-	label: string
-	message: string
-}
+	icon: ReactNode;
+	id: string;
+	label: string;
+	message: string;
+};
 
 function AuthStatusIndicator({
 	icon,
@@ -43,7 +43,7 @@ function AuthStatusIndicator({
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
 
-export { AuthStatusIndicator }
+export { AuthStatusIndicator };

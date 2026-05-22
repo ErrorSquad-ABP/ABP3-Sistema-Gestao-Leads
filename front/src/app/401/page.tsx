@@ -1,13 +1,13 @@
-import type { Metadata } from "next"
+import type { Metadata } from 'next';
 
-import { ErrorState } from "@/components/shared/ErrorState"
-import { appRoutes } from "@/lib/routes/app-routes"
+import { ErrorState } from '@/components/shared/ErrorState';
+import { appRoutes } from '@/lib/routes/app-routes';
 
 const metadata: Metadata = {
-	title: "Sessão necessária | Sistema de Gestão de Leads",
+	title: 'Sessão necessária | Sistema de Gestão de Leads',
 	description:
-		"Tratamento visual de acesso não autenticado para áreas protegidas do sistema.",
-}
+		'Tratamento visual de acesso não autenticado para áreas protegidas do sistema.',
+};
 
 function UnauthorizedPage() {
 	return (
@@ -17,16 +17,16 @@ function UnauthorizedPage() {
 			eyebrow="Sessão necessária"
 			primaryAction={{
 				href: appRoutes.auth.login,
-				label: "Ir para login",
+				label: 'Ir para login',
 			}}
 			secondaryAction={{
 				href: appRoutes.root,
-				label: "Voltar ao início",
+				label: 'Voltar ao início',
 			}}
 			title="Sua sessão não está disponível para acessar esta área."
 		/>
-	)
+	);
 }
 
-export { metadata }
-export default UnauthorizedPage
+export { metadata };
+export default UnauthorizedPage;

@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import {
 	Building2,
@@ -7,45 +7,45 @@ import {
 	Search,
 	Trash2,
 	UserRound,
-} from "lucide-react"
-import { useMemo, useState } from "react"
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Skeleton } from "@/components/ui/skeleton"
-import type { AuthenticatedUser } from "@/features/login/types/login.types"
-import { useDeleteStoreMutation } from "@/features/stores/hooks/stores.mutations"
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { useDeleteStoreMutation } from '@/features/stores/hooks/stores.mutations';
 
-import { useDeleteCustomerMutation } from "../hooks/leads.catalog.mutations"
-import { getCatalogCrudErrorMessage } from "../lib/catalog-crud-errors"
-import type { LeadCustomer, LeadStore } from "../model/leads.model"
+import { useDeleteCustomerMutation } from '../hooks/leads.catalog.mutations';
+import { getCatalogCrudErrorMessage } from '../lib/catalog-crud-errors';
+import type { LeadCustomer, LeadStore } from '../model/leads.model';
 import {
 	CatalogDeleteConfirmDialog,
 	CustomerCatalogFormDialog,
 	StoreCatalogFormDialog,
-} from "./lead-catalog-crud-dialogs"
+} from './lead-catalog-crud-dialogs';
 
 type CustomerManagerDialogProps = {
-	customers: LeadCustomer[]
-	onClose: () => void
-	open: boolean
-}
+	customers: LeadCustomer[];
+	onClose: () => void;
+	open: boolean;
+};
 
 type StoreManagerDialogProps = {
-	onClose: () => void
-	open: boolean
-	stores: LeadStore[]
-	user: AuthenticatedUser
-}
+	onClose: () => void;
+	open: boolean;
+	stores: LeadStore[];
+	user: AuthenticatedUser;
+};
 
-const SKELETON_ROW_KEYS = ["r0", "r1", "r2", "r3", "r4", "r5"] as const
+const SKELETON_ROW_KEYS = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5'] as const;
 
 function LeadsTableSkeleton() {
 	return (
@@ -54,7 +54,7 @@ function LeadsTableSkeleton() {
 				<Skeleton key={rowKey} className="h-9 w-full" />
 			))}
 		</div>
-	)
+	);
 }
 
 function CustomerManagerDialog({
@@ -62,56 +62,56 @@ function CustomerManagerDialog({
 	onClose,
 	open,
 }: CustomerManagerDialogProps) {
-	const [search, setSearch] = useState("")
+	const [search, setSearch] = useState('');
 	const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
-		null
-	)
-	const [customerDialogOpen, setCustomerDialogOpen] = useState(false)
+		null,
+	);
+	const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
 	const [customerDialogMode, setCustomerDialogMode] = useState<
-		"create" | "edit"
-	>("create")
-	const [deleteError, setDeleteError] = useState<string | null>(null)
-	const [deleteTarget, setDeleteTarget] = useState<LeadCustomer | null>(null)
-	const deleteCustomerMutation = useDeleteCustomerMutation()
+		'create' | 'edit'
+	>('create');
+	const [deleteError, setDeleteError] = useState<string | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<LeadCustomer | null>(null);
+	const deleteCustomerMutation = useDeleteCustomerMutation();
 	const activeCustomerId =
 		selectedCustomerId &&
 		customers.some((customer) => customer.id === selectedCustomerId)
 			? selectedCustomerId
-			: (customers[0]?.id ?? null)
+			: (customers[0]?.id ?? null);
 	const selectedCustomer =
-		customers.find((customer) => customer.id === activeCustomerId) ?? null
+		customers.find((customer) => customer.id === activeCustomerId) ?? null;
 	const filteredCustomers = useMemo(() => {
-		const normalized = search.trim().toLowerCase()
+		const normalized = search.trim().toLowerCase();
 		if (!normalized) {
-			return customers
+			return customers;
 		}
 		return customers.filter((customer) =>
 			[
 				customer.name,
-				customer.email ?? "",
-				customer.phone ?? "",
-				customer.cpf ?? "",
+				customer.email ?? '',
+				customer.phone ?? '',
+				customer.cpf ?? '',
 			]
-				.join(" ")
+				.join(' ')
 				.toLowerCase()
-				.includes(normalized)
-		)
-	}, [customers, search])
+				.includes(normalized),
+		);
+	}, [customers, search]);
 
 	async function handleDeleteCustomerConfirm() {
 		if (!deleteTarget) {
-			return
+			return;
 		}
 
-		setDeleteError(null)
+		setDeleteError(null);
 		try {
-			await deleteCustomerMutation.mutateAsync(deleteTarget.id)
+			await deleteCustomerMutation.mutateAsync(deleteTarget.id);
 			setSelectedCustomerId((current) =>
-				current === deleteTarget.id ? null : current
-			)
-			setDeleteTarget(null)
+				current === deleteTarget.id ? null : current,
+			);
+			setDeleteTarget(null);
 		} catch (error) {
-			setDeleteError(getCatalogCrudErrorMessage(error))
+			setDeleteError(getCatalogCrudErrorMessage(error));
 		}
 	}
 
@@ -120,13 +120,13 @@ function CustomerManagerDialog({
 			<Dialog
 				onOpenChange={(nextOpen) => {
 					if (nextOpen) {
-						return
+						return;
 					}
-					setSearch("")
-					setSelectedCustomerId(null)
-					setDeleteTarget(null)
-					setDeleteError(null)
-					onClose()
+					setSearch('');
+					setSelectedCustomerId(null);
+					setDeleteTarget(null);
+					setDeleteError(null);
+					onClose();
 				}}
 				open={open}
 			>
@@ -164,8 +164,8 @@ function CustomerManagerDialog({
 								<Button
 									className="rounded-full bg-[#2D3648] shadow-none hover:bg-[#232B3B]"
 									onClick={() => {
-										setCustomerDialogMode("create")
-										setCustomerDialogOpen(true)
+										setCustomerDialogMode('create');
+										setCustomerDialogOpen(true);
 									}}
 									type="button"
 								>
@@ -176,8 +176,8 @@ function CustomerManagerDialog({
 									className="rounded-full shadow-none"
 									disabled={!selectedCustomer}
 									onClick={() => {
-										setCustomerDialogMode("edit")
-										setCustomerDialogOpen(true)
+										setCustomerDialogMode('edit');
+										setCustomerDialogOpen(true);
 									}}
 									type="button"
 									variant="outline"
@@ -189,8 +189,8 @@ function CustomerManagerDialog({
 									className="rounded-full shadow-none"
 									disabled={!selectedCustomer}
 									onClick={() => {
-										setDeleteError(null)
-										setDeleteTarget(selectedCustomer)
+										setDeleteError(null);
+										setDeleteTarget(selectedCustomer);
 									}}
 									type="button"
 									variant="destructive"
@@ -213,8 +213,8 @@ function CustomerManagerDialog({
 										<button
 											className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
 												selectedCustomerId === customer.id
-													? "border-[#d96c3f]/35 bg-[#d96c3f]/8"
-													: "border-[#e5ebf3] bg-white hover:border-[#d96c3f]/20 hover:bg-[#fdf7f3]"
+													? 'border-[#d96c3f]/35 bg-[#d96c3f]/8'
+													: 'border-[#e5ebf3] bg-white hover:border-[#d96c3f]/20 hover:bg-[#fdf7f3]'
 											}`}
 											key={customer.id}
 											onClick={() => setSelectedCustomerId(customer.id)}
@@ -224,8 +224,8 @@ function CustomerManagerDialog({
 												{customer.name}
 											</p>
 											<p className="mt-1 text-sm text-[#6b7687]">
-												{customer.email ?? "Sem e-mail"} ·{" "}
-												{customer.phone ?? "Sem telefone"}
+												{customer.email ?? 'Sem e-mail'} ·{' '}
+												{customer.phone ?? 'Sem telefone'}
 											</p>
 										</button>
 									))}
@@ -257,7 +257,7 @@ function CustomerManagerDialog({
 													E-mail
 												</p>
 												<p className="mt-1 text-[#1b2430]">
-													{selectedCustomer.email ?? "Não informado"}
+													{selectedCustomer.email ?? 'Não informado'}
 												</p>
 											</div>
 											<div>
@@ -265,7 +265,7 @@ function CustomerManagerDialog({
 													Telefone
 												</p>
 												<p className="mt-1 text-[#1b2430]">
-													{selectedCustomer.phone ?? "Não informado"}
+													{selectedCustomer.phone ?? 'Não informado'}
 												</p>
 											</div>
 										</div>
@@ -274,7 +274,7 @@ function CustomerManagerDialog({
 												CPF
 											</p>
 											<p className="mt-1 text-[#1b2430]">
-												{selectedCustomer.cpf ?? "Não informado"}
+												{selectedCustomer.cpf ?? 'Não informado'}
 											</p>
 										</div>
 									</div>
@@ -290,11 +290,11 @@ function CustomerManagerDialog({
 			</Dialog>
 
 			<CustomerCatalogFormDialog
-				customer={customerDialogMode === "edit" ? selectedCustomer : null}
+				customer={customerDialogMode === 'edit' ? selectedCustomer : null}
 				mode={customerDialogMode}
 				onOpenChange={setCustomerDialogOpen}
 				onSaved={(customer) => {
-					setSelectedCustomerId(customer.id)
+					setSelectedCustomerId(customer.id);
 				}}
 				open={customerDialogOpen}
 			/>
@@ -304,22 +304,22 @@ function CustomerManagerDialog({
 				description={
 					deleteTarget
 						? `O cliente «${deleteTarget.name}» será removido. Leads associados a este cliente também serão eliminados em cascata.`
-						: ""
+						: ''
 				}
 				error={deleteError}
 				isPending={deleteCustomerMutation.isPending}
 				onConfirm={handleDeleteCustomerConfirm}
 				onOpenChange={(next) => {
 					if (!next) {
-						setDeleteTarget(null)
-						setDeleteError(null)
+						setDeleteTarget(null);
+						setDeleteError(null);
 					}
 				}}
 				open={deleteTarget !== null}
 				title="Excluir cliente"
 			/>
 		</>
-	)
+	);
 }
 
 function StoreManagerDialog({
@@ -328,38 +328,38 @@ function StoreManagerDialog({
 	stores,
 	user,
 }: StoreManagerDialogProps) {
-	const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null)
-	const [storeDialogOpen, setStoreDialogOpen] = useState(false)
-	const [storeDialogMode, setStoreDialogMode] = useState<"create" | "edit">(
-		"create"
-	)
-	const [deleteError, setDeleteError] = useState<string | null>(null)
-	const [deleteTarget, setDeleteTarget] = useState<LeadStore | null>(null)
-	const deleteStoreMutation = useDeleteStoreMutation()
+	const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+	const [storeDialogOpen, setStoreDialogOpen] = useState(false);
+	const [storeDialogMode, setStoreDialogMode] = useState<'create' | 'edit'>(
+		'create',
+	);
+	const [deleteError, setDeleteError] = useState<string | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<LeadStore | null>(null);
+	const deleteStoreMutation = useDeleteStoreMutation();
 
 	const canManageStores =
-		user.role === "ADMINISTRATOR" || user.role === "GENERAL_MANAGER"
+		user.role === 'ADMINISTRATOR' || user.role === 'GENERAL_MANAGER';
 	const activeStoreId =
 		selectedStoreId && stores.some((store) => store.id === selectedStoreId)
 			? selectedStoreId
-			: (stores[0]?.id ?? null)
+			: (stores[0]?.id ?? null);
 	const selectedStore =
-		stores.find((store) => store.id === activeStoreId) ?? null
+		stores.find((store) => store.id === activeStoreId) ?? null;
 
 	async function handleDeleteStoreConfirm() {
 		if (!deleteTarget) {
-			return
+			return;
 		}
 
-		setDeleteError(null)
+		setDeleteError(null);
 		try {
-			await deleteStoreMutation.mutateAsync(deleteTarget.id)
+			await deleteStoreMutation.mutateAsync(deleteTarget.id);
 			setSelectedStoreId((current) =>
-				current === deleteTarget.id ? null : current
-			)
-			setDeleteTarget(null)
+				current === deleteTarget.id ? null : current,
+			);
+			setDeleteTarget(null);
 		} catch (error) {
-			setDeleteError(getCatalogCrudErrorMessage(error))
+			setDeleteError(getCatalogCrudErrorMessage(error));
 		}
 	}
 
@@ -368,12 +368,12 @@ function StoreManagerDialog({
 			<Dialog
 				onOpenChange={(nextOpen) => {
 					if (nextOpen) {
-						return
+						return;
 					}
-					setSelectedStoreId(null)
-					setDeleteTarget(null)
-					setDeleteError(null)
-					onClose()
+					setSelectedStoreId(null);
+					setDeleteTarget(null);
+					setDeleteError(null);
+					onClose();
 				}}
 				open={open}
 			>
@@ -402,8 +402,8 @@ function StoreManagerDialog({
 								className="rounded-full bg-[#2D3648] shadow-none hover:bg-[#232B3B]"
 								disabled={!canManageStores}
 								onClick={() => {
-									setStoreDialogMode("create")
-									setStoreDialogOpen(true)
+									setStoreDialogMode('create');
+									setStoreDialogOpen(true);
 								}}
 								type="button"
 							>
@@ -414,8 +414,8 @@ function StoreManagerDialog({
 								className="rounded-full shadow-none"
 								disabled={!selectedStore || !canManageStores}
 								onClick={() => {
-									setStoreDialogMode("edit")
-									setStoreDialogOpen(true)
+									setStoreDialogMode('edit');
+									setStoreDialogOpen(true);
 								}}
 								type="button"
 								variant="outline"
@@ -427,8 +427,8 @@ function StoreManagerDialog({
 								className="rounded-full shadow-none"
 								disabled={!selectedStore || !canManageStores}
 								onClick={() => {
-									setDeleteError(null)
-									setDeleteTarget(selectedStore)
+									setDeleteError(null);
+									setDeleteTarget(selectedStore);
 								}}
 								type="button"
 								variant="destructive"
@@ -450,8 +450,8 @@ function StoreManagerDialog({
 										<button
 											className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
 												activeStoreId === store.id
-													? "border-[#d96c3f]/35 bg-[#d96c3f]/8"
-													: "border-[#e5ebf3] bg-white hover:border-[#d96c3f]/20 hover:bg-[#fdf7f3]"
+													? 'border-[#d96c3f]/35 bg-[#d96c3f]/8'
+													: 'border-[#e5ebf3] bg-white hover:border-[#d96c3f]/20 hover:bg-[#fdf7f3]'
 											}`}
 											key={store.id}
 											onClick={() => setSelectedStoreId(store.id)}
@@ -508,10 +508,10 @@ function StoreManagerDialog({
 				mode={storeDialogMode}
 				onOpenChange={setStoreDialogOpen}
 				onSaved={(store) => {
-					setSelectedStoreId(store.id)
+					setSelectedStoreId(store.id);
 				}}
 				open={storeDialogOpen}
-				store={storeDialogMode === "edit" ? selectedStore : null}
+				store={storeDialogMode === 'edit' ? selectedStore : null}
 			/>
 
 			<CatalogDeleteConfirmDialog
@@ -519,22 +519,22 @@ function StoreManagerDialog({
 				description={
 					deleteTarget
 						? `A loja «${deleteTarget.name}» será removida do catálogo operacional.`
-						: ""
+						: ''
 				}
 				error={deleteError}
 				isPending={deleteStoreMutation.isPending}
 				onConfirm={handleDeleteStoreConfirm}
 				onOpenChange={(next) => {
 					if (!next) {
-						setDeleteTarget(null)
-						setDeleteError(null)
+						setDeleteTarget(null);
+						setDeleteError(null);
 					}
 				}}
 				open={deleteTarget !== null}
 				title="Excluir loja"
 			/>
 		</>
-	)
+	);
 }
 
-export { CustomerManagerDialog, LeadsTableSkeleton, StoreManagerDialog }
+export { CustomerManagerDialog, LeadsTableSkeleton, StoreManagerDialog };

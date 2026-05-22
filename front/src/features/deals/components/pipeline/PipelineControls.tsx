@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { ArrowDownUp, ChevronDown, SlidersHorizontal } from "lucide-react"
+import { ArrowDownUp, ChevronDown, SlidersHorizontal } from 'lucide-react';
 
 import {
 	DropdownMenu,
@@ -8,7 +8,7 @@ import {
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
 	dealImportanceOptions,
 	dealPipelineFilterImportanceAllLabel,
@@ -18,94 +18,94 @@ import {
 	dealPipelineSortLegendLabel,
 	getDealPipelineFilterStatusOptionLabel,
 	getDealPipelineSortDropdownLabel,
-} from "@/features/deals/lib/deal-labels"
+} from '@/features/deals/lib/deal-labels';
 import {
 	getPipelineImportanceFilterTriggerAccentClass,
 	getPipelineSortFilterTriggerAccentClass,
 	getPipelineStatusFilterTriggerAccentClass,
-} from "@/features/deals/lib/pipeline"
+} from '@/features/deals/lib/pipeline';
 import type {
 	DealImportance,
 	DealPipelineSortMode,
 	DealStatus,
-} from "@/features/deals/model/deals.model"
-import { cn } from "@/lib/utils"
+} from '@/features/deals/model/deals.model';
+import { cn } from '@/lib/utils';
 
-type ImportanceFilter = "ALL" | DealImportance
-type StatusFilter = "ALL" | DealStatus
+type ImportanceFilter = 'ALL' | DealImportance;
+type StatusFilter = 'ALL' | DealStatus;
 
 type Props = {
-	importanceFilter: ImportanceFilter
-	statusFilter: StatusFilter
-	showValues: boolean
-	onImportanceFilterChange: (next: ImportanceFilter) => void
-	onStatusFilterChange: (next: StatusFilter) => void
-	pipelineSortMode: DealPipelineSortMode
-	onPipelineSortModeChange: (next: DealPipelineSortMode) => void
-	onShowValuesChange: (next: boolean) => void
-}
+	importanceFilter: ImportanceFilter;
+	statusFilter: StatusFilter;
+	showValues: boolean;
+	onImportanceFilterChange: (next: ImportanceFilter) => void;
+	onStatusFilterChange: (next: StatusFilter) => void;
+	pipelineSortMode: DealPipelineSortMode;
+	onPipelineSortModeChange: (next: DealPipelineSortMode) => void;
+	onShowValuesChange: (next: boolean) => void;
+};
 
 const IMPORTANCE_OPTIONS: { label: string; value: ImportanceFilter }[] = [
-	{ label: dealPipelineFilterImportanceAllLabel, value: "ALL" },
+	{ label: dealPipelineFilterImportanceAllLabel, value: 'ALL' },
 	...dealImportanceOptions.map((option) => ({
 		label: option.label,
 		value: option.value,
 	})),
-]
+];
 
 const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
-	{ label: dealPipelineFilterStatusAllLabel, value: "ALL" },
-	...(["OPEN", "WON", "LOST"] as const).map((status) => ({
+	{ label: dealPipelineFilterStatusAllLabel, value: 'ALL' },
+	...(['OPEN', 'WON', 'LOST'] as const).map((status) => ({
 		value: status,
 		label: getDealPipelineFilterStatusOptionLabel(status),
 	})),
-]
+];
 
 const SORT_OPTIONS: { label: string; value: DealPipelineSortMode }[] = (
-	["recent", "value_asc", "value_desc"] as const
+	['recent', 'value_asc', 'value_desc'] as const
 ).map((mode) => ({
 	value: mode,
 	label: getDealPipelineSortDropdownLabel(mode),
-}))
+}));
 
 function getImportanceLabel(value: ImportanceFilter) {
 	return (
 		IMPORTANCE_OPTIONS.find((option) => option.value === value)?.label ??
 		dealPipelineFilterImportanceLegendLabel
-	)
+	);
 }
 
 function getStatusLabel(value: StatusFilter) {
 	return (
 		STATUS_OPTIONS.find((option) => option.value === value)?.label ??
 		dealPipelineFilterStatusLegendLabel
-	)
+	);
 }
 
 function getPipelineSortTriggerLabel(mode: DealPipelineSortMode) {
 	return (
 		SORT_OPTIONS.find((option) => option.value === mode)?.label ??
 		dealPipelineSortLegendLabel
-	)
+	);
 }
 
 /** Texto do trigger: legenda quando “sem filtro”, senão valor escolhido. */
 function getStatusTriggerDisplay(value: StatusFilter) {
-	return value === "ALL"
+	return value === 'ALL'
 		? dealPipelineFilterStatusLegendLabel
-		: getStatusLabel(value)
+		: getStatusLabel(value);
 }
 
 function getImportanceTriggerDisplay(value: ImportanceFilter) {
-	return value === "ALL"
+	return value === 'ALL'
 		? dealPipelineFilterImportanceLegendLabel
-		: getImportanceLabel(value)
+		: getImportanceLabel(value);
 }
 
 function getSortTriggerDisplay(mode: DealPipelineSortMode) {
-	return mode === "recent"
+	return mode === 'recent'
 		? dealPipelineSortLegendLabel
-		: getPipelineSortTriggerLabel(mode)
+		: getPipelineSortTriggerLabel(mode);
 }
 
 function PipelineControls({
@@ -119,25 +119,25 @@ function PipelineControls({
 	onShowValuesChange,
 }: Props) {
 	const statusAria =
-		statusFilter === "ALL"
-			? "todos os status"
-			: getStatusTriggerDisplay(statusFilter)
+		statusFilter === 'ALL'
+			? 'todos os status'
+			: getStatusTriggerDisplay(statusFilter);
 	const importanceAria =
-		importanceFilter === "ALL"
-			? "todas as importâncias"
-			: getImportanceTriggerDisplay(importanceFilter)
+		importanceFilter === 'ALL'
+			? 'todas as importâncias'
+			: getImportanceTriggerDisplay(importanceFilter);
 	const sortAria =
-		pipelineSortMode === "recent"
-			? "mais recentes"
-			: getSortTriggerDisplay(pipelineSortMode)
+		pipelineSortMode === 'recent'
+			? 'mais recentes'
+			: getSortTriggerDisplay(pipelineSortMode);
 
-	const statusAccent = getPipelineStatusFilterTriggerAccentClass(statusFilter)
+	const statusAccent = getPipelineStatusFilterTriggerAccentClass(statusFilter);
 	const importanceAccent =
-		getPipelineImportanceFilterTriggerAccentClass(importanceFilter)
-	const sortAccent = getPipelineSortFilterTriggerAccentClass(pipelineSortMode)
+		getPipelineImportanceFilterTriggerAccentClass(importanceFilter);
+	const sortAccent = getPipelineSortFilterTriggerAccentClass(pipelineSortMode);
 
 	const neutralTriggerBase =
-		"inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30"
+		'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30';
 
 	return (
 		<div className="flex flex-wrap items-center gap-x-[10px] gap-y-2 pt-0.5">
@@ -146,12 +146,12 @@ function PipelineControls({
 					<button
 						type="button"
 						aria-label={`Filtro de status (${statusAria})`}
-						className={cn(neutralTriggerBase, "min-w-[8.25rem]", statusAccent)}
+						className={cn(neutralTriggerBase, 'min-w-[8.25rem]', statusAccent)}
 					>
 						<SlidersHorizontal
 							className={cn(
-								"size-4 shrink-0",
-								!statusAccent && "text-muted-foreground"
+								'size-4 shrink-0',
+								!statusAccent && 'text-muted-foreground',
 							)}
 						/>
 						<span className="min-w-0 flex-1 truncate text-left">
@@ -159,8 +159,8 @@ function PipelineControls({
 						</span>
 						<ChevronDown
 							className={cn(
-								"size-4 shrink-0",
-								!statusAccent && "text-muted-foreground"
+								'size-4 shrink-0',
+								!statusAccent && 'text-muted-foreground',
 							)}
 						/>
 					</button>
@@ -195,14 +195,14 @@ function PipelineControls({
 						aria-label={`Filtro de importância (${importanceAria})`}
 						className={cn(
 							neutralTriggerBase,
-							"min-w-[8.25rem]",
-							importanceAccent
+							'min-w-[8.25rem]',
+							importanceAccent,
 						)}
 					>
 						<SlidersHorizontal
 							className={cn(
-								"size-4 shrink-0",
-								!importanceAccent && "text-muted-foreground"
+								'size-4 shrink-0',
+								!importanceAccent && 'text-muted-foreground',
 							)}
 						/>
 						<span className="min-w-0 flex-1 truncate text-left">
@@ -210,8 +210,8 @@ function PipelineControls({
 						</span>
 						<ChevronDown
 							className={cn(
-								"size-4 shrink-0",
-								!importanceAccent && "text-muted-foreground"
+								'size-4 shrink-0',
+								!importanceAccent && 'text-muted-foreground',
 							)}
 						/>
 					</button>
@@ -246,14 +246,14 @@ function PipelineControls({
 						aria-label={`Ordenação (${sortAria})`}
 						className={cn(
 							neutralTriggerBase,
-							"max-w-[min(100%,220px)] min-w-[9.5rem]",
-							sortAccent
+							'max-w-[min(100%,220px)] min-w-[9.5rem]',
+							sortAccent,
 						)}
 					>
 						<ArrowDownUp
 							className={cn(
-								"size-4 shrink-0",
-								!sortAccent && "text-muted-foreground"
+								'size-4 shrink-0',
+								!sortAccent && 'text-muted-foreground',
 							)}
 						/>
 						<span className="min-w-0 flex-1 truncate text-left">
@@ -261,8 +261,8 @@ function PipelineControls({
 						</span>
 						<ChevronDown
 							className={cn(
-								"size-4 shrink-0",
-								!sortAccent && "text-muted-foreground"
+								'size-4 shrink-0',
+								!sortAccent && 'text-muted-foreground',
 							)}
 						/>
 					</button>
@@ -296,7 +296,7 @@ function PipelineControls({
 				role="switch"
 				aria-checked={showValues}
 				className={cn(
-					"inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30"
+					'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30',
 				)}
 			>
 				<span className="text-[13px] text-muted-foreground">
@@ -305,20 +305,20 @@ function PipelineControls({
 				<span
 					aria-hidden="true"
 					className={cn(
-						"relative ml-[3px] inline-flex h-[18px] w-[32px] shrink-0 items-center rounded-full transition-colors",
-						showValues ? "bg-[color:var(--brand-accent)]" : "bg-muted/40"
+						'relative ml-[3px] inline-flex h-[18px] w-[32px] shrink-0 items-center rounded-full transition-colors',
+						showValues ? 'bg-[color:var(--brand-accent)]' : 'bg-muted/40',
 					)}
 				>
 					<span
 						className={cn(
-							"absolute top-1/2 left-0.5 block size-[14px] -translate-y-1/2 rounded-full bg-white shadow-[0_1px_2px_rgba(15,23,42,0.18)] transition-transform",
-							showValues ? "translate-x-[14px]" : "translate-x-0"
+							'absolute top-1/2 left-0.5 block size-[14px] -translate-y-1/2 rounded-full bg-white shadow-[0_1px_2px_rgba(15,23,42,0.18)] transition-transform',
+							showValues ? 'translate-x-[14px]' : 'translate-x-0',
 						)}
 					/>
 				</span>
 			</button>
 		</div>
-	)
+	);
 }
 
-export { PipelineControls }
+export { PipelineControls };

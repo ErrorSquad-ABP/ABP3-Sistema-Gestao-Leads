@@ -1,17 +1,17 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation';
 
-import { DealsPageContent } from "@/features/deals/components/deals-page-content"
-import { getCurrentUserFromRequest } from "@/lib/auth/session"
-import { appRoutes } from "@/lib/routes/app-routes"
+import { DealsPageContent } from '@/features/deals/components/deals-page-content';
+import { getCurrentUserFromRequest } from '@/lib/auth/session';
+import { appRoutes } from '@/lib/routes/app-routes';
 
 async function DealsHomePage() {
-	const user = await getCurrentUserFromRequest()
+	const user = await getCurrentUserFromRequest();
 
 	if (!user) {
-		redirect(appRoutes.auth.login)
+		redirect(appRoutes.auth.login);
 	}
 
-	return <DealsPageContent user={user} />
+	return <DealsPageContent user={user} />;
 }
 
-export default DealsHomePage
+export default DealsHomePage;

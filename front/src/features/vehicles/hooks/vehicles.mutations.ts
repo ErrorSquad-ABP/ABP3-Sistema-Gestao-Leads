@@ -1,20 +1,20 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { queryKeys } from "@/lib/constants/query-keys"
+import { queryKeys } from '@/lib/constants/query-keys';
 
 import {
 	createVehicle,
 	deactivateVehicle,
 	deleteVehiclePermanently,
 	updateVehicle,
-} from "../api/vehicles.service"
+} from '../api/vehicles.service';
 import type {
 	CreateVehicleInput,
 	UpdateVehicleInput,
-} from "../model/vehicles.model"
+} from '../model/vehicles.model';
 
 function useCreateVehicleMutation() {
-	const queryClient = useQueryClient()
+	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: (input: CreateVehicleInput) => createVehicle(input),
@@ -26,13 +26,13 @@ function useCreateVehicleMutation() {
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.vehicles.catalogRoot,
 				}),
-			])
+			]);
 		},
-	})
+	});
 }
 
 function useUpdateVehicleMutation() {
-	const queryClient = useQueryClient()
+	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: (input: { vehicleId: string; payload: UpdateVehicleInput }) =>
@@ -45,13 +45,13 @@ function useUpdateVehicleMutation() {
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.vehicles.catalogRoot,
 				}),
-			])
+			]);
 		},
-	})
+	});
 }
 
 function useDeactivateVehicleMutation() {
-	const queryClient = useQueryClient()
+	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: (vehicleId: string) => deactivateVehicle(vehicleId),
@@ -63,13 +63,13 @@ function useDeactivateVehicleMutation() {
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.vehicles.catalogRoot,
 				}),
-			])
+			]);
 		},
-	})
+	});
 }
 
 function useDeleteVehicleMutation() {
-	const queryClient = useQueryClient()
+	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: (vehicleId: string) => deleteVehiclePermanently(vehicleId),
@@ -81,9 +81,9 @@ function useDeleteVehicleMutation() {
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.vehicles.catalogRoot,
 				}),
-			])
+			]);
 		},
-	})
+	});
 }
 
 export {
@@ -91,4 +91,4 @@ export {
 	useDeactivateVehicleMutation,
 	useDeleteVehicleMutation,
 	useUpdateVehicleMutation,
-}
+};

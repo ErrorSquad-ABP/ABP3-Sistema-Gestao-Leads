@@ -1,22 +1,22 @@
-import { apiFetch } from "@/lib/http/api-client"
+import { apiFetch } from '@/lib/http/api-client';
 
-import { LEADS_PAGE_LIMIT } from "../lib/leads-pagination"
+import { LEADS_PAGE_LIMIT } from '../lib/leads-pagination';
 import {
 	leadListItemSchema,
 	parseLeadCatalogResponse,
 	parseLeadListPagedResponse,
-} from "../schemas/lead-list.schema"
+} from '../schemas/lead-list.schema';
 import {
 	parseLeadDetailHubResponse,
 	parseLeadDetailResponse,
-} from "../schemas/lead-detail.schema"
+} from '../schemas/lead-detail.schema';
 import {
 	parseLeadCustomerResponse,
 	parseLeadCustomersResponse,
 	parseLeadOwnersResponse,
 	parseLeadStoreResponse,
 	parseLeadStoresResponse,
-} from "../schemas/lead-support.schema"
+} from '../schemas/lead-support.schema';
 import type {
 	CreateLeadInput,
 	LeadCustomer,
@@ -25,65 +25,65 @@ import type {
 	LeadStore,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from "../model/leads.model"
+} from '../model/leads.model';
 
 type LeadsListQueryOptions = {
-	withoutOpenDeal?: boolean
-}
+	withoutOpenDeal?: boolean;
+};
 
 type LeadCatalogFilters = {
-	search?: string
-	status?: string
-	source?: string
-	storeId?: string
-	ownerUserId?: string
-	activityStartDate?: string
-	activityEndDate?: string
-	sort?: "recent" | "last_activity" | "status" | "source"
-	page: number
-	limit: number
-}
+	search?: string;
+	status?: string;
+	source?: string;
+	storeId?: string;
+	ownerUserId?: string;
+	activityStartDate?: string;
+	activityEndDate?: string;
+	sort?: 'recent' | 'last_activity' | 'status' | 'source';
+	page: number;
+	limit: number;
+};
 
 function leadCatalogQuery(filters: LeadCatalogFilters): string {
-	const params = new URLSearchParams()
+	const params = new URLSearchParams();
 	if (filters.search?.trim()) {
-		params.set("search", filters.search.trim())
+		params.set('search', filters.search.trim());
 	}
 	if (filters.status) {
-		params.set("status", filters.status)
+		params.set('status', filters.status);
 	}
 	if (filters.source) {
-		params.set("source", filters.source)
+		params.set('source', filters.source);
 	}
 	if (filters.storeId) {
-		params.set("storeId", filters.storeId)
+		params.set('storeId', filters.storeId);
 	}
 	if (filters.ownerUserId) {
-		params.set("ownerUserId", filters.ownerUserId)
+		params.set('ownerUserId', filters.ownerUserId);
 	}
 	if (filters.activityStartDate) {
-		params.set("activityStartDate", filters.activityStartDate)
+		params.set('activityStartDate', filters.activityStartDate);
 	}
 	if (filters.activityEndDate) {
-		params.set("activityEndDate", filters.activityEndDate)
+		params.set('activityEndDate', filters.activityEndDate);
 	}
 	if (filters.sort) {
-		params.set("sort", filters.sort)
+		params.set('sort', filters.sort);
 	}
-	params.set("page", String(filters.page))
-	params.set("limit", String(filters.limit))
-	return params.toString()
+	params.set('page', String(filters.page));
+	params.set('limit', String(filters.limit));
+	return params.toString();
 }
 
 function leadsListQuery(page: number, options?: LeadsListQueryOptions): string {
 	const params = new URLSearchParams({
 		page: String(page),
 		limit: String(LEADS_PAGE_LIMIT),
-	})
+	});
 	if (options?.withoutOpenDeal) {
-		params.set("withoutOpenDeal", "true")
+		params.set('withoutOpenDeal', 'true');
 	}
-	return params.toString()
+	return params.toString();
 }
 
 /**
@@ -95,26 +95,26 @@ async function fetchLeadsByOwner(
 	ownerUserId: string,
 	page: number,
 	signal?: AbortSignal,
-	options?: LeadsListQueryOptions
+	options?: LeadsListQueryOptions,
 ) {
 	const raw = await apiFetch<unknown>(
 		`/api/leads/owner/${ownerUserId}?${leadsListQuery(page, options)}`,
 		{
 			signal,
-		}
-	)
-	return parseLeadListPagedResponse(raw)
+		},
+	);
+	return parseLeadListPagedResponse(raw);
 }
 
 async function fetchLeadCatalog(
 	filters: LeadCatalogFilters,
-	signal?: AbortSignal
+	signal?: AbortSignal,
 ) {
-	const query = leadCatalogQuery(filters)
+	const query = leadCatalogQuery(filters);
 	const raw = await apiFetch<unknown>(`/api/leads/catalog?${query}`, {
 		signal,
-	})
-	return parseLeadCatalogResponse(raw)
+	});
+	return parseLeadCatalogResponse(raw);
 }
 
 /**
@@ -123,15 +123,15 @@ async function fetchLeadCatalog(
 async function fetchLeadsManager(
 	page: number,
 	signal?: AbortSignal,
-	options?: LeadsListQueryOptions
+	options?: LeadsListQueryOptions,
 ) {
 	const raw = await apiFetch<unknown>(
 		`/api/leads/manager?${leadsListQuery(page, options)}`,
 		{
 			signal,
-		}
-	)
-	return parseLeadListPagedResponse(raw)
+		},
+	);
+	return parseLeadListPagedResponse(raw);
 }
 
 /**
@@ -142,15 +142,15 @@ async function fetchLeadsByTeam(
 	teamId: string,
 	page: number,
 	signal?: AbortSignal,
-	options?: LeadsListQueryOptions
+	options?: LeadsListQueryOptions,
 ) {
 	const raw = await apiFetch<unknown>(
 		`/api/leads/team/${teamId}?${leadsListQuery(page, options)}`,
 		{
 			signal,
-		}
-	)
-	return parseLeadListPagedResponse(raw)
+		},
+	);
+	return parseLeadListPagedResponse(raw);
 }
 
 /**
@@ -159,183 +159,185 @@ async function fetchLeadsByTeam(
 async function fetchLeadsAll(
 	page: number,
 	signal?: AbortSignal,
-	options?: LeadsListQueryOptions
+	options?: LeadsListQueryOptions,
 ) {
 	const raw = await apiFetch<unknown>(
 		`/api/leads/all?${leadsListQuery(page, options)}`,
 		{
 			signal,
-		}
-	)
-	return parseLeadListPagedResponse(raw)
+		},
+	);
+	return parseLeadListPagedResponse(raw);
 }
 
 async function findLeadById(leadId: string, signal?: AbortSignal) {
-	const raw = await apiFetch<unknown>(`/api/leads/${leadId}`, { signal })
-	return parseLeadDetailResponse(raw)
+	const raw = await apiFetch<unknown>(`/api/leads/${leadId}`, { signal });
+	return parseLeadDetailResponse(raw);
 }
 
 async function findLeadDetailHub(leadId: string, signal?: AbortSignal) {
 	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/detail`, {
 		signal,
-	})
-	return parseLeadDetailHubResponse(raw)
+	});
+	return parseLeadDetailHubResponse(raw);
 }
 
 async function createLead(input: CreateLeadInput): Promise<LeadListItem> {
-	const raw = await apiFetch<unknown>("/api/leads", {
-		method: "POST",
+	const raw = await apiFetch<unknown>('/api/leads', {
+		method: 'POST',
 		body: input,
-	})
-	const parsed = leadListItemSchema.safeParse(raw)
+	});
+	const parsed = leadListItemSchema.safeParse(raw);
 	if (!parsed.success) {
-		throw new Error("Resposta da API em formato inesperado ao criar lead.")
+		throw new Error('Resposta da API em formato inesperado ao criar lead.');
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 async function updateLead(
 	leadId: string,
-	input: UpdateLeadInput
+	input: UpdateLeadInput,
 ): Promise<LeadListItem> {
 	const raw = await apiFetch<unknown>(`/api/leads/${leadId}`, {
-		method: "PATCH",
+		method: 'PATCH',
 		body: input,
-	})
-	const parsed = leadListItemSchema.safeParse(raw)
+	});
+	const parsed = leadListItemSchema.safeParse(raw);
 	if (!parsed.success) {
-		throw new Error("Resposta da API em formato inesperado ao atualizar lead.")
+		throw new Error('Resposta da API em formato inesperado ao atualizar lead.');
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 async function reassignLead(
 	leadId: string,
-	input: ReassignLeadInput
+	input: ReassignLeadInput,
 ): Promise<LeadListItem> {
 	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/reassign`, {
-		method: "PATCH",
+		method: 'PATCH',
 		body: input,
-	})
-	const parsed = leadListItemSchema.safeParse(raw)
+	});
+	const parsed = leadListItemSchema.safeParse(raw);
 	if (!parsed.success) {
-		throw new Error("Resposta da API em formato inesperado ao reatribuir lead.")
+		throw new Error(
+			'Resposta da API em formato inesperado ao reatribuir lead.',
+		);
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 async function convertLead(leadId: string): Promise<LeadListItem> {
 	const raw = await apiFetch<unknown>(`/api/leads/${leadId}/convert`, {
-		method: "PATCH",
-	})
-	const parsed = leadListItemSchema.safeParse(raw)
+		method: 'PATCH',
+	});
+	const parsed = leadListItemSchema.safeParse(raw);
 	if (!parsed.success) {
-		throw new Error("Resposta da API em formato inesperado ao converter lead.")
+		throw new Error('Resposta da API em formato inesperado ao converter lead.');
 	}
-	return parsed.data
+	return parsed.data;
 }
 
 async function deleteLead(leadId: string): Promise<void> {
 	await apiFetch(`/api/leads/${leadId}`, {
-		method: "DELETE",
-	})
+		method: 'DELETE',
+	});
 }
 
 type CreateCustomerBody = {
-	name: string
-	email?: string | null
-	phone?: string | null
-	cpf?: string | null
-}
+	name: string;
+	email?: string | null;
+	phone?: string | null;
+	cpf?: string | null;
+};
 
 type UpdateCustomerBody = {
-	name?: string
-	email?: string | null
-	phone?: string | null
-	cpf?: string | null
-}
+	name?: string;
+	email?: string | null;
+	phone?: string | null;
+	cpf?: string | null;
+};
 
 type CreateStoreBody = {
-	name: string
-}
+	name: string;
+};
 
 type UpdateStoreBody = {
-	name?: string
-}
+	name?: string;
+};
 
 async function listLeadCustomers(
-	signal?: AbortSignal
+	signal?: AbortSignal,
 ): Promise<LeadCustomer[]> {
-	const raw = await apiFetch<unknown>("/api/customers", {
+	const raw = await apiFetch<unknown>('/api/customers', {
 		signal,
-	})
-	return parseLeadCustomersResponse(raw)
+	});
+	return parseLeadCustomersResponse(raw);
 }
 
 async function createCustomer(body: CreateCustomerBody): Promise<LeadCustomer> {
-	const raw = await apiFetch<unknown>("/api/customers", {
-		method: "POST",
+	const raw = await apiFetch<unknown>('/api/customers', {
+		method: 'POST',
 		body,
-	})
-	return parseLeadCustomerResponse(raw)
+	});
+	return parseLeadCustomerResponse(raw);
 }
 
 async function updateCustomer(
 	customerId: string,
-	body: UpdateCustomerBody
+	body: UpdateCustomerBody,
 ): Promise<LeadCustomer> {
 	const raw = await apiFetch<unknown>(`/api/customers/${customerId}`, {
-		method: "PATCH",
+		method: 'PATCH',
 		body,
-	})
-	return parseLeadCustomerResponse(raw)
+	});
+	return parseLeadCustomerResponse(raw);
 }
 
 async function deleteCustomer(customerId: string): Promise<void> {
 	await apiFetch(`/api/customers/${customerId}`, {
-		method: "DELETE",
-	})
+		method: 'DELETE',
+	});
 }
 
 async function listLeadStores(signal?: AbortSignal): Promise<LeadStore[]> {
-	const raw = await apiFetch<unknown>("/api/leads/catalog/stores", {
+	const raw = await apiFetch<unknown>('/api/leads/catalog/stores', {
 		signal,
-	})
-	return parseLeadStoresResponse(raw)
+	});
+	return parseLeadStoresResponse(raw);
 }
 
 async function createStore(body: CreateStoreBody): Promise<LeadStore> {
-	const raw = await apiFetch<unknown>("/api/stores", {
-		method: "POST",
+	const raw = await apiFetch<unknown>('/api/stores', {
+		method: 'POST',
 		body,
-	})
-	return parseLeadStoreResponse(raw)
+	});
+	return parseLeadStoreResponse(raw);
 }
 
 async function updateStore(
 	storeId: string,
-	body: UpdateStoreBody
+	body: UpdateStoreBody,
 ): Promise<LeadStore> {
 	const raw = await apiFetch<unknown>(`/api/stores/${storeId}`, {
-		method: "PATCH",
+		method: 'PATCH',
 		body,
-	})
-	return parseLeadStoreResponse(raw)
+	});
+	return parseLeadStoreResponse(raw);
 }
 
 async function deleteStore(storeId: string): Promise<void> {
 	await apiFetch(`/api/stores/${storeId}`, {
-		method: "DELETE",
-	})
+		method: 'DELETE',
+	});
 }
 
 async function listLeadOwners(
-	signal?: AbortSignal
+	signal?: AbortSignal,
 ): Promise<LeadOwnerRecord[]> {
-	const raw = await apiFetch<unknown>("/api/leads/catalog/owners", {
+	const raw = await apiFetch<unknown>('/api/leads/catalog/owners', {
 		signal,
-	})
-	return parseLeadOwnersResponse(raw)
+	});
+	return parseLeadOwnersResponse(raw);
 }
 
 export {
@@ -360,11 +362,11 @@ export {
 	updateCustomer,
 	updateLead,
 	updateStore,
-}
+};
 export type {
 	CreateCustomerBody,
 	CreateStoreBody,
 	LeadCatalogFilters,
 	UpdateCustomerBody,
 	UpdateStoreBody,
-}
+};

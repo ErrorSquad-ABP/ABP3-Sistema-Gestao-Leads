@@ -1,13 +1,13 @@
-import type { Metadata } from "next"
+import type { Metadata } from 'next';
 
-import { ErrorState } from "@/components/shared/ErrorState"
-import { appRoutes } from "@/lib/routes/app-routes"
+import { ErrorState } from '@/components/shared/ErrorState';
+import { appRoutes } from '@/lib/routes/app-routes';
 
 const metadata: Metadata = {
-	title: "Acesso negado | Sistema de Gestão de Leads",
+	title: 'Acesso negado | Sistema de Gestão de Leads',
 	description:
-		"Tratamento visual de permissão insuficiente para áreas protegidas do sistema.",
-}
+		'Tratamento visual de permissão insuficiente para áreas protegidas do sistema.',
+};
 
 function ForbiddenPage() {
 	return (
@@ -17,16 +17,16 @@ function ForbiddenPage() {
 			eyebrow="Acesso negado"
 			primaryAction={{
 				href: appRoutes.app.root,
-				label: "Voltar ao início autenticado",
+				label: 'Voltar ao início autenticado',
 			}}
 			secondaryAction={{
 				href: appRoutes.auth.login,
-				label: "Trocar de conta",
+				label: 'Trocar de conta',
 			}}
 			title="Você não tem permissão para acessar esta área."
 		/>
-	)
+	);
 }
 
-export { metadata }
-export default ForbiddenPage
+export { metadata };
+export default ForbiddenPage;

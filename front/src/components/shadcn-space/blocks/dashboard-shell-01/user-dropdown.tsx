@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { useState, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import { useQueryClient } from "@tanstack/react-query"
-import type { AuthenticatedUser } from "@/features/login/types/login.types"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
+import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -13,80 +13,80 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { type LucideIcon, LogOut, Mail, ShieldCheck } from "lucide-react"
-import { queryKeys } from "@/lib/constants/query-keys"
-import { clearAccessToken } from "@/lib/auth/access-token"
-import { appRoutes } from "@/lib/routes/app-routes"
-import { logout } from "@/features/login/api/login.service"
+} from '@/components/ui/dropdown-menu';
+import { type LucideIcon, LogOut, Mail, ShieldCheck } from 'lucide-react';
+import { queryKeys } from '@/lib/constants/query-keys';
+import { clearAccessToken } from '@/lib/auth/access-token';
+import { appRoutes } from '@/lib/routes/app-routes';
+import { logout } from '@/features/login/api/login.service';
 
 type Props = {
-	trigger: ReactNode
-	currentUser: AuthenticatedUser
-	defaultOpen?: boolean
-	align?: "start" | "center" | "end"
-}
+	trigger: ReactNode;
+	currentUser: AuthenticatedUser;
+	defaultOpen?: boolean;
+	align?: 'start' | 'center' | 'end';
+};
 
 type MenuItem = {
-	label: string
-	icon: LucideIcon
-	href?: string
-}
+	label: string;
+	icon: LucideIcon;
+	href?: string;
+};
 
 const MANAGE_ACCOUNT_ITEMS: MenuItem[] = [
-	{ label: "Perfil", icon: ShieldCheck, href: appRoutes.app.profile },
+	{ label: 'Perfil', icon: ShieldCheck, href: appRoutes.app.profile },
 	{
-		label: "Credenciais",
+		label: 'Credenciais',
 		icon: Mail,
 		href: `${appRoutes.app.profile}#credentials`,
 	},
-]
+];
 
 const LOGOUT_ITEM: MenuItem = {
-	label: "Sair",
+	label: 'Sair',
 	icon: LogOut,
-}
+};
 
 const itemClass =
-	"cursor-pointer gap-2 rounded-xl bg-transparent p-2 text-sm font-medium text-slate-100 data-[highlighted]:!bg-transparent focus:!bg-transparent"
+	'cursor-pointer gap-2 rounded-xl bg-transparent p-2 text-sm font-medium text-slate-100 data-[highlighted]:!bg-transparent focus:!bg-transparent';
 
 function getInitials(name: string) {
 	return name
 		.trim()
 		.split(/\s+/)
 		.slice(0, 2)
-		.map((part) => part.at(0)?.toUpperCase() ?? "")
-		.join("")
+		.map((part) => part.at(0)?.toUpperCase() ?? '')
+		.join('');
 }
 
 const UserDropdown = ({
 	trigger,
 	currentUser,
 	defaultOpen,
-	align = "end",
+	align = 'end',
 }: Props) => {
-	const router = useRouter()
-	const queryClient = useQueryClient()
-	const [isLoggingOut, setIsLoggingOut] = useState(false)
-	const [highlightedItem, setHighlightedItem] = useState<string | null>(null)
+	const router = useRouter();
+	const queryClient = useQueryClient();
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
+	const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
 
 	async function handleLogout() {
-		setIsLoggingOut(true)
+		setIsLoggingOut(true);
 
 		try {
-			await logout()
+			await logout();
 		} finally {
-			clearAccessToken()
-			queryClient.setQueryData(queryKeys.auth.currentUser, null)
-			await queryClient.cancelQueries({ queryKey: queryKeys.auth.currentUser })
-			router.replace(appRoutes.auth.login)
-			router.refresh()
-			setIsLoggingOut(false)
+			clearAccessToken();
+			queryClient.setQueryData(queryKeys.auth.currentUser, null);
+			await queryClient.cancelQueries({ queryKey: queryKeys.auth.currentUser });
+			router.replace(appRoutes.auth.login);
+			router.refresh();
+			setIsLoggingOut(false);
 		}
 	}
 
 	function isHighlighted(label: string) {
-		return highlightedItem === label
+		return highlightedItem === label;
 	}
 
 	return (
@@ -133,23 +133,23 @@ const UserDropdown = ({
 								onPointerLeave={() => setHighlightedItem(null)}
 								onSelect={() => {
 									if (href) {
-										router.push(href)
+										router.push(href);
 									}
 								}}
 								style={{
-									backgroundColor: "transparent",
-									color: isHighlighted(label) ? "#D96C3F" : undefined,
+									backgroundColor: 'transparent',
+									color: isHighlighted(label) ? '#D96C3F' : undefined,
 								}}
 							>
 								<Icon
 									style={{
-										color: isHighlighted(label) ? "#D96C3F" : undefined,
+										color: isHighlighted(label) ? '#D96C3F' : undefined,
 									}}
 									size={20}
 								/>
 								<span
 									style={{
-										color: isHighlighted(label) ? "#D96C3F" : undefined,
+										color: isHighlighted(label) ? '#D96C3F' : undefined,
 									}}
 								>
 									{label}
@@ -168,32 +168,32 @@ const UserDropdown = ({
 						onPointerMove={() => setHighlightedItem(LOGOUT_ITEM.label)}
 						onPointerLeave={() => setHighlightedItem(null)}
 						onSelect={(event) => {
-							event.preventDefault()
-							void handleLogout()
+							event.preventDefault();
+							void handleLogout();
 						}}
 						style={{
-							backgroundColor: "transparent",
-							color: isHighlighted(LOGOUT_ITEM.label) ? "#D96C3F" : undefined,
+							backgroundColor: 'transparent',
+							color: isHighlighted(LOGOUT_ITEM.label) ? '#D96C3F' : undefined,
 						}}
 					>
 						<LOGOUT_ITEM.icon
 							style={{
-								color: isHighlighted(LOGOUT_ITEM.label) ? "#D96C3F" : undefined,
+								color: isHighlighted(LOGOUT_ITEM.label) ? '#D96C3F' : undefined,
 							}}
 							size={20}
 						/>
 						<span
 							style={{
-								color: isHighlighted(LOGOUT_ITEM.label) ? "#D96C3F" : undefined,
+								color: isHighlighted(LOGOUT_ITEM.label) ? '#D96C3F' : undefined,
 							}}
 						>
-							{isLoggingOut ? "Saindo..." : LOGOUT_ITEM.label}
+							{isLoggingOut ? 'Saindo...' : LOGOUT_ITEM.label}
 						</span>
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</div>
-	)
-}
+	);
+};
 
-export default UserDropdown
+export default UserDropdown;

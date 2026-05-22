@@ -1,82 +1,82 @@
-import { z } from "zod"
+import { z } from 'zod';
 
 import {
 	isBrlApiDecimalAtOrUnderDbMax,
 	MONEY_BRL_EXCEEDS_DB_LIMIT,
-} from "@/lib/money-brl-limits"
+} from '@/lib/money-brl-limits';
 
 import {
 	dealImportances,
 	dealLossReasons,
 	dealStages,
 	dealStatuses,
-} from "./deal.schema"
+} from './deal.schema';
 
-const pricePattern = /^\d+(\.\d{2})$/
+const pricePattern = /^\d+(\.\d{2})$/;
 
 const dealCreateSchema = z.object({
-	vehicleId: z.string().uuid("Informe um veículo válido."),
-	title: z.string().trim().min(1, "Informe um título."),
+	vehicleId: z.string().uuid('Informe um veículo válido.'),
+	title: z.string().trim().min(1, 'Informe um título.'),
 	value: z
-		.union([z.string().trim(), z.literal(""), z.null(), z.undefined()])
+		.union([z.string().trim(), z.literal(''), z.null(), z.undefined()])
 		.transform((value) => {
-			if (value === "" || value === undefined) {
-				return null
+			if (value === '' || value === undefined) {
+				return null;
 			}
-			return value as string | null
+			return value as string | null;
 		})
 		.refine((value) => value === null || pricePattern.test(value), {
-			message: "Informe um valor no formato 45000.00 ou deixe vazio.",
+			message: 'Informe um valor no formato 45000.00 ou deixe vazio.',
 		})
 		.refine((value) => isBrlApiDecimalAtOrUnderDbMax(value ?? null), {
 			message: MONEY_BRL_EXCEEDS_DB_LIMIT,
 		}),
 	importance: z
 		.enum(dealImportances, {
-			message: "Selecione uma importância válida.",
+			message: 'Selecione uma importância válida.',
 		})
 		.optional(),
 	stage: z
 		.enum(dealStages, {
-			message: "Selecione uma etapa válida.",
+			message: 'Selecione uma etapa válida.',
 		})
 		.optional(),
-})
+});
 
 const dealUpdateSchema = z
 	.object({
-		vehicleId: z.string().uuid("Informe um veículo válido.").optional(),
-		title: z.string().trim().min(1, "Informe um título.").optional(),
+		vehicleId: z.string().uuid('Informe um veículo válido.').optional(),
+		title: z.string().trim().min(1, 'Informe um título.').optional(),
 		value: z
-			.union([z.string().trim(), z.literal(""), z.null(), z.undefined()])
+			.union([z.string().trim(), z.literal(''), z.null(), z.undefined()])
 			.transform((value) => {
-				if (value === "" || value === undefined) {
-					return undefined
+				if (value === '' || value === undefined) {
+					return undefined;
 				}
-				return value as string | null
+				return value as string | null;
 			})
 			.refine(
 				(value) =>
 					value === undefined || value === null || pricePattern.test(value),
 				{
-					message: "Informe um valor no formato 45000.00 ou deixe vazio.",
-				}
+					message: 'Informe um valor no formato 45000.00 ou deixe vazio.',
+				},
 			)
 			.refine(
 				(value) =>
 					value === undefined ||
 					value === null ||
 					isBrlApiDecimalAtOrUnderDbMax(value),
-				{ message: MONEY_BRL_EXCEEDS_DB_LIMIT }
+				{ message: MONEY_BRL_EXCEEDS_DB_LIMIT },
 			),
 		importance: z.enum(dealImportances).optional(),
 		stage: z.enum(dealStages).optional(),
 		status: z.enum(dealStatuses).optional(),
 		lossReason: z.enum(dealLossReasons).nullable().optional(),
 	})
-	.refine((value) => value.status !== "LOST" || Boolean(value.lossReason), {
-		message: "Informe o motivo da perda.",
-		path: ["lossReason"],
-	})
+	.refine((value) => value.status !== 'LOST' || Boolean(value.lossReason), {
+		message: 'Informe o motivo da perda.',
+		path: ['lossReason'],
+	});
 
-export { dealCreateSchema, dealUpdateSchema }
+export { dealCreateSchema, dealUpdateSchema };

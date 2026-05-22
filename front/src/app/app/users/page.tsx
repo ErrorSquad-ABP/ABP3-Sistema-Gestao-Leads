@@ -1,7 +1,7 @@
-import { UsersManagementScreen } from "@/features/users/components/UsersManagementScreen"
+import { UsersManagementScreen } from '@/features/users/components/UsersManagementScreen';
 
 function UsersPage() {
-	return <UsersManagementScreen />
+	return <UsersManagementScreen />;
 }
 
-export default UsersPage
+export default UsersPage;

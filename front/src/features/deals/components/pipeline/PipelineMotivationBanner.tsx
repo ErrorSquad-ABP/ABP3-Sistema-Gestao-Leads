@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { Trophy } from "lucide-react"
+import { Trophy } from 'lucide-react';
 
 function PipelineMotivationBanner() {
 	return (
@@ -17,7 +17,7 @@ function PipelineMotivationBanner() {
 				</p>
 			</div>
 		</div>
-	)
+	);
 }
 
-export { PipelineMotivationBanner }
+export { PipelineMotivationBanner };

@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { AlertCircle } from "lucide-react"
+import { AlertCircle } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
@@ -10,48 +10,48 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 import type {
 	StoreDialogMode,
 	StoreMutationInput,
 	StoreRecord,
-} from "../model/stores.model"
+} from '../model/stores.model';
 
 type StoreDialogState = {
-	mode: StoreDialogMode
-	store: StoreRecord | null
-}
+	mode: StoreDialogMode;
+	store: StoreRecord | null;
+};
 
 type StoreFormDialogProps = {
-	dialogError: string | null
-	dialogState: StoreDialogState | null
-	isPending: boolean
-	onClose: () => void
-	onSave: () => void
-	onValueChange: (value: string) => void
-	value: string
-}
+	dialogError: string | null;
+	dialogState: StoreDialogState | null;
+	isPending: boolean;
+	onClose: () => void;
+	onSave: () => void;
+	onValueChange: (value: string) => void;
+	value: string;
+};
 
 type StoreDeleteDialogProps = {
-	deleteError: string | null
-	isPending: boolean
-	onClose: () => void
-	onConfirm: () => void
-	target: StoreRecord | null
-}
+	deleteError: string | null;
+	isPending: boolean;
+	onClose: () => void;
+	onConfirm: () => void;
+	target: StoreRecord | null;
+};
 
-const emptyStoreName = ""
+const emptyStoreName = '';
 
 function toStorePayload(name: string): StoreMutationInput | null {
-	const nextName = name.trim()
+	const nextName = name.trim();
 	if (!nextName) {
-		return null
+		return null;
 	}
 
-	return { name: nextName }
+	return { name: nextName };
 }
 
 function StoreFormDialog({
@@ -71,7 +71,7 @@ function StoreFormDialog({
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
 					<DialogTitle>
-						{dialogState?.mode === "edit" ? "Editar loja" : "Nova loja"}
+						{dialogState?.mode === 'edit' ? 'Editar loja' : 'Nova loja'}
 					</DialogTitle>
 					<DialogDescription>
 						Mantenha os nomes das lojas disponíveis para o pipeline.
@@ -102,12 +102,12 @@ function StoreFormDialog({
 						disabled={isPending}
 						onClick={onSave}
 					>
-						{isPending ? "Salvando..." : "Salvar loja"}
+						{isPending ? 'Salvando...' : 'Salvar loja'}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }
 
 function StoreDeleteDialog({
@@ -147,12 +147,12 @@ function StoreDeleteDialog({
 						onClick={onConfirm}
 						variant="destructive"
 					>
-						{isPending ? "Excluindo..." : "Excluir"}
+						{isPending ? 'Excluindo...' : 'Excluir'}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	)
+	);
 }
 
 export {
@@ -161,4 +161,4 @@ export {
 	StoreFormDialog,
 	toStorePayload,
 	type StoreDialogState,
-}
+};

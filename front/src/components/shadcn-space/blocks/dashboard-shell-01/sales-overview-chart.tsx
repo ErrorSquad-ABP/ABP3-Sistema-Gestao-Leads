@@ -1,63 +1,63 @@
-"use client"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+'use client';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
 	type ChartConfig,
-} from "@/components/ui/chart"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+} from '@/components/ui/chart';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 const chartData = [
-	{ month: "Jan", expense: 31, profit: 31, earning: 31 },
-	{ month: "Feb", expense: 83, profit: 83, earning: 83 },
-	{ month: "Mar", expense: 53, profit: 53, earning: 53 },
-	{ month: "Apr", expense: 36, profit: 36, earning: 36 },
-	{ month: "May", expense: 64, profit: 64, earning: 64 },
-	{ month: "Jun", expense: 47, profit: 47, earning: 47 },
-	{ month: "Jul", expense: 95, profit: 95, earning: 95 },
-	{ month: "Aug", expense: 69, profit: 69, earning: 69 },
-	{ month: "Sep", expense: 29, profit: 29, earning: 29 },
-	{ month: "Oct", expense: 73, profit: 73, earning: 73 },
-	{ month: "Nov", expense: 27, profit: 27, earning: 27 },
-	{ month: "Dec", expense: 53, profit: 53, earning: 53 },
-]
+	{ month: 'Jan', expense: 31, profit: 31, earning: 31 },
+	{ month: 'Feb', expense: 83, profit: 83, earning: 83 },
+	{ month: 'Mar', expense: 53, profit: 53, earning: 53 },
+	{ month: 'Apr', expense: 36, profit: 36, earning: 36 },
+	{ month: 'May', expense: 64, profit: 64, earning: 64 },
+	{ month: 'Jun', expense: 47, profit: 47, earning: 47 },
+	{ month: 'Jul', expense: 95, profit: 95, earning: 95 },
+	{ month: 'Aug', expense: 69, profit: 69, earning: 69 },
+	{ month: 'Sep', expense: 29, profit: 29, earning: 29 },
+	{ month: 'Oct', expense: 73, profit: 73, earning: 73 },
+	{ month: 'Nov', expense: 27, profit: 27, earning: 27 },
+	{ month: 'Dec', expense: 53, profit: 53, earning: 53 },
+];
 
 const chartConfig = {
 	expense: {
-		label: "Expense",
-		color: "var(--color-blue-500)",
+		label: 'Expense',
+		color: 'var(--color-blue-500)',
 	},
 	profit: {
-		label: "Profit",
-		color: "var(--color-sky-400)",
+		label: 'Profit',
+		color: 'var(--color-sky-400)',
 	},
 	earning: {
-		label: "Earning",
-		color: "rgba(56, 189, 248, 0.5)",
+		label: 'Earning',
+		color: 'rgba(56, 189, 248, 0.5)',
 	},
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export default function SalesOverviewChart() {
 	const Countries = [
 		{
 			id: 1,
-			title: "Earning",
-			color: "bg-sky-400/50",
+			title: 'Earning',
+			color: 'bg-sky-400/50',
 		},
 		{
 			id: 2,
-			title: "Profit",
-			color: "bg-sky-400",
+			title: 'Profit',
+			color: 'bg-sky-400',
 		},
 		{
 			id: 3,
-			title: "Expense",
-			color: "bg-blue-500",
+			title: 'Expense',
+			color: 'bg-blue-500',
 		},
-	]
+	];
 
 	return (
 		<Card className="w-full gap-6 py-6">
@@ -69,7 +69,7 @@ export default function SalesOverviewChart() {
 							$386.53K
 						</h3>
 						<Badge
-							className={cn("bg-teal-400/10 text-muted-foreground shadow-none")}
+							className={cn('bg-teal-400/10 text-muted-foreground shadow-none')}
 						>
 							+18%
 						</Badge>
@@ -81,7 +81,7 @@ export default function SalesOverviewChart() {
 				<div className="flex items-center gap-3">
 					{Countries.map((item) => (
 						<div key={item.id} className="flex items-center gap-2">
-							<span className={cn("h-2.5 w-2.5 rounded-full", item.color)} />
+							<span className={cn('h-2.5 w-2.5 rounded-full', item.color)} />
 							<p className="text-sm text-muted-foreground">{item.title}</p>
 						</div>
 					))}
@@ -138,5 +138,5 @@ export default function SalesOverviewChart() {
 				</ChartContainer>
 			</CardContent>
 		</Card>
-	)
+	);
 }

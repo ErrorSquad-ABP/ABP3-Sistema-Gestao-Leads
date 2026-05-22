@@ -1,27 +1,30 @@
-"use client"
+'use client';
 
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
-import { STORES_PAGE_SIZE, type StoreTableRow } from "../lib/store-catalog-view"
-import type { StoreRecord } from "../model/stores.model"
-import { StoresTable } from "./StoresTable"
+import {
+	STORES_PAGE_SIZE,
+	type StoreTableRow,
+} from '../lib/store-catalog-view';
+import type { StoreRecord } from '../model/stores.model';
+import { StoresTable } from './StoresTable';
 
 type StoresCatalogCardProps = {
-	canManageStores: boolean
-	errorMessage: string | null
-	filteredCount: number
-	isError: boolean
-	isLoading: boolean
-	onDelete: (store: StoreRecord) => void
-	onEdit: (store: StoreRecord) => void
-	onPageChange: (page: number | ((current: number) => number)) => void
-	page: number
-	rows: StoreTableRow[]
-	totalPages: number
-}
+	canManageStores: boolean;
+	errorMessage: string | null;
+	filteredCount: number;
+	isError: boolean;
+	isLoading: boolean;
+	onDelete: (store: StoreRecord) => void;
+	onEdit: (store: StoreRecord) => void;
+	onPageChange: (page: number | ((current: number) => number)) => void;
+	page: number;
+	rows: StoreTableRow[];
+	totalPages: number;
+};
 
 function StoresCatalogCard({
 	canManageStores,
@@ -69,8 +72,8 @@ function StoresCatalogCard({
 
 				<div className="grid items-center gap-3 text-xs text-[#667085] md:grid-cols-[1fr_auto_1fr]">
 					<span>
-						Exibindo {rows.length === 0 ? 0 : (page - 1) * STORES_PAGE_SIZE + 1}{" "}
-						a {Math.min(page * STORES_PAGE_SIZE, filteredCount)} de{" "}
+						Exibindo {rows.length === 0 ? 0 : (page - 1) * STORES_PAGE_SIZE + 1}{' '}
+						a {Math.min(page * STORES_PAGE_SIZE, filteredCount)} de{' '}
 						{filteredCount} lojas
 					</span>
 					<div className="flex items-center justify-center gap-2">
@@ -113,7 +116,7 @@ function StoresCatalogCard({
 				) : null}
 			</CardContent>
 		</Card>
-	)
+	);
 }
 
-export { StoresCatalogCard }
+export { StoresCatalogCard };

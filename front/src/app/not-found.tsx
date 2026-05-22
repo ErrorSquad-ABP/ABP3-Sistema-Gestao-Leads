@@ -1,13 +1,13 @@
-import type { Metadata } from "next"
+import type { Metadata } from 'next';
 
-import { ErrorState } from "@/components/shared/ErrorState"
-import { appRoutes } from "@/lib/routes/app-routes"
+import { ErrorState } from '@/components/shared/ErrorState';
+import { appRoutes } from '@/lib/routes/app-routes';
 
 const metadata: Metadata = {
-	title: "Página não encontrada | Sistema de Gestão de Leads",
+	title: 'Página não encontrada | Sistema de Gestão de Leads',
 	description:
-		"Tratamento visual de rota inexistente dentro do Sistema de Gestão de Leads.",
-}
+		'Tratamento visual de rota inexistente dentro do Sistema de Gestão de Leads.',
+};
 
 function NotFoundPage() {
 	return (
@@ -17,17 +17,17 @@ function NotFoundPage() {
 			eyebrow="Página não encontrada"
 			primaryAction={{
 				href: appRoutes.app.root,
-				label: "Voltar ao AppShell",
+				label: 'Voltar ao AppShell',
 			}}
 			secondaryAction={{
 				href: appRoutes.root,
-				label: "Ir para a raiz",
-				variant: "secondary",
+				label: 'Ir para a raiz',
+				variant: 'secondary',
 			}}
 			title="Não foi possível localizar a página solicitada."
 		/>
-	)
+	);
 }
 
-export { metadata }
-export default NotFoundPage
+export { metadata };
+export default NotFoundPage;

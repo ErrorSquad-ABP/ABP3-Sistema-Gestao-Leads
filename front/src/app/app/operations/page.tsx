@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation';
 
-import { appRoutes } from "@/lib/routes/app-routes"
+import { appRoutes } from '@/lib/routes/app-routes';
 
 async function OperationsPage() {
-	redirect(appRoutes.app.stores)
+	redirect(appRoutes.app.stores);
 }
 
-export default OperationsPage
+export default OperationsPage;

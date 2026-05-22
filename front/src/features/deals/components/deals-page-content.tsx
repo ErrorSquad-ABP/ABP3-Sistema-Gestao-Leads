@@ -1,23 +1,23 @@
-"use client"
+'use client';
 
-import { useMemo, useState } from "react"
-import { toast } from "sonner"
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
-import { Card, CardContent } from "@/components/ui/card"
-import type { AuthenticatedUser } from "@/features/login/types/login.types"
-import { ApiError } from "@/lib/http/api-error"
+import { Card, CardContent } from '@/components/ui/card';
+import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { ApiError } from '@/lib/http/api-error';
 
 import {
 	useDealsPipelineQuery,
 	useLoadMorePipelineStageMutation,
-} from "../hooks/deals.queries"
+} from '../hooks/deals.queries';
 import {
 	useDeleteDealMutation,
 	useUpdateDealMutation,
-} from "../hooks/deals.mutations"
-import { getDealFormEditBlockReason } from "../lib/deal-edit-guard"
-import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from "../lib/deal-invalid-stage-transition-user-message"
-import { dealDarkSidebarToast } from "../lib/deal-toast-style"
+} from '../hooks/deals.mutations';
+import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
+import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from '../lib/deal-invalid-stage-transition-user-message';
+import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
 	DealImportance,
@@ -26,195 +26,195 @@ import type {
 	DealStage,
 	DealStatus,
 	DealUpdateInput,
-} from "../model/deals.model"
-import { DealConfirmDialog } from "./DealConfirmDialog"
-import { DealCreateDialog } from "./DealCreateDialog"
-import { DealDetailsDialog } from "./DealDetailsDialog"
-import { DealFormDialog, getDealsErrorMessage } from "./DealFormDialog"
-import { NegotiationsPageTop } from "./NegotiationsPageTop"
-import { NegotiationsPipelineSection } from "./pipeline/NegotiationsPipelineSection"
+} from '../model/deals.model';
+import { DealConfirmDialog } from './DealConfirmDialog';
+import { DealCreateDialog } from './DealCreateDialog';
+import { DealDetailsDialog } from './DealDetailsDialog';
+import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
+import { NegotiationsPageTop } from './NegotiationsPageTop';
+import { NegotiationsPipelineSection } from './pipeline/NegotiationsPipelineSection';
 
-const PIPELINE_PAGE_SIZE = 3
-const STAGE_MOVE_SUCCESS_MESSAGE = "Negociação movida com sucesso."
-const STAGE_MOVE_LOADING_MESSAGE = "Atualizando negociação..."
+const PIPELINE_PAGE_SIZE = 3;
+const STAGE_MOVE_SUCCESS_MESSAGE = 'Negociação movida com sucesso.';
+const STAGE_MOVE_LOADING_MESSAGE = 'Atualizando negociação...';
 
 type DealsPageContentProps = {
-	user: AuthenticatedUser
-}
+	user: AuthenticatedUser;
+};
 
 function DealsPageContent({ user }: DealsPageContentProps) {
-	const [statusFilter, setStatusFilter] = useState<"ALL" | DealStatus>("ALL")
+	const [statusFilter, setStatusFilter] = useState<'ALL' | DealStatus>('ALL');
 	const [importanceFilter, setImportanceFilter] = useState<
-		"ALL" | DealImportance
-	>("ALL")
-	const [search, setSearch] = useState("")
+		'ALL' | DealImportance
+	>('ALL');
+	const [search, setSearch] = useState('');
 	const [pipelineSortMode, setPipelineSortMode] =
-		useState<DealPipelineSortMode>("recent")
+		useState<DealPipelineSortMode>('recent');
 
 	const pipelineQuery = useMemo(() => {
 		const base = {
 			pageSize: PIPELINE_PAGE_SIZE,
-			status: statusFilter === "ALL" ? undefined : (statusFilter as DealStatus),
+			status: statusFilter === 'ALL' ? undefined : (statusFilter as DealStatus),
 			importance:
-				importanceFilter === "ALL"
+				importanceFilter === 'ALL'
 					? undefined
 					: (importanceFilter as DealImportance),
 			search,
-			...(pipelineSortMode === "value_asc"
-				? { valueSort: "asc" as const }
-				: pipelineSortMode === "value_desc"
-					? { valueSort: "desc" as const }
+			...(pipelineSortMode === 'value_asc'
+				? { valueSort: 'asc' as const }
+				: pipelineSortMode === 'value_desc'
+					? { valueSort: 'desc' as const }
 					: {}),
-		}
-		return base
-	}, [importanceFilter, pipelineSortMode, search, statusFilter])
-	const query = useDealsPipelineQuery(pipelineQuery)
-	const loadMoreStageMutation = useLoadMorePipelineStageMutation(pipelineQuery)
+		};
+		return base;
+	}, [importanceFilter, pipelineSortMode, search, statusFilter]);
+	const query = useDealsPipelineQuery(pipelineQuery);
+	const loadMoreStageMutation = useLoadMorePipelineStageMutation(pipelineQuery);
 
-	const deleteDealMutation = useDeleteDealMutation()
-	const updateDealMutation = useUpdateDealMutation()
+	const deleteDealMutation = useDeleteDealMutation();
+	const updateDealMutation = useUpdateDealMutation();
 
-	const [detailsOpen, setDetailsOpen] = useState(false)
-	const [createOpen, setCreateOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [dialogError, setDialogError] = useState<string | null>(null)
+	const [detailsOpen, setDetailsOpen] = useState(false);
+	const [createOpen, setCreateOpen] = useState(false);
+	const [editOpen, setEditOpen] = useState(false);
+	const [deleteOpen, setDeleteOpen] = useState(false);
+	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [updatingStageDealId, setUpdatingStageDealId] = useState<string | null>(
-		null
-	)
-	const [targetDeal, setTargetDeal] = useState<Deal | null>(null)
+		null,
+	);
+	const [targetDeal, setTargetDeal] = useState<Deal | null>(null);
 
-	const pipeline = query.data
-	const stages = useMemo(() => pipeline?.stages ?? [], [pipeline?.stages])
+	const pipeline = query.data;
+	const stages = useMemo(() => pipeline?.stages ?? [], [pipeline?.stages]);
 	const visibleDeals = useMemo(
 		() => stages.flatMap((stage) => stage.items),
-		[stages]
-	)
+		[stages],
+	);
 
 	/** Alinha com a política do backend: só oferece editar/excluir quando há linhas com `canMutate` na vista atual. */
 	const canMutateInView = useMemo(
 		() => visibleDeals.some((d) => d.canMutate),
-		[visibleDeals]
-	)
+		[visibleDeals],
+	);
 
 	function handleLoadMoreStage(stage: DealPipelineStage) {
 		if (!stage.hasNextPage || loadMoreStageMutation.isPending) {
-			return
+			return;
 		}
 		loadMoreStageMutation.mutate({
 			stage: stage.key,
 			page: stage.page + 1,
-		})
+		});
 	}
 
 	function handleInvalidStageMove() {
 		toast.error(DEAL_INVALID_STAGE_SKIP_USER_MESSAGE, {
-			id: "deal-stage-invalid-move",
+			id: 'deal-stage-invalid-move',
 			...dealDarkSidebarToast,
-		})
+		});
 	}
 
 	function handlePipelineMoveBlocked(reason: string) {
 		toast.error(reason, {
-			id: "deal-edit-blocked",
+			id: 'deal-edit-blocked',
 			...dealDarkSidebarToast,
-		})
+		});
 	}
 
 	async function handleMoveStage(deal: Deal, targetStage: DealStage) {
-		const editBlockReason = getDealFormEditBlockReason(deal)
+		const editBlockReason = getDealFormEditBlockReason(deal);
 		if (editBlockReason) {
 			toast.error(editBlockReason, {
-				id: "deal-edit-blocked",
+				id: 'deal-edit-blocked',
 				...dealDarkSidebarToast,
-			})
-			return
+			});
+			return;
 		}
 
-		setUpdatingStageDealId(deal.id)
+		setUpdatingStageDealId(deal.id);
 		const toastId = toast.loading(STAGE_MOVE_LOADING_MESSAGE, {
 			...dealDarkSidebarToast,
-		})
+		});
 		try {
 			await updateDealMutation.mutateAsync({
 				dealId: deal.id,
 				payload: { stage: targetStage, value: undefined },
-			})
+			});
 			toast.success(STAGE_MOVE_SUCCESS_MESSAGE, {
 				id: toastId,
 				...dealDarkSidebarToast,
-			})
+			});
 		} catch (error) {
-			const message = getDealsErrorMessage(error)
+			const message = getDealsErrorMessage(error);
 			toast.error(message, {
 				id: toastId,
 				...dealDarkSidebarToast,
-			})
+			});
 		} finally {
-			setUpdatingStageDealId(null)
+			setUpdatingStageDealId(null);
 		}
 	}
 
 	function openDetails(deal: Deal) {
-		setTargetDeal(deal)
-		setDetailsOpen(true)
+		setTargetDeal(deal);
+		setDetailsOpen(true);
 	}
 
 	function openEdit(deal: Deal) {
-		const blockReason = getDealFormEditBlockReason(deal)
+		const blockReason = getDealFormEditBlockReason(deal);
 		if (blockReason) {
 			toast.error(blockReason, {
-				id: "deal-edit-blocked",
+				id: 'deal-edit-blocked',
 				...dealDarkSidebarToast,
-			})
-			return
+			});
+			return;
 		}
-		setDialogError(null)
-		setTargetDeal(deal)
-		setEditOpen(true)
+		setDialogError(null);
+		setTargetDeal(deal);
+		setEditOpen(true);
 	}
 
 	function openDelete(deal: Deal) {
 		if (!deal.canMutate) {
-			return
+			return;
 		}
-		setDialogError(null)
-		setTargetDeal(deal)
-		setDeleteOpen(true)
+		setDialogError(null);
+		setTargetDeal(deal);
+		setDeleteOpen(true);
 	}
 
 	async function handleEditSubmit(values: DealUpdateInput) {
-		if (!targetDeal) return
+		if (!targetDeal) return;
 		await updateDealMutation.mutateAsync({
 			dealId: targetDeal.id,
 			payload: values,
-		})
+		});
 	}
 
 	async function handleDeleteConfirm() {
-		if (!targetDeal) return
-		setDialogError(null)
+		if (!targetDeal) return;
+		setDialogError(null);
 		try {
 			await deleteDealMutation.mutateAsync({
 				dealId: targetDeal.id,
 				leadId: targetDeal.leadId,
-			})
-			toast.success("Negociação excluída com sucesso.", {
+			});
+			toast.success('Negociação excluída com sucesso.', {
 				...dealDarkSidebarToast,
-			})
-			setDeleteOpen(false)
-			setTargetDeal(null)
+			});
+			setDeleteOpen(false);
+			setTargetDeal(null);
 		} catch (error) {
-			const message = getDealsErrorMessage(error)
-			setDialogError(message)
+			const message = getDealsErrorMessage(error);
+			setDialogError(message);
 			toast.error(message, {
 				...dealDarkSidebarToast,
-			})
+			});
 		}
 	}
 
 	return (
-		<div className="space-y-6" aria-busy={query.isPending ? "true" : "false"}>
+		<div className="space-y-6" aria-busy={query.isPending ? 'true' : 'false'}>
 			<NegotiationsPageTop
 				deals={visibleDeals}
 				onCreateDeal={() => setCreateOpen(true)}
@@ -229,7 +229,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 				>
 					{query.error instanceof ApiError
 						? query.error.message
-						: "Não foi possível carregar as negociações."}
+						: 'Não foi possível carregar as negociações.'}
 				</div>
 			) : null}
 
@@ -273,8 +273,8 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 			<DealDetailsDialog
 				deal={targetDeal}
 				onClose={() => {
-					setDetailsOpen(false)
-					setTargetDeal(null)
+					setDetailsOpen(false);
+					setTargetDeal(null);
 				}}
 				open={detailsOpen}
 			/>
@@ -290,8 +290,8 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 			<DealFormDialog
 				isPending={updateDealMutation.isPending}
 				onClose={() => {
-					setEditOpen(false)
-					setTargetDeal(null)
+					setEditOpen(false);
+					setTargetDeal(null);
 				}}
 				onSubmit={handleEditSubmit}
 				open={editOpen}
@@ -303,21 +303,21 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 				description={
 					targetDeal
 						? `A negociação «${targetDeal.title}» será removida permanentemente.`
-						: "Confirme a exclusão da negociação selecionada."
+						: 'Confirme a exclusão da negociação selecionada.'
 				}
 				error={dialogError}
 				isPending={deleteDealMutation.isPending}
 				onClose={() => {
-					setDeleteOpen(false)
-					setTargetDeal(null)
-					setDialogError(null)
+					setDeleteOpen(false);
+					setTargetDeal(null);
+					setDialogError(null);
 				}}
 				onConfirm={handleDeleteConfirm}
 				open={deleteOpen}
 				title="Excluir negociação"
 			/>
 		</div>
-	)
+	);
 }
 
-export { DealsPageContent }
+export { DealsPageContent };
