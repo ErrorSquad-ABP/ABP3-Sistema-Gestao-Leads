@@ -8,6 +8,8 @@ services:
       - ./back:/app/back
       # Preserve workspace deps from the image; the bind mount above would hide back/node_modules.
       - /app/back/node_modules
+      # Evita dist/ e artefatos de build como root no host ao alternar Docker ↔ native.
+      - back-dev-artifacts:/app/back/dist
 
   front:
     build:
@@ -17,3 +19,9 @@ services:
     volumes:
       - ./front:/app/front
       - /app/front/node_modules
+      # .next no volume nomeado — não polui front/.next no host (EACCES ao rodar native depois).
+      - front-next-cache:/app/front/.next
+
+volumes:
+  front-next-cache:
+  back-dev-artifacts:

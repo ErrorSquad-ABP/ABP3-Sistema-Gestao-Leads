@@ -52,7 +52,7 @@ Frentes remanescentes para a Sprint 3:
 - Regras de autorização aplicadas exclusivamente no backend.
 - Quality gate com `Biome`, `ESLint` e `TypeScript`.
 - Produção atual em `Vercel + Neon`.
-- Compose local secundário com PostgreSQL para conformidade e uso externo.
+- Quatro modos de subida local documentados (Docker/native × banco remoto/local).
 
 ## Stack
 
@@ -74,6 +74,7 @@ Frentes remanescentes para a Sprint 3:
 ├── infra/
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
+├── docker-compose.postgres.yml
 ├── docker-compose.local.yml
 ├── eslint.config.cjs
 ├── biome.json
@@ -149,15 +150,37 @@ npm run quality:gate:blocking
 
 ## Subida local
 
-O projeto mantém dois modos locais: o fluxo padrão do time sobe `front` e `back` usando a `DATABASE_URL` do `back/.env`, enquanto o modo secundário de conformidade sobe `front + back + PostgreSQL` via `docker-compose.local.yml`.
+Quatro modos oficiais (escolha **um**). Detalhes em [docs/runbooks/local-setup.md](./docs/runbooks/local-setup.md).
 
-### Desenvolvimento
+| Comando | Docker | Banco |
+| --- | --- | --- |
+| `npm run start:docker:remote` | Sim | Neon / `back/.env` |
+| `npm run start:docker:local` | Sim | Postgres no Compose |
+| `npm run start:native:remote` | Não | Neon / `back/.env` |
+| `npm run start:native:local` | Não | `localhost:5433` |
+
+Windows sem Docker Desktop: [docs/runbooks/setup-windows.md](./docs/runbooks/setup-windows.md).
+
+### Início rápido (Docker + banco remoto)
 
 ```bash
 npm install
 cp back/.env.example back/.env
-npm run dev
+# Preencher DATABASE_URL (Neon), JWT e FRONTEND_ORIGINS
+npm run start:docker:remote
 ```
+
+### Início rápido (sem Docker — PCs da faculdade)
+
+```bash
+npm install
+cp back/.env.example back/.env
+cp front/.env.example front/.env
+npm run db:migrate && npm run db:seed
+npm run start:native:remote
+```
+
+Aliases: `npm run dev` = `start:docker:remote`, `npm run dev:local` = `start:docker:local`.
 
 ### Produção atual
 

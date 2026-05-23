@@ -12,7 +12,7 @@
 ## Fluxo recomendado
 
 1. Criar branch a partir de `develop`.
-2. Subir o ambiente com `npm run dev` quando precisar de hot reload ou `npm run compose:up` para validar a execução base.
+2. Subir o ambiente com um dos quatro modos oficiais (`start:docker:remote`, `start:docker:local`, `start:native:remote`, `start:native:local`). Ver [docs/runbooks/local-setup.md](./docs/runbooks/local-setup.md). Sem Docker: `start:native:remote`.
 3. Implementar a mudança em commits pequenos e descritivos.
 4. Se houver mudança de banco, refletir a alteração no schema e nas migrations do Prisma.
 5. Manter as mudanças de banco centralizadas em `back/prisma/`.
