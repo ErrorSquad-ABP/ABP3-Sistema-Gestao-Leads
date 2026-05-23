@@ -14,7 +14,7 @@
 
 - Sprint 1 encerrada
 - Sprint 2 encerrada documentalmente em `20/05/2026`
-- Sprint 3 com foco definido em refinamento visual, qualidade de código e audit log completo
+- Sprint 3 planejada com foco em padronização UX, feedback do parceiro e audit log completo
 
 ## Artefatos ativos
 
@@ -31,4 +31,5 @@
 - `sprint-1-retrospective` registra aprendizados de processo e percepção do parceiro;
 - `sprint-2-review` consolida o incremento de veículos, negociações, dashboards, identidade visual e filtros temporais;
 - `sprint-2-retrospective` registra aprendizados do ciclo e direciona a Sprint 3;
-- a Sprint 3 não abre novo bloco funcional grande: o foco é acabamento, qualidade e auditoria completa.
+- a Sprint 3 não abre novo bloco funcional grande: o foco é padronização UX, feedback do parceiro e auditoria completa;
+- artefatos da Sprint 3: goal, planning, backlog, breakdown, design system, spec de feedback e cards Trello.
