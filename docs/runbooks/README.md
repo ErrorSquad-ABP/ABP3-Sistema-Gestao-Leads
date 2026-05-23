@@ -4,14 +4,17 @@ Este diretório documenta o fluxo real de operação do projeto.
 
 ## Cobertura
 
-- `local-setup.md`: bootstrap local com `docker compose` atual e banco externo via `DATABASE_URL`.
-- `deploy.md`: operação de produção em `Vercel + Neon`, smoke checks e cuidados de ambiente.
+- `local-setup.md`: os **quatro modos** oficiais de subida (Docker/native × banco remoto/local).
+- `setup-windows.md`: fluxo sem Docker Desktop (faculdade / Windows 10).
+- `deploy.md`: produção em `Vercel + Neon`, smoke checks e cuidados de ambiente.
 
 ## Regra editorial
 
-Se o código ou a topologia operacional mudar, o runbook correspondente deve mudar na mesma entrega. Hoje isso é especialmente importante porque:
+Se o código ou a topologia operacional mudar, o runbook correspondente deve mudar na mesma entrega.
 
-- o Compose não sobe mais PostgreSQL local por padrão;
-- o modo secundário `docker-compose.local.yml` sobe PostgreSQL para conformidade e validação isolada;
-- migrations e seeds são operações explícitas;
-- a produção está ativa e precisa de documentação aderente ao runtime real.
+Comandos oficiais na raiz:
+
+- `npm run start:docker:remote`
+- `npm run start:docker:local`
+- `npm run start:native:remote`
+- `npm run start:native:local`

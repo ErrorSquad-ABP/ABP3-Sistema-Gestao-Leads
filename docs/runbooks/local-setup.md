@@ -2,24 +2,40 @@
 
 ## Objetivo
 
-Documentar o bootstrap local no estado atual da `main`.
+Subir o Quantum CRM localmente em **um dos quatro modos** abaixo. Não misture modos na mesma sessão sem `stop` / encerrar processos.
 
 ## Pré-requisitos
 
-- `Node.js >= 22`
-- `npm >= 10`
-- `Docker`
-- `Docker Compose`
-- acesso a um PostgreSQL válido, local ou remoto
+- `Node.js >= 22` e `npm >= 10` (obrigatório para modos **native**)
+- `Docker` + `Docker Compose` (obrigatório apenas para modos **docker**)
+- `back/.env` criado a partir de `back/.env.example`
+- `front/.env` criado a partir de `front/.env.example` (modos native)
 
-## Topologia local atual
+Windows sem Docker Desktop: [setup-windows.md](./setup-windows.md).
 
-O projeto mantém dois modos locais:
+## Os quatro modos (oficial)
 
-- padrão do time: `front + back` usando o banco definido em `back/.env` (normalmente Neon dev);
-- secundário de conformidade: `front + back + postgres` via `docker-compose.local.yml`.
+| Comando | Docker | Banco de dados | Quando usar |
+| --- | --- | --- | --- |
+| `npm run start:docker:remote` | Sim (back + front) | `DATABASE_URL` em `back/.env` (Neon / remoto) | Padrão com Docker; mesmo banco do time na nuvem |
+| `npm run start:docker:local` | Sim (+ Postgres) | Postgres no Compose (`abp:abp@postgres:5432`) | Docker sem depender de Neon/rede externa |
+| `npm run start:native:remote` | Não | `DATABASE_URL` em `back/.env` | **PCs sem Docker**; Node direto no host |
+| `npm run start:native:local` | Não | `127.0.0.1:5433` (script fixa a URL) | Node + Postgres local (`npm run db:up` ou instalado) |
 
-O banco **não** faz parte do Compose padrão. O PostgreSQL local existe como opção secundária para uso externo, validação isolada e aderência ao edital.
+### Parar stacks Docker
+
+```bash
+npm run stop:docker:remote
+npm run stop:docker:local   # remove volume do Postgres local
+```
+
+### Aliases legados
+
+| Antigo | Novo |
+| --- | --- |
+| `npm run dev` | `start:docker:remote` |
+| `npm run dev:local` | `start:docker:local` |
+| `npm run dev:down` | `stop:docker:remote` |
 
 ## Portas
 
@@ -28,6 +44,9 @@ O banco **não** faz parte do Compose padrão. O PostgreSQL local existe como op
 | Frontend | `http://localhost:3000` |
 | Backend | `http://localhost:3001` |
 | Health | `http://localhost:3001/api/health` |
+| Readiness (Postgres) | `http://localhost:3001/api/health/ready` |
+
+No Docker, o front só sobe quando `/api/health/ready` do back retorna OK (liga ao banco).
 
 ## 1. Instalar dependências
 
@@ -35,101 +54,75 @@ O banco **não** faz parte do Compose padrão. O PostgreSQL local existe como op
 npm install
 ```
 
-## 2. Configurar ambiente do backend
+## 2. Configurar `back/.env`
 
 ```bash
 cp back/.env.example back/.env
 ```
 
-Preencher no mínimo:
+| Modo | O que colocar em `DATABASE_URL` |
+| --- | --- |
+| `*:remote` | URL completa Neon (ou Postgres remoto acessível do host/rede) |
+| `start:docker:local` | Pode existir no arquivo; o Compose **sobrescreve** para o Postgres interno |
+| `start:native:local` | Ignorada pelo script; usa `postgresql://abp:abp@127.0.0.1:5433/lead_management` |
 
-- `DATABASE_URL`
-- `JWT_ACCESS_PRIVATE_KEY`
-- `JWT_ACCESS_PUBLIC_KEY`
-- `JWT_ISSUER`
-- `JWT_AUDIENCE`
-- `FRONTEND_ORIGINS=http://localhost:3000`
+Sempre preencher: chaves JWT, `JWT_ISSUER`, `JWT_AUDIENCE`, `FRONTEND_ORIGINS=http://localhost:3000`.
 
-Observação:
+**Erro clássico:** `DATABASE_URL=...@localhost:5433` com `start:docker:remote`. Dentro do container, `localhost` é o próprio back → back `unhealthy` → front `failed dependency`. Use Neon no `.env` ou mude para `start:docker:local`.
 
-- o time pode apontar `DATABASE_URL` tanto para um banco local quanto para a Neon de desenvolvimento;
-- o Compose não cria nem reseta banco.
+## 3. Subir
 
-## 3. Subir a stack
+Escolha **um** comando da tabela dos quatro modos.
 
-### Desenvolvimento com hot reload
+Modo native exige `front/.env`:
 
 ```bash
-npm run dev
+cp front/.env.example front/.env
 ```
 
-### Execução padrão
+## 4. Postgres só para `native:local` (opcional)
+
+Sem instalar Postgres no SO, suba só o banco via Docker:
 
 ```bash
-npm run compose:up
+npm run db:up
+npm run db:migrate:local
+npm run db:seed:local
+npm run start:native:local
 ```
-
-### Execução secundária com PostgreSQL local
 
 ```bash
-npm run compose:local:up
+npm run db:down
 ```
 
-Nesse modo:
+## 5. Migrations
 
-- o PostgreSQL sobe em `localhost:5433`;
-- um bootstrap local aplica `migrations` automaticamente;
-- o seed roda automaticamente apenas se a base estiver vazia;
-- o container `back` passa a usar `postgresql://abp:abp@postgres:5432/lead_management`;
-- o `back/.env` continua existindo, mas `DATABASE_URL` é sobrescrita pelo override local.
-
-## 4. Migrations
-
-Quando houver migration nova:
+Banco apontado por `back/.env` (modos `*:remote`):
 
 ```bash
 npm run db:migrate
 ```
 
-Como o banco não é parte do Compose, esse passo é explícito e consciente.
-
-Referência de migration estrutural recente:
-
-- `20260426195800_lead_operational_events` (criação de `LeadEvent` e `LeadEventType` para timeline operacional de leads).
-
-### Migration no PostgreSQL local secundário
+Postgres em `127.0.0.1:5433`:
 
 ```bash
 npm run db:migrate:local
 ```
 
-Observação:
+No `start:docker:local`, migrations rodam no serviço `local-bootstrap` antes do back.
 
-- no `compose.local`, esse passo já é executado automaticamente pelo serviço `local-bootstrap` antes do `back` subir;
-- o comando manual continua útil para reaplicar ou validar a base sem subir a stack inteira.
-- para validar o detalhe operacional de lead localmente, confirme que a migration de `LeadEvent` foi aplicada antes dos testes/smokes.
-
-## 5. Seed
-
-Um único seed de demonstração (`npm run db:seed`): 4 utilizadores, 5 equipas/lojas e 20 leads completos (ajustável com `SEED_RECORD_COUNT`).
+## 6. Seed
 
 ```bash
 npm run db:seed
-```
-
-PostgreSQL local secundário:
-
-```bash
 npm run db:seed:local
 ```
 
-Observação:
+`db:seed` é **destrutivo** no banco da `DATABASE_URL` atual.
 
-- no `compose.local`, o seed só roda automaticamente quando a base local está vazia;
-- se já existir utilizador na tabela `User`, o bootstrap local pula o seed para não sobrescrever a base;
-- `npm run db:seed` **substitui** utilizadores e dados operacionais no banco apontado por `DATABASE_URL` (destrutivo).
+No `start:docker:local`, o seed automático só roda se a base local estiver vazia.
 
-## 6. Credenciais bootstrap
+## 7. Credenciais bootstrap
 
 | Perfil | E-mail | Senha |
 | --- | --- | --- |
@@ -138,65 +131,58 @@ Observação:
 | Gerente | `gerente@crm.com` | `admin123` |
 | Atendente | `atendente@crm.com` | `admin123` |
 
-## 7. Verificação mínima
-
-### API
+## 8. Verificação mínima
 
 ```bash
 curl http://localhost:3001/api/health
+curl http://localhost:3001/api/health/ready
 ```
-
-### Front
 
 1. Abrir `http://localhost:3000/login`
 2. Entrar com `admin@crm.com / admin123`
-3. Confirmar acesso a `/app/leads` e `/app/users`
-
-### Smoke script
+3. Confirmar `/app/leads`
 
 ```bash
 npm run smoke:http -w back
 ```
 
-## 8. Problemas comuns
+## 9. Problemas comuns
+
+### Back `unhealthy` no Docker
+
+- Ver `docker logs abp3-back`
+- Testar `curl http://localhost:3001/api/health/ready`
+- Corrigir `DATABASE_URL` ou usar `start:docker:local`
 
 ### `401` no login
 
-Causas mais comuns:
+- Seed não executado ou banco diferente do esperado
 
-- seed não executado;
-- banco apontando para ambiente diferente do esperado;
-- credenciais bootstrap ainda não existem naquela base.
+### Backend não sobe (native)
 
-### Backend cai no bootstrap
+- Node &lt; 22
+- JWT vazio no `.env`
+- Prisma em WSL1 — ver [setup-windows.md](./setup-windows.md)
 
-Verificar:
+### Front: `EACCES` / Turbopack panic / `Permission denied` em `front/.next`
 
-- `DATABASE_URL`
-- chaves JWT
-- `JWT_ISSUER`
-- `JWT_AUDIENCE`
+Causa típica: rodou **Docker antes** e o cache `.next` ficou com dono `root` no host; o `start:native:*` não consegue escrever.
 
-### `docker compose down -v` não limpa o banco
-
-Isso agora é esperado. O Compose não sobe PostgreSQL local por padrão. O banco só muda se você:
-
-- trocar a `DATABASE_URL`;
-- rodar migrations;
-- rodar seed;
-- limpar a base externamente.
-
-### Quero um banco local sem depender do remoto
-
-Use o modo secundário:
+Correção (Linux/macOS):
 
 ```bash
-npm run compose:local:up
+sudo chown -R "$USER:$USER" front/.next
+npm run clean:dev
+npm run start:native:remote
 ```
 
-Depois disso, o fluxo local fica totalmente independente do banco remoto. Se quiser forçar ciclo manual, ainda existem:
+Ou, se preferir apagar tudo de uma vez:
 
 ```bash
-npm run db:migrate:local
-npm run db:seed:local
+sudo rm -rf front/.next
+npm run start:native:remote
 ```
+
+A partir desta versão, o Compose de dev guarda `.next` em volume Docker (não mistura mais com native). Se o problema já existir, a limpeza acima ainda é necessária **uma vez**.
+
+Os `401` em `GET /api/auth/me` antes do login são normais.
