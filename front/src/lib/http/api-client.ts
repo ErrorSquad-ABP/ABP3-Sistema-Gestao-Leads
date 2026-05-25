@@ -94,7 +94,7 @@ async function apiFetch<TData>(path: string, options: ApiFetchOptions = {}) {
 		headers.set('Authorization', `Bearer ${accessToken}`);
 	}
 	const controller = new AbortController();
-	const timeoutMs = options.timeoutMs ?? 8_000;
+	const timeoutMs = options.timeoutMs ?? 30_000;
 	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
 	let body: BodyInit | null | undefined;
