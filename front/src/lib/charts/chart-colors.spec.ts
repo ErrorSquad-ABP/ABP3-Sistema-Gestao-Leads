@@ -17,7 +17,10 @@ describe('chart color helpers', () => {
 
 	it('normalizes source aliases without leaking raw colors', () => {
 		assert.equal(sourceBrandColor('WHATSAPP'), SOURCE_BRAND_COLORS.whatsapp);
-		assert.equal(sourceBrandColor('Mercado Livre'), SOURCE_BRAND_COLORS.mercadoLivre);
+		assert.equal(
+			sourceBrandColor('Mercado Livre'),
+			SOURCE_BRAND_COLORS.mercadoLivre,
+		);
 		assert.equal(sourceBrandColor('digital_form'), SOURCE_BRAND_COLORS.website);
 		assert.equal(sourceBrandColor('Visita em Loja'), SOURCE_BRAND_COLORS.store);
 		assert.equal(sourceBrandColor('indicação'), SOURCE_BRAND_COLORS.indication);
@@ -31,8 +34,14 @@ describe('chart color helpers', () => {
 	it('uses sanitized store performance thresholds', () => {
 		assert.equal(storePerformanceColor(0.24), CHART_COLORS.performanceBelow);
 		assert.equal(storePerformanceColor(0.25), CHART_COLORS.performanceOk);
-		assert.equal(storePerformanceColor(Number.NaN), CHART_COLORS.performanceBelow);
-		assert.equal(storePerformanceColor(0.1, Number.NaN), CHART_COLORS.performanceBelow);
+		assert.equal(
+			storePerformanceColor(Number.NaN),
+			CHART_COLORS.performanceBelow,
+		);
+		assert.equal(
+			storePerformanceColor(0.1, Number.NaN),
+			CHART_COLORS.performanceBelow,
+		);
 	});
 
 	it('cycles chart series colors with safe indexes', () => {

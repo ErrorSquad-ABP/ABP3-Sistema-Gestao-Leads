@@ -97,7 +97,9 @@ function KpiCard({
 					</div>
 					{delta ? (
 						<p className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-							<span className={cn('font-semibold', deltaClassNames[delta.tone])}>
+							<span
+								className={cn('font-semibold', deltaClassNames[delta.tone])}
+							>
 								{delta.value}
 							</span>
 							{delta.label ? <span>{delta.label}</span> : null}
