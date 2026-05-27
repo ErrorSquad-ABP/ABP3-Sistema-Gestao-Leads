@@ -108,14 +108,13 @@ function KpiCard({
 				</div>
 				{sparkline || action ? (
 					<div className="flex shrink-0 items-center gap-3">
-						{sparkline ? (
-							<div
-								aria-hidden={sparklineLabel ? undefined : true}
-								aria-label={sparklineLabel}
-								role={sparklineLabel ? 'img' : undefined}
-							>
+						{sparkline && sparklineLabel ? (
+							<div aria-label={sparklineLabel} role="img">
 								{sparkline}
 							</div>
+						) : null}
+						{sparkline && !sparklineLabel ? (
+							<div aria-hidden="true">{sparkline}</div>
 						) : null}
 						{action}
 					</div>
