@@ -29,24 +29,26 @@ type KpiCardProps = {
 	readonly variant?: KpiCardVariant;
 };
 
-const variantClassNames: Record<KpiCardVariant, string> = {
-	brand:
-		'bg-[color:var(--kpi-surface-brand)] text-[color:var(--kpi-icon-brand)] ring-[color:var(--kpi-icon-brand)]/15',
-	'danger-soft':
-		'bg-[color:var(--kpi-surface-danger-soft)] text-[color:var(--kpi-icon-danger-soft)] ring-[color:var(--kpi-icon-danger-soft)]/15',
-	neutral:
-		'bg-[color:var(--kpi-surface-neutral)] text-[color:var(--kpi-icon-neutral)] ring-[color:var(--kpi-icon-neutral)]/15',
-	success:
-		'bg-[color:var(--kpi-surface-success)] text-[color:var(--kpi-icon-success)] ring-[color:var(--kpi-icon-success)]/15',
-	warning:
-		'bg-[color:var(--kpi-surface-warning)] text-[color:var(--kpi-icon-warning)] ring-[color:var(--kpi-icon-warning)]/15',
-};
-
 const deltaClassNames: Record<KpiCardDelta['tone'], string> = {
 	negative: 'text-[color:var(--text-negative)]',
 	neutral: 'text-muted-foreground',
 	positive: 'text-[color:var(--text-positive)]',
 };
+
+function variantClassName(variant: KpiCardVariant): string {
+	switch (variant) {
+		case 'danger-soft':
+			return 'bg-[color:var(--kpi-surface-danger-soft)] text-[color:var(--kpi-icon-danger-soft)] ring-[color:var(--kpi-icon-danger-soft)]/15';
+		case 'neutral':
+			return 'bg-[color:var(--kpi-surface-neutral)] text-[color:var(--kpi-icon-neutral)] ring-[color:var(--kpi-icon-neutral)]/15';
+		case 'success':
+			return 'bg-[color:var(--kpi-surface-success)] text-[color:var(--kpi-icon-success)] ring-[color:var(--kpi-icon-success)]/15';
+		case 'warning':
+			return 'bg-[color:var(--kpi-surface-warning)] text-[color:var(--kpi-icon-warning)] ring-[color:var(--kpi-icon-warning)]/15';
+		case 'brand':
+			return 'bg-[color:var(--kpi-surface-brand)] text-[color:var(--kpi-icon-brand)] ring-[color:var(--kpi-icon-brand)]/15';
+	}
+}
 
 function KpiCard({
 	action,
@@ -75,7 +77,7 @@ function KpiCard({
 								aria-hidden="true"
 								className={cn(
 									'flex size-11 shrink-0 items-center justify-center rounded-2xl ring-1',
-									variantClassNames[variant],
+									variantClassName(variant),
 								)}
 							>
 								{icon}

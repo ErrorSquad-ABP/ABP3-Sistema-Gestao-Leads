@@ -34,28 +34,28 @@ const MAX_SHARE = 1;
 const MIN_SERIES_INDEX = 0;
 const MIN_SHARE = 0;
 
-const SOURCE_COLOR_ALIASES: Record<string, keyof typeof SOURCE_BRAND_COLORS> = {
-	'contato-telefonico': 'phone',
-	'digital-form': 'website',
-	facebook: 'facebook',
-	form: 'website',
-	'formulario-digital': 'website',
-	indicacao: 'indication',
-	indication: 'indication',
-	instagram: 'instagram',
-	'mercado-libre': 'mercadoLivre',
-	'mercado-livre': 'mercadoLivre',
-	phone: 'phone',
-	'phone-call': 'phone',
-	site: 'website',
-	store: 'store',
-	'store-visit': 'store',
-	telefone: 'phone',
-	'visita-em-loja': 'store',
-	'walk-in': 'store',
-	website: 'website',
-	whatsapp: 'whatsapp',
-};
+const SOURCE_COLOR_ALIASES = new Map<string, string>([
+	['contato-telefonico', SOURCE_BRAND_COLORS.phone],
+	['digital-form', SOURCE_BRAND_COLORS.website],
+	['facebook', SOURCE_BRAND_COLORS.facebook],
+	['form', SOURCE_BRAND_COLORS.website],
+	['formulario-digital', SOURCE_BRAND_COLORS.website],
+	['indicacao', SOURCE_BRAND_COLORS.indication],
+	['indication', SOURCE_BRAND_COLORS.indication],
+	['instagram', SOURCE_BRAND_COLORS.instagram],
+	['mercado-libre', SOURCE_BRAND_COLORS.mercadoLivre],
+	['mercado-livre', SOURCE_BRAND_COLORS.mercadoLivre],
+	['phone', SOURCE_BRAND_COLORS.phone],
+	['phone-call', SOURCE_BRAND_COLORS.phone],
+	['site', SOURCE_BRAND_COLORS.website],
+	['store', SOURCE_BRAND_COLORS.store],
+	['store-visit', SOURCE_BRAND_COLORS.store],
+	['telefone', SOURCE_BRAND_COLORS.phone],
+	['visita-em-loja', SOURCE_BRAND_COLORS.store],
+	['walk-in', SOURCE_BRAND_COLORS.store],
+	['website', SOURCE_BRAND_COLORS.website],
+	['whatsapp', SOURCE_BRAND_COLORS.whatsapp],
+]);
 
 function normalizeChartKey(value: unknown): string {
 	if (typeof value !== 'string' && typeof value !== 'number') {
@@ -88,8 +88,9 @@ function sanitizeThreshold(value: number): number {
 }
 
 function sourceBrandColor(source: unknown): string {
-	const sourceKey = SOURCE_COLOR_ALIASES[normalizeChartKey(source)];
-	return sourceKey ? SOURCE_BRAND_COLORS[sourceKey] : FALLBACK_SOURCE_COLOR;
+	return (
+		SOURCE_COLOR_ALIASES.get(normalizeChartKey(source)) ?? FALLBACK_SOURCE_COLOR
+	);
 }
 
 function storePerformanceColor(
