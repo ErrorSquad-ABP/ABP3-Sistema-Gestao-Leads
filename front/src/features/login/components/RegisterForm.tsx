@@ -178,7 +178,7 @@ function RegisterForm() {
 				<p className="text-center text-[0.82rem]">
 					<span className="text-muted-foreground">Já tem uma conta? </span>
 					<AuthAccentLink
-						className="inline-block whitespace-nowrap text-[0.82rem] font-medium"
+						className="inline-block text-[0.82rem] font-medium whitespace-nowrap"
 						href={appRoutes.auth.login}
 					>
 						Entrar

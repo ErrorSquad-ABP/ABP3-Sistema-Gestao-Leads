@@ -13,7 +13,7 @@ import {
 	Trophy,
 	UsersRound,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,7 +24,6 @@ import type {
 	LeadOwnerRecord,
 	LeadStore,
 } from '@/features/leads/model/leads.model';
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
 import {
 	useAssignTeamManagerMutation,
@@ -45,10 +44,6 @@ import {
 	type TeamFormState,
 } from './TeamForm';
 import { TeamsTable, type TeamTableRow } from './TeamsTable';
-
-type TeamsManagementScreenProps = {
-	user: AuthenticatedUser;
-};
 
 type MetricTone = 'blue' | 'green' | 'orange' | 'purple';
 type PaginationItem = number | 'ellipsis-start' | 'ellipsis-end';
@@ -381,7 +376,7 @@ function LeadershipHighlightsCard({ rows }: { rows: TeamTableRow[] }) {
 	);
 }
 
-function TeamsManagementScreen({ user: _user }: TeamsManagementScreenProps) {
+function TeamsManagementScreen() {
 	const storesQuery = useStoresQuery();
 	const teamsQuery = useTeamsQuery();
 	const ownersQuery = useLeadOwnersQuery();
@@ -401,11 +396,11 @@ function TeamsManagementScreen({ user: _user }: TeamsManagementScreenProps) {
 	const [search, setSearch] = useState('');
 	const [storeFilter, setStoreFilter] = useState('ALL');
 	const [page, setPage] = useState(1);
-	const [isHydrated, setIsHydrated] = useState(false);
-
-	useEffect(() => {
-		setIsHydrated(true);
-	}, []);
+	const isHydrated = useSyncExternalStore(
+		() => () => {},
+		() => true,
+		() => false,
+	);
 
 	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
 	const teams = useMemo(() => teamsQuery.data ?? [], [teamsQuery.data]);
@@ -606,7 +601,7 @@ function TeamsManagementScreen({ user: _user }: TeamsManagementScreenProps) {
 				</div>
 				<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
 					<div className="relative">
-						<Search className="-translate-y-1/2 absolute top-1/2 left-3.5 size-4 text-[#667085]" />
+						<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
 						<Input
 							className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[340px]"
 							onChange={(event) => {
@@ -618,7 +613,7 @@ function TeamsManagementScreen({ user: _user }: TeamsManagementScreenProps) {
 						/>
 					</div>
 					<div className="relative">
-						<Filter className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 size-4 text-[#1f2a44]" />
+						<Filter className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#1f2a44]" />
 						<select
 							className="h-11 appearance-none rounded-xl border border-[#d8e0ea] bg-white pr-8 pl-10 text-xs font-semibold text-[#1f2a44] outline-none"
 							onChange={(event) => {

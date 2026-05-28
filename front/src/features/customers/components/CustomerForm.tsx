@@ -209,13 +209,13 @@ function CustomerModalHeader({
 	title,
 }: CustomerModalHeaderProps) {
 	return (
-		<DialogHeader className="border-b-0 px-7 pb-4 pt-7 md:px-8">
+		<DialogHeader className="border-b-0 px-7 pt-7 pb-4 md:px-8">
 			<div className="flex items-start gap-4 pr-10">
 				<div className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-[#ff5a1f]/10 bg-[#ff5a1f]/10 text-[#ff4f17]">
 					<Icon className="size-8" />
 				</div>
 				<div className="min-w-0 pt-0.5">
-					<p className="text-[0.7rem] font-bold uppercase tracking-[0.26em] text-[#ff4f17]">
+					<p className="text-[0.7rem] font-bold tracking-[0.26em] text-[#ff4f17] uppercase">
 						Clientes
 					</p>
 					<DialogTitle className="mt-1 text-2xl font-bold tracking-normal text-[#121a2b]">
@@ -278,7 +278,7 @@ function CustomerFieldControl({
 }: CustomerFieldControlProps) {
 	return (
 		<div className="relative">
-			<Icon className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
+			<Icon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 			{children}
 		</div>
 	);
@@ -287,11 +287,11 @@ function CustomerFieldControl({
 function CustomerDetail({ children, icon: Icon, label }: CustomerDetailProps) {
 	return (
 		<div className="rounded-xl border border-[#e7edf5] bg-[#f8fafc] p-4">
-			<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
+			<p className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-[#667085] uppercase">
 				<Icon className="size-3.5" />
 				{label}
 			</p>
-			<p className="mt-2 break-words text-sm font-medium text-[#101828]">
+			<p className="mt-2 text-sm font-medium break-words text-[#101828]">
 				{children}
 			</p>
 		</div>
@@ -334,7 +334,7 @@ function CustomerFormDialog({
 						onSave();
 					}}
 				>
-					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pb-6 pt-3 md:px-8">
+					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
 						{dialogError ? (
 							<div className="flex items-start gap-2 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
 								<AlertCircle className="mt-0.5 size-4 shrink-0" />
@@ -429,7 +429,7 @@ function CustomerFormDialog({
 						</CustomerModalSection>
 					</div>
 
-					<DialogFooter className="shrink-0 gap-3 border-t-0 px-7 pb-6 pt-3 md:flex-row md:px-8">
+					<DialogFooter className="shrink-0 gap-3 border-t-0 px-7 pt-3 pb-6 md:flex-row md:px-8">
 						<Button
 							className="rounded-lg"
 							onClick={onClose}
@@ -475,7 +475,7 @@ function CustomerDeleteDialog({
 					icon={Trash2}
 					title="Excluir cliente"
 				/>
-				<div className="space-y-4 px-7 pb-5 pt-3">
+				<div className="space-y-4 px-7 pt-3 pb-5">
 					<CustomerModalInfoBanner tone="danger">
 						Excluir um cliente pode afetar históricos e vínculos usados pelo
 						CRM.
@@ -501,7 +501,7 @@ function CustomerDeleteDialog({
 						</div>
 					) : null}
 				</div>
-				<DialogFooter className="border-t-0 px-7 pb-6 pt-1">
+				<DialogFooter className="border-t-0 px-7 pt-1 pb-6">
 					<Button
 						className="rounded-lg"
 						onClick={onClose}
@@ -538,7 +538,7 @@ function CustomerDetailsDialog({ item, onClose }: CustomerDetailsDialogProps) {
 					icon={UserRound}
 					title={item.customer.name}
 				/>
-				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pb-7 pt-3 md:px-8">
+				<div className="min-h-0 space-y-5 overflow-y-auto px-7 pt-3 pb-7 md:px-8">
 					<div className="grid gap-4 lg:grid-cols-2">
 						<CustomerModalSection
 							description="Dados de identificação e contato do cadastro."

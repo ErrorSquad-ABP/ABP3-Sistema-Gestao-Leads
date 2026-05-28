@@ -220,7 +220,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						<CirclePlus className="size-6" />
 					</div>
 					<div className="min-w-0 space-y-1">
-						<DialogTitle className="text-[1.35rem] font-bold leading-tight tracking-[-0.02em] text-[#1b2430]">
+						<DialogTitle className="text-[1.35rem] leading-tight font-bold tracking-[-0.02em] text-[#1b2430]">
 							Nova negociação
 						</DialogTitle>
 						<DialogDescription className="space-y-0 text-[12.5px] leading-[18px] text-[#7a8494]">

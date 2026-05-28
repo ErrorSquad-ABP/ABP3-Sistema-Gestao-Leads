@@ -23,7 +23,7 @@ function NegotiationsRightSummary({ deals }: Props) {
 
 	return (
 		<aside
-			className="negotiations-right-in flex w-full min-w-0 max-w-full flex-col gap-4 overflow-x-clip"
+			className="negotiations-right-in flex w-full max-w-full min-w-0 flex-col gap-4 overflow-x-clip"
 			aria-label="Resumos e atividades"
 		>
 			<PipelineSummaryCard data={pipeline} />

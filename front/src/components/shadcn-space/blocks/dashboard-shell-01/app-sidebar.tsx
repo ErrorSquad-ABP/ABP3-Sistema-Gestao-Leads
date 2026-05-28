@@ -170,7 +170,7 @@ function SidebarLogo() {
 		<button
 			type="button"
 			onClick={toggleSidebar}
-			className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left hover:bg-white/5 group-data-[collapsible=icon]:justify-center"
+			className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left group-data-[collapsible=icon]:justify-center hover:bg-white/5"
 			aria-label="Alternar sidebar"
 		>
 			<div className="relative size-10 shrink-0">
@@ -226,7 +226,7 @@ const AppSidebar = ({
 					</SidebarHeader>
 
 					{/* ---------------- Content ---------------- */}
-					<SidebarContent className="overflow-hidden gap-0 px-0">
+					<SidebarContent className="gap-0 overflow-hidden px-0">
 						<SimpleBar
 							autoHide={true}
 							className="h-[calc(100vh-220px)] [&_.simplebar-content-wrapper]:overflow-x-hidden [&_.simplebar-track.simplebar-horizontal]:hidden"
@@ -244,7 +244,7 @@ const AppSidebar = ({
 							defaultOpen={false}
 							align="start"
 							trigger={
-								<div className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 hover:bg-white/5 group-data-[collapsible=icon]:justify-center">
+								<div className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 group-data-[collapsible=icon]:justify-center hover:bg-white/5">
 									<Avatar className="size-10 shrink-0 cursor-pointer bg-[#0e223b]">
 										<AvatarFallback className="bg-transparent text-sm font-semibold text-white">
 											{getInitials(currentUser.name)}

@@ -291,7 +291,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 				</div>
 				<div className="flex flex-wrap gap-3">
 					<div className="relative min-w-88 flex-1">
-						<Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#667085]" />
+						<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-[#667085]" />
 						<Input
 							className="h-12 rounded-xl border-[#d8e0ea] bg-white pl-11 shadow-none focus-visible:border-[#f05a28]/45"
 							onChange={(event) => {
@@ -455,7 +455,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 								))}
 							</select>
 							<div className="ml-auto flex min-w-0 flex-wrap items-center gap-3">
-								<span className="whitespace-nowrap text-sm text-[#667085]">
+								<span className="text-sm whitespace-nowrap text-[#667085]">
 									Ordenar por
 								</span>
 								<select
@@ -473,7 +473,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 									))}
 								</select>
 								<Button
-									className="h-11 whitespace-nowrap px-3 text-[#667085]"
+									className="h-11 px-3 whitespace-nowrap text-[#667085]"
 									onClick={resetFilters}
 									type="button"
 									variant="ghost"

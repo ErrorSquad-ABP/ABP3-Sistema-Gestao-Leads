@@ -79,11 +79,11 @@ const StatisticsBlock = ({
 	secondaryStats = secondaryStatsData,
 }: StatisticsBlockProps) => {
 	return (
-		<div className="grid grid-cols-12 gap-6 h-full">
-			<div className="col-span-12 xl:col-span-6 h-full">
-				<Card className="p-0 ring-0 border rounded-2xl relative h-full">
+		<div className="grid h-full grid-cols-12 gap-6">
+			<div className="col-span-12 h-full xl:col-span-6">
+				<Card className="relative h-full rounded-2xl border p-0 ring-0">
 					<CardContent className="p-0">
-						<div className="ps-6 py-4 flex flex-col gap-9 justify-between">
+						<div className="flex flex-col justify-between gap-9 py-4 ps-6">
 							<div>
 								<p className="text-lg font-medium text-card-foreground">
 									{mainDashboard.title}
@@ -107,7 +107,7 @@ const StatisticsBlock = ({
 													className={cn(
 														'font-normal text-muted-foreground',
 														metric.isPositive
-															? 'bg-teal-400/10 '
+															? 'bg-teal-400/10'
 															: 'bg-red-500/10',
 													)}
 												>
@@ -128,7 +128,7 @@ const StatisticsBlock = ({
 							alt=""
 							width={211}
 							height={168}
-							className="absolute bottom-0 right-0 hidden sm:block"
+							className="absolute right-0 bottom-0 hidden sm:block"
 						/>
 					</CardContent>
 				</Card>
@@ -138,9 +138,9 @@ const StatisticsBlock = ({
 					key={stat.title}
 					className="col-span-12 sm:col-span-6 xl:col-span-3"
 				>
-					<Card className="py-6 ring-0 border rounded-2xl">
-						<CardContent className="px-6 flex items-start justify-between">
-							<div className="flex flex-col gap-5 justify-between">
+					<Card className="rounded-2xl border py-6 ring-0">
+						<CardContent className="flex items-start justify-between px-6">
+							<div className="flex flex-col justify-between gap-5">
 								<div className="flex flex-col gap-1">
 									<p className="text-lg font-medium text-card-foreground">
 										{stat.title}
@@ -165,14 +165,14 @@ const StatisticsBlock = ({
 								<Button
 									variant={'outline'}
 									className={
-										'flex items-center gap-1.5 w-fit rounded-xl cursor-pointer shadow-xs h-9'
+										'flex h-9 w-fit cursor-pointer items-center gap-1.5 rounded-xl shadow-xs'
 									}
 								>
 									<span>See Report</span>
 									<ArrowRight size={16} />
 								</Button>
 							</div>
-							<div className="p-3 rounded-full outline">
+							<div className="rounded-full p-3 outline">
 								<stat.icon size={16} />
 							</div>
 						</CardContent>

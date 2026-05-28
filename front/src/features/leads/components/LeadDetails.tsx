@@ -130,14 +130,14 @@ function CustomerManagerDialog({
 				}}
 				open={open}
 			>
-				<DialogContent className="flex min-h-128 max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-144">
+				<DialogContent className="flex max-h-[84vh] min-h-128 max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-144">
 					<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 						<div className="flex items-center gap-4">
 							<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">
 								<UserRound className="size-6" />
 							</div>
 							<div className="space-y-1">
-								<p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#d96c3f]">
+								<p className="text-[0.72rem] font-semibold tracking-[0.24em] text-[#d96c3f] uppercase">
 									Catálogo
 								</p>
 								<DialogTitle>Gestão de clientes</DialogTitle>
@@ -149,10 +149,10 @@ function CustomerManagerDialog({
 						</div>
 					</DialogHeader>
 
-					<div className="flex min-h-0 flex-1 flex-col overflow-hidden px-8 pb-8 pt-7">
+					<div className="flex min-h-0 flex-1 flex-col overflow-hidden px-8 pt-7 pb-8">
 						<div className="flex flex-col gap-3 pb-5 lg:flex-row lg:items-center lg:justify-between">
 							<div className="relative w-full lg:max-w-md">
-								<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6b7687]" />
+								<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#6b7687]" />
 								<Input
 									className="h-11 rounded-xl border-[#d6dce5] bg-[#f8fafc] pl-9 shadow-none focus-visible:border-[#2d3648]/45"
 									onChange={(event) => setSearch(event.target.value)}
@@ -244,7 +244,7 @@ function CustomerManagerDialog({
 								{selectedCustomer ? (
 									<div className="mt-4 space-y-4 text-sm">
 										<div>
-											<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+											<p className="text-xs font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 												Nome
 											</p>
 											<p className="mt-1 text-base font-medium text-[#1b2430]">
@@ -253,7 +253,7 @@ function CustomerManagerDialog({
 										</div>
 										<div className="grid gap-4 md:grid-cols-2">
 											<div>
-												<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+												<p className="text-xs font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 													E-mail
 												</p>
 												<p className="mt-1 text-[#1b2430]">
@@ -261,7 +261,7 @@ function CustomerManagerDialog({
 												</p>
 											</div>
 											<div>
-												<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+												<p className="text-xs font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 													Telefone
 												</p>
 												<p className="mt-1 text-[#1b2430]">
@@ -270,7 +270,7 @@ function CustomerManagerDialog({
 											</div>
 										</div>
 										<div>
-											<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+											<p className="text-xs font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 												CPF
 											</p>
 											<p className="mt-1 text-[#1b2430]">
@@ -377,14 +377,14 @@ function StoreManagerDialog({
 				}}
 				open={open}
 			>
-				<DialogContent className="flex min-h-120 max-h-[82vh] max-w-3xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-136">
+				<DialogContent className="flex max-h-[82vh] min-h-120 max-w-3xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-136">
 					<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 						<div className="flex items-center gap-4">
 							<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">
 								<Building2 className="size-6" />
 							</div>
 							<div className="space-y-1">
-								<p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#d96c3f]">
+								<p className="text-[0.72rem] font-semibold tracking-[0.24em] text-[#d96c3f] uppercase">
 									Catálogo
 								</p>
 								<DialogTitle>Gestão de lojas</DialogTitle>
@@ -396,7 +396,7 @@ function StoreManagerDialog({
 						</div>
 					</DialogHeader>
 
-					<div className="flex min-h-0 flex-1 flex-col overflow-hidden px-8 pb-8 pt-7">
+					<div className="flex min-h-0 flex-1 flex-col overflow-hidden px-8 pt-7 pb-8">
 						<div className="flex flex-wrap gap-2 pb-5">
 							<Button
 								className="rounded-full bg-[#2D3648] shadow-none hover:bg-[#232B3B]"
@@ -475,7 +475,7 @@ function StoreManagerDialog({
 								{selectedStore ? (
 									<div className="mt-4 space-y-4 text-sm">
 										<div>
-											<p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b7687]">
+											<p className="text-xs font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
 												Nome
 											</p>
 											<p className="mt-1 text-base font-medium text-[#1b2430]">

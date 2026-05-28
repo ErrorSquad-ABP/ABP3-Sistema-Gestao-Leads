@@ -116,7 +116,7 @@ function NegotiationsPipelineCard({
 				<div className="flex flex-col gap-4 pb-[18px] lg:flex-row lg:items-start lg:justify-between">
 					<div className="space-y-1">
 						<div className="flex items-center gap-2">
-							<h2 className="text-[16.5px] font-extrabold leading-[1.2] tracking-[-0.01em] text-foreground">
+							<h2 className="text-[16.5px] leading-[1.2] font-extrabold tracking-[-0.01em] text-foreground">
 								Funil de negociações
 							</h2>
 							<Info className="size-[14px] text-muted-foreground" />

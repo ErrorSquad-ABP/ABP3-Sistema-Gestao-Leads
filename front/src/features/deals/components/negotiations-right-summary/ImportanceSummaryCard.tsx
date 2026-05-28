@@ -28,7 +28,7 @@ type Props = {
 
 function ImportanceSummaryCard({ data }: Props) {
 	return (
-		<Card className="min-w-0 max-w-full rounded-xl border border-border/90 bg-white shadow-none">
+		<Card className="max-w-full min-w-0 rounded-xl border border-border/90 bg-white shadow-none">
 			<CardContent className="p-4 pt-4">
 				<h3 className="text-[15px] font-extrabold text-foreground">
 					Negociações por importância
@@ -57,10 +57,10 @@ function ImportanceSummaryCard({ data }: Props) {
 									</span>
 								</div>
 								<div className="flex shrink-0 items-baseline gap-3">
-									<span className="text-right text-[12.5px] font-semibold tabular-nums text-foreground/90">
+									<span className="text-right text-[12.5px] font-semibold text-foreground/90 tabular-nums">
 										{row.amountLabel}
 									</span>
-									<span className="w-8 text-right text-[12.5px] font-medium tabular-nums text-muted-foreground">
+									<span className="w-8 text-right text-[12.5px] font-medium text-muted-foreground tabular-nums">
 										{row.percentage}%
 									</span>
 								</div>

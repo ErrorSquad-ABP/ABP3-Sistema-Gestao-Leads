@@ -159,15 +159,15 @@ const TopProductTable = () => {
 	];
 
 	return (
-		<Card className="w-full h-full pb-0 pt-6 gap-6">
-			<CardHeader className="sm:flex items-center justify-between px-6">
+		<Card className="h-full w-full gap-6 pt-6 pb-0">
+			<CardHeader className="items-center justify-between px-6 sm:flex">
 				<div>
 					<CardTitle className="leading-normal">Top Projects</CardTitle>
 					<CardDescription>
 						Checkout the statistics of top projects
 					</CardDescription>
 				</div>
-				<InputGroup className="h-9 rounded-md w-fit">
+				<InputGroup className="h-9 w-fit rounded-md">
 					<InputGroupInput placeholder="Search" />
 					<InputGroupAddon>
 						<SearchIcon size={18} />
@@ -184,18 +184,18 @@ const TopProductTable = () => {
 								<TableHead className="p-2">Budget</TableHead>
 								<TableHead className="p-2">Manager</TableHead>
 								<TableHead className="p-2">Progress</TableHead>
-								<TableHead className="p-3 pe-6 flex justify-end">
+								<TableHead className="flex justify-end p-3 pe-6">
 									Action
 								</TableHead>
 							</TableRow>
 						</TableHeader>
 
-						<TableBody className="divide-y divide-border dark:divide-darkborder">
+						<TableBody className="dark:divide-darkborder divide-y divide-border">
 							{checkboxTableData.map((item) => (
 								<TableRow key={item.id}>
 									{/* Checkbox */}
-									<TableCell className="whitespace-nowrap p-3 ps-6">
-										<Checkbox className="data-[state=checked]:bg-blue-500 dark:data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 dark:data-[state=checked]:border-blue-500 cursor-pointer" />
+									<TableCell className="p-3 ps-6 whitespace-nowrap">
+										<Checkbox className="cursor-pointer data-[state=checked]:border-blue-500 data-[state=checked]:bg-blue-500 dark:data-[state=checked]:border-blue-500 dark:data-[state=checked]:bg-blue-500" />
 									</TableCell>
 
 									{/* project */}
@@ -203,7 +203,7 @@ const TopProductTable = () => {
 										<div className="flex items-center gap-2">
 											<div
 												className={cn(
-													'h-9 w-9 rounded-full flex items-center justify-center',
+													'flex h-9 w-9 items-center justify-center rounded-full',
 													item.iconbg,
 												)}
 											>
@@ -229,7 +229,7 @@ const TopProductTable = () => {
 
 									{/* Customer */}
 									<TableCell className="whitespace-nowrap">
-										<div className="flex gap-3 items-center">
+										<div className="flex items-center gap-3">
 											<Image
 												src={item.avatar}
 												alt=""
@@ -237,7 +237,7 @@ const TopProductTable = () => {
 												width={36}
 												height={36}
 											/>
-											<div className="truncate line-clamp-2 max-w-56">
+											<div className="line-clamp-2 max-w-56 truncate">
 												<h6 className="text-base! font-normal!">{item.name}</h6>
 												<p className="text-sm text-muted-foreground">
 													{item.handle}
@@ -251,18 +251,18 @@ const TopProductTable = () => {
 										<Progress
 											value={item.progress}
 											className={cn(
-												'w-full h-1.5 [&>div]:h-1.5',
+												'h-1.5 w-full [&>div]:h-1.5',
 												`${item.progressColor}`,
 											)}
 										/>
 									</TableCell>
 
 									{/* Dropdown Menu */}
-									<TableCell className="whitespace-nowrap p-3 pe-6">
+									<TableCell className="p-3 pe-6 whitespace-nowrap">
 										<div className="flex items-center justify-end">
 											<DropdownMenu>
 												<DropdownMenuTrigger>
-													<span className="flex justify-center items-center rounded-full p-2 hover:bg-muted cursor-pointer">
+													<span className="flex cursor-pointer items-center justify-center rounded-full p-2 hover:bg-muted">
 														<EllipsisVertical width={16} height={16} />
 													</span>
 												</DropdownMenuTrigger>
@@ -271,7 +271,7 @@ const TopProductTable = () => {
 													{tableActionData.map((action) => (
 														<DropdownMenuItem
 															key={action.listtitle}
-															className="group flex gap-3 hover:bg-accent! cursor-pointer"
+															className="group flex cursor-pointer gap-3 hover:bg-accent!"
 														>
 															<action.icon />
 															<span>{action.listtitle}</span>

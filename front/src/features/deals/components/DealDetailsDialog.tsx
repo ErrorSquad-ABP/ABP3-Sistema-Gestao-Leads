@@ -253,10 +253,10 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 						<Info className="size-6" />
 					</div>
 					<div className="min-w-0 space-y-1">
-						<p className="text-[0.68rem] font-bold uppercase tracking-[0.35em] text-[color:var(--brand-accent)]">
+						<p className="text-[0.68rem] font-bold tracking-[0.35em] text-[color:var(--brand-accent)] uppercase">
 							Negociações
 						</p>
-						<DialogTitle className="text-[1.35rem] font-bold leading-tight tracking-[-0.02em] text-[#1b2430]">
+						<DialogTitle className="text-[1.35rem] leading-tight font-bold tracking-[-0.02em] text-[#1b2430]">
 							Detalhes da negociação
 						</DialogTitle>
 						<DialogDescription className="text-[13px] leading-5 text-[#7a8494]">
@@ -265,7 +265,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 					</div>
 				</DialogHeader>
 
-				<div className="min-h-0 overflow-y-auto px-8 pb-2 pt-2 sm:pb-4">
+				<div className="min-h-0 overflow-y-auto px-8 pt-2 pb-2 sm:pb-4">
 					<div className="space-y-4">
 						<div className="rounded-xl border border-[#e7ebf0] bg-white px-5 py-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
 							<div className="grid gap-6 sm:grid-cols-2 sm:gap-x-8">
@@ -309,7 +309,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									label="Valor"
 									labelIcon={<Star className={labelIconClass} />}
 								>
-									<p className="text-[13px] font-semibold tabular-nums text-[#1b2430]">
+									<p className="text-[13px] font-semibold text-[#1b2430] tabular-nums">
 										{formatDealValueBRL(deal.value)}
 									</p>
 								</DetailSlot>
@@ -319,7 +319,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									label="Título"
 									labelIcon={<Tag className={labelIconClass} />}
 								>
-									<div className="flex items-start gap-2 text-[13px] font-medium leading-snug text-[#1b2430]">
+									<div className="flex items-start gap-2 text-[13px] leading-snug font-medium text-[#1b2430]">
 										<Tag
 											className="mt-0.5 size-4 shrink-0 text-[#9aa3b2]"
 											aria-hidden

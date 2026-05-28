@@ -123,7 +123,7 @@ function StorePerformanceCard({ rows }: { rows: StoreTableRow[] }) {
 				<div className="space-y-3">
 					{topStores.length > 0 ? (
 						<>
-							<div className="grid items-center gap-4 border-[#eef2f6] border-b pb-2 md:grid-cols-[132px_minmax(160px,1fr)_88px_104px_88px]">
+							<div className="grid items-center gap-4 border-b border-[#eef2f6] pb-2 md:grid-cols-[132px_minmax(160px,1fr)_88px_104px_88px]">
 								<span className="hidden md:block" />
 								<span className="hidden md:block" />
 								<span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#1f2a44]">

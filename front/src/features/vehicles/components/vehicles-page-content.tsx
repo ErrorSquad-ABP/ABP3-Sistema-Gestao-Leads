@@ -19,7 +19,6 @@ import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
 import { ApiError } from '@/lib/http/api-error';
 
@@ -45,10 +44,6 @@ import { VehicleDetailsDialog } from './VehicleDetailsDialog';
 import { VehicleFormDialog, getVehiclesErrorMessage } from './VehicleForm';
 
 const CATALOG_PAGE_SIZE = 8;
-
-type VehiclesPageContentProps = {
-	user: AuthenticatedUser;
-};
 
 type ViewMode = 'cards' | 'table';
 
@@ -101,7 +96,7 @@ function buildCsv(items: readonly VehicleCatalogItem[]) {
 		.join('\n');
 }
 
-function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
+function VehiclesPageContent() {
 	const storesQuery = useStoresQuery();
 	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
 	const storeLabelById = useMemo(
@@ -247,7 +242,8 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 			return;
 		}
 
-		const { storeId: _storeId, ...valuesWithoutStore } = values;
+		const { storeId, ...valuesWithoutStore } = values;
+		void storeId;
 
 		await updateVehicleMutation.mutateAsync({
 			vehicleId: targetVehicle.id,
@@ -315,8 +311,8 @@ function VehiclesPageContent({ user: _user }: VehiclesPageContentProps) {
 					</p>
 				</div>
 				<div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
-					<div className="relative min-w-0 flex-1 xl:w-[28rem]">
-						<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#667085]" />
+					<div className="relative min-w-0 flex-1 xl:w-md">
+						<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#667085]" />
 						<Input
 							className="h-11 rounded-lg border-[#d6dce5] bg-white pl-9 shadow-none"
 							onChange={(event) => {

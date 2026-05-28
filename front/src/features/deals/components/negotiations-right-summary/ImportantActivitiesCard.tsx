@@ -36,7 +36,7 @@ type Props = {
 
 function ImportantActivitiesCard({ items }: Props) {
 	return (
-		<Card className="min-w-0 max-w-full rounded-xl border border-border/90 bg-white shadow-none">
+		<Card className="max-w-full min-w-0 rounded-xl border border-border/90 bg-white shadow-none">
 			<CardContent className="p-4 pt-4">
 				<div className="flex items-start justify-between gap-2">
 					<h3 className="text-[15px] font-extrabold text-foreground">
@@ -64,7 +64,7 @@ function ImportantActivitiesCard({ items }: Props) {
 									<Icon className="size-4" strokeWidth={2.1} />
 								</div>
 								<div className="min-w-0 flex-1">
-									<p className="text-[12.5px] font-extrabold leading-snug text-foreground">
+									<p className="text-[12.5px] leading-snug font-extrabold text-foreground">
 										{a.title}
 									</p>
 									<p className="mt-0.5 text-[12px] text-muted-foreground">

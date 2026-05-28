@@ -24,8 +24,15 @@
 ## Sprint 3
 
 - Período: `22/05/2026` a `11/06/2026`
-- Estado: foco definido
-- Foco: refinamento visual, qualidade de código e audit log completo
+- Estado: planejada
+- Goal: [`sprint-3-goal.md`](./sprint-3-goal.md)
+- Planning: [`sprint-3-planning.md`](./sprint-3-planning.md)
+- Backlog: [`sprint-3-backlog.md`](./sprint-3-backlog.md)
+- Breakdown: [`sprint-3-task-breakdown.md`](./sprint-3-task-breakdown.md)
+- Design system: [`sprint-3-design-system.md`](./sprint-3-design-system.md)
+- Feedback (spec técnica): [`sprint-3-client-feedback-spec.md`](./sprint-3-client-feedback-spec.md)
+- Cards Trello: [`sprint-3-trello-cards.md`](./sprint-3-trello-cards.md)
+- Foco: padronização UX, KPIs úteis, simplicidade visual, audit log completo, feedback do parceiro
 
 ## Entrega final
 

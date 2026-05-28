@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -161,7 +161,15 @@ function UsersFormDialog({
 		},
 	});
 	const form = isEditMode ? updateForm : createForm;
-	const selectedRole = form.watch('role');
+	const selectedRole = useWatch({
+		control: form.control,
+		name: 'role',
+		defaultValue: 'ATTENDANT',
+	});
+	const selectedAccessGroupId = useWatch({
+		control: form.control,
+		name: 'accessGroupId',
+	});
 	const availableAccessGroups = useMemo(
 		() =>
 			accessGroups.filter(
@@ -172,8 +180,6 @@ function UsersFormDialog({
 
 	useEffect(() => {
 		if (!open) {
-			form.reset();
-			setSubmitError(null);
 			return;
 		}
 
@@ -197,7 +203,18 @@ function UsersFormDialog({
 			role: 'ATTENDANT',
 			accessGroupId: getDefaultAccessGroupId(accessGroups, 'ATTENDANT'),
 		});
-	}, [accessGroups, createForm, form, isEditMode, open, updateForm, user]);
+	}, [accessGroups, createForm, isEditMode, open, updateForm, user]);
+
+	function handleDialogOpenChange(nextOpen: boolean) {
+		if (nextOpen) {
+			return;
+		}
+
+		setSubmitError(null);
+		createForm.reset();
+		updateForm.reset();
+		onClose();
+	}
 
 	useEffect(() => {
 		if (!open) {
@@ -230,7 +247,7 @@ function UsersFormDialog({
 	});
 
 	return (
-		<Dialog onOpenChange={(nextOpen) => !nextOpen && onClose()} open={open}>
+		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
 			<DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>
@@ -291,7 +308,7 @@ function UsersFormDialog({
 							<div className="space-y-1.5">
 								<Label htmlFor="users-form-role">Papel canônico</Label>
 								<select
-									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="users-form-role"
 									onChange={(event) =>
 										form.setValue(
@@ -316,7 +333,7 @@ function UsersFormDialog({
 							<div className="space-y-1.5 md:col-span-2">
 								<Label htmlFor="users-form-access-group">Grupo de acesso</Label>
 								<select
-									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="users-form-access-group"
 									onChange={(event) =>
 										form.setValue(
@@ -325,7 +342,7 @@ function UsersFormDialog({
 											{ shouldDirty: true, shouldValidate: true },
 										)
 									}
-									value={form.watch('accessGroupId') ?? ''}
+									value={selectedAccessGroupId ?? ''}
 								>
 									<option value="" disabled>
 										Selecione um grupo

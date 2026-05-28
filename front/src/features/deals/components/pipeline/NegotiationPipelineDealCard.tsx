@@ -93,7 +93,7 @@ function NegotiationPipelineDealCard({
 			onDragStart={handleDragStart}
 			onDragEnd={onDragEnd}
 			className={cn(
-				'grid min-h-[132px] auto-rows-min grid-cols-[34px_minmax(0,1fr)_18px] grid-rows-[auto_1fr_auto] gap-x-[10px] overflow-hidden rounded-[11px] border border-border bg-white px-[13px] pb-[11px] pt-[14px] shadow-[0_2px_5px_rgba(15,23,42,0.025)] transition-all duration-200 ease-out',
+				'grid min-h-[132px] auto-rows-min grid-cols-[34px_minmax(0,1fr)_18px] grid-rows-[auto_1fr_auto] gap-x-[10px] overflow-hidden rounded-[11px] border border-border bg-white px-[13px] pt-[14px] pb-[11px] shadow-[0_2px_5px_rgba(15,23,42,0.025)] transition-all duration-200 ease-out',
 				draggable ? 'cursor-grab active:cursor-grabbing' : '',
 				isDragging ? 'scale-[1.02] cursor-grabbing opacity-60 shadow-lg' : '',
 				isStageUpdating ? 'pointer-events-none opacity-50' : '',
@@ -112,14 +112,14 @@ function NegotiationPipelineDealCard({
 				onClick={() => onOpenDetails(deal)}
 				className="min-w-0 text-left"
 			>
-				<p className="mb-[3px] truncate text-[13px] font-extrabold leading-[15px] text-foreground">
+				<p className="mb-[3px] truncate text-[13px] leading-[15px] font-extrabold text-foreground">
 					{deal.leadCustomerName}
 				</p>
 				<p className="truncate text-[12px] leading-[14px] text-muted-foreground">
 					{deal.vehicleLabel}
 				</p>
 				<p
-					className="mt-[4px] truncate text-[11px] font-semibold leading-[13px] text-muted-foreground"
+					className="mt-[4px] truncate text-[11px] leading-[13px] font-semibold text-muted-foreground"
 					title={formatDealLeadOwnerDisplay(deal.leadOwnerName)}
 				>
 					{formatDealLeadOwnerDisplay(deal.leadOwnerName)}
@@ -130,7 +130,7 @@ function NegotiationPipelineDealCard({
 				<DropdownMenuTrigger asChild>
 					<button
 						type="button"
-						className="pt-px text-right text-[14px] font-black leading-[10px] tracking-[1.4px] text-foreground hover:text-muted-foreground"
+						className="pt-px text-right text-[14px] leading-[10px] font-black tracking-[1.4px] text-foreground hover:text-muted-foreground"
 						aria-label="Ações"
 					>
 						•••
@@ -163,10 +163,10 @@ function NegotiationPipelineDealCard({
 			</DropdownMenu>
 
 			<div className="col-span-3 flex min-w-0 flex-wrap items-end justify-between gap-x-2 gap-y-1.5 self-end">
-				<div className="flex min-w-0 max-w-full flex-wrap items-center gap-1">
+				<div className="flex max-w-full min-w-0 flex-wrap items-center gap-1">
 					<span
 						className={cn(
-							'inline-flex h-[22px] shrink-0 items-center gap-1 rounded-md px-2 text-[10.8px] font-bold leading-none',
+							'inline-flex h-[22px] shrink-0 items-center gap-1 rounded-md px-2 text-[10.8px] leading-none font-bold',
 							badgeClassName,
 						)}
 					>
@@ -175,7 +175,7 @@ function NegotiationPipelineDealCard({
 					</span>
 					<span
 						className={cn(
-							'inline-flex h-[22px] max-w-full shrink items-center gap-1 truncate rounded-md px-2 text-[10.5px] font-bold leading-none',
+							'inline-flex h-[22px] max-w-full shrink items-center gap-1 truncate rounded-md px-2 text-[10.5px] leading-none font-bold',
 							statusUi.badgeClassName,
 						)}
 						title={statusUi.label}
@@ -184,7 +184,7 @@ function NegotiationPipelineDealCard({
 						{statusUi.label}
 					</span>
 				</div>
-				<span className="ml-auto max-w-[98px] shrink-0 truncate text-right text-[12px] font-extrabold leading-4 text-foreground">
+				<span className="ml-auto max-w-[98px] shrink-0 truncate text-right text-[12px] leading-4 font-extrabold text-foreground">
 					{showValues ? formatDealValueBrl(deal.value) : ''}
 				</span>
 			</div>

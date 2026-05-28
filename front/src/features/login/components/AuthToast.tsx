@@ -49,7 +49,7 @@ function AuthToast({
 	const { icon: Icon, iconClassName } = getToastVisuals(variant);
 
 	return (
-		<div className="fixed right-5 top-5 z-40 w-[22rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+		<div className="fixed top-5 right-5 z-40 w-[22rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
 			<div className="flex items-start gap-3">
 				<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--brand-accent-soft)]">
 					<Icon aria-hidden="true" className={cn('size-4', iconClassName)} />

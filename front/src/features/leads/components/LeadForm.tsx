@@ -277,14 +277,14 @@ function LeadFormDialog({
 			}}
 			open={open}
 		>
-			<DialogContent className="flex min-h-136 max-h-[84vh] max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-152">
+			<DialogContent className="flex max-h-[84vh] min-h-136 max-w-4xl flex-col overflow-hidden rounded-[1.75rem] border border-[#d8e0ea] bg-white md:min-h-152">
 				<DialogHeader className="gap-3 border-b border-[#e5ebf3] px-8 py-7">
 					<div className="flex items-center gap-4">
 						<div className="flex size-13 items-center justify-center rounded-2xl border border-[#d96c3f]/15 bg-[#d96c3f]/10 text-[#d96c3f]">
 							<Plus className="size-6" />
 						</div>
 						<div className="space-y-1">
-							<p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#d96c3f]">
+							<p className="text-[0.72rem] font-semibold tracking-[0.24em] text-[#d96c3f] uppercase">
 								Leads
 							</p>
 							<DialogTitle>
@@ -303,7 +303,7 @@ function LeadFormDialog({
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
-					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pb-8 pt-7">
+					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pt-7 pb-8">
 						{submitError ? (
 							<div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
 								{submitError}
@@ -504,7 +504,7 @@ function LeadFormDialog({
 						</div>
 					</div>
 
-					<DialogFooter className="shrink-0 px-8 pb-6 pt-4">
+					<DialogFooter className="shrink-0 px-8 pt-4 pb-6">
 						<Button
 							className="rounded-md"
 							onClick={onClose}
@@ -618,7 +618,7 @@ function LeadReassignDialog({
 						<Label htmlFor="lead-reassign-owner">Novo responsável</Label>
 						{allowOwnerSelect ? (
 							<select
-								className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+								className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 								id="lead-reassign-owner"
 								onChange={(event) =>
 									form.setValue('ownerUserId', event.target.value, {
@@ -655,7 +655,7 @@ function LeadReassignDialog({
 						) : null}
 					</div>
 
-					<DialogFooter className="px-0 pb-0 pt-4">
+					<DialogFooter className="px-0 pt-4 pb-0">
 						<Button
 							className="rounded-md"
 							onClick={onClose}

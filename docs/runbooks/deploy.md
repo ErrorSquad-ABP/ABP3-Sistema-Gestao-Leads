@@ -110,21 +110,15 @@ npm run db:migrate
 
 ### Seed
 
-Seed mínimo:
+Dataset de demonstração (único fluxo):
 
 ```bash
 npm run db:seed
 ```
 
-Seed analítico:
-
-```bash
-SEED_MODE=dashboard npm run db:seed
-```
-
 Observação:
 
-- seed pode ser destrutivo, dependendo do script e do banco-alvo;
+- o seed **substitui** utilizadores e dados operacionais no banco apontado por `DATABASE_URL`;
 - em ambiente compartilhado, tratar como operação consciente.
 
 ## Homes por papel

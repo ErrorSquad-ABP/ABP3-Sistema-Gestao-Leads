@@ -95,7 +95,7 @@ const UserDropdown = ({
 				<DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align={align}
-					className="w-3xs rounded-2xl border-white/10 bg-sidebar p-1 text-sidebar-foreground data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:bg-transparent!"
+					className="data-open:slide-in-from-bottom-20! data-closed:slide-out-to-bottom-20 data-open:fade-in-0 data-closed:fade-out-0 data-closed:zoom-out-100 w-3xs rounded-2xl border-white/10 bg-sidebar p-1 text-sidebar-foreground duration-400 [&_[data-slot=dropdown-menu-item][data-highlighted]]:bg-transparent!"
 				>
 					{/* User Info */}
 					<DropdownMenuGroup>
@@ -106,7 +106,7 @@ const UserDropdown = ({
 										{getInitials(currentUser.name)}
 									</AvatarFallback>
 								</Avatar>
-								<span className="ring-card absolute right-0 bottom-0 size-2 rounded-full bg-green-600 ring-2" />
+								<span className="absolute right-0 bottom-0 size-2 rounded-full bg-green-600 ring-2 ring-card" />
 							</div>
 
 							<div className="flex flex-col">

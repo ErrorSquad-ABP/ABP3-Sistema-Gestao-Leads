@@ -69,7 +69,7 @@ function UsersManagementScreen() {
 
 	const usersPage = usersQuery.data;
 	const accessGroups = accessGroupsQuery.data ?? [];
-	const users = usersPage?.items ?? [];
+	const users = useMemo(() => usersPage?.items ?? [], [usersPage?.items]);
 	const totalUsers = usersPage?.total ?? 0;
 	const totalPages = usersPage?.totalPages ?? 0;
 	const usersError = usersQuery.isError
@@ -229,7 +229,7 @@ function UsersManagementScreen() {
 							<div className="flex size-12 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
 								<Users className="size-5" />
 							</div>
-							<p className="text-[0.72rem] font-medium uppercase tracking-[0.18em] text-[#D96C3F]">
+							<p className="text-[0.72rem] font-medium tracking-[0.18em] text-[#D96C3F] uppercase">
 								Administração
 							</p>
 							<CardTitle className="text-[1.9rem] font-semibold tracking-tight">

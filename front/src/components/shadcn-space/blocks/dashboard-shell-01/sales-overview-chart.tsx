@@ -60,8 +60,8 @@ export default function SalesOverviewChart() {
 	];
 
 	return (
-		<Card className="w-full py-6 gap-6">
-			<CardHeader className="flex sm:flex-row flex-col justify-between sm:items-center items-start gap-3 px-6">
+		<Card className="w-full gap-6 py-6">
+			<CardHeader className="flex flex-col items-start justify-between gap-3 px-6 sm:flex-row sm:items-center">
 				<div className="flex flex-col gap-1">
 					<CardTitle className="text-lg font-medium">Sales Overview</CardTitle>
 					<div className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export default function SalesOverviewChart() {
 				<div className="flex items-center gap-3">
 					{Countries.map((item) => (
 						<div key={item.id} className="flex items-center gap-2">
-							<span className={cn('w-2.5 h-2.5 rounded-full', item.color)} />
+							<span className={cn('h-2.5 w-2.5 rounded-full', item.color)} />
 							<p className="text-sm text-muted-foreground">{item.title}</p>
 						</div>
 					))}

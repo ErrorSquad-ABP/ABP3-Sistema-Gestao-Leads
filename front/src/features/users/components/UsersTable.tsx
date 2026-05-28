@@ -117,7 +117,7 @@ function UsersListSection({
 						key={label}
 					>
 						<CardContent className="p-4">
-							<p className="text-xs uppercase tracking-[0.14em] text-[#6b7687]">
+							<p className="text-xs tracking-[0.14em] text-[#6b7687] uppercase">
 								{label}
 							</p>
 							<p className="mt-3 text-3xl font-semibold text-[#1b2430]">
@@ -142,7 +142,7 @@ function UsersListSection({
 
 						<div className="flex flex-1 flex-col gap-3 md:flex-row lg:max-w-2xl lg:justify-end">
 							<div className="relative md:max-w-sm md:flex-1">
-								<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#97a2b1]" />
+								<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#97a2b1]" />
 								<Input
 									className="h-10 rounded-md border-[#d6dce5] bg-[#f8fafc] pl-9 shadow-none focus-visible:border-[#2d3648]/45"
 									onChange={(event) => onSearchChange(event.target.value)}
@@ -152,7 +152,7 @@ function UsersListSection({
 							</div>
 
 							<select
-								className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+								className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 								onChange={(event) =>
 									onRoleFilterChange(
 										event.target.value as 'ALL' | UserRecord['role'],
@@ -301,7 +301,7 @@ function UsersListSection({
 						<div className="flex items-center gap-3 text-sm text-[#6b7687]">
 							<span>Linhas por página</span>
 							<select
-								className="h-9 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45"
+								className="h-9 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 								onChange={(event) => onLimitChange(Number(event.target.value))}
 								value={limit}
 							>

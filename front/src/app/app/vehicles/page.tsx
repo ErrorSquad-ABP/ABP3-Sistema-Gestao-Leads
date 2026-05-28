@@ -11,7 +11,7 @@ async function VehiclesHomePage() {
 		redirect(appRoutes.auth.login);
 	}
 
-	return <VehiclesPageContent user={user} />;
+	return <VehiclesPageContent />;
 }
 
 export default VehiclesHomePage;

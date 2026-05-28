@@ -105,7 +105,7 @@ const SalesByCountryWidget = ({
 	const isInView = useInView(ref, { once: true, amount: 0.2 });
 
 	return (
-		<Card className="h-full py-6 gap-6">
+		<Card className="h-full gap-6 py-6">
 			<CardHeader className="flex items-center justify-between px-6">
 				<CardTitle className="text-lg font-medium text-foreground">
 					Sales by Countries
@@ -113,7 +113,7 @@ const SalesByCountryWidget = ({
 				<CardAction>
 					<DropdownMenu>
 						<DropdownMenuTrigger className="outline-none">
-							<span className="h-9 w-9 flex justify-center items-center rounded-full hover:bg-accent hover:text-accent-foreground cursor-pointer">
+							<span className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground">
 								<Icon
 									icon="solar:menu-dots-bold"
 									width={22}
@@ -126,7 +126,7 @@ const SalesByCountryWidget = ({
 							{dropdownItems.map((item) => (
 								<DropdownMenuItem
 									key={`${item.title}-${item.link ?? ''}`}
-									className="font-normal cursor-pointer"
+									className="cursor-pointer font-normal"
 								>
 									{item.link ? (
 										<a href={item.link} className="w-full">
@@ -161,7 +161,7 @@ const SalesByCountryWidget = ({
 							key={`${item.img}-${item.title}-${item.country}-${item.rank}`}
 						>
 							<motion.div
-								className="flex gap-3 items-center px-6"
+								className="flex items-center gap-3 px-6"
 								variants={{
 									hidden: { opacity: 0, y: 20 },
 									visible: { opacity: 1, y: 0 },
@@ -176,7 +176,7 @@ const SalesByCountryWidget = ({
 							>
 								<motion.div
 									className={cn(
-										`w-8 h-8 rounded-full flex justify-center items-center overflow-hidden`,
+										`flex h-8 w-8 items-center justify-center overflow-hidden rounded-full`,
 									)}
 									whileHover={{ rotate: 5, scale: 1.1 }}
 									transition={{ type: 'spring', stiffness: 400 }}
@@ -189,7 +189,7 @@ const SalesByCountryWidget = ({
 										className="h-8 w-8"
 									/>
 								</motion.div>
-								<div className="flex items-center justify-between flex-1">
+								<div className="flex flex-1 items-center justify-between">
 									<div>
 										<h5 className="text-base font-medium text-foreground">
 											{item.rank}

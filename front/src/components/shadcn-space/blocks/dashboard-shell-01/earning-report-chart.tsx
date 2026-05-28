@@ -67,13 +67,13 @@ export default function EarningReportChart() {
 	];
 
 	return (
-		<Card className="h-full w-full py-6 gap-6">
+		<Card className="h-full w-full gap-6 py-6">
 			<CardHeader className="px-6">
 				<CardTitle>
 					<h4 className="text-lg font-semibold">Earning Reports</h4>
 				</CardTitle>
 			</CardHeader>
-			<CardContent className="flex flex-col justify-between gap-2 flex-1 px-6">
+			<CardContent className="flex flex-1 flex-col justify-between gap-2 px-6">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-square max-h-[250px]"
@@ -127,9 +127,9 @@ export default function EarningReportChart() {
 						<div key={item.id} className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
 								<div
-									className={cn(item.borderColor, 'w-1 h-4 rounded-full')}
+									className={cn(item.borderColor, 'h-4 w-1 rounded-full')}
 								></div>
-								<h6 className={cn('text-sm font-medium leading-tight')}>
+								<h6 className={cn('text-sm leading-tight font-medium')}>
 									{item.customer}
 								</h6>
 							</div>

@@ -15,12 +15,12 @@ function NegotiationsActions({ search, onCreateDeal, onSearchChange }: Props) {
 	return (
 		<div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
 			<div className="relative w-full sm:w-[420px]">
-				<Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+				<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
 					value={search}
 					onChange={(e) => onSearchChange(e.target.value)}
 					placeholder="Buscar por título, lead, cliente ou veículo..."
-					className="h-11 rounded-xl border-border bg-white pl-11 shadow-none focus-visible:ring-0 focus-visible:border-[color:var(--brand-accent)]/35"
+					className="h-11 rounded-xl border-border bg-white pl-11 shadow-none focus-visible:border-[color:var(--brand-accent)]/35 focus-visible:ring-0"
 				/>
 			</div>
 
