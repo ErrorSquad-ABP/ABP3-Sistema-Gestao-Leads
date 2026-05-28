@@ -31,6 +31,7 @@
 		"db:seed": "npm run prisma:seed -w back",
 		"db:seed:local": "DATABASE_URL=postgresql://abp:abp@127.0.0.1:5433/lead_management npm run prisma:seed -w back",
 		"guard:root-package": "node scripts/check-root-package.mjs",
+		"test": "npm test --workspaces --if-present",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
 		"lint": "biome lint --write .",

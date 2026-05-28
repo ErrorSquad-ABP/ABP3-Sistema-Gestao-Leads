@@ -21,10 +21,10 @@ type TablePaginationProps = {
 };
 
 const ADJACENT_PAGE_OFFSET = 1;
-const COMPACT_PAGE_COUNT = 5;
 const DEFAULT_PAGE_SIZE = 10;
 const LEADING_WINDOW_PAGES = [1, 2, 3, 4] as const;
 const LEADING_WINDOW_END = 4;
+const MAX_VISIBLE_PAGES_WITHOUT_ELLIPSIS = 7;
 const MIN_PAGE = 1;
 const MIN_TOTAL_PAGES = 1;
 const TRAILING_WINDOW_START_OFFSET = 3;
@@ -59,7 +59,7 @@ function buildPaginationItems(
 	const safeTotal = toPositiveInteger(totalPages, MIN_TOTAL_PAGES);
 	const currentPage = clampPage(page, safeTotal);
 
-	if (safeTotal <= COMPACT_PAGE_COUNT) {
+	if (safeTotal <= MAX_VISIBLE_PAGES_WITHOUT_ELLIPSIS) {
 		return Array.from({ length: safeTotal }, (_, index) => index + MIN_PAGE);
 	}
 
@@ -93,14 +93,16 @@ function buildPageSizeOptions(
 	pageSizeOptions: readonly number[],
 	currentPageSize: number,
 ): number[] {
+	const safeCurrentPageSize = toPositiveInteger(
+		currentPageSize,
+		DEFAULT_PAGE_SIZE,
+	);
 	const options = pageSizeOptions
 		.map((option) => toPositiveInteger(option, 0))
 		.filter((option) => option > 0);
-	const uniqueOptions = Array.from(new Set(options));
+	const uniqueOptions = Array.from(new Set([...options, safeCurrentPageSize]));
 
-	return uniqueOptions.includes(currentPageSize)
-		? uniqueOptions
-		: [...uniqueOptions, currentPageSize];
+	return uniqueOptions.sort((a, b) => a - b);
 }
 
 function TablePagination({
@@ -237,5 +239,5 @@ function TablePagination({
 	);
 }
 
-export { TablePagination, buildPaginationItems };
+export { TablePagination, buildPageSizeOptions, buildPaginationItems };
 export type { PaginationItem, TablePaginationProps };
