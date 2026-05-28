@@ -2,181 +2,336 @@
 
 ## Objetivo
 
-Definir a fundação visual da Sprint 3: tokens, componentes compartilhados e regras de cor para KPIs e gráficos, garantindo conforto visual e consistência entre telas.
+Definir a fundação visual da Sprint 3: tokens CSS pastel, componentes compartilhados, utilitários de cor para gráficos, padrão zebra e guia de migração de cores hardcoded.
 
-## Contexto
+Esta fundação é bloqueante para os épicos visuais da Sprint 3 porque permite adoção gradual sem redesenhar telas inteiras no mesmo PR.
 
-O produto atualmente mistura múltiplas paletas de laranja e cores saturadas por gráfico. O parceiro solicitou padronização, simplicidade e KPIs coloridos porém em **menor contraste/saturação**. Este documento é a referência única para implementação na Sprint 3.
+## Regra de Compatibilidade Incremental
 
-## Direção adotada
+Nenhum componente novo deve exigir migração imediata das telas existentes.
 
-- ancorar a identidade em `--brand-accent` (`#d96c3f`) já usada em negociações;
-- derivar tons pastel para fundos de KPI e estados suaves;
-- **não** usar arco-íris por série em gráficos genéricos;
-- reservar cores semânticas fortes apenas onde há significado (meta loja, importância, delta negativo);
-- preferir tokens CSS a hex literal em componentes TSX.
+`KpiCard`, `TablePagination` e `chart-colors.ts` devem coexistir com implementações inline atuais até que os épicos consumidores façam adoção gradual.
 
-## Tokens CSS (`front/src/app/styles.css`)
+A Sprint 3 deve permitir adoção incremental sem breaking visual global. Isso protege o projeto contra refactors em cascata, PRs gigantes e regressão visual ampla.
 
-### Marca (existentes — manter)
+## Inventário Visual
 
-| Token | Valor | Uso |
+Antes de criar tokens finais, o inventário visual deve separar cores ativas de produção, demos e assets.
+
+Comando base:
+
+```bash
+rg -n "#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(" front/src --glob "!assets/**" --glob "!components/shadcn-space/**"
+```
+
+Prioridade de leitura:
+
+| Diretório | Uso |
+| --- | --- |
+| `front/src/features` | Telas de produção e dívida visual real |
+| `front/src/components/ui` | Primitivos shadcn/ui adaptados |
+| `front/src/components/shared` | Componentes compartilhados existentes |
+| `front/src/app/styles.css` | Tokens globais |
+| `front/src/lib` | Utilitários visuais |
+
+Excluir do inventário principal:
+
+- `front/src/assets`;
+- logos e SVGs;
+- `front/src/components/shadcn-space`;
+- templates/demos.
+
+Categorias encontradas no inventário inicial:
+
+| Categoria | Valores recorrentes | Decisão |
 | --- | --- | --- |
-| `--brand-accent` | `#d96c3f` | CTAs, ícones KPI primários, barras padrão |
-| `--brand-accent-soft` | `#f4e6de` | Fundo KPI brand, badges suaves |
+| Marca | `#d96c3f`, `#D96C3F`, `#f05a28`, `#f4511e`, `#ff4f1f` | Consolidar em `--brand-accent` e `--brand-accent-hover` |
+| Fundos brand | `#fff3ec`, `#fff1eb`, `#ffe5d6` | Migrar para `--brand-accent-soft` e `--kpi-surface-brand` |
+| Bordas | `#dbe4ef`, `#d8e0ea`, `#e7edf5`, `#e6ecf3` | Migrar para `--border` ou `--table-border` |
+| Fundos suaves | `#f8fafc`, `#f1f4f8`, `#eef2f7` | Migrar para `--table-row-alt`, `--table-header-bg` ou `--muted` |
+| Texto principal | `#101828`, `#06142b`, `#1b2430`, `#1e293b` | Migrar gradualmente para `--foreground` |
+| Texto secundário | `#667085`, `#66708a`, `#6b7687`, `#7a8494` | Migrar gradualmente para `--muted-foreground` |
+| Sucesso | `#22c55e`, `#16a34a`, `#079455`, `#009966` | Migrar para `--text-positive` e `--kpi-icon-success` |
+| Erro/perigo | `#ef4444`, `#b8403a`, `#dc3f13` | Migrar para `--destructive` e `--text-negative` |
+| Brand source | WhatsApp, Instagram, Facebook, Mercado Livre | Centralizar em `chart-colors.ts` via tokens `--chart-source-*` |
 
-### Novos tokens Sprint 3
+## Política Anti-Proliferação de Tokens
 
-| Token | Valor sugerido | Uso |
-| --- | --- | --- |
-| `--brand-accent-muted` | `#e8b49a` | Barras secundárias, hover |
-| `--kpi-surface-brand` | `#faf3ef` | Fundo card KPI brand |
-| `--kpi-surface-success` | `#eef5f1` | Fundo KPI positivo |
-| `--kpi-surface-warning` | `#faf6ef` | Fundo KPI atenção |
-| `--kpi-surface-neutral` | `#f4f6f8` | Fundo KPI neutro |
-| `--chart-bar-default` | `var(--brand-accent)` | Barras genéricas (status) |
-| `--chart-bar-alt` | `#c85a32` | Segundo tom laranja |
-| `--chart-performance-below` | `#e8a598` | Loja abaixo de 25% (danger suave) |
-| `--chart-performance-ok` | `#a8cfc0` | Loja na meta (success suave) |
-| `--chart-neutral` | `#b8c2ce` | Origens sem brand |
-| `--table-row-alt` | `#f7f9fb` | Linha par zebra |
-| `--text-positive` | `#2d6a4f` | Delta positivo |
-| `--text-negative` | `#b8403a` | Delta negativo |
+Criar tokens somente quando houver reutilização real ou semântica transversal.
 
-### Deprecados (migrar e remover)
+Regras:
 
-| Hex legado | Onde aparece hoje | Substituir por |
-| --- | --- | --- |
-| `#ff4f1f` | Dashboard operacional | `--brand-accent` |
-| `#ff5722` | Dashboard analítico | `--brand-accent` |
-| `#f05a28` | Leads | `--brand-accent` |
-| `#fff3ec` / `#ffe5d6` | Gradientes KPI operacional | `--kpi-surface-brand` |
+- criar tokens reutilizáveis;
+- evitar tokens de uso único;
+- preferir tokens semânticos;
+- não criar tokens por tela;
+- não duplicar tokens já cobertos por `--foreground`, `--muted`, `--border` ou `--brand-accent`;
+- mapear cores repetidas antes de criar tokens novos.
+
+Bom token:
+
+```css
+--table-row-alt: #fbfdff;
+--chart-performance-below: #d48484;
+--text-negative: #b8403a;
+```
+
+Token ruim:
+
+```css
+--dashboard-operational-card-3-purple-bg: #f4edff;
+```
+
+Token redundante:
+
+```css
+--soft-border-blue: #dbe4ef;
+```
+
+Se `--border` ou `--table-border` já cobrir o uso, não criar outro.
+
+## Tokens CSS
+
+Arquivo fonte: `front/src/app/styles.css`.
+
+Tokens existentes mantidos:
+
+| Token | Uso |
+| --- | --- |
+| `--brand-accent` | Marca, CTA e destaque principal |
+| `--brand-accent-soft` | Fundo brand suave |
+| `--background`, `--foreground`, `--card`, `--border`, `--muted`, `--ring` | Base shadcn/ui |
+
+Tokens Sprint 3 adicionados:
+
+| Grupo | Tokens |
+| --- | --- |
+| Marca | `--brand-accent-muted`, `--brand-accent-hover` |
+| KPI surface | `--kpi-surface-brand`, `--kpi-surface-success`, `--kpi-surface-warning`, `--kpi-surface-neutral`, `--kpi-surface-danger-soft` |
+| KPI icon | `--kpi-icon-brand`, `--kpi-icon-success`, `--kpi-icon-warning`, `--kpi-icon-neutral`, `--kpi-icon-danger-soft` |
+| Texto semântico | `--text-positive`, `--text-negative`, `--text-warning` |
+| Gráficos | `--chart-bar-default`, `--chart-bar-alt`, `--chart-performance-below`, `--chart-performance-ok`, `--chart-neutral`, `--chart-cold`, `--chart-warm`, `--chart-hot` |
+| Origem | `--chart-source-whatsapp`, `--chart-source-instagram`, `--chart-source-facebook`, `--chart-source-mercado-livre`, `--chart-source-phone`, `--chart-source-store`, `--chart-source-indication`, `--chart-source-website` |
+| Tabelas | `--table-row-alt`, `--table-row-hover`, `--table-header-bg`, `--table-border` |
+
+Todo token útil para classes Tailwind deve ter alias correspondente em `@theme inline`.
+
+## Convenções de Exportação
+
+Usar named exports diretos no arquivo de origem.
+
+Imports esperados:
+
+```ts
+import { KpiCard } from "@/components/metrics/KpiCard";
+import { TablePagination } from "@/components/data/TablePagination";
+import { chartSeriesColor } from "@/lib/charts/chart-colors";
+```
+
+Regras:
+
+- não criar barrel global;
+- não usar `export default`;
+- não importar componentes compartilhados a partir de `features`;
+- usar alias `@/`;
+- exportar helpers puros nominalmente.
+
+Essa convenção melhora tree-shaking, reduz risco de imports circulares e mantém previsibilidade arquitetural.
 
 ## Componente `KpiCard`
 
-**Arquivo alvo:** `front/src/components/metrics/KpiCard.tsx`
+Arquivo: `front/src/components/metrics/KpiCard.tsx`.
 
-### API proposta
+API pública:
 
-```tsx
-type KpiCardVariant = 'brand' | 'success' | 'warning' | 'neutral';
+```ts
+type KpiCardVariant =
+  | "brand"
+  | "success"
+  | "warning"
+  | "neutral"
+  | "danger-soft";
+
+type KpiCardDelta = {
+  value: string;
+  tone: "positive" | "negative" | "neutral";
+  label?: string;
+};
 
 type KpiCardProps = {
   title: string;
   value: string;
-  hint?: string;
-  delta?: { value: string; tone: 'up' | 'down' | 'neutral' };
+  description?: string;
   icon?: React.ReactNode;
   variant?: KpiCardVariant;
-  sparkline?: React.ReactNode; // opcional, mesma cor do variant
+  delta?: KpiCardDelta;
+  sparkline?: React.ReactNode;
+  sparklineLabel?: string;
+  action?: React.ReactNode;
+  className?: string;
 };
 ```
 
-### Regras visuais
+Regras:
 
-- fundo: token `--kpi-surface-*` do variant;
-- ícone: `--brand-accent` para `brand`; tons dessaturados para demais;
-- **proibido** roxo/verde/neon distinto por card sem significado semântico;
-- delta sempre com texto + cor (`--text-positive` / `--text-negative`);
-- border: `border-border/80`, radius alinhado ao shell (`rounded-[1.25rem]`).
+- componente genérico, sem dependência de dashboards;
+- `sparkline` é slot, não lógica interna;
+- `sparkline` é decorativo por padrão e recebe `role="img"` apenas quando `sparklineLabel` for informado;
+- delta sempre usa texto além de cor;
+- variantes usam tokens pastel;
+- não obriga adoção imediata em telas existentes.
 
-## Regras de cor por tipo de gráfico
+## Componente `TablePagination`
 
-Implementação alvo: `front/src/lib/charts/chart-colors.ts`
+Arquivo: `front/src/components/data/TablePagination.tsx`.
 
-### 1. Barras genéricas (leads por status)
-
-- **uma cor fixa** ou escala de 2–3 tons de laranja;
-- não colorir por status individual.
-
-### 2. Barras por loja (performance)
+API pública:
 
 ```ts
-function storeBarColor(share: number, threshold = 0.25): string {
-  return share < threshold
-    ? 'var(--chart-performance-below)'
-    : 'var(--chart-performance-ok)';
-}
+type TablePaginationProps = {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  pageSizeOptions: readonly number[];
+  itemLabel?: string;
+  isLoading?: boolean;
+  onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  className?: string;
+};
 ```
 
-- `share = storeCount / periodTotal`;
-- legenda textual obrigatória (“Abaixo de 25%” / “Na meta ou acima”).
+Helper puro obrigatório:
 
-### 3. Origem (donut/bar)
+```ts
+function buildPaginationItems(
+  page: number,
+  totalPages: number,
+): Array<number | "ellipsis-start" | "ellipsis-end">
+```
 
-Mapa `SOURCE_BRAND_COLORS` (exemplos):
+Regras:
 
-| Origem | Cor |
-| --- | --- |
-| Instagram | `#E4405F` (levemente dessaturada na UI: `#d9577a`) |
-| Facebook | `#1877F2` → `#5a8fd4` |
-| Mercado Livre | `#FFE600` → `#d4c04a` |
-| WhatsApp | `#25D366` → `#6fbf8a` |
-| Google | `#4285F4` → `#7a9fd4` |
-| Outros / desconhecido | `var(--chart-neutral)` |
+- não define page size global;
+- consumidor decide opções e reset de página;
+- seletor de page size é opcional;
+- entradas inválidas em runtime são normalizadas para evitar navegação quebrada;
+- botões anterior/próximo têm `aria-label`;
+- página ativa usa `aria-current="page"`;
+- coexiste com paginações inline atuais.
 
-### 4. Importância
+## Utilitário `chart-colors.ts`
 
-Manter semântica, reduzir saturação:
+Arquivo: `front/src/lib/charts/chart-colors.ts`.
 
-| Nível | Cor token |
-| --- | --- |
-| COLD | `#6b8fc7` |
-| WARM | `var(--brand-accent-muted)` |
-| HOT | `#d48484` |
+Exports:
 
-### 5. Equipes / séries analíticas
+```ts
+import {
+  CHART_COLORS,
+  SOURCE_BRAND_COLORS,
+  chartSeriesColor,
+  sourceBrandColor,
+  statusBarColor,
+  storePerformanceColor,
+} from "@/lib/charts/chart-colors";
+```
 
-- substituir rainbow por tons de laranja + neutro;
-- máximo 3 cores distintas por gráfico.
+Regras:
 
-## Paginação padrão (`TablePagination`)
+- retornar strings CSS com `var(--token)`;
+- aceitar aliases de origem (`WHATSAPP`, `whatsapp`, `digital-form`, etc.);
+- fallback neutro em origem desconhecida;
+- não acoplar a uma tela específica.
 
-**Arquivo alvo:** `front/src/components/data/TablePagination.tsx`
+## Padrão Zebra
 
-| Contexto | Default | Opções |
-| --- | --- | --- |
-| Clientes (Sprint 3) | 5 | 5, 10, 15, 20, 25, 30 |
-| Lojas / Equipes | 6 | 6, 12, 18, 24 |
-| Leads | 10 | 10, 20, 30, 40, 50 |
-| Veículos | 8 | 8, 16, 24, 32 |
-| Usuários | 10 | 10, 20, 50, 100 |
-| Audit log | 20 | 10, 20, 50, 100 |
+Tokens:
 
-Props mínimas: `page`, `pageSize`, `totalItems`, `pageSizeOptions`, `onPageChange`, `onPageSizeChange`.
+- `--table-row-alt`;
+- `--table-row-hover`;
+- `--table-header-bg`;
+- `--table-border`.
 
-## Tabelas zebra
+Aplicação opt-in:
 
 ```tsx
-<tr className="odd:bg-white even:bg-[color:var(--table-row-alt)]">
+<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
 ```
 
-- aplicar em clientes, lojas, equipes, usuários, audit log;
-- manter hover sutil (`hover:bg-muted/50`).
+Não alterar `TableRow` globalmente nesta task para evitar regressão visual ampla.
 
-## KPIs — matriz de valor (decisões Sprint 3)
+## Validação de Contraste
 
-| Tela | Manter | Revisar / fundir | Remover da tela |
+Critério:
+
+- texto normal: WCAG AA `4.5:1`;
+- texto grande e ícones informativos: mínimo `3:1`;
+- nenhum estado depende apenas de cor.
+
+Resultados de contraste dos tokens centrais:
+
+| Combinação | Resultado aproximado | Status |
+| --- | --- | --- |
+| `--foreground` sobre `--kpi-surface-brand` | > 13:1 | OK |
+| `--foreground` sobre `--kpi-surface-success` | > 13:1 | OK |
+| `--muted-foreground` sobre `--card` | > 4.5:1 | OK |
+| `--muted-foreground` sobre `--table-row-alt` | > 4.5:1 | OK |
+| `--text-positive` sobre branco | > 5:1 | OK |
+| `--text-negative` sobre branco | > 5:1 | OK |
+| `--text-warning` sobre branco | > 5:1 | OK |
+| `--brand-accent-hover` sobre `--brand-accent-soft` | > 5:1 | OK para texto |
+
+## Ordem de Implementação
+
+Ordem segura:
+
+1. inventário visual;
+2. `styles.css` + tokens;
+3. `chart-colors.ts`;
+4. `KpiCard`;
+5. `TablePagination`;
+6. documentação final;
+7. validação de contraste;
+8. lint/typecheck.
+
+Essa ordem reduz risco porque tokens deixam de ser especulativos, utilitários nascem em cima da base global, componentes não introduzem hex novos e a documentação final reflete a implementação real.
+
+## Riscos Arquiteturais
+
+| Risco | Impacto | Probabilidade | Mitigação |
 | --- | --- | --- | --- |
-| Dashboard operacional | conversão, ativos, convertidos | total vs ativos | — |
-| Dashboard analítico | conversão, convertidos, perdidos, tempo médio | — | — |
-| Clientes | clientes com negociações | total vs ativos | taxa retenção se redundante |
-| Leads | em atenção, taxa conversão | total vs com interação | total se filtro já mostra trabalháveis |
-| Negociações | funil, abertas, ganhas | taxa conversão | fallbacks mock |
-| Lojas | ativas, conversão média | leads no período | — |
-| Usuários | total cadastrado | “nesta página” | — |
+| Explosão de tokens | CSS difícil de manter | Média | Inventário e política anti-proliferação |
+| Inconsistência semântica | Token usado com sentido errado | Média | Nomear por função, não por tela |
+| Acoplamento ao dashboard | Componentes pouco reutilizáveis | Média | Props genéricas e slots |
+| Regressão visual silenciosa | Telas mudam sem intenção | Baixa | Não migrar telas nesta task |
+| Conflito Tailwind x CSS vars | Classes não resolvem | Média | Registrar tokens em `:root` e `@theme inline` |
+| Imports inconsistentes | Dívida arquitetural | Média | Named exports e imports diretos |
+| Docs divergentes | Spec perde confiabilidade | Média | Atualizar docs após implementação |
 
-Decisões finais devem ser registradas em [`sprint-3-client-feedback-spec.md`](./sprint-3-client-feedback-spec.md) após validação com PO.
+## Fora de Escopo
 
-## Impactos e implicações
+Esta task não migra dashboards, não refatora páginas existentes, não substitui todos os hex do sistema, não altera componentes globais do shadcn/ui, não redesenha features e não muda lógica de negócio.
 
-- EPIC-01 bloqueia refatoração das demais telas;
-- remoção de hex exige busca global antes do merge;
-- brand colors de origem devem respeitar contraste com fundo branco.
+O escopo é somente fundação visual, componentes compartilhados, tokens, utilitários e documentação.
 
-## Próximos passos
+## Checklist de PR
 
-1. Implementar tokens e componentes (EPIC-01).
-2. Migrar dashboards (EPIC-02, EPIC-03).
-3. Propagar para CRM e admin (EPIC-04–10).
-4. Atualizar seção 5.6 do documento IHC.
+- [x] Inventário visual concluído
+- [x] Tokens documentados
+- [x] Tokens adicionados em `styles.css`
+- [x] Nenhum hex novo hardcoded em componentes novos
+- [x] `chart-colors.ts` criado
+- [x] `KpiCard` reutilizável criado
+- [x] `TablePagination` reutilizável criado
+- [x] `buildPaginationItems` testado
+- [x] Acessibilidade/contraste validado
+- [x] Imports consistentes com alias `@/`
+- [x] Sem barrels globais novos
+- [x] Sem libs novas
+- [x] Sem alteração de lógica de negócio
+- [x] Sem migração de dashboards nesta task
+- [x] Documentação atualizada
+- [x] Lint ok
+- [x] Typecheck ok
