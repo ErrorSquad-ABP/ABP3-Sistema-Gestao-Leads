@@ -4,8 +4,6 @@ import {
 } from '@/features/deals/lib/pipeline';
 import type { Deal, DealStage } from '@/features/deals/model/deals.model';
 
-type ActivityIcon = 'calendar' | 'phone' | 'message';
-
 type PipelineSummarySegment = {
 	stage: DealStage;
 	label: string;
@@ -32,14 +30,6 @@ type ImportanceSummaryItem = {
 
 type ImportanceSummaryData = {
 	items: ImportanceSummaryItem[];
-};
-
-type ImportantActivity = {
-	id: string;
-	title: string;
-	time: string;
-	tag: string;
-	icon: ActivityIcon;
 };
 
 function parseValue(value: string | null) {
@@ -214,39 +204,12 @@ function buildImportanceFromDeals(deals: Deal[]): ImportanceSummaryData {
 	return { items };
 }
 
-const IMPORTANT_ACTIVITIES_MOCK: ImportantActivity[] = [
-	{
-		id: '1',
-		title: 'Reunião com Cliente Exemplo ALB',
-		time: 'Hoje às 15:00',
-		tag: 'Negociação',
-		icon: 'calendar',
-	},
-	{
-		id: '2',
-		title: 'Ligação com Marcos Ribeiro',
-		time: 'Amanhã às 10:30',
-		tag: 'Proposta',
-		icon: 'phone',
-	},
-	{
-		id: '3',
-		title: 'Enviar proposta comercial',
-		time: 'Qui, 23/05 às 14:00',
-		tag: 'Fechamento',
-		icon: 'message',
-	},
-];
-
 export {
 	buildImportanceFromDeals,
 	buildPipelineSummaryFromDeals,
-	IMPORTANT_ACTIVITIES_MOCK,
 	IMPORTANCE_LABEL,
 };
 export type {
-	ActivityIcon,
-	ImportantActivity,
 	ImportanceKind,
 	ImportanceSummaryData,
 	ImportanceSummaryItem,

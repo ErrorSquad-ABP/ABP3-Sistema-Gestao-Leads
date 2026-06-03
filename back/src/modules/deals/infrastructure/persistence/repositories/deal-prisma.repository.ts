@@ -10,6 +10,7 @@ import type {
 	DealEnrichedListPage,
 	DealEnrichedRow,
 	DealListScopedFilters,
+	DealMetrics,
 	DealPipelineStagePage,
 	IDealRepository,
 } from '../../../domain/repositories/deal.repository.js';
@@ -29,6 +30,16 @@ const DEAL_LEAD_ENRICHMENT_SELECT = {
 
 const UUID_PATTERN =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function decimalLikeToNumber(
+	value: { toString(): string } | null | undefined,
+): number {
+	if (value === null || value === undefined) {
+		return 0;
+	}
+	const parsed = Number(value.toString());
+	return Number.isFinite(parsed) ? parsed : 0;
+}
 
 class DealPrismaRepository implements IDealRepository {
 	constructor(
@@ -404,6 +415,46 @@ class DealPrismaRepository implements IDealRepository {
 			total,
 			totalPages: computeTotalPages(total, pagination.limit),
 			totalValue: aggregate._sum.value?.toString() ?? null,
+		};
+	}
+
+	async metricsScoped(filters: DealListScopedFilters): Promise<DealMetrics> {
+		const baseWhere = this.buildScopedWhere({ ...filters, status: undefined });
+		const openWhere: Prisma.DealWhereInput = { ...baseWhere, status: 'OPEN' };
+		const wonWhere: Prisma.DealWhereInput = { ...baseWhere, status: 'WON' };
+		const lostWhere: Prisma.DealWhereInput = { ...baseWhere, status: 'LOST' };
+
+		const [
+			openAggregate,
+			openDealsCount,
+			wonAggregate,
+			wonDealsCount,
+			lostDealsCount,
+		] = await Promise.all([
+			this.client.deal.aggregate({
+				where: openWhere,
+				_sum: { value: true },
+			}),
+			this.client.deal.count({ where: openWhere }),
+			this.client.deal.aggregate({
+				where: wonWhere,
+				_avg: { value: true },
+			}),
+			this.client.deal.count({ where: wonWhere }),
+			this.client.deal.count({ where: lostWhere }),
+		]);
+
+		const closedDealsCount = wonDealsCount + lostDealsCount;
+
+		return {
+			openDealsCount,
+			wonDealsCount,
+			lostDealsCount,
+			totalPipelineValue: decimalLikeToNumber(openAggregate._sum.value),
+			averageTicket:
+				wonDealsCount > 0 ? decimalLikeToNumber(wonAggregate._avg.value) : 0,
+			conversionRate:
+				closedDealsCount > 0 ? wonDealsCount / closedDealsCount : 0,
 		};
 	}
 

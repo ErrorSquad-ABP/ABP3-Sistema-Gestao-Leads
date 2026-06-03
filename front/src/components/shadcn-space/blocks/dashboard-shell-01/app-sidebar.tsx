@@ -5,6 +5,7 @@ import Image from 'next/image';
 import {
 	Activity,
 	Building2,
+	CalendarDays,
 	Car,
 	ClipboardList,
 	ChartColumn,
@@ -68,6 +69,12 @@ const NAV_DASHBOARD: VisualNavItem[] = [
 ];
 
 const NAV_WORKSPACE: VisualNavItem[] = [
+	{
+		title: 'Agenda',
+		href: '/app/agenda',
+		icon: CalendarDays,
+		accessKey: 'agenda',
+	},
 	{
 		title: 'Clientes',
 		href: '/app/customers',

@@ -7,6 +7,7 @@ const appRoutes = {
 	},
 	app: {
 		root: '/app',
+		agenda: '/app/agenda',
 		customers: '/app/customers',
 		leads: '/app/leads',
 		deals: '/app/deals',

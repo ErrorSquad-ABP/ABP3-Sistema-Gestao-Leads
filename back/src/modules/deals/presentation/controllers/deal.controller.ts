@@ -39,6 +39,7 @@ import {
 	DealPipelineResponseDto,
 	DealPipelineStageDto,
 } from '../../application/dto/deal-pipeline-response.dto.js';
+import { DealsMetricsResponseDto } from '../../application/dto/deals-metrics-response.dto.js';
 import { DealsByLeadListDto } from '../../application/dto/deals-by-lead-list.dto.js';
 import { DealHistoryItemDto } from '../../application/dto/deal-history-response.dto.js';
 import { DealResponseDto } from '../../application/dto/deal-response.dto.js';
@@ -48,6 +49,8 @@ import { CreateDealUseCase } from '../../application/use-cases/create-deal.use-c
 import { DeleteDealUseCase } from '../../application/use-cases/delete-deal.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { FindDealUseCase } from '../../application/use-cases/find-deal.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
+import { GetDealsMetricsUseCase } from '../../application/use-cases/get-deals-metrics.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { ListDealHistoryUseCase } from '../../application/use-cases/list-deal-history.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -117,6 +120,7 @@ class DealController {
 		private readonly createDealUseCase: CreateDealUseCase,
 		private readonly updateDealUseCase: UpdateDealUseCase,
 		private readonly findDealUseCase: FindDealUseCase,
+		private readonly getDealsMetricsUseCase: GetDealsMetricsUseCase,
 		private readonly listDealsUseCase: ListDealsUseCase,
 		private readonly listDealsByLeadUseCase: ListDealsByLeadUseCase,
 		private readonly listDealHistoryUseCase: ListDealHistoryUseCase,
@@ -204,6 +208,21 @@ class DealController {
 			total: page.total,
 			totalPages: page.totalPages,
 		};
+	}
+
+	@Get('deals/metrics')
+	@ApiOperation({
+		summary: 'Obter métricas agregadas de negociações',
+		description:
+			'Retorna KPIs agregados respeitando o escopo automático do utilizador autenticado.',
+	})
+	@ApiOkResponseEnvelope(DealsMetricsResponseDto)
+	@ApiForbiddenResponse(FORBIDDEN)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	async metrics(
+		@CurrentUser() user: JwtUser,
+	): Promise<DealsMetricsResponseDto> {
+		return this.getDealsMetricsUseCase.execute(toLeadActor(user));
 	}
 
 	@Get('deals/pipeline')

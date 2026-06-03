@@ -16,6 +16,7 @@ import type {
 	dealPipelineResponseSchema,
 	dealPipelineStageSchema,
 } from '../schemas/deal-list.schema';
+import type { dealsMetricsSchema } from '../schemas/deal-metrics.schema';
 
 type DealPipelineSortMode = 'recent' | 'value_asc' | 'value_desc';
 
@@ -33,6 +34,7 @@ type DealUpdateInput = z.output<typeof dealUpdateSchema>;
 type DealUpdateFormInput = z.input<typeof dealUpdateSchema>;
 type DealPipelineStage = z.infer<typeof dealPipelineStageSchema>;
 type DealPipelineResponse = z.infer<typeof dealPipelineResponseSchema>;
+type DealsMetrics = z.infer<typeof dealsMetricsSchema>;
 type DealPipelineQuery = {
 	status?: DealStatus;
 	importance?: DealImportance;
@@ -60,6 +62,7 @@ export type {
 	DealPipelineStageQuery,
 	DealStage,
 	DealStatus,
+	DealsMetrics,
 	DealUpdateFormInput,
 	DealUpdateInput,
 };

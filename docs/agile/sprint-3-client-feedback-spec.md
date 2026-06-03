@@ -106,7 +106,7 @@ Este documento complementa [`sprint-3-backlog.md`](./sprint-3-backlog.md) e [`sp
 | --- | --- | --- |
 | `S3-NEG-01` | Colorir KPIs | `KpiCard` brand/success/warning |
 | `S3-NEG-02` | Cores padronizadas | Tokens pipeline |
-| `S3-NEG-03` | Google Agenda atividades | OAuth read + list events |
+| `S3-NEG-03` | Agenda de atividades | Agenda interna por usuário + calendário mensal |
 | `S3-NEG-04` | Remover mocks métricas | Dados reais do pipeline |
 
 ---

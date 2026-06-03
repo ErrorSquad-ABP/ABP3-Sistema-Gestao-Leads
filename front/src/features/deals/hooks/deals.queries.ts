@@ -4,6 +4,7 @@ import { queryKeys } from '@/lib/constants/query-keys';
 
 import {
 	findDeal,
+	getDealsMetrics,
 	getDealsPipeline,
 	getDealsPipelineStage,
 	listDealHistory,
@@ -30,6 +31,13 @@ function useDealsPipelineQuery(query: DealPipelineQuery) {
 		queryKey: queryKeys.deals.pipeline(query),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			getDealsPipeline(query, signal),
+	});
+}
+
+function useDealsMetricsQuery() {
+	return useQuery({
+		queryKey: queryKeys.deals.metrics,
+		queryFn: ({ signal }: { signal: AbortSignal }) => getDealsMetrics(signal),
 	});
 }
 
@@ -114,6 +122,7 @@ export {
 	useDealDetailQuery,
 	useDealHistoryQuery,
 	useDealsByLeadQuery,
+	useDealsMetricsQuery,
 	useDealsPipelineQuery,
 	useDealsListQuery,
 	useLoadMorePipelineStageMutation,

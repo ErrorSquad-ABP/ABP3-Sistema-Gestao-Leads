@@ -98,6 +98,16 @@ describe('CreateDealUseCase', () => {
 			async listPipelineStagesEnriched() {
 				return [];
 			},
+			async metricsScoped() {
+				return {
+					openDealsCount: 0,
+					wonDealsCount: 0,
+					lostDealsCount: 0,
+					totalPipelineValue: 0,
+					averageTicket: 0,
+					conversionRate: 0,
+				};
+			},
 			async listPipelineStageEnriched() {
 				return {
 					stage: 'INITIAL_CONTACT',
@@ -261,6 +271,16 @@ describe('CreateDealUseCase', () => {
 			},
 			async listPipelineStagesEnriched() {
 				return [];
+			},
+			async metricsScoped() {
+				return {
+					openDealsCount: 0,
+					wonDealsCount: 0,
+					lostDealsCount: 0,
+					totalPipelineValue: 0,
+					averageTicket: 0,
+					conversionRate: 0,
+				};
 			},
 			async listPipelineStageEnriched() {
 				return {
