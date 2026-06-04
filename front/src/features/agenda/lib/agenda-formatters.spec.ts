@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { agendaDateKey, expandRecurringAgendaItems } from './agenda-formatters';
+import {
+	agendaDateKey,
+	expandRecurringAgendaItems,
+	filterSelectedDayAgendaItems,
+} from './agenda-formatters';
 import type { AgendaItem } from '../model/agenda.model';
 
 const BASE_ITEM: AgendaItem = {
@@ -67,5 +71,59 @@ describe('agenda recurrence formatters', () => {
 		});
 
 		assert.equal(items.length, 0);
+	});
+
+	it('hides scheduled items already finished on the selected current day', () => {
+		const items = filterSelectedDayAgendaItems(
+			[
+				{
+					...BASE_ITEM,
+					id: 'past-event',
+					startsAt: '2026-06-03T09:00:00.000Z',
+					endsAt: '2026-06-03T10:00:00.000Z',
+				},
+				{
+					...BASE_ITEM,
+					id: 'ongoing-event',
+					startsAt: '2026-06-03T23:00:00.000Z',
+					endsAt: '2026-06-04T00:30:00.000Z',
+				},
+				{
+					...BASE_ITEM,
+					id: 'past-task',
+					type: 'TASK',
+					startsAt: null,
+					endsAt: null,
+					dueAt: '2026-06-03T08:00:00.000Z',
+				},
+			],
+			new Date('2026-06-03T12:00:00.000Z'),
+			new Date('2026-06-03T12:00:00.000Z'),
+		);
+
+		assert.deepEqual(
+			items.map((item) => item.id),
+			['ongoing-event'],
+		);
+	});
+
+	it('keeps historical items when the selected day is not today', () => {
+		const items = filterSelectedDayAgendaItems(
+			[
+				{
+					...BASE_ITEM,
+					id: 'historical-event',
+					startsAt: '2026-06-02T09:00:00.000Z',
+					endsAt: '2026-06-02T10:00:00.000Z',
+				},
+			],
+			new Date('2026-06-02T12:00:00.000Z'),
+			new Date('2026-06-03T12:00:00.000Z'),
+		);
+
+		assert.deepEqual(
+			items.map((item) => item.id),
+			['historical-event'],
+		);
 	});
 });

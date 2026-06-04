@@ -14,6 +14,7 @@ import {
 	buildMonthGrid,
 	buildMonthGridRange,
 	expandRecurringAgendaItems,
+	filterSelectedDayAgendaItems,
 	formatAgendaDate,
 	formatAgendaMonth,
 } from '../lib/agenda-formatters';
@@ -86,7 +87,14 @@ function AgendaPageContent() {
 			};
 		});
 	}, [currentMonth, itemsByDate, selectedDateKey, todayKey]);
-	const selectedDayItems = itemsByDate.get(selectedDateKey) ?? [];
+	const selectedDayItems = useMemo(
+		() =>
+			filterSelectedDayAgendaItems(
+				itemsByDate.get(selectedDateKey) ?? EMPTY_AGENDA_ITEMS,
+				selectedDate,
+			),
+		[itemsByDate, selectedDate, selectedDateKey],
+	);
 
 	function handleCreateAgendaItem(payload: CreateAgendaItemPayload) {
 		createAgendaItem.mutate(payload, {

@@ -81,6 +81,37 @@ function agendaItemDate(item: AgendaItem) {
 	return item.startsAt ?? item.dueAt ?? item.createdAt;
 }
 
+function agendaItemRelevantEndDate(item: AgendaItem) {
+	if (item.type === 'EVENT') {
+		return item.endsAt ?? item.startsAt ?? item.createdAt;
+	}
+	return item.dueAt ?? item.createdAt;
+}
+
+function isAgendaItemStillRelevantToday(item: AgendaItem, now: Date) {
+	if (item.status !== 'SCHEDULED') {
+		return true;
+	}
+	const relevantEndDate = new Date(agendaItemRelevantEndDate(item));
+	if (Number.isNaN(relevantEndDate.getTime())) {
+		return true;
+	}
+	return relevantEndDate >= now;
+}
+
+function filterSelectedDayAgendaItems(
+	items: readonly AgendaItem[],
+	selectedDate: Date,
+	now = new Date(),
+) {
+	const isSelectedDateToday =
+		agendaDateKey(selectedDate) === agendaDateKey(now);
+	if (!isSelectedDateToday) {
+		return [...items];
+	}
+	return items.filter((item) => isAgendaItemStillRelevantToday(item, now));
+}
+
 function shiftIsoDate(value: string | null | undefined, deltaMs: number) {
 	if (!value) {
 		return value;
@@ -245,6 +276,7 @@ export {
 	buildMonthGrid,
 	buildMonthGridRange,
 	expandRecurringAgendaItems,
+	filterSelectedDayAgendaItems,
 	formatAgendaMonth,
 	formatAgendaDate,
 	formatAgendaTime,
