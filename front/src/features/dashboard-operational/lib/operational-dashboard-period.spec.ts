@@ -3,18 +3,13 @@ import { describe, it } from 'node:test';
 
 import {
 	buildCustomPeriodQuery,
+	buildMonthPeriodQuery,
 	buildPresetPeriodQuery,
 	toDateInputValue,
+	toMonthInputValue,
 } from './operational-dashboard-period';
 
 describe('buildPresetPeriodQuery', () => {
-	it('keeps last30 delegated to backend default', () => {
-		assert.deepEqual(
-			buildPresetPeriodQuery('last30', new Date('2026-05-20T12:00:00Z')),
-			{},
-		);
-	});
-
 	it('builds week range from monday to next monday', () => {
 		const query = buildPresetPeriodQuery(
 			'week',
@@ -47,6 +42,15 @@ describe('buildPresetPeriodQuery', () => {
 	});
 });
 
+describe('buildMonthPeriodQuery', () => {
+	it('builds exclusive-end ranges from YYYY-MM values', () => {
+		const query = buildMonthPeriodQuery('2026-04');
+
+		assert.equal(query.startDate?.slice(0, 10), '2026-04-01');
+		assert.equal(query.endDate?.slice(0, 10), '2026-05-01');
+	});
+});
+
 describe('buildCustomPeriodQuery', () => {
 	it('converts date inputs to an inclusive UI range with exclusive API end', () => {
 		const query = buildCustomPeriodQuery('2026-04-01', '2026-04-30');
@@ -59,5 +63,11 @@ describe('buildCustomPeriodQuery', () => {
 describe('toDateInputValue', () => {
 	it('formats local date inputs', () => {
 		assert.equal(toDateInputValue(new Date(2026, 4, 9)), '2026-05-09');
+	});
+});
+
+describe('toMonthInputValue', () => {
+	it('formats local month inputs', () => {
+		assert.equal(toMonthInputValue(new Date(2026, 4, 9)), '2026-05');
 	});
 });
