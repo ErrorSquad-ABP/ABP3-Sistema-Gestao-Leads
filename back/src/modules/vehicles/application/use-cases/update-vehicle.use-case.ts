@@ -1,11 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { assertCanonicalSupportedFuelType } from '../../../../shared/domain/enums/supported-fuel-type.enum.js';
 import { assertCanonicalVehicleStatus } from '../../../../shared/domain/enums/vehicle-status.enum.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Money } from '../../../../shared/domain/value-objects/money.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 import { VehicleNotFoundError } from '../../domain/errors/vehicle-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { VehicleRepositoryFactory } from '../../infrastructure/persistence/factories/vehicle-repository.factory.js';
@@ -20,9 +22,10 @@ class UpdateVehicleUseCase {
 		private readonly vehicleRepositoryFactory: VehicleRepositoryFactory,
 	) {}
 
-	async execute(vehicleId: string, dto: UpdateVehicleDto) {
+	async execute(actorUserId: string, vehicleId: string, dto: UpdateVehicleDto) {
 		const result = await this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const vehicles = this.vehicleRepositoryFactory.create(transactionContext);
 
 			const vehicle = await vehicles.findById(Uuid.parse(vehicleId));
@@ -95,7 +98,31 @@ class UpdateVehicleUseCase {
 				vehicle.changeImageMetadata(null);
 			}
 
-			return vehicles.update(vehicle);
+			const updated = await vehicles.update(vehicle);
+			await createAuditLogEntry(tx, {
+				actorUserId,
+				action: dto.status !== undefined ? 'STATUS_CHANGE' : 'UPDATE',
+				entityName: 'Vehicle',
+				entityId: updated.id.value,
+				metadata: {
+					changedFields: [
+						dto.brand !== undefined ? 'brand' : null,
+						dto.model !== undefined ? 'model' : null,
+						dto.version !== undefined ? 'version' : null,
+						dto.modelYear !== undefined ? 'modelYear' : null,
+						dto.manufactureYear !== undefined ? 'manufactureYear' : null,
+						dto.color !== undefined ? 'color' : null,
+						dto.mileage !== undefined ? 'mileage' : null,
+						dto.supportedFuelType !== undefined ? 'supportedFuelType' : null,
+						dto.price !== undefined ? 'price' : null,
+						dto.status !== undefined ? 'status' : null,
+						dto.plate !== undefined ? 'plate' : null,
+						dto.vin !== undefined ? 'vin' : null,
+					].filter((field): field is string => field !== null),
+				},
+			});
+
+			return updated;
 		});
 		return result;
 	}

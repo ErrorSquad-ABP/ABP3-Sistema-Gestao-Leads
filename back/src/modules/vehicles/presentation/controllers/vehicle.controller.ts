@@ -33,6 +33,10 @@ import {
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { VehicleCatalogResponseDto } from '../../application/dto/vehicle-catalog-response.dto.js';
 import { VehicleResponseDto } from '../../application/dto/vehicle-response.dto.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
 import { CreateVehicleUseCase } from '../../application/use-cases/create-vehicle.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI — tokens em runtime
@@ -99,8 +103,11 @@ class VehicleController {
 	@ApiCreatedResponseEnvelope(VehicleResponseDto)
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body() body: CreateVehicleValidator) {
-		const vehicle = await this.createVehicleUseCase.execute(body);
+	async create(
+		@CurrentUser() actor: JwtUser,
+		@Body() body: CreateVehicleValidator,
+	) {
+		const vehicle = await this.createVehicleUseCase.execute(actor.userId, body);
 		return VehiclePresenter.toResponse(vehicle);
 	}
 
@@ -152,10 +159,15 @@ class VehicleController {
 	@ApiNotFoundResponse({ description: 'Veículo não encontrado.' })
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() actor: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateVehicleValidator,
 	) {
-		const vehicle = await this.updateVehicleUseCase.execute(id, body);
+		const vehicle = await this.updateVehicleUseCase.execute(
+			actor.userId,
+			id,
+			body,
+		);
 		return VehiclePresenter.toResponse(vehicle);
 	}
 
@@ -178,9 +190,10 @@ class VehicleController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async deletePermanently(
+		@CurrentUser() actor: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 	): Promise<void> {
-		await this.deleteVehicleUseCase.execute(id);
+		await this.deleteVehicleUseCase.execute(actor.userId, id);
 	}
 
 	@Delete(':id')
@@ -194,8 +207,11 @@ class VehicleController {
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiNotFoundResponse({ description: 'Veículo não encontrado.' })
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async deactivate(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-		await this.deactivateVehicleUseCase.execute(id);
+	async deactivate(
+		@CurrentUser() actor: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deactivateVehicleUseCase.execute(actor.userId, id);
 	}
 }
 

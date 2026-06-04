@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 import { UserNotFoundError } from '../../../users/domain/errors/user-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
@@ -30,6 +32,7 @@ class AddTeamMemberUseCase {
 
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const teams = this.teamRepositoryFactory.create(transactionContext);
 			const users = this.userRepositoryFactory.create(transactionContext);
 
@@ -44,7 +47,19 @@ class AddTeamMemberUseCase {
 			}
 
 			team.addMember(Uuid.parse(dto.userId));
-			return teams.update(team);
+			const updated = await teams.update(team);
+			await createAuditLogEntry(tx, {
+				actorUserId: actor.userId,
+				action: 'UPDATE',
+				entityName: 'Team',
+				entityId: updated.id.value,
+				metadata: {
+					changedFields: ['memberUserIds'],
+					addedMemberUserId: dto.userId,
+				},
+			});
+
+			return updated;
 		});
 	}
 }

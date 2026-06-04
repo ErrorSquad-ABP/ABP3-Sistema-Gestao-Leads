@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
@@ -22,6 +24,7 @@ class DeleteLeadUseCase {
 	async execute(actor: LeadActor, leadId: string): Promise<void> {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 
 			const leadIdVo = Uuid.parse(leadId);
@@ -30,6 +33,18 @@ class DeleteLeadUseCase {
 				throw new LeadNotFoundError(leadId);
 			}
 			await this.leadAccessPolicy.assertCanMutateLead(actor, lead);
+
+			await createAuditLogEntry(tx, {
+				actorUserId: actor.userId,
+				action: 'DELETE',
+				entityName: 'Lead',
+				entityId: lead.id.value,
+				metadata: {
+					customerId: lead.customerId.value,
+					storeId: lead.storeId.value,
+					ownerUserId: lead.ownerUserId?.value ?? null,
+				},
+			});
 
 			await leads.delete(leadIdVo);
 		});
