@@ -5,6 +5,7 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import type { UserRole as PrismaUserRole } from '../../../../generated/prisma/enums.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service.js';
 import type { AccessGroupSummaryDto } from '../dto/access-group-summary.dto.js';
@@ -72,16 +73,29 @@ class AccessGroupsService {
 		return rows.map((row) => this.toDto(row));
 	}
 
-	async create(payload: AccessGroupPayload): Promise<AccessGroupSummaryDto> {
+	async create(
+		actorUserId: string,
+		payload: AccessGroupPayload,
+	): Promise<AccessGroupSummaryDto> {
 		try {
-			const created = await this.prisma.accessGroup.create({
-				data: {
-					name: payload.name,
-					description: payload.description,
-					baseRole: toPrismaRole(payload.baseRole),
-					featureKeys: payload.featureKeys,
-					isSystemGroup: false,
-				},
+			const created = await this.prisma.$transaction(async (tx) => {
+				const accessGroup = await tx.accessGroup.create({
+					data: {
+						name: payload.name,
+						description: payload.description,
+						baseRole: toPrismaRole(payload.baseRole),
+						featureKeys: payload.featureKeys,
+						isSystemGroup: false,
+					},
+				});
+				await createAuditLogEntry(tx, {
+					actorUserId,
+					action: 'CREATE',
+					entityName: 'AccessGroup',
+					entityId: accessGroup.id,
+					metadata: { featureKeys: payload.featureKeys },
+				});
+				return accessGroup;
 			});
 
 			return this.toDto(created);
@@ -100,6 +114,7 @@ class AccessGroupsService {
 	}
 
 	async update(
+		actorUserId: string,
 		id: string,
 		payload: PartialAccessGroupPayload,
 	): Promise<AccessGroupSummaryDto> {
@@ -122,17 +137,34 @@ class AccessGroupsService {
 		}
 
 		try {
-			const updated = await this.prisma.accessGroup.update({
-				where: { id },
-				data: {
-					name: payload.name,
-					description: payload.description,
-					baseRole:
-						payload.baseRole !== undefined
-							? toPrismaRole(payload.baseRole)
-							: undefined,
-					featureKeys: payload.featureKeys,
-				},
+			const updated = await this.prisma.$transaction(async (tx) => {
+				const accessGroup = await tx.accessGroup.update({
+					where: { id },
+					data: {
+						name: payload.name,
+						description: payload.description,
+						baseRole:
+							payload.baseRole !== undefined
+								? toPrismaRole(payload.baseRole)
+								: undefined,
+						featureKeys: payload.featureKeys,
+					},
+				});
+				await createAuditLogEntry(tx, {
+					actorUserId,
+					action: 'UPDATE',
+					entityName: 'AccessGroup',
+					entityId: accessGroup.id,
+					metadata: {
+						changedFields: [
+							payload.name !== undefined ? 'name' : null,
+							payload.description !== undefined ? 'description' : null,
+							payload.baseRole !== undefined ? 'baseRole' : null,
+							payload.featureKeys !== undefined ? 'featureKeys' : null,
+						].filter((field): field is string => field !== null),
+					},
+				});
+				return accessGroup;
 			});
 
 			return this.toDto(updated);
@@ -150,7 +182,7 @@ class AccessGroupsService {
 		}
 	}
 
-	async delete(id: string): Promise<void> {
+	async delete(actorUserId: string, id: string): Promise<void> {
 		const existing = await this.prisma.accessGroup.findUnique({
 			where: { id },
 		});
@@ -164,7 +196,16 @@ class AccessGroupsService {
 			);
 		}
 
-		await this.prisma.accessGroup.delete({ where: { id } });
+		await this.prisma.$transaction(async (tx) => {
+			await createAuditLogEntry(tx, {
+				actorUserId,
+				action: 'DELETE',
+				entityName: 'AccessGroup',
+				entityId: existing.id,
+				metadata: { featureKeys: existing.featureKeys },
+			});
+			await tx.accessGroup.delete({ where: { id } });
+		});
 	}
 
 	private toDto(row: {

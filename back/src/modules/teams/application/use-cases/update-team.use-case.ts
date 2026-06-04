@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { StoreRepositoryFactory } from '../../../stores/infrastructure/persistence/factories/store-repository.factory.js';
 import { TeamInvalidStoreError } from '../../domain/errors/team-invalid-store.error.js';
@@ -49,6 +51,7 @@ class UpdateTeamUseCase {
 
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const teams = this.teamRepositoryFactory.create(transactionContext);
 			const stores = this.storeRepositoryFactory.create(transactionContext);
 
@@ -85,7 +88,21 @@ class UpdateTeamUseCase {
 				return existing;
 			}
 
-			return teams.update(existing);
+			const updated = await teams.update(existing);
+			await createAuditLogEntry(tx, {
+				actorUserId: actor.userId,
+				action: 'UPDATE',
+				entityName: 'Team',
+				entityId: updated.id.value,
+				metadata: {
+					changedFields: [
+						dto.name !== undefined ? 'name' : null,
+						dto.storeId !== undefined ? 'storeId' : null,
+					].filter((field): field is string => field !== null),
+				},
+			});
+
+			return updated;
 		});
 	}
 }
