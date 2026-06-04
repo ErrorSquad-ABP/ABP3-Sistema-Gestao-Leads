@@ -13,16 +13,28 @@ class AuditLog extends AggregateRoot {
 	readonly actorUserId: UUID | null;
 	readonly actionType: AuditActionType;
 	readonly entityName: string;
-	readonly entityId: string;
+	readonly entityId: string | null;
+	readonly metadata: unknown;
 	readonly createdAt: Date;
+	readonly actor: {
+		readonly id: UUID;
+		readonly name: string;
+		readonly email: string;
+	} | null;
 
 	constructor(
 		id: AuditLogId,
 		actorUserId: UUID | null,
 		actionType: AuditActionType,
 		entityName: string,
-		entityId: string,
+		entityId: string | null,
+		metadata: unknown,
 		createdAt: Date,
+		actor: {
+			readonly id: UUID;
+			readonly name: string;
+			readonly email: string;
+		} | null = null,
 	) {
 		super();
 		this.id = id;
@@ -30,7 +42,9 @@ class AuditLog extends AggregateRoot {
 		this.actionType = actionType;
 		this.entityName = entityName;
 		this.entityId = entityId;
+		this.metadata = metadata;
 		this.createdAt = createdAt;
+		this.actor = actor;
 	}
 }
 
