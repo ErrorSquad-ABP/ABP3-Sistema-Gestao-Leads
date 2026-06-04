@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
 import { AuthConfigModule } from './config/auth-config.module.js';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CustomersModule } from './modules/customers/customers.module.js';
 import { AnalyticDashboardModule } from './modules/analytic-dashboard/analytic-dashboard.module.js';
@@ -24,6 +25,7 @@ import { GlobalAuthGuard } from './shared/presentation/guards/global-auth.guard.
 		TransactionModule,
 		SystemModule,
 		UsersModule,
+		AuditLogsModule,
 		AuthModule,
 		CustomersModule,
 		AnalyticDashboardModule,
