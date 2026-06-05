@@ -33,6 +33,7 @@ function textContent(node: ReactNode): string {
 
 describe('Stores page layout', () => {
 	it('keeps the stores list above analytics blocks', async () => {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed source fixture relative to this spec
 		const source = await readFile(
 			new URL('./StoresManagementScreen.tsx', import.meta.url),
 			'utf8',

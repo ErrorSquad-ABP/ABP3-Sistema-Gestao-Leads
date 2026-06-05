@@ -11,21 +11,33 @@ import { StoreNotFoundError } from '../../domain/errors/store-not-found.error.js
 import { StoreRepositoryFactory } from '../../infrastructure/persistence/factories/store-repository.factory.js';
 import type { UpdateStoreDto } from '../dto/update-store.dto.js';
 
-const STORE_DETAIL_FIELDS = [
-	'addressLine',
-	'city',
-	'coverage',
-	'distributionRegion',
-	'region',
-	'scope',
-	'state',
-] as const;
-
 function hasStoreUpdatePayload(dto: UpdateStoreDto): boolean {
 	return (
 		dto.name !== undefined ||
-		STORE_DETAIL_FIELDS.some((field) => dto[field] !== undefined)
+		dto.addressLine !== undefined ||
+		dto.city !== undefined ||
+		dto.coverage !== undefined ||
+		dto.distributionRegion !== undefined ||
+		dto.region !== undefined ||
+		dto.scope !== undefined ||
+		dto.state !== undefined
 	);
+}
+
+function buildStoreDetailUpdates(dto: UpdateStoreDto): Partial<StoreDetails> {
+	return {
+		...(dto.addressLine !== undefined && {
+			addressLine: dto.addressLine ?? null,
+		}),
+		...(dto.city !== undefined && { city: dto.city ?? null }),
+		...(dto.coverage !== undefined && { coverage: dto.coverage ?? null }),
+		...(dto.distributionRegion !== undefined && {
+			distributionRegion: dto.distributionRegion ?? null,
+		}),
+		...(dto.region !== undefined && { region: dto.region ?? null }),
+		...(dto.scope !== undefined && { scope: dto.scope ?? null }),
+		...(dto.state !== undefined && { state: dto.state ?? null }),
+	};
 }
 
 @Injectable()
@@ -61,12 +73,7 @@ class UpdateStoreUseCase {
 				}
 			}
 
-			const detailUpdates = Object.fromEntries(
-				STORE_DETAIL_FIELDS.filter((field) => dto[field] !== undefined).map(
-					(field) => [field, dto[field] ?? null],
-				),
-			) as Partial<StoreDetails>;
-			existing.updateDetails(detailUpdates);
+			existing.updateDetails(buildStoreDetailUpdates(dto));
 
 			return stores.update(existing);
 		});

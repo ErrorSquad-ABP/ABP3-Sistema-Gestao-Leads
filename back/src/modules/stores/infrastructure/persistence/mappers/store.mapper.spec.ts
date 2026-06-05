@@ -4,23 +4,25 @@ import { describe, it } from 'node:test';
 
 import { StoreMapper } from './store.mapper.js';
 
-const STORE_FIELDS = [
-	'addressLine',
-	'city',
-	'state',
-	'region',
-	'distributionRegion',
-	'coverage',
-	'scope',
+const STORE_FIELD_PATTERNS = [
+	[/\baddressLine\b/, /"addressLine"/],
+	[/\bcity\b/, /"city"/],
+	[/\bstate\b/, /"state"/],
+	[/\bregion\b/, /"region"/],
+	[/\bdistributionRegion\b/, /"distributionRegion"/],
+	[/\bcoverage\b/, /"coverage"/],
+	[/\bscope\b/, /"scope"/],
 ] as const;
 
 describe('Store schema migration', () => {
 	it('declares every extended Store field in Prisma schema and migration', async () => {
 		const [schema, migration] = await Promise.all([
+			// eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed test fixture relative to this module
 			readFile(
 				new URL('../../../../../../prisma/schema.prisma', import.meta.url),
 				'utf8',
 			),
+			// eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed migration fixture relative to this module
 			readFile(
 				new URL(
 					'../../../../../../prisma/migrations/20260605143000_extend_store_fields/migration.sql',
@@ -30,9 +32,9 @@ describe('Store schema migration', () => {
 			),
 		]);
 
-		for (const field of STORE_FIELDS) {
-			assert.match(schema, new RegExp(`\\b${field}\\b`));
-			assert.match(migration, new RegExp(`"${field}"`));
+		for (const [schemaPattern, migrationPattern] of STORE_FIELD_PATTERNS) {
+			assert.match(schema, schemaPattern);
+			assert.match(migration, migrationPattern);
 		}
 	});
 });
