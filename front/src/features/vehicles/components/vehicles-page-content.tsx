@@ -111,8 +111,7 @@ function VehiclesPageContent() {
 	const [sort, setSort] = useState<VehicleCatalogSort>('recent');
 	const [viewMode, setViewMode] = useState<ViewMode>('cards');
 	const [page, setPage] = useState(1);
-	const [pageSize, setPageSize] =
-		useState<(typeof pageSizeOptions)[number]>(6);
+	const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(6);
 	const filtersRef = useRef<HTMLDivElement>(null);
 
 	const catalogQuery = useVehicleCatalogQuery({
