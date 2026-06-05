@@ -258,11 +258,25 @@ type UpdateCustomerBody = {
 };
 
 type CreateStoreBody = {
+	addressLine?: string | null;
+	city?: string | null;
+	coverage?: string | null;
+	distributionRegion?: string | null;
 	name: string;
+	region?: string | null;
+	scope?: string | null;
+	state?: string | null;
 };
 
 type UpdateStoreBody = {
+	addressLine?: string | null;
+	city?: string | null;
+	coverage?: string | null;
+	distributionRegion?: string | null;
 	name?: string;
+	region?: string | null;
+	scope?: string | null;
+	state?: string | null;
 };
 
 async function listLeadCustomers(

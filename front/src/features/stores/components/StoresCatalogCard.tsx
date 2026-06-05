@@ -1,14 +1,9 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
+import { TablePagination } from '@/components/data/TablePagination';
 import { Card, CardContent } from '@/components/ui/card';
 
-import {
-	STORES_PAGE_SIZE,
-	type StoreTableRow,
-} from '../lib/store-catalog-view';
+import { STORE_PAGE_SIZE_OPTIONS, type StoreTableRow } from '../lib/store-view';
 import type { StoreRecord } from '../model/stores.model';
 import { StoresTable } from './StoresTable';
 
@@ -20,8 +15,10 @@ type StoresCatalogCardProps = {
 	isLoading: boolean;
 	onDelete: (store: StoreRecord) => void;
 	onEdit: (store: StoreRecord) => void;
-	onPageChange: (page: number | ((current: number) => number)) => void;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (pageSize: number) => void;
 	page: number;
+	pageSize: number;
 	rows: StoreTableRow[];
 	totalPages: number;
 };
@@ -35,7 +32,9 @@ function StoresCatalogCard({
 	onDelete,
 	onEdit,
 	onPageChange,
+	onPageSizeChange,
 	page,
+	pageSize,
 	rows,
 	totalPages,
 }: StoresCatalogCardProps) {
@@ -70,43 +69,18 @@ function StoresCatalogCard({
 					/>
 				)}
 
-				<div className="grid items-center gap-3 text-xs text-[#667085] md:grid-cols-[1fr_auto_1fr]">
-					<span>
-						Exibindo {rows.length === 0 ? 0 : (page - 1) * STORES_PAGE_SIZE + 1}{' '}
-						a {Math.min(page * STORES_PAGE_SIZE, filteredCount)} de{' '}
-						{filteredCount} lojas
-					</span>
-					<div className="flex items-center justify-center gap-2">
-						<Button
-							className="size-8 rounded-xl border-[#d8e0ea]"
-							disabled={page <= 1}
-							onClick={() =>
-								onPageChange((current) => Math.max(1, current - 1))
-							}
-							size="icon"
-							variant="outline"
-						>
-							<ChevronLeft className="size-3.5" />
-						</Button>
-						<span className="flex size-8 items-center justify-center rounded-xl border border-[#ffb199] bg-[#fff3ee] text-xs font-semibold text-[#f4511e]">
-							{page}
-						</span>
-						<Button
-							className="size-8 rounded-xl border-[#d8e0ea]"
-							disabled={page >= totalPages}
-							onClick={() =>
-								onPageChange((current) => Math.min(totalPages, current + 1))
-							}
-							size="icon"
-							variant="outline"
-						>
-							<ChevronRight className="size-3.5" />
-						</Button>
-					</div>
-					<span className="text-right">
-						Itens por página: {STORES_PAGE_SIZE}
-					</span>
-				</div>
+				<TablePagination
+					className="px-0 pb-0"
+					isLoading={isLoading}
+					itemLabel="lojas"
+					onPageChange={onPageChange}
+					onPageSizeChange={onPageSizeChange}
+					page={page}
+					pageSize={pageSize}
+					pageSizeOptions={STORE_PAGE_SIZE_OPTIONS}
+					totalItems={filteredCount}
+					totalPages={totalPages}
+				/>
 
 				{!canManageStores ? (
 					<p className="text-xs text-muted-foreground">

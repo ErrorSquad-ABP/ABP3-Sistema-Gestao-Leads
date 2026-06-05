@@ -5,13 +5,27 @@ import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-w
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
+import type { StoreDetails } from '../../domain/entities/store.entity.js';
 import { StoreNotFoundError } from '../../domain/errors/store-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
 import { StoreRepositoryFactory } from '../../infrastructure/persistence/factories/store-repository.factory.js';
 import type { UpdateStoreDto } from '../dto/update-store.dto.js';
 
+const STORE_DETAIL_FIELDS = [
+	'addressLine',
+	'city',
+	'coverage',
+	'distributionRegion',
+	'region',
+	'scope',
+	'state',
+] as const;
+
 function hasStoreUpdatePayload(dto: UpdateStoreDto): boolean {
-	return dto.name !== undefined;
+	return (
+		dto.name !== undefined ||
+		STORE_DETAIL_FIELDS.some((field) => dto[field] !== undefined)
+	);
 }
 
 @Injectable()
@@ -42,11 +56,17 @@ class UpdateStoreUseCase {
 
 			if (dto.name !== undefined) {
 				const next = Name.create(dto.name);
-				if (next.equals(existing.name)) {
-					return existing;
+				if (!next.equals(existing.name)) {
+					existing.rename(next);
 				}
-				existing.rename(next);
 			}
+
+			const detailUpdates = Object.fromEntries(
+				STORE_DETAIL_FIELDS.filter((field) => dto[field] !== undefined).map(
+					(field) => [field, dto[field] ?? null],
+				),
+			) as Partial<StoreDetails>;
+			existing.updateDetails(detailUpdates);
 
 			return stores.update(existing);
 		});

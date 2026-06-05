@@ -165,13 +165,20 @@ model Team {
 }
 
 model Store {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String
-  teams     Team[]
-  leads     Lead[]
-  vehicles  Vehicle[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                 String    @id @default(uuid()) @db.Uuid
+  name               String
+  addressLine        String?
+  city               String?
+  state              String?   @db.VarChar(2)
+  region             String?
+  distributionRegion String?
+  coverage           String?
+  scope              String?
+  teams              Team[]
+  leads              Lead[]
+  vehicles           Vehicle[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }
 
 model Customer {

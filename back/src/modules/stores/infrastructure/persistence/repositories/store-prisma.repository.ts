@@ -36,8 +36,15 @@ class StorePrismaRepository implements IStoreRepository {
 		const record = StoreMapper.toRecord(store);
 		const created = await this.client.store.create({
 			data: {
+				addressLine: record.addressLine,
+				city: record.city,
+				coverage: record.coverage,
+				distributionRegion: record.distributionRegion,
 				id: record.id,
 				name: record.name,
+				region: record.region,
+				scope: record.scope,
+				state: record.state,
 			},
 		});
 		return StoreMapper.toDomain(created);
@@ -46,7 +53,16 @@ class StorePrismaRepository implements IStoreRepository {
 	async update(store: Parameters<IStoreRepository['update']>[0]) {
 		const record = StoreMapper.toRecord(store);
 		const updated = await this.client.store.update({
-			data: { name: record.name },
+			data: {
+				addressLine: record.addressLine,
+				city: record.city,
+				coverage: record.coverage,
+				distributionRegion: record.distributionRegion,
+				name: record.name,
+				region: record.region,
+				scope: record.scope,
+				state: record.state,
+			},
 			where: { id: record.id },
 		});
 		return StoreMapper.toDomain(updated);
