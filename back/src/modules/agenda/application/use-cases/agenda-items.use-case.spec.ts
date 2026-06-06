@@ -5,7 +5,10 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CompleteAgendaItemUseCase } from './complete-agenda-item.use-case.js';
 import { CancelAgendaItemUseCase } from './cancel-agenda-item.use-case.js';
 import { CreateAgendaItemUseCase } from './create-agenda-item.use-case.js';
+import { GetAgendaMetricsUseCase } from './get-agenda-metrics.use-case.js';
+import { isAgendaItemOverdue } from './agenda-item-validation.js';
 import { ListAgendaItemsUseCase } from './list-agenda-items.use-case.js';
+import { ListLeadAgendaItemsUseCase } from './list-lead-agenda-items.use-case.js';
 import { UpdateAgendaItemUseCase } from './update-agenda-item.use-case.js';
 import type {
 	AgendaItem,
@@ -17,6 +20,8 @@ import type {
 const BASE_ITEM: AgendaItem = {
 	id: 'item-1',
 	userId: 'user-1',
+	leadId: null,
+	lead: null,
 	type: 'TASK',
 	status: 'SCHEDULED',
 	recurrence: 'NONE',
@@ -48,6 +53,16 @@ function repository(overrides: Partial<AgendaItemRepository> = {}) {
 			updatedAt: BASE_ITEM.updatedAt,
 		})),
 		findByIdForUser: mock.fn(async () => BASE_ITEM),
+		findLeadAccessSnapshot: mock.fn(async () => ({
+			ownerUserId: 'user-1',
+			storeId: 'store-1',
+		})),
+		getMetrics: mock.fn(async () => ({
+			activitiesTodayCount: 1,
+			completedThisMonthCount: 0,
+			overdueCount: 0,
+			pendingTasksCount: 1,
+		})),
 		list: mock.fn(async () => [BASE_ITEM]),
 		update: mock.fn(async (input: UpdateAgendaItemInput) => ({
 			...BASE_ITEM,
@@ -111,6 +126,55 @@ describe('agenda item use cases', () => {
 		assert.equal(createdInput.recurrence, 'NONE');
 	});
 
+	it('creates activity linked to an accessible lead', async () => {
+		const created: CreateAgendaItemInput[] = [];
+		const accessChecks: unknown[] = [];
+		const repo = repository({
+			create: mock.fn(async (input) => {
+				created.push(input);
+				return { ...BASE_ITEM, ...input, id: 'created-item' };
+			}),
+		});
+		const policy = {
+			assertCanReadLeadSnapshot: mock.fn(async (...args: unknown[]) => {
+				accessChecks.push(args);
+			}),
+		};
+		const useCase = new CreateAgendaItemUseCase(repo, policy as never);
+
+		await useCase.execute({
+			userId: 'user-1',
+			userRole: 'ATTENDANT',
+			type: 'TASK',
+			title: 'Ligar cliente',
+			leadId: 'lead-1',
+			dueAt: new Date('2026-06-01T15:00:00.000Z'),
+		});
+
+		assert.equal(created[0]?.leadId, 'lead-1');
+		assert.equal(accessChecks.length, 1);
+	});
+
+	it('rejects activity linked to an unknown lead', async () => {
+		const useCase = new CreateAgendaItemUseCase(
+			repository({ findLeadAccessSnapshot: mock.fn(async () => null) }),
+			{ assertCanReadLeadSnapshot: mock.fn() } as never,
+		);
+
+		await assert.rejects(
+			() =>
+				useCase.execute({
+					userId: 'user-1',
+					userRole: 'ATTENDANT',
+					type: 'TASK',
+					title: 'Ligar cliente',
+					leadId: 'lead-missing',
+					dueAt: new Date('2026-06-01T15:00:00.000Z'),
+				}),
+			NotFoundException,
+		);
+	});
+
 	it('creates events with simple recurrence values preserved', async () => {
 		const created: CreateAgendaItemInput[] = [];
 		const repo = repository({
@@ -142,6 +206,50 @@ describe('agenda item use cases', () => {
 			created.map((item) => item.recurrence),
 			recurrences,
 		);
+	});
+
+	it('returns agenda metrics from repository without formatting values', async () => {
+		const repo = repository({
+			getMetrics: mock.fn(async () => ({
+				activitiesTodayCount: 2,
+				completedThisMonthCount: 3,
+				overdueCount: 1,
+				pendingTasksCount: 4,
+			})),
+		});
+		const useCase = new GetAgendaMetricsUseCase(repo);
+
+		const metrics = await useCase.execute(
+			'user-1',
+			new Date('2026-06-03T12:00:00.000Z'),
+		);
+
+		assert.deepEqual(metrics, {
+			activitiesTodayCount: 2,
+			completedThisMonthCount: 3,
+			overdueCount: 1,
+			pendingTasksCount: 4,
+		});
+	});
+
+	it('lists lead agenda items after validating lead access', async () => {
+		const accessChecks: unknown[] = [];
+		const repo = repository();
+		const policy = {
+			assertCanReadLeadSnapshot: mock.fn(async (...args: unknown[]) => {
+				accessChecks.push(args);
+			}),
+		};
+		const useCase = new ListLeadAgendaItemsUseCase(repo, policy as never);
+
+		const result = await useCase.execute({
+			actor: { userId: 'user-1', role: 'ATTENDANT' },
+			leadId: 'lead-1',
+			userId: 'user-1',
+		});
+
+		assert.equal(result.items.length, 1);
+		assert.equal(accessChecks.length, 1);
 	});
 
 	it('rejects event creation without start date', async () => {
@@ -183,6 +291,52 @@ describe('agenda item use cases', () => {
 		);
 	});
 
+	it('updates title, status and schedule for items owned by the current user', async () => {
+		const updates: UpdateAgendaItemInput[] = [];
+		const useCase = new UpdateAgendaItemUseCase(
+			repository({
+				update: mock.fn(async (input) => {
+					updates.push(input);
+					return {
+						...BASE_ITEM,
+						...input,
+						updatedAt: new Date('2026-06-01T11:00:00.000Z'),
+					};
+				}),
+			}),
+		);
+
+		const result = await useCase.execute({
+			id: 'item-1',
+			userId: 'user-1',
+			title: '  Reunião remarcada  ',
+			status: 'DONE',
+			type: 'EVENT',
+			startsAt: new Date('2026-06-01T14:00:00.000Z'),
+			endsAt: new Date('2026-06-01T15:00:00.000Z'),
+			dueAt: null,
+		});
+
+		assert.equal(result.title, 'Reunião remarcada');
+		assert.equal(result.status, 'DONE');
+		assert.equal(updates[0]?.title, 'Reunião remarcada');
+		assert.equal(updates[0]?.type, 'EVENT');
+	});
+
+	it('rejects changing task to event without a start date', async () => {
+		const useCase = new UpdateAgendaItemUseCase(repository());
+
+		await assert.rejects(
+			() =>
+				useCase.execute({
+					id: 'item-1',
+					userId: 'user-1',
+					type: 'EVENT',
+				}),
+			BadRequestException,
+		);
+	});
+
 	it('does not update items outside the current user scope', async () => {
 		const useCase = new UpdateAgendaItemUseCase(
 			repository({
@@ -198,6 +352,66 @@ describe('agenda item use cases', () => {
 					title: 'Outro título',
 				}),
 			NotFoundException,
+		);
+	});
+
+	it('detects overdue scheduled tasks and ignores completed tasks', () => {
+		const now = new Date('2026-06-03T12:00:00.000Z');
+
+		assert.equal(
+			isAgendaItemOverdue(
+				{
+					...BASE_ITEM,
+					type: 'TASK',
+					status: 'SCHEDULED',
+					dueAt: new Date('2026-06-03T10:00:00.000Z'),
+				},
+				now,
+			),
+			true,
+		);
+		assert.equal(
+			isAgendaItemOverdue(
+				{
+					...BASE_ITEM,
+					type: 'TASK',
+					status: 'DONE',
+					dueAt: new Date('2026-06-03T10:00:00.000Z'),
+				},
+				now,
+			),
+			false,
+		);
+	});
+
+	it('detects overdue scheduled events using end date when present', () => {
+		const now = new Date('2026-06-03T12:00:00.000Z');
+
+		assert.equal(
+			isAgendaItemOverdue(
+				{
+					...BASE_ITEM,
+					type: 'EVENT',
+					status: 'SCHEDULED',
+					startsAt: new Date('2026-06-03T09:00:00.000Z'),
+					endsAt: new Date('2026-06-03T10:00:00.000Z'),
+				},
+				now,
+			),
+			true,
+		);
+		assert.equal(
+			isAgendaItemOverdue(
+				{
+					...BASE_ITEM,
+					type: 'EVENT',
+					status: 'SCHEDULED',
+					startsAt: new Date('2026-06-03T11:00:00.000Z'),
+					endsAt: new Date('2026-06-03T13:00:00.000Z'),
+				},
+				now,
+			),
+			false,
 		);
 	});
 

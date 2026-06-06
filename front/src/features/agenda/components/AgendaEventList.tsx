@@ -5,9 +5,17 @@ type Props = {
 	items: readonly AgendaItem[];
 	onCancel: (id: string) => void;
 	onComplete: (id: string) => void;
+	onEdit: (item: AgendaItem) => void;
+	onMove?: (item: AgendaItem) => void;
 };
 
-function AgendaEventList({ items, onCancel, onComplete }: Props) {
+function AgendaEventList({
+	items,
+	onCancel,
+	onComplete,
+	onEdit,
+	onMove,
+}: Props) {
 	return (
 		<ul className="space-y-3" aria-label="Próximas atividades">
 			{items.map((item) => (
@@ -16,6 +24,8 @@ function AgendaEventList({ items, onCancel, onComplete }: Props) {
 						item={item}
 						onCancel={onCancel}
 						onComplete={onComplete}
+						onEdit={onEdit}
+						onMove={onMove}
 					/>
 				</li>
 			))}

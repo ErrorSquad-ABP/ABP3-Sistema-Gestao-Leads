@@ -2,6 +2,17 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import type { AgendaItem } from '../../domain/agenda-item.types.js';
 
+class AgendaLeadSummaryDto {
+	@ApiProperty()
+	id!: string;
+
+	@ApiProperty()
+	customerName!: string;
+
+	@ApiProperty()
+	status!: string;
+}
+
 class AgendaItemDto {
 	@ApiProperty()
 	id!: string;
@@ -14,6 +25,12 @@ class AgendaItemDto {
 
 	@ApiProperty({ enum: ['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'] })
 	recurrence!: 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+
+	@ApiProperty({ nullable: true, required: false })
+	leadId?: string | null;
+
+	@ApiProperty({ nullable: true, required: false, type: AgendaLeadSummaryDto })
+	lead?: AgendaLeadSummaryDto | null;
 
 	@ApiProperty()
 	title!: string;
@@ -45,6 +62,8 @@ class AgendaItemDto {
 			type: item.type,
 			status: item.status,
 			recurrence: item.recurrence,
+			leadId: item.leadId,
+			lead: item.lead ?? null,
 			title: item.title,
 			description: item.description,
 			location: item.location,
@@ -62,4 +81,18 @@ class AgendaItemsResponseDto {
 	items!: AgendaItemDto[];
 }
 
-export { AgendaItemDto, AgendaItemsResponseDto };
+class AgendaMetricsDto {
+	@ApiProperty()
+	activitiesTodayCount!: number;
+
+	@ApiProperty()
+	completedThisMonthCount!: number;
+
+	@ApiProperty()
+	overdueCount!: number;
+
+	@ApiProperty()
+	pendingTasksCount!: number;
+}
+
+export { AgendaItemDto, AgendaItemsResponseDto, AgendaMetricsDto };

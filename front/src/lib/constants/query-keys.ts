@@ -185,10 +185,14 @@ const queryKeys = {
 	},
 	agenda: {
 		itemsRoot: ['agenda', 'items'] as const,
+		leadItemsRoot: ['agenda', 'lead-items'] as const,
+		metrics: ['agenda', 'metrics'] as const,
+		leadItems: (leadId: string) => ['agenda', 'lead-items', leadId] as const,
 		items: (
 			params: {
 				from?: string;
 				limit?: number;
+				search?: string;
 				status?: string;
 				to?: string;
 				type?: string;
@@ -200,6 +204,7 @@ const queryKeys = {
 				params.from ?? 'default-from',
 				params.to ?? 'default-to',
 				params.limit ?? 'default-limit',
+				params.search?.trim() ?? 'default-search',
 				params.status ?? 'default-status',
 				params.type ?? 'default-type',
 			] as const,

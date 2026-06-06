@@ -3,6 +3,7 @@ import { apiFetch } from '@/lib/http/api-client';
 import {
 	parseAgendaItemResponse,
 	parseAgendaItemsResponse,
+	parseAgendaMetricsResponse,
 } from '../schemas/agenda.schema';
 import type {
 	AgendaItemsQuery,
@@ -27,7 +28,15 @@ function toSearchParams(query: AgendaItemsQuery) {
 	if (query.type) {
 		params.set('type', query.type);
 	}
+	if (query.search?.trim()) {
+		params.set('search', query.search.trim());
+	}
 	return params;
+}
+
+async function getAgendaMetrics(signal?: AbortSignal) {
+	const payload = await apiFetch<unknown>('/api/agenda/metrics', { signal });
+	return parseAgendaMetricsResponse(payload);
 }
 
 async function getAgendaItems(
@@ -37,6 +46,13 @@ async function getAgendaItems(
 	const params = toSearchParams(query);
 	const suffix = params.size > 0 ? `?${params.toString()}` : '';
 	const payload = await apiFetch<unknown>(`/api/agenda/items${suffix}`, {
+		signal,
+	});
+	return parseAgendaItemsResponse(payload);
+}
+
+async function getLeadAgendaItems(leadId: string, signal?: AbortSignal) {
+	const payload = await apiFetch<unknown>(`/api/leads/${leadId}/agenda-items`, {
 		signal,
 	});
 	return parseAgendaItemsResponse(payload);
@@ -76,6 +92,8 @@ export {
 	cancelAgendaItem,
 	completeAgendaItem,
 	createAgendaItem,
+	getAgendaMetrics,
 	getAgendaItems,
+	getLeadAgendaItems,
 	updateAgendaItem,
 };

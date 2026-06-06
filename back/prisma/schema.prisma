@@ -217,6 +217,7 @@ model Lead {
   owner               User?       @relation("LeadOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
   deals               Deal[]
   events              LeadEvent[]
+  agendaItems         AgendaItem[]
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
@@ -321,7 +322,9 @@ model AuditLog {
 model AgendaItem {
   id          String           @id @default(uuid()) @db.Uuid
   userId      String           @db.Uuid
+  leadId      String?          @db.Uuid
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead        Lead?            @relation(fields: [leadId], references: [id], onDelete: SetNull)
   type        AgendaItemType
   status      AgendaItemStatus @default(SCHEDULED)
   recurrence  AgendaRecurrence @default(NONE)
@@ -334,6 +337,10 @@ model AgendaItem {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
+  @@index([leadId])
+  @@index([userId, leadId])
+  @@index([userId, status, startsAt])
+  @@index([userId, status, dueAt])
   @@index([userId, startsAt])
   @@index([userId, dueAt])
   @@index([userId, status])

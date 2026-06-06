@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 
 import type {
+	AgendaItem,
 	AgendaItemType,
 	AgendaRecurrence,
 } from '../../domain/agenda-item.types.js';
@@ -49,7 +50,18 @@ function validateAgendaItemDates(input: AgendaItemDateInput): void {
 	}
 }
 
+function isAgendaItemOverdue(item: AgendaItem, now = new Date()): boolean {
+	if (item.status !== 'SCHEDULED') {
+		return false;
+	}
+
+	const targetDate =
+		item.type === 'EVENT' ? (item.endsAt ?? item.startsAt) : item.dueAt;
+	return targetDate !== null && targetDate < now;
+}
+
 export {
+	isAgendaItemOverdue,
 	normalizeOptionalText,
 	normalizeRecurrence,
 	normalizeRequiredTitle,

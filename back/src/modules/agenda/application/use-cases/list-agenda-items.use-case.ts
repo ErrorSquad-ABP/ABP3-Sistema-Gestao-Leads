@@ -11,7 +11,9 @@ const DEFAULT_AGENDA_ITEMS_LIMIT = 50;
 
 type ListAgendaItemsInput = {
 	from?: Date;
+	leadId?: string;
 	limit?: number;
+	search?: string;
 	status?: 'SCHEDULED' | 'DONE' | 'CANCELLED';
 	to?: Date;
 	type?: 'TASK' | 'EVENT';

@@ -13,10 +13,10 @@ type Props = {
 	onComplete: (id: string) => void;
 	onCreateClick: () => void;
 	onEdit: (item: AgendaItem) => void;
-	onMove?: (item: AgendaItem) => void;
+	onMove: (item: AgendaItem) => void;
 };
 
-function AgendaSelectedDayPanel({
+function AgendaDayView({
 	dateLabel,
 	items,
 	onCancel,
@@ -29,14 +29,14 @@ function AgendaSelectedDayPanel({
 		<Card className="rounded-lg border-border bg-card shadow-none">
 			<CardHeader className="flex flex-row items-start justify-between gap-3">
 				<div>
-					<CardTitle className="text-base">Atividades do dia</CardTitle>
+					<CardTitle className="text-base">Visão do dia</CardTitle>
 					<p className="mt-1 text-sm capitalize text-muted-foreground">
 						{dateLabel}
 					</p>
 				</div>
 				<Button onClick={onCreateClick} size="sm" variant="outline">
 					<Plus className="size-4" />
-					Criar
+					Nova atividade
 				</Button>
 			</CardHeader>
 			<CardContent>
@@ -58,4 +58,4 @@ function AgendaSelectedDayPanel({
 	);
 }
 
-export { AgendaSelectedDayPanel };
+export { AgendaDayView };

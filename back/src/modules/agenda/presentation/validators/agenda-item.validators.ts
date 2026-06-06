@@ -5,6 +5,7 @@ import {
 	IsInt,
 	IsOptional,
 	IsString,
+	IsUUID,
 	Max,
 	MaxLength,
 	Min,
@@ -40,6 +41,11 @@ class ListAgendaItemsQueryValidator {
 	@Min(1)
 	@Max(AGENDA_MAX_LIMIT)
 	limit?: number;
+
+	@IsOptional()
+	@IsString()
+	@MaxLength(120)
+	search?: string;
 }
 
 class CreateAgendaItemValidator {
@@ -63,6 +69,10 @@ class CreateAgendaItemValidator {
 	@IsOptional()
 	@IsEnum(AGENDA_RECURRENCES)
 	recurrence?: (typeof AGENDA_RECURRENCES)[number];
+
+	@IsOptional()
+	@IsUUID()
+	leadId?: string | null;
 
 	@IsOptional()
 	@Type(() => Date)
@@ -107,6 +117,10 @@ class UpdateAgendaItemValidator {
 	@IsOptional()
 	@IsEnum(AGENDA_RECURRENCES)
 	recurrence?: (typeof AGENDA_RECURRENCES)[number];
+
+	@IsOptional()
+	@IsUUID()
+	leadId?: string | null;
 
 	@IsOptional()
 	@Type(() => Date)

@@ -5,6 +5,8 @@ import {
 	agendaDateKey,
 	expandRecurringAgendaItems,
 	filterSelectedDayAgendaItems,
+	isAgendaItemOverdue,
+	moveAgendaItemToDate,
 } from './agenda-formatters';
 import type { AgendaItem } from '../model/agenda.model';
 
@@ -124,6 +126,85 @@ describe('agenda recurrence formatters', () => {
 		assert.deepEqual(
 			items.map((item) => item.id),
 			['historical-event'],
+		);
+	});
+
+	it('detects overdue tasks and events without flagging done or cancelled items', () => {
+		const now = new Date('2026-06-03T12:00:00.000Z');
+
+		assert.equal(
+			isAgendaItemOverdue(
+				{
+					...BASE_ITEM,
+					type: 'TASK',
+					dueAt: '2026-06-03T11:00:00.000Z',
+					startsAt: null,
+					endsAt: null,
+				},
+				now,
+			),
+			true,
+		);
+		assert.equal(
+			isAgendaItemOverdue(
+				{
+					...BASE_ITEM,
+					type: 'EVENT',
+					startsAt: '2026-06-03T09:00:00.000Z',
+					endsAt: '2026-06-03T10:00:00.000Z',
+				},
+				now,
+			),
+			true,
+		);
+		assert.equal(
+			isAgendaItemOverdue(
+				{
+					...BASE_ITEM,
+					status: 'CANCELLED',
+					startsAt: '2026-06-03T09:00:00.000Z',
+					endsAt: '2026-06-03T10:00:00.000Z',
+				},
+				now,
+			),
+			false,
+		);
+	});
+
+	it('moves tasks preserving the original due time', () => {
+		const payload = moveAgendaItemToDate(
+			{
+				...BASE_ITEM,
+				type: 'TASK',
+				startsAt: null,
+				endsAt: null,
+				dueAt: '2026-06-03T13:30:00.000Z',
+			},
+			new Date(2026, 5, 10),
+		);
+
+		assert.equal(payload.startsAt, null);
+		assert.equal(payload.endsAt, null);
+		assert.equal(agendaDateKey(payload.dueAt), '2026-06-10');
+	});
+
+	it('moves events preserving their duration', () => {
+		const payload = moveAgendaItemToDate(
+			{
+				...BASE_ITEM,
+				type: 'EVENT',
+				startsAt: '2026-06-03T14:00:00.000Z',
+				endsAt: '2026-06-03T15:30:00.000Z',
+				dueAt: null,
+			},
+			new Date(2026, 5, 10),
+		);
+
+		assert.equal(payload.dueAt, null);
+		assert.equal(
+			new Date(payload.endsAt ?? '').getTime() -
+				new Date(payload.startsAt ?? '').getTime(),
+			90 * 60 * 1000,
 		);
 	});
 });

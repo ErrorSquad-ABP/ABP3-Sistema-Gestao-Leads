@@ -81,6 +81,17 @@ function agendaItemDate(item: AgendaItem) {
 	return item.startsAt ?? item.dueAt ?? item.createdAt;
 }
 
+function copyTimeToDate(source: Date, targetDate: Date) {
+	const next = new Date(targetDate);
+	next.setHours(
+		source.getHours(),
+		source.getMinutes(),
+		source.getSeconds(),
+		source.getMilliseconds(),
+	);
+	return next;
+}
+
 function agendaItemRelevantEndDate(item: AgendaItem) {
 	if (item.type === 'EVENT') {
 		return item.endsAt ?? item.startsAt ?? item.createdAt;
@@ -88,15 +99,54 @@ function agendaItemRelevantEndDate(item: AgendaItem) {
 	return item.dueAt ?? item.createdAt;
 }
 
-function isAgendaItemStillRelevantToday(item: AgendaItem, now: Date) {
+function isAgendaItemOverdue(item: AgendaItem, now = new Date()) {
 	if (item.status !== 'SCHEDULED') {
-		return true;
+		return false;
 	}
 	const relevantEndDate = new Date(agendaItemRelevantEndDate(item));
 	if (Number.isNaN(relevantEndDate.getTime())) {
-		return true;
+		return false;
 	}
-	return relevantEndDate >= now;
+	return relevantEndDate < now;
+}
+
+function isAgendaItemStillRelevantToday(item: AgendaItem, now: Date) {
+	return !isAgendaItemOverdue(item, now);
+}
+
+function moveAgendaItemToDate(item: AgendaItem, targetDate: Date) {
+	const fallbackStart = new Date(targetDate);
+	fallbackStart.setHours(9, 0, 0, 0);
+
+	if (item.type === 'TASK') {
+		const currentDueAt = item.dueAt ? new Date(item.dueAt) : fallbackStart;
+		const nextDueAt = Number.isNaN(currentDueAt.getTime())
+			? fallbackStart
+			: copyTimeToDate(currentDueAt, targetDate);
+		return {
+			dueAt: nextDueAt.toISOString(),
+			endsAt: null,
+			startsAt: null,
+		};
+	}
+
+	const currentStart = item.startsAt ? new Date(item.startsAt) : fallbackStart;
+	const safeStart = Number.isNaN(currentStart.getTime())
+		? fallbackStart
+		: currentStart;
+	const nextStart = copyTimeToDate(safeStart, targetDate);
+	const currentEnd = item.endsAt ? new Date(item.endsAt) : null;
+	const durationMs =
+		currentEnd && !Number.isNaN(currentEnd.getTime())
+			? Math.max(currentEnd.getTime() - safeStart.getTime(), 0)
+			: 60 * 60 * 1000;
+	const nextEnd = new Date(nextStart.getTime() + durationMs);
+
+	return {
+		dueAt: null,
+		endsAt: nextEnd.toISOString(),
+		startsAt: nextStart.toISOString(),
+	};
 }
 
 function filterSelectedDayAgendaItems(
@@ -237,6 +287,20 @@ function formatAgendaTime(startsAt?: string | null, endsAt?: string | null) {
 	return `${formatter.format(start)} - ${formatter.format(end)}`;
 }
 
+function formatAgendaDateTime(value?: string | null) {
+	if (!value) {
+		return 'Sem horário definido';
+	}
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		return value;
+	}
+	return new Intl.DateTimeFormat('pt-BR', {
+		dateStyle: 'short',
+		timeStyle: 'short',
+	}).format(date);
+}
+
 function agendaItemTypeLabel(type: AgendaItem['type']) {
 	return type === 'TASK' ? 'Tarefa' : 'Compromisso';
 }
@@ -267,6 +331,7 @@ function agendaRecurrenceLabel(recurrence: AgendaItem['recurrence']) {
 
 export {
 	addMonths,
+	addDays,
 	agendaItemDate,
 	agendaDateKey,
 	agendaItemStatusLabel,
@@ -277,8 +342,11 @@ export {
 	buildMonthGridRange,
 	expandRecurringAgendaItems,
 	filterSelectedDayAgendaItems,
+	formatAgendaDateTime,
 	formatAgendaMonth,
 	formatAgendaDate,
 	formatAgendaTime,
+	isAgendaItemOverdue,
+	moveAgendaItemToDate,
 };
 export type { AgendaRangePreset };

@@ -69,6 +69,7 @@ import {
 	LeadFormDialog,
 	LeadReassignDialog,
 } from './LeadForm';
+import { LeadUpcomingActivitiesCard } from './LeadUpcomingActivitiesCard';
 
 type LeadDetailPageContentProps = {
 	leadId: string;
@@ -612,6 +613,12 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 						: 'Não foi possível carregar as opções para as ações deste lead.'}
 				</div>
 			) : null}
+
+			<LeadUpcomingActivitiesCard
+				customerName={detail.customer.name}
+				leadId={detail.lead.id}
+				leadStatus={detail.lead.status}
+			/>
 
 			<div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
 				<Card className="rounded-[1.75rem] border-border/90 bg-white">
