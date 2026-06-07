@@ -5,6 +5,7 @@ import {
 	buildCustomPeriodQuery,
 	buildMonthPeriodQuery,
 	buildPresetPeriodQuery,
+	isValidMonthInput,
 	toDateInputValue,
 	toMonthInputValue,
 } from './operational-dashboard-period';
@@ -39,6 +40,22 @@ describe('buildPresetPeriodQuery', () => {
 			buildPresetPeriodQuery('year', now).endDate?.slice(0, 10),
 			'2027-01-01',
 		);
+	});
+});
+
+describe('isValidMonthInput', () => {
+	it('accepts YYYY-MM values with valid months', () => {
+		assert.equal(isValidMonthInput('2026-04'), true);
+		assert.equal(isValidMonthInput('2026-01'), true);
+		assert.equal(isValidMonthInput('2026-12'), true);
+	});
+
+	it('rejects empty, partial, or invalid month values', () => {
+		assert.equal(isValidMonthInput(''), false);
+		assert.equal(isValidMonthInput('2026-'), false);
+		assert.equal(isValidMonthInput('2026-00'), false);
+		assert.equal(isValidMonthInput('2026-13'), false);
+		assert.equal(isValidMonthInput('26-04'), false);
 	});
 });
 
