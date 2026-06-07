@@ -4,8 +4,6 @@ import {
 	Archive,
 	Car,
 	CheckCircle2,
-	ChevronLeft,
-	ChevronRight,
 	Download,
 	Grid2X2,
 	Plus,
@@ -16,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
+import { TablePagination } from '@/components/data/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -43,7 +42,7 @@ import { VehicleConfirmDialog } from './VehicleConfirmDialog';
 import { VehicleDetailsDialog } from './VehicleDetailsDialog';
 import { VehicleFormDialog, getVehiclesErrorMessage } from './VehicleForm';
 
-const CATALOG_PAGE_SIZE = 8;
+const pageSizeOptions = [6, 12, 18, 24, 48] as const;
 
 type ViewMode = 'cards' | 'table';
 
@@ -112,6 +111,7 @@ function VehiclesPageContent() {
 	const [sort, setSort] = useState<VehicleCatalogSort>('recent');
 	const [viewMode, setViewMode] = useState<ViewMode>('cards');
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(6);
 	const filtersRef = useRef<HTMLDivElement>(null);
 
 	const catalogQuery = useVehicleCatalogQuery({
@@ -120,7 +120,7 @@ function VehiclesPageContent() {
 		search,
 		sort,
 		page,
-		limit: CATALOG_PAGE_SIZE,
+		limit: pageSize,
 	});
 
 	const createVehicleMutation = useCreateVehicleMutation();
@@ -503,38 +503,21 @@ function VehiclesPageContent() {
 						/>
 					)}
 
-					<div className="flex flex-col gap-3 border-t border-[#edf1f5] pt-4 text-sm text-[#667085] md:flex-row md:items-center md:justify-between">
-						<p>
-							Mostrando{' '}
-							{items.length > 0 ? (page - 1) * CATALOG_PAGE_SIZE + 1 : 0} a{' '}
-							{(page - 1) * CATALOG_PAGE_SIZE + items.length} de{' '}
-							{catalog?.total ?? 0} veículos
-						</p>
-						<div className="flex items-center justify-center gap-2">
-							<Button
-								disabled={page <= 1}
-								onClick={() => setPage((current) => Math.max(1, current - 1))}
-								size="icon-sm"
-								variant="outline"
-							>
-								<ChevronLeft className="size-4" />
-								<span className="sr-only">Página anterior</span>
-							</Button>
-							<span className="rounded-lg bg-orange-50 px-3 py-1.5 font-semibold text-[#f05a28]">
-								{page}
-							</span>
-							<span>de {catalog?.totalPages ?? 1}</span>
-							<Button
-								disabled={page >= (catalog?.totalPages ?? 1)}
-								onClick={() => setPage((current) => current + 1)}
-								size="icon-sm"
-								variant="outline"
-							>
-								<ChevronRight className="size-4" />
-								<span className="sr-only">Próxima página</span>
-							</Button>
-						</div>
-					</div>
+					<TablePagination
+						className="px-0 pb-0"
+						isLoading={catalogQuery.isFetching}
+						itemLabel="veículos"
+						onPageChange={setPage}
+						onPageSizeChange={(value) => {
+							setPageSize(value as (typeof pageSizeOptions)[number]);
+							setPage(1);
+						}}
+						page={catalog?.page ?? page}
+						pageSize={pageSize}
+						pageSizeOptions={pageSizeOptions}
+						totalItems={catalog?.total ?? 0}
+						totalPages={catalog?.totalPages ?? 1}
+					/>
 				</CardContent>
 			</Card>
 
