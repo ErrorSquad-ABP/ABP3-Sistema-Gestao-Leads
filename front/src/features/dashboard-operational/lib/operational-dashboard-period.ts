@@ -38,6 +38,10 @@ function dateInputToLocalDate(value: string) {
 	return new Date(Number(yearRaw), Number(monthRaw) - 1, Number(dayRaw));
 }
 
+function isValidMonthInput(value: string) {
+	return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
 function monthInputToLocalDate(value: string) {
 	const [yearRaw, monthRaw] = value.split('-');
 	return new Date(Number(yearRaw), Number(monthRaw) - 1, 1);
@@ -94,6 +98,7 @@ export {
 	buildCustomPeriodQuery,
 	buildMonthPeriodQuery,
 	buildPresetPeriodQuery,
+	isValidMonthInput,
 	toDateInputValue,
 	toMonthInputValue,
 };

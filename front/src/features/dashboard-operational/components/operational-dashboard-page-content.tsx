@@ -36,6 +36,7 @@ import { useOperationalDashboardQuery } from '../hooks/operational-dashboard.que
 import {
 	buildMonthPeriodQuery,
 	buildPresetPeriodQuery,
+	isValidMonthInput,
 	type OperationalDashboardPeriodMode,
 	toMonthInputValue,
 } from '../lib/operational-dashboard-period';
@@ -841,6 +842,11 @@ function OperationalDashboardPageContent() {
 
 	function applyMonthPeriod(value: string) {
 		setMonthValue(value);
+
+		if (!isValidMonthInput(value)) {
+			return;
+		}
+
 		setPeriodSelection('month');
 		setQueryInput(buildMonthPeriodQuery(value));
 	}
