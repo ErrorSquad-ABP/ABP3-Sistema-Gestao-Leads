@@ -15,16 +15,14 @@ type RouteParamMetadata = {
 };
 
 function hasParseUuidPipe(
-	controller: Function,
+	controller: object,
 	methodName: string,
 	paramName: string,
 ): boolean {
 	const metadata =
-		(Reflect.getMetadata(
-			ROUTE_ARGS_METADATA,
-			controller,
-			methodName,
-		) as Record<string, RouteParamMetadata> | undefined) ?? {};
+		(Reflect.getMetadata(ROUTE_ARGS_METADATA, controller, methodName) as
+			| Record<string, RouteParamMetadata>
+			| undefined) ?? {};
 
 	return Object.values(metadata).some(
 		(entry) =>
@@ -38,10 +36,7 @@ function hasParseUuidPipe(
 describe('agenda route params', () => {
 	it('validates agenda item id params with ParseUUIDPipe', () => {
 		for (const methodName of ['update', 'done', 'cancel']) {
-			assert.equal(
-				hasParseUuidPipe(AgendaController, methodName, 'id'),
-				true,
-			);
+			assert.equal(hasParseUuidPipe(AgendaController, methodName, 'id'), true);
 		}
 	});
 
