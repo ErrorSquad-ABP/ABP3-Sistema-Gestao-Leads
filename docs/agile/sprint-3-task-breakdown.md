@@ -78,16 +78,16 @@ Cada card principal deve incluir, no mínimo, os blocos abaixo:
 - aplicar `KpiCard` e tokens;
 - validar fluxo atendente vs gestor.
 
-## `S3-EPIC-06` - Negociações + Google Calendar
+## `S3-EPIC-06` - Negociações + Agenda interna
 
 - migrar métricas para `KpiCard`;
 - remover fallbacks mock em `negotiations-metrics.ts`;
-- criar módulo backend Google Calendar OAuth;
-- persistir tokens por usuário;
-- endpoint listagem eventos próximos;
+- criar módulo backend de agenda interna;
+- persistir itens de agenda por usuário;
+- endpoint listagem/criação/atualização de atividades;
 - substituir mock em `ImportantActivitiesCard`;
-- UI conectar/desconectar conta Google;
-- documentar env vars e runbook;
+- criar rota `/app/agenda` com calendário mensal;
+- documentar contrato e operação;
 - harmonizar cores pipeline com tokens.
 
 ## `S3-EPIC-07` - Veículos

@@ -29,7 +29,7 @@ A retrospective da Sprint 2 já direcionava este ciclo para refinamento, qualida
 
 ## Sprint Goal
 
-Entregar alinhamento de padronização e UX em todo o Quantum CRM, com paleta única, KPIs úteis, modais de detalhe onde couber, audit log consultável (`RF07`), integração Google Calendar (leitura) em negociações e evolução de lojas, equipes e usuários conforme feedback do cliente.
+Entregar alinhamento de padronização e UX em todo o Quantum CRM, com paleta única, KPIs úteis, modais de detalhe onde couber, audit log consultável (`RF07`), agenda interna por usuário e evolução de lojas, equipes e usuários conforme feedback do cliente.
 
 ## Resultado de negócio esperado
 
@@ -41,7 +41,7 @@ Ao final da sprint, a equipe deve conseguir demonstrar que:
 - administradores consultam trilha de auditoria completa;
 - lojas possuem cadastro persistido além do nome;
 - equipes e usuários refletem a organização real da revenda;
-- negociações exibem atividades importantes vindas do Google Calendar do usuário logado.
+- negociações exibem atividades importantes vindas da agenda interna do usuário logado.
 
 ## Escopo que sustenta o goal
 
@@ -49,7 +49,7 @@ Ao final da sprint, a equipe deve conseguir demonstrar que:
 - dashboards operacional e analítico refinados;
 - clientes, leads, negociações, veículos, lojas, equipes e usuários alinhados ao design system;
 - audit log `end-to-end`;
-- Google Calendar OAuth (leitura);
+- agenda interna por usuário;
 - documentação ágil e especificação técnica do feedback do cliente.
 
 ## O que não faz parte do Sprint Goal
@@ -57,7 +57,7 @@ Ao final da sprint, a equipe deve conseguir demonstrar que:
 - recuperação de senha por e-mail;
 - cadastro público de conta;
 - polimento final de apresentação de banca (julho);
-- Google Calendar com escrita de eventos;
+- integrações externas de calendário;
 - gestão completa de estoque de veículos;
 - novos módulos funcionais grandes fora do feedback registrado.
 

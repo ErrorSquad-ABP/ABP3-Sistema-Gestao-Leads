@@ -22,6 +22,7 @@ Nao ha versionamento por `/v1` na implementacao atual.
 - `/leads`
 - `/vehicles`
 - `/deals`
+- `/agenda`
 - `/dashboards`
 - `audit-logs` como base de persistência e domínio
 
@@ -124,12 +125,79 @@ Rotas publicadas:
 | `POST` | `/api/leads/:leadId/deals` | Criar negociacao para lead |
 | `GET` | `/api/leads/:leadId/deals` | Listar negociacoes do lead |
 | `GET` | `/api/deals?storeId=&ownerUserId=&status=&page=&limit=` | Listar negociacoes por escopo |
+| `GET` | `/api/deals/metrics` | KPIs agregados de negociacoes no escopo do utilizador autenticado |
 | `GET` | `/api/deals/pipeline` | Pipeline de negociacoes por etapa |
 | `GET` | `/api/deals/pipeline/stages/:stage` | Pagina de uma etapa do pipeline |
 | `GET` | `/api/deals/:id/history` | Historico da negociacao |
 | `GET` | `/api/deals/:id` | Buscar negociacao |
 | `PATCH` | `/api/deals/:id` | Atualizar negociacao |
 | `DELETE` | `/api/deals/:id` | Excluir negociacao |
+
+### Metrics
+
+`GET /api/deals/metrics` retorna numeros crus para o frontend formatar:
+
+```ts
+type DealsMetricsResponseDto = {
+	openDealsCount: number;
+	wonDealsCount: number;
+	lostDealsCount: number;
+	totalPipelineValue: number;
+	averageTicket: number;
+	conversionRate: number;
+};
+```
+
+Regras:
+
+- `totalPipelineValue`: soma de negociacoes `OPEN` dentro do escopo do usuario.
+- `averageTicket`: media do valor de negociacoes `WON`; retorna `0` sem ganhas.
+- `conversionRate`: `wonDealsCount / (wonDealsCount + lostDealsCount)`; retorna `0` com denominador `0`.
+- O endpoint nao recebe filtros manuais nesta primeira versao.
+
+## Agenda
+
+Rotas publicadas:
+
+| Metodo | Caminho | Uso |
+| --- | --- | --- |
+| `GET` | `/api/agenda/items?from=&to=&limit=&type=&status=` | Lista itens da agenda do usuario autenticado |
+| `POST` | `/api/agenda/items` | Cria tarefa ou compromisso na agenda do usuario autenticado |
+| `PATCH` | `/api/agenda/items/:id` | Atualiza item da agenda do usuario autenticado |
+| `PATCH` | `/api/agenda/items/:id/done` | Marca uma tarefa como concluida |
+| `PATCH` | `/api/agenda/items/:id/cancel` | Cancela tarefa ou compromisso |
+
+Contrato retornado:
+
+```ts
+type AgendaItemDto = {
+	id: string;
+	type: 'TASK' | 'EVENT';
+	status: 'SCHEDULED' | 'DONE' | 'CANCELLED';
+	recurrence: 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+	title: string;
+	description?: string | null;
+	location?: string | null;
+	startsAt?: string | null;
+	endsAt?: string | null;
+	dueAt?: string | null;
+	createdAt: string;
+	updatedAt: string;
+};
+
+type AgendaItemsResponseDto = {
+	items: AgendaItemDto[];
+};
+```
+
+Regras:
+
+- A agenda e interna do CRM e pertence ao usuario autenticado.
+- `EVENT` exige `startsAt`; `endsAt`, quando informado, deve ser posterior a `startsAt`.
+- `TASK` pode ter `dueAt` opcional.
+- `done` e permitido apenas para itens `TASK`.
+- Os filtros de listagem sao opcionais e sempre limitados ao `userId` autenticado.
+- Nao ha consumo de API externa ou sincronizacao nesta versao.
 
 ## Observacoes de estado
 

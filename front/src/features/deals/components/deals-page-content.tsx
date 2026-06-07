@@ -216,7 +216,6 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 	return (
 		<div className="space-y-6" aria-busy={query.isPending ? 'true' : 'false'}>
 			<NegotiationsPageTop
-				deals={visibleDeals}
 				onCreateDeal={() => setCreateOpen(true)}
 				onSearchChange={setSearch}
 				search={search}

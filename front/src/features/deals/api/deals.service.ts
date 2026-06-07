@@ -6,6 +6,7 @@ import {
 	parseDealsByLeadListResponse,
 	parseDealsPagedResponse,
 } from '../schemas/deal-list.schema';
+import { parseDealsMetricsResponse } from '../schemas/deal-metrics.schema';
 import {
 	parseDealHistoryResponse,
 	parseDealResponse,
@@ -72,6 +73,11 @@ async function listDealsPaged(query: ListDealsQuery, signal?: AbortSignal) {
 		signal,
 	});
 	return parseDealsPagedResponse(raw);
+}
+
+async function getDealsMetrics(signal?: AbortSignal) {
+	const raw = await apiFetch<unknown>('/api/deals/metrics', { signal });
+	return parseDealsMetricsResponse(raw);
 }
 
 async function getDealsPipeline(
@@ -144,6 +150,7 @@ export {
 	createDealForLead,
 	deleteDeal,
 	findDeal,
+	getDealsMetrics,
 	getDealsPipeline,
 	getDealsPipelineStage,
 	listDealHistory,

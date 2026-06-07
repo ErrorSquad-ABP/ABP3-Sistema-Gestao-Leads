@@ -7,6 +7,7 @@ import { appRoutes } from '@/lib/routes/app-routes';
 
 type AppRouteAccessKey =
 	| 'customers'
+	| 'agenda'
 	| 'dashboardAnalytic'
 	| 'dashboardOperational'
 	| 'leads'
@@ -18,6 +19,7 @@ type AppRouteAccessKey =
 
 type AppNavigationIcon =
 	| 'activity'
+	| 'agenda'
 	| 'chart'
 	| 'customers'
 	| 'stores'
@@ -45,6 +47,7 @@ const roleLabels: Record<UserRole, string> = {
 };
 
 const routeAccessByKey: Record<AppRouteAccessKey, readonly UserRole[]> = {
+	agenda: ['ATTENDANT', 'MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	customers: ['ATTENDANT', 'MANAGER', 'ADMINISTRATOR'],
 	dashboardAnalytic: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	dashboardOperational: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
@@ -74,6 +77,15 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 		icon: 'chart',
 		key: 'dashboardAnalytic',
 		label: 'Dashboard Analítico',
+	},
+	{
+		allowedRoles: routeAccessByKey.agenda,
+		description: 'Acompanhe seus compromissos e atividades próximas.',
+		featureKey: 'leads',
+		href: appRoutes.app.agenda,
+		icon: 'agenda',
+		key: 'agenda',
+		label: 'Agenda',
 	},
 	{
 		allowedRoles: routeAccessByKey.customers,
@@ -142,6 +154,8 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 
 function getAllowedRolesForRoute(key: AppRouteAccessKey) {
 	switch (key) {
+		case 'agenda':
+			return routeAccessByKey.agenda;
 		case 'customers':
 			return routeAccessByKey.customers;
 		case 'dashboardAnalytic':

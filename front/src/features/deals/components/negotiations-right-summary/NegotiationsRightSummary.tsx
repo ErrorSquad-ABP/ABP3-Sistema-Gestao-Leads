@@ -2,15 +2,18 @@
 
 import { useMemo } from 'react';
 
+import { useAgendaItemsQuery } from '@/features/agenda/hooks/agenda.queries';
 import type { Deal } from '@/features/deals/model/deals.model';
 
-import { ImportantActivitiesCard } from './ImportantActivitiesCard';
+import {
+	ImportantActivitiesCard,
+	type ImportantActivitiesViewStatus,
+} from './ImportantActivitiesCard';
 import { ImportanceSummaryCard } from './ImportanceSummaryCard';
 import { PipelineSummaryCard } from './PipelineSummaryCard';
 import {
 	buildImportanceFromDeals,
 	buildPipelineSummaryFromDeals,
-	IMPORTANT_ACTIVITIES_MOCK,
 } from './negotiations-right-summary.data';
 
 type Props = {
@@ -20,6 +23,24 @@ type Props = {
 function NegotiationsRightSummary({ deals }: Props) {
 	const pipeline = useMemo(() => buildPipelineSummaryFromDeals(deals), [deals]);
 	const importance = useMemo(() => buildImportanceFromDeals(deals), [deals]);
+	const agendaItemsQuery = useAgendaItemsQuery({
+		limit: 5,
+		status: 'SCHEDULED',
+	});
+
+	const activitiesStatus = useMemo<ImportantActivitiesViewStatus>(() => {
+		if (agendaItemsQuery.isPending) {
+			return 'loading';
+		}
+		if (agendaItemsQuery.isError || !agendaItemsQuery.data) {
+			return 'error';
+		}
+		return agendaItemsQuery.data.items.length > 0 ? 'ready' : 'empty';
+	}, [
+		agendaItemsQuery.data,
+		agendaItemsQuery.isError,
+		agendaItemsQuery.isPending,
+	]);
 
 	return (
 		<aside
@@ -28,7 +49,13 @@ function NegotiationsRightSummary({ deals }: Props) {
 		>
 			<PipelineSummaryCard data={pipeline} />
 			<ImportanceSummaryCard data={importance} />
-			<ImportantActivitiesCard items={IMPORTANT_ACTIVITIES_MOCK} />
+			<ImportantActivitiesCard
+				items={agendaItemsQuery.data?.items ?? []}
+				onRetry={() => {
+					agendaItemsQuery.refetch();
+				}}
+				status={activitiesStatus}
+			/>
 		</aside>
 	);
 }

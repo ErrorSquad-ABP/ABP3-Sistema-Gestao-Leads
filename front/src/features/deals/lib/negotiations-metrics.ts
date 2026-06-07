@@ -1,17 +1,27 @@
 import type { LucideIcon } from 'lucide-react';
-import { CircleDollarSign, Flame, TrendingUp, Trophy } from 'lucide-react';
+import {
+	CircleDollarSign,
+	Flame,
+	Target,
+	TrendingUp,
+	Trophy,
+} from 'lucide-react';
 
-import type { Deal } from '@/features/deals/model/deals.model';
-
-type MetricTone = 'brand' | 'neutral';
+import type { KpiCardVariant } from '@/components/metrics/KpiCard';
+import type { DealsMetrics } from '@/features/deals/model/deals.model';
 
 type NegotiationsMetric = {
-	key: 'pipelineValue' | 'openDeals' | 'conversionRate' | 'wonDeals';
-	label: string;
-	value: string;
-	change: string;
-	icon: LucideIcon;
-	tone?: MetricTone;
+	readonly description?: string;
+	readonly icon: LucideIcon;
+	readonly key:
+		| 'averageTicket'
+		| 'conversionRate'
+		| 'openDeals'
+		| 'pipelineValue'
+		| 'wonDeals';
+	readonly label: string;
+	readonly value: string;
+	readonly variant: KpiCardVariant;
 };
 
 function formatBrl(value: number) {
@@ -22,81 +32,58 @@ function formatBrl(value: number) {
 	}).format(value);
 }
 
-function parseApiDecimal(value: string) {
-	const parsed = Number(value);
-	return Number.isFinite(parsed) ? parsed : null;
+function formatPercent(value: number) {
+	return new Intl.NumberFormat('pt-BR', {
+		style: 'percent',
+		maximumFractionDigits: 0,
+	}).format(value);
 }
 
-function computePipelineValue(deals: Deal[]) {
-	let sum = 0;
-	let used = false;
-	for (const deal of deals) {
-		if (!deal.value) continue;
-		const parsed = parseApiDecimal(deal.value);
-		if (parsed === null) continue;
-		sum += parsed;
-		used = true;
-	}
-	return used ? formatBrl(sum) : null;
-}
-
-function computeOpenDeals(deals: Deal[]) {
-	return deals.filter((d) => d.status === 'OPEN').length;
-}
-
-function computeWonDeals(deals: Deal[]) {
-	return deals.filter((d) => d.status === 'WON').length;
-}
-
-function computeConversionRate(deals: Deal[]) {
-	const closed = deals.filter((d) => d.status === 'WON' || d.status === 'LOST');
-	if (closed.length === 0) return null;
-	const won = closed.filter((d) => d.status === 'WON').length;
-	return `${Math.round((won / closed.length) * 100)}%`;
-}
-
-/**
- * Métricas do topo da tela. Quando não há dados suficientes no payload atual,
- * retorna os valores de fallback do design para manter a UI estável.
- */
-function getNegotiationsTopMetrics(deals: Deal[]): NegotiationsMetric[] {
-	const pipelineValue = computePipelineValue(deals) ?? 'R$ 1.280.450';
-	const openDeals = computeOpenDeals(deals) || 32;
-	const conversionRate = computeConversionRate(deals) ?? '28%';
-	const wonDeals = computeWonDeals(deals) || 12;
-
+function getNegotiationsTopMetrics(
+	metrics: DealsMetrics | null,
+): NegotiationsMetric[] {
 	return [
 		{
 			key: 'pipelineValue',
 			label: 'Valor total do funil',
-			value: pipelineValue,
-			change: '↑ 18% vs último mês',
+			value: metrics ? formatBrl(metrics.totalPipelineValue) : '--',
+			description: 'Negociações abertas',
 			icon: CircleDollarSign,
-			tone: 'brand',
+			variant: 'brand',
 		},
 		{
 			key: 'openDeals',
 			label: 'Negociações abertas',
-			value: String(openDeals),
-			change: '↑ 7 novas esta semana',
+			value: metrics ? String(metrics.openDealsCount) : '--',
+			description: 'Dentro do seu escopo',
 			icon: TrendingUp,
-			tone: 'neutral',
+			variant: 'neutral',
 		},
 		{
 			key: 'conversionRate',
 			label: 'Taxa de conversão',
-			value: conversionRate,
-			change: '↑ 6pp vs último mês',
+			value: metrics ? formatPercent(metrics.conversionRate) : '--',
+			description: 'Ganhas sobre encerradas',
 			icon: Flame,
-			tone: 'neutral',
+			variant: metrics && metrics.conversionRate > 0 ? 'success' : 'warning',
 		},
 		{
 			key: 'wonDeals',
-			label: 'Negociações ganha(s)',
-			value: String(wonDeals),
-			change: '↑ 3 fechadas este mês',
+			label: 'Negociações ganhas',
+			value: metrics ? String(metrics.wonDealsCount) : '--',
+			description: metrics
+				? `${metrics.lostDealsCount} perdidas`
+				: 'Encerradas no escopo',
 			icon: Trophy,
-			tone: 'neutral',
+			variant: 'success',
+		},
+		{
+			key: 'averageTicket',
+			label: 'Ticket médio',
+			value: metrics ? formatBrl(metrics.averageTicket) : '--',
+			description: 'Negociações ganhas',
+			icon: Target,
+			variant: 'neutral',
 		},
 	];
 }

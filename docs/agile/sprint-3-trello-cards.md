@@ -23,7 +23,7 @@ Mapear cada épico da Sprint 3 para cards do board Trello, com título, descriç
 | `rf04` | lime | Dashboard operacional |
 | `rf05` | lime | Dashboard analítico |
 | `rf07` | red | Audit log |
-| `integracao` | pink | Google Calendar |
+| `agenda` | pink | Agenda interna |
 | `breaking-schema` | black | Migrations Store/User |
 
 ---
@@ -151,13 +151,13 @@ Foco operacional: KPIs úteis, filtro trabalhável, modal detalhe, sem gráficos
 
 ---
 
-## Card 6 — `[S3-EPIC-06] Negociações — KPIs + Google Calendar (read)`
+## Card 6 — `[S3-EPIC-06] Negociações — KPIs + Agenda interna`
 
-**Labels:** `sprint-3`, `fullstack`, `ux`, `integracao`, `backend`, `frontend`
+**Labels:** `sprint-3`, `fullstack`, `ux`, `agenda`, `backend`, `frontend`
 
 **Descrição:**
 
-KPIs coloridos, remover mocks, OAuth Google Calendar leitura em atividades importantes.
+KPIs coloridos, remover mocks e criar agenda interna do CRM por usuário.
 
 **Dependências:** EPIC-01
 
@@ -165,11 +165,12 @@ KPIs coloridos, remover mocks, OAuth Google Calendar leitura em atividades impor
 
 - [ ] KpiCard métricas
 - [ ] Remover fallbacks mock
-- [ ] Módulo OAuth backend
-- [ ] Persistir tokens usuário
-- [ ] GET events endpoint
+- [ ] Módulo Agenda backend
+- [ ] Persistir itens por usuário
+- [ ] CRUD básico de atividades
+- [ ] Rota /app/agenda com calendário mensal
 - [ ] UI ImportantActivitiesCard
-- [ ] Runbook env vars
+- [ ] Docs de contrato/runbook
 
 ---
 

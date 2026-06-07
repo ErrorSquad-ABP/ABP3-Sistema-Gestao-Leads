@@ -60,10 +60,10 @@ function NegotiationsPipelineSection({
 	return (
 		<div
 			className={cn(
-				'mx-auto grid grid-cols-1 items-start',
+				'mx-auto grid grid-cols-1 items-start gap-[18px]',
 				isCollapsed
-					? 'max-w-[min(100%,1460px)] gap-[18px] lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]'
-					: 'max-w-none gap-0',
+					? 'max-w-[min(100%,1460px)] xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]'
+					: 'max-w-none',
 			)}
 		>
 			<div className="min-w-0">
@@ -87,11 +87,9 @@ function NegotiationsPipelineSection({
 					onOpenDetails={onOpenDetails}
 				/>
 			</div>
-			{isCollapsed ? (
-				<div className="hidden max-w-full min-w-0 justify-self-stretch lg:block">
-					<NegotiationsRightSummary deals={summaryDeals} />
-				</div>
-			) : null}
+			<div className="max-w-full min-w-0 justify-self-stretch">
+				<NegotiationsRightSummary deals={summaryDeals} />
+			</div>
 		</div>
 	);
 }
