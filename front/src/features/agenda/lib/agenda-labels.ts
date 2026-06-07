@@ -27,22 +27,28 @@ const agendaTypeVisuals: Record<AgendaItemType, AgendaVisualTone> = {
 	},
 };
 
-const agendaStatusLabels: Record<AgendaItemStatus, string> = {
-	CANCELLED: 'Cancelado',
-	DONE: 'Concluído',
-	SCHEDULED: 'Agendado',
-};
-
 function agendaTypeLabel(type: AgendaItemType) {
-	return agendaTypeVisuals[type].label;
+	return agendaTypeVisual(type).label;
 }
 
 function agendaStatusLabel(status: AgendaItemStatus) {
-	return agendaStatusLabels[status];
+	switch (status) {
+		case 'CANCELLED':
+			return 'Cancelado';
+		case 'DONE':
+			return 'Concluído';
+		case 'SCHEDULED':
+			return 'Agendado';
+	}
 }
 
 function agendaTypeVisual(type: AgendaItemType) {
-	return agendaTypeVisuals[type];
+	switch (type) {
+		case 'EVENT':
+			return agendaTypeVisuals.EVENT;
+		case 'TASK':
+			return agendaTypeVisuals.TASK;
+	}
 }
 
 function agendaItemAriaLabel(item: AgendaItem) {
