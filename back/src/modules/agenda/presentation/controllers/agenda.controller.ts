@@ -4,6 +4,7 @@ import {
 	Get,
 	Inject,
 	Param,
+	ParseUUIDPipe,
 	Patch,
 	Post,
 	Query,
@@ -115,7 +116,7 @@ class AgendaController {
 	@ApiOkResponse({ type: AgendaItemDto })
 	async update(
 		@CurrentUser() user: JwtUser,
-		@Param('id') id: string,
+		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateAgendaItemValidator,
 	): Promise<AgendaItemDto> {
 		return this.updateAgendaItem.execute({
@@ -140,7 +141,7 @@ class AgendaController {
 	@ApiOkResponse({ type: AgendaItemDto })
 	async done(
 		@CurrentUser() user: JwtUser,
-		@Param('id') id: string,
+		@Param('id', ParseUUIDPipe) id: string,
 	): Promise<AgendaItemDto> {
 		return this.completeAgendaItem.execute(id, user.userId);
 	}
@@ -150,7 +151,7 @@ class AgendaController {
 	@ApiOkResponse({ type: AgendaItemDto })
 	async cancel(
 		@CurrentUser() user: JwtUser,
-		@Param('id') id: string,
+		@Param('id', ParseUUIDPipe) id: string,
 	): Promise<AgendaItemDto> {
 		return this.cancelAgendaItem.execute(id, user.userId);
 	}

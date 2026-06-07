@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Param, ParseUUIDPipe } from '@nestjs/common';
 import {
 	ApiBearerAuth,
 	ApiOkResponse,
@@ -28,7 +28,7 @@ class LeadAgendaController {
 	@ApiOkResponse({ type: AgendaItemsResponseDto })
 	async list(
 		@CurrentUser() user: JwtUser,
-		@Param('leadId') leadId: string,
+		@Param('leadId', ParseUUIDPipe) leadId: string,
 	): Promise<AgendaItemsResponseDto> {
 		return this.listLeadAgendaItems.execute({
 			actor: { userId: user.userId, role: user.role as UserRole },
