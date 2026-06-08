@@ -8,6 +8,22 @@ const queryKeys = {
 			['users', 'list', page, limit] as const,
 		accessGroups: ['users', 'access-groups'] as const,
 	},
+	auditLogs: {
+		list: (params: {
+			category?: string;
+			action?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'audit-logs',
+				'list',
+				params.category ?? 'all-categories',
+				params.action ?? 'all-actions',
+				params.page,
+				params.limit,
+			] as const,
+	},
 	/**
 	 * Listagem de leads. Para invalidar após criar/editar (ex.: S1-FRONT-12):
 	 * `queryClient.invalidateQueries({ queryKey: [...queryKeys.leads.listRoot] })`.

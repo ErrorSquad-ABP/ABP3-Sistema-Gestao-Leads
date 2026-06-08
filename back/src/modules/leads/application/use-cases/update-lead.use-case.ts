@@ -151,9 +151,10 @@ class UpdateLeadUseCase {
 				});
 				await createAuditLogEntry(tx, {
 					actorUserId: actor.userId,
-					action: changes.some((change) => change.field === 'status')
-						? 'STATUS_CHANGE'
-						: 'UPDATE',
+					action:
+						changes.length === 1 && changes[0]?.field === 'status'
+							? 'STATUS_CHANGE'
+							: 'UPDATE',
 					entityName: 'Lead',
 					entityId: updated.id.value,
 					metadata: {

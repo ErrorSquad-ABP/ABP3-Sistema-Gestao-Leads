@@ -47,7 +47,7 @@ class AuditLogController {
 	@ApiOperation({
 		summary: 'Listar logs de auditoria',
 		description:
-			'Consulta administrativa paginada da trilha de auditoria. Sem filtros, retorna todos os logs. Permite filtrar por categoria/dominio e por acao/tipo.',
+			'Consulta administrativa paginada da trilha de auditoria. Sem filtros, retorna todos os logs. Permite filtrar por categoria/dominio, acao/tipo, usuario e periodo.',
 	})
 	@ApiOkResponseEnvelopePaged(AuditLogResponseDto, {
 		description:
@@ -61,6 +61,9 @@ class AuditLogController {
 			limit: query.limit,
 			category: query.category,
 			action: query.action ?? query.type,
+			user: query.user,
+			startDate: query.startDate ? new Date(query.startDate) : undefined,
+			endDate: query.endDate ? new Date(query.endDate) : undefined,
 		});
 		return {
 			items: AuditLogPresenter.toResponseList(result.items),

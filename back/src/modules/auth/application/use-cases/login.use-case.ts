@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
+// biome-ignore lint/style/useImportType: Nest DI
+import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import type { User } from '../../../users/domain/entities/user.entity.js';
@@ -22,6 +25,7 @@ class LoginUseCase {
 		private readonly passwordHasher: Argon2PasswordHasherService,
 		private readonly tokens: AuthTokenService,
 		private readonly authSessions: AuthSessionPrismaRepository,
+		private readonly prisma: PrismaService,
 	) {}
 
 	async execute(
@@ -52,6 +56,18 @@ class LoginUseCase {
 			userId: user.id.value,
 			userAgent: meta.userAgent,
 			ipAddress: meta.ipAddress,
+		});
+		await createAuditLogEntry(this.prisma, {
+			actorUserId: user.id.value,
+			action: 'LOGIN',
+			entityName: 'User',
+			entityId: user.id.value,
+			metadata: {
+				email: user.email.value,
+				role: user.role,
+				ipAddress: meta.ipAddress ?? null,
+				userAgent: meta.userAgent ?? null,
+			},
 		});
 
 		return {

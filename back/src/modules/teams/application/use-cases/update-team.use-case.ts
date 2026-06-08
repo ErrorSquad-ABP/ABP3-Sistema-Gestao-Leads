@@ -67,12 +67,14 @@ class UpdateTeamUseCase {
 				}
 			}
 
+			const changedFields: string[] = [];
 			let shouldPersist = false;
 
 			if (dto.name !== undefined) {
 				const next = Name.create(dto.name);
 				if (!next.equals(existing.name)) {
 					existing.rename(next);
+					changedFields.push('name');
 					shouldPersist = true;
 				}
 			}
@@ -80,6 +82,7 @@ class UpdateTeamUseCase {
 				const sid = Uuid.parse(dto.storeId);
 				if (!sid.equals(existing.storeId)) {
 					existing.changeStore(sid);
+					changedFields.push('storeId');
 					shouldPersist = true;
 				}
 			}
@@ -95,10 +98,7 @@ class UpdateTeamUseCase {
 				entityName: 'Team',
 				entityId: updated.id.value,
 				metadata: {
-					changedFields: [
-						dto.name !== undefined ? 'name' : null,
-						dto.storeId !== undefined ? 'storeId' : null,
-					].filter((field): field is string => field !== null),
+					changedFields,
 				},
 			});
 

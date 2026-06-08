@@ -84,6 +84,30 @@ class UpdateCustomerUseCase {
 			if (Customer.sameState(existing, updated)) {
 				return existing;
 			}
+			const changedFields = [
+				!existing.name.equals(updated.name) ? 'name' : null,
+				existing.email === null && updated.email === null
+					? null
+					: existing.email === null ||
+							updated.email === null ||
+							!existing.email.equals(updated.email)
+						? 'email'
+						: null,
+				existing.phone === null && updated.phone === null
+					? null
+					: existing.phone === null ||
+							updated.phone === null ||
+							!existing.phone.equals(updated.phone)
+						? 'phone'
+						: null,
+				existing.cpf === null && updated.cpf === null
+					? null
+					: existing.cpf === null ||
+							updated.cpf === null ||
+							!existing.cpf.equals(updated.cpf)
+						? 'cpf'
+						: null,
+			].filter((field): field is string => field !== null);
 
 			const saved = await customers.update(updated);
 			await createAuditLogEntry(tx, {
@@ -92,12 +116,7 @@ class UpdateCustomerUseCase {
 				entityName: 'Customer',
 				entityId: saved.id.value,
 				metadata: {
-					changedFields: [
-						dto.name !== undefined ? 'name' : null,
-						dto.email !== undefined ? 'email' : null,
-						dto.phone !== undefined ? 'phone' : null,
-						dto.cpf !== undefined ? 'cpf' : null,
-					].filter((field): field is string => field !== null),
+					changedFields,
 				},
 			});
 

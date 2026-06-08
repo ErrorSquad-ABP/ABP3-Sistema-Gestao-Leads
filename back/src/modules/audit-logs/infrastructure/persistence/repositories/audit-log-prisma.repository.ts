@@ -15,6 +15,7 @@ type AuditLogActorRow = {
 	readonly id: string;
 	readonly name: string;
 	readonly email: string;
+	readonly role: string;
 };
 type AuditLogActorById = ReadonlyMap<string, AuditLogActorRow>;
 
@@ -23,6 +24,39 @@ function computeTotalPages(total: number, limit: number): number {
 		return 0;
 	}
 	return Math.ceil(total / limit);
+}
+
+function isUuid(value: string): boolean {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+		value,
+	);
+}
+
+function actorSearchWhere(user: string): Prisma.AuditLogWhereInput | undefined {
+	const search = user.trim();
+	if (search.length === 0) {
+		return undefined;
+	}
+	const conditions: Prisma.AuditLogWhereInput[] = [
+		{
+			actorUser: {
+				is: {
+					name: { contains: search, mode: 'insensitive' },
+				},
+			},
+		},
+		{
+			actorUser: {
+				is: {
+					email: { contains: search, mode: 'insensitive' },
+				},
+			},
+		},
+	];
+	if (isUuid(search)) {
+		conditions.push({ actorUserId: search });
+	}
+	return { OR: conditions };
 }
 
 function toDomain(row: AuditLogRow, actorById: AuditLogActorById): AuditLog {
@@ -42,6 +76,7 @@ function toDomain(row: AuditLogRow, actorById: AuditLogActorById): AuditLog {
 					id: Uuid.parse(actor.id),
 					name: actor.name,
 					email: actor.email,
+					role: actor.role,
 				}
 			: null,
 	);
@@ -69,6 +104,7 @@ class AuditLogPrismaRepository implements IAuditLogRepository {
 				id: true,
 				name: true,
 				email: true,
+				role: true,
 			},
 		});
 		return new Map(actors.map((actor) => [actor.id, actor]));
@@ -99,6 +135,8 @@ class AuditLogPrismaRepository implements IAuditLogRepository {
 	}
 
 	async listPaged(query: AuditLogListQuery): Promise<AuditLogListPage> {
+		const actorWhere =
+			query.user === undefined ? undefined : actorSearchWhere(query.user);
 		const where: Prisma.AuditLogWhereInput = {
 			...(query.category !== undefined && {
 				entityName: AUDIT_LOG_CATEGORY_ENTITY_NAMES[query.category],
@@ -106,6 +144,15 @@ class AuditLogPrismaRepository implements IAuditLogRepository {
 			...(query.action !== undefined && {
 				action: query.action,
 			}),
+			...(query.startDate !== undefined || query.endDate !== undefined
+				? {
+						createdAt: {
+							...(query.startDate !== undefined && { gte: query.startDate }),
+							...(query.endDate !== undefined && { lte: query.endDate }),
+						},
+					}
+				: {}),
+			...(actorWhere !== undefined ? actorWhere : {}),
 		};
 		const skip = (query.page - 1) * query.limit;
 		const [items, total] = await Promise.all([

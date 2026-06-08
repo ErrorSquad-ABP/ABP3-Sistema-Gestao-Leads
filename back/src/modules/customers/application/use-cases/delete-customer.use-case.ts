@@ -36,6 +36,12 @@ class DeleteCustomerUseCase {
 				action: 'DELETE',
 				entityName: 'Customer',
 				entityId: existing.id.value,
+				metadata: {
+					name: existing.name.value,
+					email: existing.email?.value ?? null,
+					phone: existing.phone?.value ?? null,
+					hadCpf: existing.cpf !== null,
+				},
 			});
 
 			await customers.delete(idVo);

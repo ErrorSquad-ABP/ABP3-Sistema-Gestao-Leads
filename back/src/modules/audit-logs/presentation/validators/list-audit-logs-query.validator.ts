@@ -1,6 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+	IsDateString,
+	IsIn,
+	IsInt,
+	IsOptional,
+	IsString,
+	Max,
+	MaxLength,
+	Min,
+} from 'class-validator';
 
 import {
 	AUDIT_ACTION_TYPES,
@@ -71,6 +80,34 @@ class ListAuditLogsQueryValidator {
 	@IsOptional()
 	@IsIn(AUDIT_ACTION_TYPES)
 	type?: AuditActionType;
+
+	@ApiPropertyOptional({
+		description:
+			'Pesquisa por usuario responsavel pelo log. Busca por nome, e-mail ou ID.',
+		example: 'ana@empresa.com',
+		maxLength: 120,
+	})
+	@IsOptional()
+	@IsString()
+	@MaxLength(120)
+	user?: string;
+
+	@ApiPropertyOptional({
+		description:
+			'Inicio do periodo pesquisado. Aceita data ISO ou data/hora ISO.',
+		example: '2026-06-01T00:00:00.000Z',
+	})
+	@IsOptional()
+	@IsDateString()
+	startDate?: string;
+
+	@ApiPropertyOptional({
+		description: 'Fim do periodo pesquisado. Aceita data ISO ou data/hora ISO.',
+		example: '2026-06-08T23:59:59.999Z',
+	})
+	@IsOptional()
+	@IsDateString()
+	endDate?: string;
 }
 
 export { ListAuditLogsQueryValidator };

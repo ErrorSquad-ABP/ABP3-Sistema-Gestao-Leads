@@ -20,6 +20,7 @@ class AuditLog extends AggregateRoot {
 		readonly id: UUID;
 		readonly name: string;
 		readonly email: string;
+		readonly role: string;
 	} | null;
 
 	constructor(
@@ -34,6 +35,7 @@ class AuditLog extends AggregateRoot {
 			readonly id: UUID;
 			readonly name: string;
 			readonly email: string;
+			readonly role: string;
 		} | null = null,
 	) {
 		super();

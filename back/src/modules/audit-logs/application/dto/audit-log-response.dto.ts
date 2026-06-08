@@ -9,6 +9,9 @@ class AuditLogActorResponseDto {
 
 	@ApiProperty({ format: 'email' })
 	email!: string;
+
+	@ApiProperty()
+	role!: string;
 }
 
 class AuditLogResponseDto {

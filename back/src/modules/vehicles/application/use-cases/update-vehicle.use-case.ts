@@ -32,6 +32,20 @@ class UpdateVehicleUseCase {
 			if (!vehicle) {
 				throw new VehicleNotFoundError(vehicleId);
 			}
+			const previous = {
+				brand: vehicle.brand,
+				model: vehicle.model,
+				version: vehicle.version,
+				modelYear: vehicle.modelYear,
+				manufactureYear: vehicle.manufactureYear,
+				color: vehicle.color,
+				mileage: vehicle.mileage,
+				supportedFuelType: vehicle.supportedFuelType,
+				price: vehicle.price,
+				status: vehicle.status,
+				plate: vehicle.plate,
+				vin: vehicle.vin,
+			};
 
 			const hasInput =
 				dto.brand !== undefined ||
@@ -98,27 +112,44 @@ class UpdateVehicleUseCase {
 				vehicle.changeImageMetadata(null);
 			}
 
+			const changedFields = [
+				previous.brand !== vehicle.brand ? 'brand' : null,
+				previous.model !== vehicle.model ? 'model' : null,
+				previous.version !== vehicle.version ? 'version' : null,
+				previous.modelYear !== vehicle.modelYear ? 'modelYear' : null,
+				previous.manufactureYear !== vehicle.manufactureYear
+					? 'manufactureYear'
+					: null,
+				previous.color !== vehicle.color ? 'color' : null,
+				previous.mileage !== vehicle.mileage ? 'mileage' : null,
+				previous.supportedFuelType !== vehicle.supportedFuelType
+					? 'supportedFuelType'
+					: null,
+				!previous.price.equals(vehicle.price) ? 'price' : null,
+				previous.status !== vehicle.status ? 'status' : null,
+				previous.plate !== vehicle.plate ? 'plate' : null,
+				previous.vin !== vehicle.vin ? 'vin' : null,
+			].filter((field): field is string => field !== null);
+
+			if (changedFields.length === 0) {
+				return vehicle;
+			}
+
 			const updated = await vehicles.update(vehicle);
 			await createAuditLogEntry(tx, {
 				actorUserId,
-				action: dto.status !== undefined ? 'STATUS_CHANGE' : 'UPDATE',
+				action:
+					changedFields.length === 1 && changedFields[0] === 'status'
+						? 'STATUS_CHANGE'
+						: 'UPDATE',
 				entityName: 'Vehicle',
 				entityId: updated.id.value,
 				metadata: {
-					changedFields: [
-						dto.brand !== undefined ? 'brand' : null,
-						dto.model !== undefined ? 'model' : null,
-						dto.version !== undefined ? 'version' : null,
-						dto.modelYear !== undefined ? 'modelYear' : null,
-						dto.manufactureYear !== undefined ? 'manufactureYear' : null,
-						dto.color !== undefined ? 'color' : null,
-						dto.mileage !== undefined ? 'mileage' : null,
-						dto.supportedFuelType !== undefined ? 'supportedFuelType' : null,
-						dto.price !== undefined ? 'price' : null,
-						dto.status !== undefined ? 'status' : null,
-						dto.plate !== undefined ? 'plate' : null,
-						dto.vin !== undefined ? 'vin' : null,
-					].filter((field): field is string => field !== null),
+					changedFields,
+					...(previous.status !== updated.status && {
+						fromStatus: previous.status,
+						toStatus: updated.status,
+					}),
 				},
 			});
 

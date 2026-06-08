@@ -67,12 +67,14 @@ class UpdateUserUseCase {
 				}
 			}
 
+			const changedFields: string[] = [];
 			let shouldPersist = false;
 
 			if (dto.name !== undefined) {
 				const next = Name.create(dto.name);
 				if (!next.equals(existing.name)) {
 					existing.changeName(next);
+					changedFields.push('name');
 					shouldPersist = true;
 				}
 			}
@@ -80,6 +82,7 @@ class UpdateUserUseCase {
 				const next = Email.create(dto.email);
 				if (!next.equals(existing.email)) {
 					existing.changeEmail(next);
+					changedFields.push('email');
 					shouldPersist = true;
 				}
 			}
@@ -88,6 +91,7 @@ class UpdateUserUseCase {
 				const next = PasswordHash.create(hashed);
 				if (!next.equals(existing.passwordHash)) {
 					existing.changePasswordHash(next);
+					changedFields.push('password');
 					shouldPersist = true;
 				}
 			}
@@ -95,6 +99,7 @@ class UpdateUserUseCase {
 				const next = parseUserRole(dto.role);
 				if (next !== existing.role) {
 					existing.changeRole(next);
+					changedFields.push('role');
 					shouldPersist = true;
 				}
 			}
@@ -114,6 +119,7 @@ class UpdateUserUseCase {
 							? existing.accessGroup
 							: null;
 					existing.changeAccessGroup(nextAccessGroupId, nextAccessGroup);
+					changedFields.push('accessGroupId');
 					shouldPersist = true;
 				}
 			}
@@ -129,13 +135,7 @@ class UpdateUserUseCase {
 				entityName: 'User',
 				entityId: updated.id.value,
 				metadata: {
-					changedFields: [
-						dto.accessGroupId !== undefined ? 'accessGroupId' : null,
-						dto.name !== undefined ? 'name' : null,
-						dto.email !== undefined ? 'email' : null,
-						dto.password !== undefined ? 'password' : null,
-						dto.role !== undefined ? 'role' : null,
-					].filter((field): field is string => field !== null),
+					changedFields,
 				},
 			});
 
