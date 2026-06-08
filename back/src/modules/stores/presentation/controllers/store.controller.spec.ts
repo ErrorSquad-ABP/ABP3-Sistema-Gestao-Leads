@@ -52,6 +52,7 @@ describe('StoreController create/update', () => {
 			{} as never,
 			{} as never,
 			{} as never,
+			{} as never,
 		);
 
 		const response = await controller.create(
@@ -87,6 +88,7 @@ describe('StoreController create/update', () => {
 					return buildStore(body);
 				},
 			} as never,
+			{} as never,
 			{} as never,
 			{} as never,
 			{} as never,

@@ -93,6 +93,69 @@ class StorePrismaRepository implements IStoreRepository {
 		return stores.map((store) => StoreMapper.toDomain(store));
 	}
 
+	async listMetrics() {
+		const [leadGroups, dealRows] = await Promise.all([
+			this.client.lead.groupBy({
+				by: ['storeId', 'status'],
+				_count: { _all: true },
+			}),
+			this.client.deal.findMany({
+				where: { status: { in: ['OPEN', 'WON'] } },
+				select: {
+					status: true,
+					value: true,
+					lead: { select: { storeId: true } },
+				},
+			}),
+		]);
+
+		const metrics = new Map<
+			string,
+			{
+				converted: number;
+				openDeals: number;
+				total: number;
+				wonValue: number;
+			}
+		>();
+
+		function getMetric(storeId: string) {
+			const current =
+				metrics.get(storeId) ??
+				{ converted: 0, openDeals: 0, total: 0, wonValue: 0 };
+			metrics.set(storeId, current);
+			return current;
+		}
+
+		for (const group of leadGroups) {
+			const current = getMetric(group.storeId);
+			current.total += group._count._all;
+			if (group.status === 'CONVERTED') {
+				current.converted += group._count._all;
+			}
+		}
+
+		for (const deal of dealRows) {
+			const current = getMetric(deal.lead.storeId);
+			if (deal.status === 'OPEN') {
+				current.openDeals += 1;
+			}
+			if (deal.status === 'WON' && deal.value !== null) {
+				current.wonValue += Number(deal.value.toString());
+			}
+		}
+
+		return Array.from(metrics, ([storeId, item]) => ({
+			storeId,
+			total: item.total,
+			converted: item.converted,
+			openDeals: item.openDeals,
+			conversionRate:
+				item.total > 0 ? Math.round((item.converted / item.total) * 100) : 0,
+			wonValue: item.wonValue,
+		}));
+	}
+
 	async countBlockingReferences(id: Parameters<IStoreRepository['delete']>[0]) {
 		const [leads, teams] = await Promise.all([
 			this.client.lead.count({ where: { storeId: id.value } }),

@@ -2,6 +2,15 @@ import type { LeadStore } from '@/features/leads/model/leads.model';
 
 type StoreRecord = LeadStore;
 
+type StoreMetricsRecord = {
+	storeId: string;
+	total: number;
+	converted: number;
+	openDeals: number;
+	conversionRate: number;
+	wonValue: number;
+};
+
 type StoreMutationInput = {
 	addressLine?: string | null;
 	city?: string | null;
@@ -15,4 +24,9 @@ type StoreMutationInput = {
 
 type StoreDialogMode = 'create' | 'edit';
 
-export type { StoreDialogMode, StoreMutationInput, StoreRecord };
+export type {
+	StoreDialogMode,
+	StoreMetricsRecord,
+	StoreMutationInput,
+	StoreRecord,
+};

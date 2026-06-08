@@ -1,9 +1,7 @@
 'use client';
 
-import { useQueries } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
 import { useLeadOwnersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import {
@@ -11,7 +9,10 @@ import {
 	useDeleteStoreMutation,
 	useUpdateStoreMutation,
 } from '@/features/stores/hooks/stores.mutations';
-import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
+import {
+	useStoreMetricsQuery,
+	useStoresQuery,
+} from '@/features/stores/hooks/stores.queries';
 import type { StoreRecord } from '@/features/stores/model/stores.model';
 
 import {
@@ -40,13 +41,9 @@ type StoresManagementScreenProps = {
 	user: AuthenticatedUser;
 };
 
-function parseCatalogMoney(value: string): number {
-	const parsed = Number(value);
-	return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 	const storesQuery = useStoresQuery();
+	const storeMetricsQuery = useStoreMetricsQuery();
 	const ownersQuery = useLeadOwnersQuery();
 	const createStoreMutation = useCreateStoreMutation();
 	const updateStoreMutation = useUpdateStoreMutation();
@@ -68,27 +65,6 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		user.role === 'ADMINISTRATOR' || user.role === 'GENERAL_MANAGER';
 	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
 
-	const leadCountQueries = useQueries({
-		queries: stores.map((store) => ({
-			enabled: stores.length > 0,
-			queryFn: async ({ signal }: { signal: AbortSignal }) => {
-				const catalog = await fetchLeadCatalog(
-					{ limit: 1, page: 1, sort: 'recent', storeId: store.id },
-					signal,
-				);
-				return {
-					converted: catalog.summary.converted,
-					conversionRate: catalog.summary.conversionRate,
-					openDeals: catalog.funnel.openDeals,
-					storeId: store.id,
-					total: catalog.total,
-					wonValue: parseCatalogMoney(catalog.summary.wonValue),
-				};
-			},
-			queryKey: ['stores', 'lead-count', store.id],
-		})),
-	});
-
 	const leadMetricsByStoreId = useMemo(() => {
 		const metrics = new Map<
 			string,
@@ -100,19 +76,17 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				wonValue: number;
 			}
 		>();
-		for (const query of leadCountQueries) {
-			if (query.data) {
-				metrics.set(query.data.storeId, {
-					converted: query.data.converted,
-					conversionRate: query.data.conversionRate,
-					openDeals: query.data.openDeals,
-					total: query.data.total,
-					wonValue: query.data.wonValue,
-				});
-			}
+		for (const item of storeMetricsQuery.data ?? []) {
+			metrics.set(item.storeId, {
+				converted: item.converted,
+				conversionRate: item.conversionRate,
+				openDeals: item.openDeals,
+				total: item.total,
+				wonValue: item.wonValue,
+			});
 		}
 		return metrics;
-	}, [leadCountQueries]);
+	}, [storeMetricsQuery.data]);
 
 	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data]);
 	const ownersByStoreId = useMemo(() => {

@@ -31,6 +31,7 @@ import {
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { StoreResponseDto } from '../../application/dto/store-response.dto.js';
+import { StoreMetricsResponseDto } from '../../application/dto/store-metrics-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { CreateStoreUseCase } from '../../application/use-cases/create-store.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
@@ -38,9 +39,12 @@ import { DeleteStoreUseCase } from '../../application/use-cases/delete-store.use
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { FindStoreUseCase } from '../../application/use-cases/find-store.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
+import { ListStoreMetricsUseCase } from '../../application/use-cases/list-store-metrics.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { ListStoresUseCase } from '../../application/use-cases/list-stores.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { UpdateStoreUseCase } from '../../application/use-cases/update-store.use-case.js';
+import { StoreMetricsPresenter } from '../presenters/store-metrics.presenter.js';
 import { StorePresenter } from '../presenters/store.presenter.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateStoreValidator } from '../validators/create-store.validator.js';
@@ -84,6 +88,7 @@ class StoreController {
 		private readonly findStoreUseCase: FindStoreUseCase,
 		private readonly listStoresUseCase: ListStoresUseCase,
 		private readonly deleteStoreUseCase: DeleteStoreUseCase,
+		private readonly listStoreMetricsUseCase: ListStoreMetricsUseCase,
 	) {}
 
 	@Post()
@@ -116,6 +121,20 @@ class StoreController {
 		return this.listStoresUseCase
 			.execute()
 			.then((stores) => StorePresenter.toResponseList(stores));
+	}
+
+	@Get('metrics')
+	@ApiOperation({
+		summary: 'Listar metricas agregadas de stores',
+		description:
+			'Retorna totais de leads e negociacoes por loja em uma unica chamada para evitar N+1 requests na tela de stores.',
+	})
+	@ApiOkResponseEnvelopeArray(StoreMetricsResponseDto)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listMetrics() {
+		return this.listStoreMetricsUseCase
+			.execute()
+			.then((metrics) => StoreMetricsPresenter.toResponseList(metrics));
 	}
 
 	@Get(':id')
