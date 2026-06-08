@@ -58,6 +58,12 @@ class CreateCustomerUseCase {
 				action: 'CREATE',
 				entityName: 'Customer',
 				entityId: created.id.value,
+				metadata: {
+					name: created.name.value,
+					email: created.email?.value ?? null,
+					phone: created.phone?.value ?? null,
+					hasCpf: created.cpf !== null,
+				},
 			});
 
 			return created;

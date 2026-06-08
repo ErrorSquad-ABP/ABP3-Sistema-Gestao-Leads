@@ -61,6 +61,10 @@ function toCanonicalRole(
 	}
 }
 
+function sameStringArray(a: readonly string[], b: readonly string[]): boolean {
+	return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
 @Injectable()
 class AccessGroupsService {
 	constructor(private readonly prisma: PrismaService) {}
@@ -136,6 +140,33 @@ class AccessGroupsService {
 			throw new NotFoundException('Grupo de acesso não encontrado.');
 		}
 
+		const existingFeatureKeys = Array.isArray(existing.featureKeys)
+			? existing.featureKeys.filter(
+					(item): item is string => typeof item === 'string',
+				)
+			: [];
+		const changedFields = [
+			payload.name !== undefined && payload.name !== existing.name
+				? 'name'
+				: null,
+			payload.description !== undefined &&
+			payload.description !== existing.description
+				? 'description'
+				: null,
+			payload.baseRole !== undefined &&
+			toPrismaRole(payload.baseRole) !== existing.baseRole
+				? 'baseRole'
+				: null,
+			payload.featureKeys !== undefined &&
+			!sameStringArray(payload.featureKeys, existingFeatureKeys)
+				? 'featureKeys'
+				: null,
+		].filter((field): field is string => field !== null);
+
+		if (changedFields.length === 0) {
+			return this.toDto(existing);
+		}
+
 		try {
 			const updated = await this.prisma.$transaction(async (tx) => {
 				const accessGroup = await tx.accessGroup.update({
@@ -156,12 +187,7 @@ class AccessGroupsService {
 					entityName: 'AccessGroup',
 					entityId: accessGroup.id,
 					metadata: {
-						changedFields: [
-							payload.name !== undefined ? 'name' : null,
-							payload.description !== undefined ? 'description' : null,
-							payload.baseRole !== undefined ? 'baseRole' : null,
-							payload.featureKeys !== undefined ? 'featureKeys' : null,
-						].filter((field): field is string => field !== null),
+						changedFields,
 					},
 				});
 				return accessGroup;

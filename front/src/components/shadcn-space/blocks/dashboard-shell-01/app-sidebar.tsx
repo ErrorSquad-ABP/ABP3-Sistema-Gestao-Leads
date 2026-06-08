@@ -10,6 +10,7 @@ import {
 	ChartColumn,
 	ChevronDown,
 	Handshake,
+	ScrollText,
 	type LucideIcon,
 	Users,
 	UserCog,
@@ -112,6 +113,12 @@ const NAV_ADMIN: VisualNavItem[] = [
 		href: '/app/users',
 		icon: UserCog,
 		accessKey: 'users',
+	},
+	{
+		title: 'Auditoria',
+		href: '/app/audit-logs',
+		icon: ScrollText,
+		accessKey: 'auditLogs',
 	},
 ];
 

@@ -15,6 +15,7 @@ const appRoutes = {
 		teams: '/app/teams',
 		operations: '/app/operations',
 		profile: '/app/profile',
+		auditLogs: '/app/audit-logs',
 		users: '/app/users',
 		dashboard: {
 			operational: '/app/dashboard/operational',

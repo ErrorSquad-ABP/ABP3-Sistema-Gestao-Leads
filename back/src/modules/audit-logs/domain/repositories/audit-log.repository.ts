@@ -32,6 +32,9 @@ type AuditLogListQuery = {
 	readonly limit: number;
 	readonly category?: AuditLogCategory;
 	readonly action?: AuditActionType;
+	readonly user?: string;
+	readonly startDate?: Date;
+	readonly endDate?: Date;
 };
 
 type AuditLogListPage = {

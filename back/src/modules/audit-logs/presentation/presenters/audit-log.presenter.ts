@@ -13,6 +13,7 @@ class AuditLogPresenter {
 							id: log.actor.id.value,
 							name: log.actor.name,
 							email: log.actor.email,
+							role: log.actor.role,
 						},
 			action: log.actionType,
 			entityName: log.entityName,

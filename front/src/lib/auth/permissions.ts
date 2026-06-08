@@ -14,6 +14,7 @@ type AppRouteAccessKey =
 	| 'vehicles'
 	| 'stores'
 	| 'teams'
+	| 'auditLogs'
 	| 'users';
 
 type AppNavigationIcon =
@@ -24,6 +25,7 @@ type AppNavigationIcon =
 	| 'teams'
 	| 'deals'
 	| 'vehicles'
+	| 'audit'
 	| 'shield'
 	| 'users';
 
@@ -53,6 +55,7 @@ const routeAccessByKey: Record<AppRouteAccessKey, readonly UserRole[]> = {
 	vehicles: ['GENERAL_MANAGER', 'ADMINISTRATOR'],
 	stores: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
 	teams: ['MANAGER', 'GENERAL_MANAGER', 'ADMINISTRATOR'],
+	auditLogs: ['ADMINISTRATOR'],
 	users: ['ADMINISTRATOR'],
 };
 
@@ -138,6 +141,15 @@ const appNavigationItems: readonly AppNavigationItem[] = [
 		key: 'users',
 		label: 'Usuários',
 	},
+	{
+		allowedRoles: routeAccessByKey.auditLogs,
+		description: 'Leitura administrativa das ações registradas no sistema.',
+		featureKey: 'users',
+		href: appRoutes.app.auditLogs,
+		icon: 'audit',
+		key: 'auditLogs',
+		label: 'Auditoria',
+	},
 ] as const;
 
 function getAllowedRolesForRoute(key: AppRouteAccessKey) {
@@ -158,6 +170,8 @@ function getAllowedRolesForRoute(key: AppRouteAccessKey) {
 			return routeAccessByKey.stores;
 		case 'teams':
 			return routeAccessByKey.teams;
+		case 'auditLogs':
+			return routeAccessByKey.auditLogs;
 		case 'users':
 			return routeAccessByKey.users;
 	}

@@ -23,6 +23,9 @@ describe('ListAuditLogsUseCase', () => {
 			limit: 10,
 			category: 'cars',
 			action: 'CREATE',
+			user: 'ana',
+			startDate: new Date('2026-06-01T00:00:00.000Z'),
+			endDate: new Date('2026-06-08T23:59:59.999Z'),
 		});
 
 		assert.equal(result.page, 2);
@@ -33,6 +36,9 @@ describe('ListAuditLogsUseCase', () => {
 			limit: 10,
 			category: 'cars',
 			action: 'CREATE',
+			user: 'ana',
+			startDate: new Date('2026-06-01T00:00:00.000Z'),
+			endDate: new Date('2026-06-08T23:59:59.999Z'),
 		});
 	});
 });
