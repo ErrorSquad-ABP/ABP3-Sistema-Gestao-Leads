@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import {
 	ArrowLeft,
 	Building2,
@@ -13,6 +12,7 @@ import {
 	Phone,
 	Shuffle,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -44,12 +44,12 @@ import {
 	useLeadOwnersQuery,
 	useLeadStoresQuery,
 } from '../hooks/leads.catalog.queries';
-import { useLeadDetailHubQuery } from '../hooks/leads.queries';
 import {
 	useConvertLeadMutation,
 	useReassignLeadMutation,
 	useUpdateLeadMutation,
 } from '../hooks/leads.mutations';
+import { useLeadDetailHubQuery } from '../hooks/leads.queries';
 import {
 	formatLeadSourceLabel,
 	formatLeadStatusLabel,
@@ -88,7 +88,7 @@ const timelineFieldOptions = [
 	{ value: 'VALUE', label: 'Valor' },
 	{ value: 'RESPONSIBLE', label: 'Responsável' },
 	{ value: 'SOURCE', label: 'Origem' },
-	{ value: 'INTEREST', label: 'Interesse' },
+	{ value: 'INTEREST', label: 'Produto de interesse' },
 	{ value: 'CREATED', label: 'Criação' },
 	{ value: 'CONVERTED', label: 'Conversão' },
 ];
@@ -124,6 +124,7 @@ function buildLeadListTarget(data: LeadDetailHub): LeadListItem {
 		ownerUserId: data.owner?.id ?? null,
 		source: data.lead.source,
 		status: data.lead.status,
+		vehicleInterestText: data.lead.vehicleInterestText,
 	};
 }
 
@@ -153,7 +154,7 @@ function formatLeadChangeFieldName(field: string) {
 	if (field === 'ownerUserId') return 'Responsável';
 	if (field === 'source') return 'Origem';
 	if (field === 'status') return 'Estado';
-	if (field === 'vehicleInterestText') return 'Interesse';
+	if (field === 'vehicleInterestText') return 'Produto de interesse';
 	return field;
 }
 
@@ -638,11 +639,11 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 						</div>
 						<div className="rounded-2xl border border-border/80 px-4 py-4">
 							<p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
-								Interesse
+								Produto de interesse
 							</p>
 							<p className="mt-2 text-sm text-[#1b2430]">
 								{detail.lead.vehicleInterestText ??
-									'Nenhum interesse em veículo foi informado.'}
+									'Nenhum produto de interesse informado.'}
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-2">
