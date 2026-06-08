@@ -101,6 +101,22 @@ describe('parseAnalyticDashboardResponse', () => {
 				isApproximate: true,
 				methodology: 'Aproximacao operacional.',
 			},
+			drillDown: {
+				importanceLeads: [
+					{
+						id: 'lead-1',
+						label: 'Cliente A',
+						importance: 'HOT',
+					},
+				],
+				conversionLeads: [
+					{
+						id: 'lead-1',
+						label: 'Cliente A',
+						outcome: 'converted',
+					},
+				],
+			},
 		});
 
 		assert.equal(parsed.summary.totalLeads, 20);

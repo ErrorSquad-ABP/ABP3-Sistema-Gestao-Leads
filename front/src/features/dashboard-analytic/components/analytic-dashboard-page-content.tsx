@@ -1,16 +1,9 @@
 'use client';
 
 import {
-	ArrowDown,
 	ArrowRight,
-	ArrowUp,
 	CalendarRange,
-	CheckCircle2,
-	Clock3,
-	Filter,
 	LineChart as LineChartIcon,
-	Target,
-	XCircle,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
@@ -21,8 +14,6 @@ import {
 	CartesianGrid,
 	Cell,
 	LabelList,
-	Line,
-	LineChart,
 	Pie,
 	PieChart,
 	ResponsiveContainer,
@@ -35,18 +26,26 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { KpiCard } from '@/components/metrics/KpiCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { CHART_COLORS, chartSeriesColor } from '@/lib/charts/chart-colors';
 import { ApiError } from '@/lib/http/api-error';
 import { cn } from '@/lib/utils';
 
 import { useAnalyticDashboardQuery } from '../hooks/analytic-dashboard.queries';
+import {
+	buildAnalyticKpiCards,
+	importanceChartColor,
+} from '../lib/analytic-dashboard-kpis';
 import { validateDraftFilter } from '../lib/analytic-dashboard-filters';
 import type {
 	AnalyticDashboard,
 	AnalyticDashboardFilterMode,
 	AnalyticDashboardQuery,
 } from '../model/analytic-dashboard.model';
+import { AnalyticConversionDetailDialog } from './analytic-conversion-detail-dialog';
+import { AnalyticImportanceDetailDialog } from './analytic-importance-detail-dialog';
 
 const FILTER_OPTIONS: {
 	value: AnalyticDashboardFilterMode;
@@ -58,12 +57,6 @@ const FILTER_OPTIONS: {
 	{ value: 'custom', label: 'Personalizado' },
 ];
 
-const TEAM_COLORS = ['#ff5722', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6'];
-const IMPORTANCE_COLORS: Record<string, string> = {
-	COLD: '#2f6bed',
-	WARM: '#ff7a1a',
-	HOT: '#ef4444',
-};
 const IMPORTANCE_LABELS = new Map([
 	['COLD', 'Frias'],
 	['WARM', 'Mornas'],
@@ -134,36 +127,6 @@ function formatPercent(value: number) {
 function formatDateShort(value: string) {
 	const [year, month, day] = value.split('-');
 	return `${day}/${month}/${year}`;
-}
-
-function formatHours(value: number | null) {
-	if (value == null) {
-		return 'Sem dados';
-	}
-
-	if (value < 1) {
-		return `${Math.round(value * 60)}min`;
-	}
-
-	const hours = Math.floor(value);
-	const minutes = Math.round((value - hours) * 60);
-	return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-}
-
-function formatDeltaPercent(value: number | null) {
-	if (value == null) {
-		return '0%';
-	}
-
-	return `${value > 0 ? '+' : ''}${formatPercent(value)}`;
-}
-
-function formatDeltaPoints(value: number | undefined) {
-	const delta = value ?? 0;
-	return `${delta > 0 ? '+' : ''}${new Intl.NumberFormat('pt-BR', {
-		maximumFractionDigits: 1,
-		minimumFractionDigits: 1,
-	}).format(delta)} p.p.`;
 }
 
 function getErrorMessage(error: unknown) {
@@ -296,11 +259,11 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 		(label == null ? null : String(label));
 
 	return (
-		<div className="rounded-xl border border-[#dde6f1] bg-white px-3 py-2 text-xs shadow-lg">
+		<div className="rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-lg">
 			{title ? (
-				<p className="mb-2 font-semibold text-[#07142a]">{title}</p>
+				<p className="mb-2 font-semibold text-foreground">{title}</p>
 			) : null}
-			<div className="space-y-1 text-[#66708a]">
+			<div className="space-y-1 text-muted-foreground">
 				{payload.map((item) => {
 					const itemName =
 						item.name ??
@@ -326,118 +289,45 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 	);
 }
 
-type DeltaBadgeProps = {
-	value: string;
-	direction: 'up' | 'down' | 'flat';
-	tone: 'good' | 'bad' | 'neutral';
-};
-
-function DeltaBadge({ direction, tone, value }: DeltaBadgeProps) {
-	const Icon =
-		direction === 'up'
-			? ArrowUp
-			: direction === 'down'
-				? ArrowDown
-				: ArrowRight;
-	const toneClass =
-		tone === 'good'
-			? 'text-[#009966]'
-			: tone === 'bad'
-				? 'text-[#ef4444]'
-				: 'text-[#64748b]';
-
-	return (
-		<span
-			className={cn('inline-flex items-center gap-1 font-semibold', toneClass)}
-		>
-			<Icon className="size-3" />
-			{value}
-		</span>
-	);
-}
-
-type KpiCardProps = {
-	title: string;
-	value: string;
-	subtitle: string;
-	icon: typeof Target;
-	iconTone: string;
-	lineColor: string;
-	points: { label: string; value: number }[];
-	delta: DeltaBadgeProps;
-};
-
-function KpiCard({
-	delta,
-	icon: Icon,
-	iconTone,
-	lineColor,
-	points,
-	subtitle,
-	title,
-	value,
-}: KpiCardProps) {
-	return (
-		<Card className="overflow-hidden rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
-			<CardContent className="min-h-[132px] p-4">
-				<div className="flex items-start gap-3">
-					<div
-						className={cn(
-							'grid size-12 shrink-0 place-items-center rounded-full',
-							iconTone,
-						)}
-					>
-						<Icon className="size-6" />
-					</div>
-					<div className="min-w-0">
-						<p className="text-xs font-semibold text-[#2d3a56]">{title}</p>
-						<p className="mt-1.5 text-3xl leading-none font-bold tracking-tight text-[#06142b]">
-							{value}
-						</p>
-						<p className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-[#66708a]">
-							<DeltaBadge {...delta} />
-							<span>{subtitle}</span>
-						</p>
-					</div>
-				</div>
-				<div className="mt-1.5 h-9">
-					<ResponsiveContainer width="100%" height="100%">
-						<LineChart data={points}>
-							<Line
-								dataKey="value"
-								dot={{ fill: lineColor, r: 2, strokeWidth: 0 }}
-								stroke={lineColor}
-								strokeWidth={2}
-								type="monotone"
-							/>
-						</LineChart>
-					</ResponsiveContainer>
-				</div>
-			</CardContent>
-		</Card>
-	);
-}
-
 function KpiSkeleton() {
 	return (
-		<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+		<Card className="border-border/90 bg-card shadow-sm">
 			<CardContent className="space-y-4 p-5">
-				<Skeleton className="size-12 rounded-2xl bg-[#edf2f7]" />
-				<Skeleton className="h-5 w-32 bg-[#edf2f7]" />
-				<Skeleton className="h-10 w-24 bg-[#edf2f7]" />
-				<Skeleton className="h-4 w-44 bg-[#edf2f7]" />
+				<Skeleton className="size-12 rounded-2xl" />
+				<Skeleton className="h-5 w-32" />
+				<Skeleton className="h-10 w-24" />
+				<Skeleton className="h-4 w-44" />
 			</CardContent>
 		</Card>
 	);
 }
 
 function SectionTitle({ title }: { title: string }) {
-	return <h2 className="text-base font-bold text-[#06142b]">{title}</h2>;
+	return <h2 className="text-base font-bold text-foreground">{title}</h2>;
 }
 
-function CardAction({ children }: { children: string }) {
+function CardAction({
+	children,
+	onClick,
+}: {
+	children: string;
+	onClick?: () => void;
+}) {
+	if (onClick) {
+		return (
+			<button
+				className="mt-4 inline-flex items-center gap-2 text-[11px] font-semibold text-[color:var(--brand-accent)] transition hover:text-[color:var(--brand-accent-hover)]"
+				onClick={onClick}
+				type="button"
+			>
+				{children}
+				<ArrowRight className="size-3" />
+			</button>
+		);
+	}
+
 	return (
-		<span className="mt-4 inline-flex items-center gap-2 text-[11px] font-semibold text-[#ff5722]">
+		<span className="mt-4 inline-flex items-center gap-2 text-[11px] font-semibold text-[color:var(--brand-accent)]">
 			{children}
 			<ArrowRight className="size-3" />
 		</span>
@@ -448,10 +338,10 @@ function DonutCenter({ total }: { total: number }) {
 	return (
 		<div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
 			<div>
-				<p className="text-2xl leading-none font-bold text-[#06142b]">
+				<p className="text-2xl leading-none font-bold text-foreground">
 					{formatCount(total)}
 				</p>
-				<p className="mt-1 text-[10px] font-semibold text-[#66708a]">Total</p>
+				<p className="mt-1 text-[10px] font-semibold text-muted-foreground">Total</p>
 			</div>
 		</div>
 	);
@@ -471,6 +361,8 @@ function AnalyticDashboardPageContent({
 	const [validationMessage, setValidationMessage] = useState<string | null>(
 		null,
 	);
+	const [importanceDialogOpen, setImportanceDialogOpen] = useState(false);
+	const [conversionDialogOpen, setConversionDialogOpen] = useState(false);
 	const [query, setQuery] = useState<AnalyticDashboardQuery>({
 		mode: 'month',
 		referenceDate,
@@ -506,7 +398,7 @@ function AnalyticDashboardPageContent({
 			(dashboard?.importanceDistribution ?? []).map((item) => ({
 				...item,
 				label: getImportanceLabel(item.key),
-				color: IMPORTANCE_COLORS[item.key] ?? '#94a3b8',
+				color: importanceChartColor(item.key),
 			})),
 		[dashboard?.importanceDistribution],
 	);
@@ -518,13 +410,13 @@ function AnalyticDashboardPageContent({
 							key: 'converted',
 							label: 'Convertidos',
 							count: dashboard.summary.convertedLeads,
-							color: '#22c55e',
+							color: CHART_COLORS.performanceOk,
 						},
 						{
 							key: 'notConverted',
 							label: 'Não convertidos',
 							count: dashboard.summary.notConvertedLeads,
-							color: '#ef4444',
+							color: CHART_COLORS.performanceBelow,
 						},
 					]
 				: [],
@@ -566,149 +458,30 @@ function AnalyticDashboardPageContent({
 
 	const kpiCards =
 		dashboard && trendData.length > 0
-			? [
-					{
-						title: 'Taxa de conversão',
-						value: formatPercent(dashboard.kpis.conversionRate.value),
-						subtitle: 'vs. período anterior',
-						icon: Target,
-						iconTone: 'bg-[#fff1e8] text-[#ff5722]',
-						lineColor: '#ff5722',
-						points: trendData.map((point) => ({
-							label: point.label,
-							value: point.conversionRate,
-						})),
-						delta: {
-							value: formatDeltaPoints(
-								dashboard.kpis.conversionRate.deltaPoints,
-							),
-							direction:
-								dashboard.kpis.conversionRate.delta > 0
-									? 'up'
-									: dashboard.kpis.conversionRate.delta < 0
-										? 'down'
-										: 'flat',
-							tone:
-								dashboard.kpis.conversionRate.delta > 0
-									? 'good'
-									: dashboard.kpis.conversionRate.delta < 0
-										? 'bad'
-										: 'neutral',
-						} satisfies DeltaBadgeProps,
-					},
-					{
-						title: 'Leads convertidos',
-						value: formatCount(dashboard.kpis.convertedLeads.value),
-						subtitle: 'vs. período anterior',
-						icon: CheckCircle2,
-						iconTone: 'bg-[#e9fbf1] text-[#16a34a]',
-						lineColor: '#16a34a',
-						points: trendData.map((point) => ({
-							label: point.label,
-							value: point.convertedLeads,
-						})),
-						delta: {
-							value: formatDeltaPercent(
-								dashboard.kpis.convertedLeads.deltaPercentage,
-							),
-							direction:
-								dashboard.kpis.convertedLeads.delta > 0
-									? 'up'
-									: dashboard.kpis.convertedLeads.delta < 0
-										? 'down'
-										: 'flat',
-							tone:
-								dashboard.kpis.convertedLeads.delta > 0
-									? 'good'
-									: dashboard.kpis.convertedLeads.delta < 0
-										? 'bad'
-										: 'neutral',
-						} satisfies DeltaBadgeProps,
-					},
-					{
-						title: 'Leads perdidos',
-						value: formatCount(dashboard.kpis.lostLeads.value),
-						subtitle: 'vs. período anterior',
-						icon: XCircle,
-						iconTone: 'bg-[#fff0f0] text-[#ef4444]',
-						lineColor: '#ef4444',
-						points: trendData.map((point) => ({
-							label: point.label,
-							value: point.lostLeads,
-						})),
-						delta: {
-							value: formatDeltaPercent(
-								dashboard.kpis.lostLeads.deltaPercentage,
-							),
-							direction:
-								dashboard.kpis.lostLeads.delta > 0
-									? 'up'
-									: dashboard.kpis.lostLeads.delta < 0
-										? 'down'
-										: 'flat',
-							tone:
-								dashboard.kpis.lostLeads.delta < 0
-									? 'good'
-									: dashboard.kpis.lostLeads.delta > 0
-										? 'bad'
-										: 'neutral',
-						} satisfies DeltaBadgeProps,
-					},
-					{
-						title: 'Tempo médio até atendimento',
-						value: formatHours(
-							dashboard.kpis.averageTimeToFirstInteraction.value,
-						),
-						subtitle: 'vs. período anterior',
-						icon: Clock3,
-						iconTone: 'bg-[#f4eaff] text-[#8b3ff6]',
-						lineColor: '#8b3ff6',
-						points: trendData.map((point) => ({
-							label: point.label,
-							value: point.averageTimeToFirstInteractionHours ?? 0,
-						})),
-						delta: {
-							value: formatDeltaPercent(
-								dashboard.kpis.averageTimeToFirstInteraction.deltaPercentage,
-							),
-							direction:
-								dashboard.kpis.averageTimeToFirstInteraction.delta > 0
-									? 'up'
-									: dashboard.kpis.averageTimeToFirstInteraction.delta < 0
-										? 'down'
-										: 'flat',
-							tone:
-								dashboard.kpis.averageTimeToFirstInteraction.delta < 0
-									? 'good'
-									: dashboard.kpis.averageTimeToFirstInteraction.delta > 0
-										? 'bad'
-										: 'neutral',
-						} satisfies DeltaBadgeProps,
-					},
-				]
+			? buildAnalyticKpiCards(dashboard, trendData)
 			: [];
 
 	return (
-		<div className="space-y-4 bg-[#f4f7fa] px-1 pb-4">
+		<div className="space-y-4 bg-background px-1 pb-4">
 			<header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 				<div>
-					<h1 className="text-2xl font-bold tracking-tight text-[#06142b]">
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">
 						Dashboard Analítico
 					</h1>
-					<p className="mt-1.5 text-sm text-[#66708a]">
+					<p className="mt-1.5 text-sm text-muted-foreground">
 						Visão estratégica da performance comercial no período selecionado.
 					</p>
 				</div>
 
 				<div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-					<div className="inline-flex overflow-hidden rounded-[13px] border border-[#dbe4ef] bg-white">
+					<div className="inline-flex overflow-hidden rounded-[13px] border border-border bg-card">
 						{FILTER_OPTIONS.map((option) => (
 							<button
 								className={cn(
-									'h-9 border-r border-[#e6edf5] px-4 text-[11px] font-semibold transition last:border-r-0',
+									'h-9 border-r border-border px-4 text-[11px] font-semibold transition last:border-r-0',
 									mode === option.value
-										? 'bg-[#ff5722] text-white shadow-sm'
-										: 'text-[#06142b] hover:bg-[#f8fafc]',
+										? 'bg-[color:var(--brand-accent)] text-white shadow-sm'
+										: 'text-foreground hover:bg-muted/50',
 								)}
 								key={option.value}
 								onClick={() => selectMode(option.value)}
@@ -720,22 +493,22 @@ function AnalyticDashboardPageContent({
 					</div>
 
 					{mode === 'custom' ? (
-						<div className="flex flex-wrap items-center gap-2 rounded-[13px] border border-[#dbe4ef] bg-white p-1.5">
+						<div className="flex flex-wrap items-center gap-2 rounded-[13px] border border-border bg-card p-1.5">
 							<Input
-								className="h-8 w-36 rounded-xl border-[#dbe4ef] text-[11px] font-semibold shadow-none"
+								className="h-8 w-36 rounded-xl border-border text-[11px] font-semibold shadow-none"
 								onChange={(event) => setStartDate(event.target.value)}
 								type="date"
 								value={startDate}
 							/>
-							<span className="text-[#66708a]">-</span>
+							<span className="text-muted-foreground">-</span>
 							<Input
-								className="h-8 w-36 rounded-xl border-[#dbe4ef] text-[11px] font-semibold shadow-none"
+								className="h-8 w-36 rounded-xl border-border text-[11px] font-semibold shadow-none"
 								onChange={(event) => setEndDate(event.target.value)}
 								type="date"
 								value={endDate}
 							/>
 							<Button
-								className="h-8 rounded-xl bg-[#ff5722] px-3.5 text-[11px] text-white hover:bg-[#e94e1f]"
+								className="h-8 rounded-xl bg-[color:var(--brand-accent)] px-3.5 text-[11px] text-white hover:bg-[color:var(--brand-accent-hover)]"
 								onClick={() => applyFilter()}
 								type="button"
 							>
@@ -743,8 +516,8 @@ function AnalyticDashboardPageContent({
 							</Button>
 						</div>
 					) : (
-						<label className="flex h-9 cursor-pointer items-center gap-2 rounded-[13px] border border-[#dbe4ef] bg-white px-3 text-[11px] font-semibold text-[#2d3a56]">
-							<CalendarRange className="size-3.5 text-[#66708a]" />
+						<label className="flex h-9 cursor-pointer items-center gap-2 rounded-[13px] border border-border bg-card px-3 text-[11px] font-semibold text-foreground">
+							<CalendarRange className="size-3.5 text-muted-foreground" />
 							<span>{getPeriodLabel(dashboard)}</span>
 							<Input
 								className="sr-only"
@@ -761,19 +534,11 @@ function AnalyticDashboardPageContent({
 							/>
 						</label>
 					)}
-					<Button
-						className="h-9 rounded-[13px] border-[#dbe4ef] bg-white px-3 text-[11px] font-semibold text-[#2d3a56] shadow-none hover:bg-[#f8fafc]"
-						type="button"
-						variant="outline"
-					>
-						<Filter className="mr-1.5 size-3.5" />
-						Filtros
-					</Button>
 				</div>
 			</header>
 
 			{validationMessage ? (
-				<Alert className="border-[#ffc9b7] bg-[#fff7f3] text-[#9a3412]">
+				<Alert className="border-[color:var(--brand-accent-muted)] bg-[color:var(--brand-accent-soft)] text-[color:var(--brand-accent-hover)]">
 					<AlertTitle>Filtro inválido</AlertTitle>
 					<AlertDescription>{validationMessage}</AlertDescription>
 				</Alert>
@@ -791,18 +556,29 @@ function AnalyticDashboardPageContent({
 			<section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
 				{dashboardQuery.isPending
 					? KPI_SKELETON_KEYS.map((key) => <KpiSkeleton key={key} />)
-					: kpiCards.map((card) => <KpiCard key={card.title} {...card} />)}
+					: kpiCards.map((card) => (
+							<KpiCard
+								delta={card.delta}
+								icon={card.icon}
+								key={card.key}
+								sparkline={card.sparkline}
+								sparklineLabel={card.sparklineLabel}
+								title={card.title}
+								value={card.value}
+								variant={card.variant}
+							/>
+						))}
 			</section>
 
 			{dashboard && !hasData ? (
-				<Card className="rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+				<Card className="rounded-[18px] border-border bg-card shadow-sm">
 					<CardContent className="flex min-h-56 flex-col items-center justify-center gap-3 text-center">
-						<LineChartIcon className="size-10 text-[#94a3b8]" />
+						<LineChartIcon className="size-10 text-muted-foreground" />
 						<div>
-							<h2 className="text-xl font-bold text-[#07142a]">
+							<h2 className="text-xl font-bold text-foreground">
 								Sem dados no período
 							</h2>
-							<p className="mt-1 text-sm text-[#66708a]">
+							<p className="mt-1 text-sm text-muted-foreground">
 								Altere o filtro temporal para visualizar os indicadores
 								analíticos.
 							</p>
@@ -814,7 +590,7 @@ function AnalyticDashboardPageContent({
 			{dashboard ? (
 				<>
 					<section className="grid gap-4 xl:grid-cols-[1fr_1.05fr_1fr]">
-						<Card className="min-h-[300px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+						<Card className="min-h-[300px] rounded-[18px] border-border bg-card shadow-sm">
 							<CardContent className="flex h-full flex-col p-4">
 								<div className="mb-4">
 									<SectionTitle title="Leads por equipe" />
@@ -835,7 +611,7 @@ function AnalyticDashboardPageContent({
 												>
 													{teamDistribution.map((item, index) => (
 														<Cell
-															fill={TEAM_COLORS[index % TEAM_COLORS.length]}
+															fill={chartSeriesColor(index)}
 															key={item.id}
 														/>
 													))}
@@ -860,16 +636,15 @@ function AnalyticDashboardPageContent({
 													<span
 														className="size-3 rounded-full"
 														style={{
-															backgroundColor:
-																TEAM_COLORS[index % TEAM_COLORS.length],
+															backgroundColor: chartSeriesColor(index),
 														}}
 													/>
 													<div className="min-w-0">
-														<p className="truncate text-sm font-semibold text-[#07142a]">
+														<p className="truncate text-sm font-semibold text-foreground">
 															{item.name}
 														</p>
 													</div>
-													<span className="text-sm font-semibold text-[#26324c]">
+													<span className="text-sm font-semibold text-foreground/80">
 														{formatCount(item.totalLeads)} (
 														{formatPercent(percentage)})
 													</span>
@@ -882,7 +657,7 @@ function AnalyticDashboardPageContent({
 							</CardContent>
 						</Card>
 
-						<Card className="min-h-[300px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+						<Card className="min-h-[300px] rounded-[18px] border-border bg-card shadow-sm">
 							<CardContent className="flex h-full flex-col p-4">
 								<div className="mb-4">
 									<SectionTitle title="Leads por atendente" />
@@ -893,7 +668,7 @@ function AnalyticDashboardPageContent({
 											className="grid grid-cols-[2rem_1fr_auto] items-center gap-3"
 											key={item.id}
 										>
-											<div className="grid size-7 place-items-center rounded-full bg-[#f2d7ca] text-[10px] font-bold text-[#8a3a1d]">
+											<div className="grid size-7 place-items-center rounded-full bg-[color:var(--brand-accent-soft)] text-[10px] font-bold text-[color:var(--brand-accent-hover)]">
 												{item.name
 													.split(' ')
 													.slice(0, 2)
@@ -902,16 +677,16 @@ function AnalyticDashboardPageContent({
 											</div>
 											<div className="min-w-0">
 												<div className="mb-1 flex items-center justify-between gap-3">
-													<p className="truncate text-xs font-semibold text-[#06142b]">
+													<p className="truncate text-xs font-semibold text-foreground">
 														{item.name}
 													</p>
-													<span className="text-xs font-bold text-[#06142b]">
+													<span className="text-xs font-bold text-foreground">
 														{formatCount(item.totalLeads)}
 													</span>
 												</div>
-												<div className="h-1.5 rounded-full bg-[#f0f3f7]">
+												<div className="h-1.5 rounded-full bg-muted">
 													<div
-														className="h-1.5 rounded-full bg-[#ff5722]"
+														className="h-1.5 rounded-full"
 														style={{
 															width: `${normalizeChartValue(
 																item.totalLeads,
@@ -922,11 +697,12 @@ function AnalyticDashboardPageContent({
 																	0,
 																),
 															)}%`,
+															backgroundColor: CHART_COLORS.barDefault,
 														}}
 													/>
 												</div>
 											</div>
-											<span className="text-[11px] text-[#66708a]">
+											<span className="text-[11px] text-muted-foreground">
 												{formatPercent(item.conversionRate)}
 											</span>
 										</div>
@@ -936,7 +712,7 @@ function AnalyticDashboardPageContent({
 							</CardContent>
 						</Card>
 
-						<Card className="min-h-[300px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+						<Card className="min-h-[300px] rounded-[18px] border-border bg-card shadow-sm">
 							<CardContent className="flex h-full flex-col p-4">
 								<div className="mb-4">
 									<SectionTitle title="Distribuição por importância" />
@@ -979,10 +755,10 @@ function AnalyticDashboardPageContent({
 														className="size-3 rounded-full"
 														style={{ backgroundColor: item.color }}
 													/>
-													<span className="text-sm font-semibold text-[#07142a]">
+													<span className="text-sm font-semibold text-foreground">
 														{item.label}
 													</span>
-													<span className="text-sm font-semibold text-[#26324c]">
+													<span className="text-sm font-semibold text-foreground/80">
 														{formatCount(item.count)} (
 														{formatPercent(percentage)})
 													</span>
@@ -991,13 +767,15 @@ function AnalyticDashboardPageContent({
 										})}
 									</div>
 								</div>
-								<CardAction>Ver detalhes da importância</CardAction>
+								<CardAction onClick={() => setImportanceDialogOpen(true)}>
+									Ver detalhes da importância
+								</CardAction>
 							</CardContent>
 						</Card>
 					</section>
 
 					<section className="grid gap-4 xl:grid-cols-[1fr_0.72fr_1.2fr]">
-						<Card className="min-h-[360px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+						<Card className="min-h-[360px] rounded-[18px] border-border bg-card shadow-sm">
 							<CardContent className="flex h-full flex-col p-4">
 								<div className="mb-4">
 									<SectionTitle title="Motivos de finalização" />
@@ -1010,7 +788,7 @@ function AnalyticDashboardPageContent({
 												data={finalizationData}
 												margin={{ bottom: 20, left: -18, right: 8, top: 18 }}
 											>
-												<CartesianGrid stroke="#edf2f7" vertical={false} />
+												<CartesianGrid stroke="var(--border)" vertical={false} />
 												<XAxis
 													axisLine={false}
 													dataKey="chartLabel"
@@ -1028,13 +806,13 @@ function AnalyticDashboardPageContent({
 												<Tooltip content={<ChartTooltip />} />
 												<Bar
 													dataKey="count"
-													fill="#ff7a1a"
+													fill={CHART_COLORS.barDefault}
 													maxBarSize={86}
 													name="Leads"
 													radius={[10, 10, 0, 0]}
 												>
 													<LabelList
-														className="fill-[#06142b] text-[10px] font-bold"
+														className="fill-foreground text-[10px] font-bold"
 														dataKey="count"
 														position="top"
 													/>
@@ -1043,7 +821,7 @@ function AnalyticDashboardPageContent({
 										</ResponsiveContainer>
 									</div>
 								) : (
-									<div className="grid min-h-64 place-items-center rounded-2xl bg-[#f8fafc] text-center text-sm text-[#66708a]">
+									<div className="grid min-h-64 place-items-center rounded-2xl bg-muted/40 text-center text-sm text-muted-foreground">
 										Nenhuma perda com motivo registrado no período.
 									</div>
 								)}
@@ -1051,7 +829,7 @@ function AnalyticDashboardPageContent({
 							</CardContent>
 						</Card>
 
-						<Card className="min-h-[360px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+						<Card className="min-h-[360px] rounded-[18px] border-border bg-card shadow-sm">
 							<CardContent className="flex h-full flex-col p-4">
 								<div className="mb-4">
 									<SectionTitle title="Leads convertidos vs não convertidos" />
@@ -1089,22 +867,24 @@ function AnalyticDashboardPageContent({
 														className="size-3 rounded-full"
 														style={{ backgroundColor: item.color }}
 													/>
-													<span className="text-sm font-semibold text-[#07142a]">
+													<span className="text-sm font-semibold text-foreground">
 														{item.label}
 													</span>
 												</div>
-												<span className="text-sm font-semibold text-[#26324c]">
+												<span className="text-sm font-semibold text-foreground/80">
 													{formatCount(item.count)}
 												</span>
 											</div>
 										))}
 									</div>
 								</div>
-								<CardAction>Ver detalhes da conversão</CardAction>
+								<CardAction onClick={() => setConversionDialogOpen(true)}>
+									Ver detalhes da conversão
+								</CardAction>
 							</CardContent>
 						</Card>
 
-						<Card className="min-h-[360px] rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
+						<Card className="min-h-[360px] rounded-[18px] border-border bg-card shadow-sm">
 							<CardContent className="flex h-full flex-col p-4">
 								<div className="mb-4">
 									<SectionTitle title="Evolução de leads no período" />
@@ -1125,17 +905,17 @@ function AnalyticDashboardPageContent({
 												>
 													<stop
 														offset="0%"
-														stopColor="#ff5722"
+														stopColor={CHART_COLORS.barDefault}
 														stopOpacity={0.22}
 													/>
 													<stop
 														offset="100%"
-														stopColor="#ff5722"
+														stopColor={CHART_COLORS.barDefault}
 														stopOpacity={0}
 													/>
 												</linearGradient>
 											</defs>
-											<CartesianGrid stroke="#edf2f7" vertical={false} />
+											<CartesianGrid stroke="var(--border)" vertical={false} />
 											<XAxis
 												axisLine={false}
 												dataKey="label"
@@ -1147,19 +927,19 @@ function AnalyticDashboardPageContent({
 											<Area
 												dataKey="totalLeads"
 												dot={{
-													fill: '#ff5722',
+													fill: CHART_COLORS.barDefault,
 													r: 3,
-													stroke: '#ffffff',
+													stroke: 'var(--card)',
 													strokeWidth: 2,
 												}}
 												fill="url(#analyticTrend)"
 												name="Leads"
-												stroke="#ff5722"
+												stroke={CHART_COLORS.barDefault}
 												strokeWidth={2.5}
 												type="monotone"
 											>
 												<LabelList
-													className="fill-[#06142b] text-[10px] font-bold"
+													className="fill-foreground text-[10px] font-bold"
 													dataKey="totalLeads"
 													position="top"
 												/>
@@ -1173,6 +953,17 @@ function AnalyticDashboardPageContent({
 					</section>
 				</>
 			) : null}
+
+			<AnalyticImportanceDetailDialog
+				dashboard={dashboard}
+				onOpenChange={setImportanceDialogOpen}
+				open={importanceDialogOpen}
+			/>
+			<AnalyticConversionDetailDialog
+				dashboard={dashboard}
+				onOpenChange={setConversionDialogOpen}
+				open={conversionDialogOpen}
+			/>
 		</div>
 	);
 }

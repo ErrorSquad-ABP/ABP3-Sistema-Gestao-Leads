@@ -103,3 +103,42 @@ Campos principais:
 - `importanceDistribution`: distribuição por importância.
 - `finalizationReasons`: motivos reais de perda/finalização.
 - `averageTimeToFirstInteraction`: metodologia e suporte da média de atendimento.
+- `drillDown`: listas resumidas para modais de detalhe na UI.
+
+## Drill-down (modais da UI)
+
+O campo `drillDown` alimenta os modais "Ver detalhes da importância" e "Ver detalhes da conversão". Cada lista retorna no máximo 50 itens, respeitando o mesmo filtro temporal e escopo RBAC do dashboard.
+
+```json
+{
+  "importanceLeads": [
+    {
+      "id": "uuid-do-lead",
+      "label": "Nome do cliente",
+      "importance": "HOT"
+    }
+  ],
+  "conversionLeads": [
+    {
+      "id": "uuid-do-lead",
+      "label": "Nome do cliente",
+      "outcome": "converted"
+    }
+  ]
+}
+```
+
+Regras:
+
+- `importanceLeads`: um item por lead, usando a maior classificação entre as negociações do período (`HOT` > `WARM` > `COLD`).
+- `conversionLeads`: um item por lead com `outcome` em `converted`, `lost` ou `open`.
+- `label` corresponde ao nome do cliente associado ao lead.
+- A UI deve linkar cada item para `/app/leads/[id]`.
+
+Valores aceitos em `importance`: `COLD`, `WARM`, `HOT`.
+
+Valores aceitos em `outcome`:
+
+- `converted`: lead com status `CONVERTED`.
+- `lost`: lead com negociação encerrada como `LOST` e lead não convertido.
+- `open`: demais leads do período ainda em andamento.
