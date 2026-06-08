@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { StoreRepositoryFactory } from '../../infrastructure/persistence/factories/store-repository.factory.js';
+import type { StoreRepositoryFactory } from '../../infrastructure/persistence/factories/store-repository.factory.js';
 
 @Injectable()
 class ListStoreMetricsUseCase {

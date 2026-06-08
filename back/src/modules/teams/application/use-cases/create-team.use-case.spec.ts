@@ -120,6 +120,9 @@ describe('CreateTeamUseCase', () => {
 			async list() {
 				return [store];
 			},
+			async listMetrics() {
+				return [];
+			},
 			async countBlockingReferences() {
 				return { leads: 0, teams: 0 };
 			},
@@ -214,6 +217,9 @@ describe('CreateTeamUseCase', () => {
 						async list() {
 							return [store];
 						},
+						async listMetrics() {
+							return [];
+						},
 						async countBlockingReferences() {
 							return { leads: 0, teams: 0 };
 						},
@@ -301,6 +307,9 @@ describe('CreateTeamUseCase', () => {
 							return null;
 						},
 						async list() {
+							return [];
+						},
+						async listMetrics() {
 							return [];
 						},
 						async countBlockingReferences() {

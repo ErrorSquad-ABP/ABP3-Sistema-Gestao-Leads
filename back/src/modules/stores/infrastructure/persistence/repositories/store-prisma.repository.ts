@@ -94,20 +94,29 @@ class StorePrismaRepository implements IStoreRepository {
 	}
 
 	async listMetrics() {
-		const [leadGroups, dealRows] = await Promise.all([
-			this.client.lead.groupBy({
-				by: ['storeId', 'status'],
-				_count: { _all: true },
-			}),
-			this.client.deal.findMany({
-				where: { status: { in: ['OPEN', 'WON'] } },
-				select: {
-					status: true,
-					value: true,
-					lead: { select: { storeId: true } },
-				},
-			}),
-		]);
+		const [storeRows, leadGroups, openLeadGroups, wonDealRows] =
+			await Promise.all([
+				this.client.store.findMany({
+					orderBy: { createdAt: 'desc' },
+					select: { id: true },
+				}),
+				this.client.lead.groupBy({
+					by: ['storeId', 'status'],
+					_count: { _all: true },
+				}),
+				this.client.lead.groupBy({
+					by: ['storeId'],
+					where: { deals: { some: { status: 'OPEN' } } },
+					_count: { _all: true },
+				}),
+				this.client.deal.findMany({
+					where: { status: 'WON' },
+					select: {
+						value: true,
+						lead: { select: { storeId: true } },
+					},
+				}),
+			]);
 
 		const metrics = new Map<
 			string,
@@ -119,10 +128,22 @@ class StorePrismaRepository implements IStoreRepository {
 			}
 		>();
 
+		for (const store of storeRows) {
+			metrics.set(store.id, {
+				converted: 0,
+				openDeals: 0,
+				total: 0,
+				wonValue: 0,
+			});
+		}
+
 		function getMetric(storeId: string) {
-			const current =
-				metrics.get(storeId) ??
-				{ converted: 0, openDeals: 0, total: 0, wonValue: 0 };
+			const current = metrics.get(storeId) ?? {
+				converted: 0,
+				openDeals: 0,
+				total: 0,
+				wonValue: 0,
+			};
 			metrics.set(storeId, current);
 			return current;
 		}
@@ -135,12 +156,14 @@ class StorePrismaRepository implements IStoreRepository {
 			}
 		}
 
-		for (const deal of dealRows) {
+		for (const group of openLeadGroups) {
+			const current = getMetric(group.storeId);
+			current.openDeals = group._count._all;
+		}
+
+		for (const deal of wonDealRows) {
 			const current = getMetric(deal.lead.storeId);
-			if (deal.status === 'OPEN') {
-				current.openDeals += 1;
-			}
-			if (deal.status === 'WON' && deal.value !== null) {
+			if (deal.value !== null) {
 				current.wonValue += Number(deal.value.toString());
 			}
 		}
