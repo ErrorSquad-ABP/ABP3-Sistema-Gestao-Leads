@@ -63,7 +63,6 @@ class LoginUseCase {
 						entityName: 'User',
 						entityId: user.id.value,
 						metadata: {
-							email: user.email.value,
 							role: user.role,
 							ipAddress: meta.ipAddress ?? null,
 							userAgent: meta.userAgent ?? null,
