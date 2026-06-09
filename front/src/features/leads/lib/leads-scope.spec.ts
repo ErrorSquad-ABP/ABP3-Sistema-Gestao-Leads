@@ -124,6 +124,7 @@ describe('mergeLeadListsById', () => {
 			ownerUserId: null,
 			source: 'x',
 			status: 'NEW',
+			vehicleInterestText: null,
 		};
 		const out = mergeLeadListsById([
 			[a],

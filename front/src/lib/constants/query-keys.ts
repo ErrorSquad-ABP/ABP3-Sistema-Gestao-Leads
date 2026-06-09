@@ -85,6 +85,9 @@ const queryKeys = {
 		teams: ['leads', 'catalog', 'teams'] as const,
 		owners: ['leads', 'catalog', 'owners'] as const,
 	},
+	stores: {
+		metrics: ['stores', 'metrics'] as const,
+	},
 	vehicles: {
 		listRoot: ['vehicles', 'list'] as const,
 		catalogRoot: ['vehicles', 'catalog'] as const,

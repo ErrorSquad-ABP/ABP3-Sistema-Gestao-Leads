@@ -3,7 +3,6 @@
 import {
 	Building2,
 	CheckCircle2,
-	Download,
 	Filter,
 	Plus,
 	Search,
@@ -21,7 +20,6 @@ type MetricTone = 'amber' | 'blue' | 'green' | 'orange' | 'purple';
 type StoresPageHeaderProps = {
 	canManageStores: boolean;
 	onCreate: () => void;
-	onExport: () => void;
 	onRegionFilterChange: (value: string) => void;
 	onSearchChange: (value: string) => void;
 	regionFilter: string;
@@ -92,7 +90,6 @@ function StoreMetricCard({
 function StoresPageHeader({
 	canManageStores,
 	onCreate,
-	onExport,
 	onRegionFilterChange,
 	onSearchChange,
 	regionFilter,
@@ -135,15 +132,6 @@ function StoresPageHeader({
 						))}
 					</select>
 				</div>
-				<Button
-					className="h-11 rounded-xl border-[#d8e0ea] px-5 text-xs font-semibold text-[#1f2a44]"
-					onClick={onExport}
-					type="button"
-					variant="outline"
-				>
-					<Download className="size-4" />
-					Exportar
-				</Button>
 				<Button
 					className="h-11 rounded-xl bg-[#f4511e] px-5 text-sm text-white shadow-sm hover:bg-[#dc3f13]"
 					disabled={!canManageStores}
