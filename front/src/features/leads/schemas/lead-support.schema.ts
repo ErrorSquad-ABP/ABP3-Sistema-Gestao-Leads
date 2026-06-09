@@ -11,8 +11,15 @@ const leadCustomerSchema = z.object({
 });
 
 const leadStoreSchema = z.object({
+	addressLine: z.string().nullable().optional(),
+	city: z.string().nullable().optional(),
+	coverage: z.string().nullable().optional(),
+	distributionRegion: z.string().nullable().optional(),
 	id: z.string().uuid(),
 	name: z.string(),
+	region: z.string().nullable().optional(),
+	scope: z.string().nullable().optional(),
+	state: z.string().nullable().optional(),
 });
 
 const leadTeamSchema = z.object({

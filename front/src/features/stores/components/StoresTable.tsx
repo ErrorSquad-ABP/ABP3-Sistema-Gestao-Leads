@@ -18,7 +18,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 
-import type { StoreTableRow } from '../lib/store-catalog-view';
+import type { StoreTableRow } from '../lib/store-view';
 import type { StoreRecord } from '../model/stores.model';
 
 type StoresTableProps = {

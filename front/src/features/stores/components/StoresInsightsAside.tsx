@@ -9,7 +9,7 @@ import {
 
 import { Card, CardContent } from '@/components/ui/card';
 
-import type { StoreTableRow } from '../lib/store-catalog-view';
+import type { StoreTableRow } from '../lib/store-view';
 
 type StoresInsightsAsideProps = {
 	rows: StoreTableRow[];
