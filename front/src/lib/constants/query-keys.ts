@@ -12,6 +12,9 @@ const queryKeys = {
 		list: (params: {
 			category?: string;
 			action?: string;
+			user?: string;
+			startDate?: string;
+			endDate?: string;
 			page: number;
 			limit: number;
 		}) =>
@@ -20,6 +23,9 @@ const queryKeys = {
 				'list',
 				params.category ?? 'all-categories',
 				params.action ?? 'all-actions',
+				params.user ?? 'all-users',
+				params.startDate ?? 'no-start',
+				params.endDate ?? 'no-end',
 				params.page,
 				params.limit,
 			] as const,

@@ -20,6 +20,12 @@ type CreateSessionInput = {
 	readonly ipAddress: string | undefined;
 };
 
+type CreateSessionOptions = {
+	readonly afterCreate?: (
+		tx: Prisma.TransactionClient,
+	) => Promise<void>;
+};
+
 function advisoryKeysFromUuid(uuid: string): {
 	readonly k1: number;
 	readonly k2: number;
@@ -79,7 +85,10 @@ class AuthSessionPrismaRepository {
 		return session.userId;
 	}
 
-	async createSession(input: CreateSessionInput): Promise<{
+	async createSession(
+		input: CreateSessionInput,
+		options?: CreateSessionOptions,
+	): Promise<{
 		readonly refreshToken: string;
 	}> {
 		const sessionId = randomUUID();
@@ -124,6 +133,8 @@ class AuthSessionPrismaRepository {
 					WHERE "id" IN (SELECT "id" FROM ranked WHERE rn > ${max})
 				`;
 			}
+
+			await options?.afterCreate?.(tx);
 		});
 		return { refreshToken: buildRefreshToken(sessionId, secret) };
 	}
