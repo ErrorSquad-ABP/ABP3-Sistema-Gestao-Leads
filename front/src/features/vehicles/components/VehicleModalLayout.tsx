@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import type { ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from "react"
+import type { LucideIcon } from "lucide-react"
 import {
 	Archive,
 	CarFront,
@@ -9,87 +9,87 @@ import {
 	Clock3,
 	Info,
 	ShieldCheck,
-} from 'lucide-react';
+} from "lucide-react"
 
 import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
-import type { VehicleStatus } from '../model/vehicles.model';
-import { formatVehicleStatusLabel } from '../lib/vehicle-labels';
+import type { VehicleStatus } from "../model/vehicles.model"
+import { formatVehicleStatusLabel } from "../lib/vehicle-labels"
 
 type VehicleModalHeaderProps = {
-	description: string;
-	icon?: LucideIcon;
-	title: string;
-};
+	description: string
+	icon?: LucideIcon
+	title: string
+}
 
 type VehicleModalInfoBannerProps = {
-	actionLabel?: string;
-	children: ReactNode;
-};
+	actionLabel?: string
+	children: ReactNode
+}
 
 type VehicleModalSectionProps = {
-	children: ReactNode;
-	className?: string;
-	description?: string;
-	title: string;
-};
+	children: ReactNode
+	className?: string
+	description?: string
+	title: string
+}
 
 type VehicleStatusSummaryProps = {
-	status?: VehicleStatus;
-};
+	status?: VehicleStatus
+}
 
 const vehicleModalContentClass =
-	'flex max-h-[92vh] max-w-5xl flex-col overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]';
+	"flex max-h-[92vh] max-w-5xl flex-col overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]"
 
 type VehicleStatusSummaryMeta = {
-	readonly icon: LucideIcon;
-	readonly iconClassName: string;
-	readonly subtitle: string;
-};
+	readonly icon: LucideIcon
+	readonly iconClassName: string
+	readonly subtitle: string
+}
 
 function getVehicleStatusSummaryMeta(
-	status: VehicleStatus,
+	status: VehicleStatus
 ): VehicleStatusSummaryMeta {
 	switch (status) {
-		case 'AVAILABLE':
+		case "AVAILABLE":
 			return {
 				icon: CheckCircle2,
-				iconClassName: 'bg-emerald-100 text-emerald-700',
-				subtitle: 'Pronto para venda',
-			};
-		case 'RESERVED':
+				iconClassName: "bg-emerald-100 text-emerald-700",
+				subtitle: "Pronto para venda",
+			}
+		case "RESERVED":
 			return {
 				icon: Clock3,
-				iconClassName: 'bg-orange-100 text-orange-700',
-				subtitle: 'Em negociação',
-			};
-		case 'SOLD':
+				iconClassName: "bg-orange-100 text-orange-700",
+				subtitle: "Em negociação",
+			}
+		case "SOLD":
 			return {
 				icon: ShieldCheck,
-				iconClassName: 'bg-violet-100 text-violet-700',
-				subtitle: 'Negócio fechado',
-			};
-		case 'INACTIVE':
+				iconClassName: "bg-violet-100 text-violet-700",
+				subtitle: "Negócio fechado",
+			}
+		case "INACTIVE":
 			return {
 				icon: Archive,
-				iconClassName: 'bg-slate-100 text-slate-600',
-				subtitle: 'Fora do catálogo',
-			};
+				iconClassName: "bg-slate-100 text-slate-600",
+				subtitle: "Fora do catálogo",
+			}
 		default: {
-			const _exhaustive: never = status;
-			return _exhaustive;
+			const _exhaustive: never = status
+			return _exhaustive
 		}
 	}
 }
 
 function getVehicleStatusSubtitle(status: VehicleStatus) {
-	return getVehicleStatusSummaryMeta(status).subtitle;
+	return getVehicleStatusSummaryMeta(status).subtitle
 }
 
 function VehicleModalHeader({
@@ -116,7 +116,7 @@ function VehicleModalHeader({
 				</div>
 			</div>
 		</DialogHeader>
-	);
+	)
 }
 
 function VehicleModalInfoBanner({
@@ -139,7 +139,7 @@ function VehicleModalInfoBanner({
 				</Button>
 			) : null}
 		</div>
-	);
+	)
 }
 
 function VehicleModalSection({
@@ -151,8 +151,8 @@ function VehicleModalSection({
 	return (
 		<section
 			className={cn(
-				'rounded-2xl border border-[#dfe7f1] bg-white p-4 md:p-5',
-				className,
+				"rounded-2xl border border-[#dfe7f1] bg-white p-4 md:p-5",
+				className
 			)}
 		>
 			<div className="mb-4 space-y-1">
@@ -163,16 +163,16 @@ function VehicleModalSection({
 			</div>
 			{children}
 		</section>
-	);
+	)
 }
 
 function VehicleStatusSummary({ status }: VehicleStatusSummaryProps) {
 	const statuses: VehicleStatus[] = [
-		'AVAILABLE',
-		'RESERVED',
-		'SOLD',
-		'INACTIVE',
-	];
+		"AVAILABLE",
+		"RESERVED",
+		"SOLD",
+		"INACTIVE",
+	]
 
 	return (
 		<div className="rounded-2xl border border-[#dfe7f1] bg-white p-3">
@@ -192,23 +192,23 @@ function VehicleStatusSummary({ status }: VehicleStatusSummaryProps) {
 				</div>
 
 				{statuses.map((item) => {
-					const meta = getVehicleStatusSummaryMeta(item);
-					const Icon = meta.icon;
-					const isSelected = status === item;
+					const meta = getVehicleStatusSummaryMeta(item)
+					const Icon = meta.icon
+					const isSelected = status === item
 
 					return (
 						<div
 							className={cn(
-								'flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 transition-colors lg:border-l lg:border-l-[#d8e0ea]',
+								"flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 transition-colors lg:border-l lg:border-l-[#d8e0ea]",
 								isSelected &&
-									'border-[#ff8a5c] bg-orange-50 shadow-[0_0_0_1px_rgba(255,90,31,0.16)] lg:border-l-[#ff8a5c]',
+									"border-[#ff8a5c] bg-orange-50 shadow-[0_0_0_1px_rgba(255,90,31,0.16)] lg:border-l-[#ff8a5c]"
 							)}
 							key={item}
 						>
 							<div
 								className={cn(
-									'flex size-9 shrink-0 items-center justify-center rounded-full',
-									meta.iconClassName,
+									"flex size-9 shrink-0 items-center justify-center rounded-full",
+									meta.iconClassName
 								)}
 							>
 								<Icon className="size-4" />
@@ -222,11 +222,11 @@ function VehicleStatusSummary({ status }: VehicleStatusSummaryProps) {
 								</p>
 							</div>
 						</div>
-					);
+					)
 				})}
 			</div>
 		</div>
-	);
+	)
 }
 
 export {
@@ -236,4 +236,4 @@ export {
 	VehicleModalSection,
 	VehicleStatusSummary,
 	vehicleModalContentClass,
-};
+}

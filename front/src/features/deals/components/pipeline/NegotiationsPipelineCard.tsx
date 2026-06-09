@@ -1,9 +1,9 @@
-'use client';
+"use client"
 
-import { Info } from 'lucide-react';
-import { useState } from 'react';
+import { Info } from "lucide-react"
+import { useState } from "react"
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from "@/components/ui/card"
 import type {
 	Deal,
 	DealImportance,
@@ -11,42 +11,42 @@ import type {
 	DealPipelineStage,
 	DealStage,
 	DealStatus,
-} from '@/features/deals/model/deals.model';
-import { getDealFormEditBlockReason } from '@/features/deals/lib/deal-edit-guard';
-import { PIPELINE_STAGES } from '@/features/deals/lib/pipeline';
-import { PipelineControls } from '@/features/deals/components/pipeline/PipelineControls';
-import { PipelineMotivationBanner } from '@/features/deals/components/pipeline/PipelineMotivationBanner';
-import { PipelineStageColumn } from '@/features/deals/components/pipeline/PipelineStageColumn';
-import { PipelineStageRibbon } from '@/features/deals/components/pipeline/PipelineStageRibbon';
+} from "@/features/deals/model/deals.model"
+import { getDealFormEditBlockReason } from "@/features/deals/lib/deal-edit-guard"
+import { PIPELINE_STAGES } from "@/features/deals/lib/pipeline"
+import { PipelineControls } from "@/features/deals/components/pipeline/PipelineControls"
+import { PipelineMotivationBanner } from "@/features/deals/components/pipeline/PipelineMotivationBanner"
+import { PipelineStageColumn } from "@/features/deals/components/pipeline/PipelineStageColumn"
+import { PipelineStageRibbon } from "@/features/deals/components/pipeline/PipelineStageRibbon"
 
 type Props = {
-	stages: DealPipelineStage[];
-	importanceFilter: 'ALL' | DealImportance;
-	statusFilter: 'ALL' | DealStatus;
-	onOpenDetails: (deal: Deal) => void;
-	onEdit?: (deal: Deal) => void;
-	onDelete?: (deal: Deal) => void;
-	onCreateDeal: () => void;
-	onMoveStage?: (deal: Deal, targetStage: DealStage) => void;
-	onInvalidStageMove?: () => void;
-	onPipelineMoveBlocked?: (reason: string) => void;
-	onImportanceFilterChange: (value: 'ALL' | DealImportance) => void;
-	onStatusFilterChange: (value: 'ALL' | DealStatus) => void;
-	pipelineSortMode: DealPipelineSortMode;
-	onPipelineSortModeChange: (value: DealPipelineSortMode) => void;
-	onLoadMoreStage?: (stage: DealPipelineStage) => void;
-	loadingStage?: DealStage | null;
-	updatingDealId?: string | null;
-};
+	stages: DealPipelineStage[]
+	importanceFilter: "ALL" | DealImportance
+	statusFilter: "ALL" | DealStatus
+	onOpenDetails: (deal: Deal) => void
+	onEdit?: (deal: Deal) => void
+	onDelete?: (deal: Deal) => void
+	onCreateDeal: () => void
+	onMoveStage?: (deal: Deal, targetStage: DealStage) => void
+	onInvalidStageMove?: () => void
+	onPipelineMoveBlocked?: (reason: string) => void
+	onImportanceFilterChange: (value: "ALL" | DealImportance) => void
+	onStatusFilterChange: (value: "ALL" | DealStatus) => void
+	pipelineSortMode: DealPipelineSortMode
+	onPipelineSortModeChange: (value: DealPipelineSortMode) => void
+	onLoadMoreStage?: (stage: DealPipelineStage) => void
+	loadingStage?: DealStage | null
+	updatingDealId?: string | null
+}
 
 function stageIndex(stage: DealStage) {
-	return PIPELINE_STAGES.findIndex((item) => item.key === stage);
+	return PIPELINE_STAGES.findIndex((item) => item.key === stage)
 }
 
 function isAdjacentStageMove(from: DealStage, to: DealStage) {
-	const fromIndex = stageIndex(from);
-	const toIndex = stageIndex(to);
-	return fromIndex >= 0 && toIndex >= 0 && Math.abs(toIndex - fromIndex) === 1;
+	const fromIndex = stageIndex(from)
+	const toIndex = stageIndex(to)
+	return fromIndex >= 0 && toIndex >= 0 && Math.abs(toIndex - fromIndex) === 1
 }
 
 function NegotiationsPipelineCard({
@@ -68,46 +68,46 @@ function NegotiationsPipelineCard({
 	loadingStage,
 	updatingDealId,
 }: Props) {
-	const [showValues, setShowValues] = useState(true);
-	const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
-	const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null);
+	const [showValues, setShowValues] = useState(true)
+	const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null)
+	const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null)
 
 	function clearDragState() {
-		setDraggedDeal(null);
-		setDragOverStage(null);
+		setDraggedDeal(null)
+		setDragOverStage(null)
 	}
 
 	function canDropOnStage(stage: DealStage) {
 		if (!draggedDeal) {
-			return false;
+			return false
 		}
 		return (
 			draggedDeal.stage === stage ||
 			isAdjacentStageMove(draggedDeal.stage, stage)
-		);
+		)
 	}
 
 	function handleDropStage(stage: DealStage) {
 		if (!draggedDeal) {
-			return;
+			return
 		}
 		if (draggedDeal.stage === stage) {
-			clearDragState();
-			return;
+			clearDragState()
+			return
 		}
 		if (!isAdjacentStageMove(draggedDeal.stage, stage)) {
-			onInvalidStageMove?.();
-			clearDragState();
-			return;
+			onInvalidStageMove?.()
+			clearDragState()
+			return
 		}
-		const editBlock = getDealFormEditBlockReason(draggedDeal);
+		const editBlock = getDealFormEditBlockReason(draggedDeal)
 		if (editBlock) {
-			onPipelineMoveBlocked?.(editBlock);
-			clearDragState();
-			return;
+			onPipelineMoveBlocked?.(editBlock)
+			clearDragState()
+			return
 		}
-		onMoveStage?.(draggedDeal, stage);
-		clearDragState();
+		onMoveStage?.(draggedDeal, stage)
+		clearDragState()
 	}
 
 	return (
@@ -142,8 +142,8 @@ function NegotiationsPipelineCard({
 
 				<div className="grid grid-cols-4 gap-x-3">
 					{PIPELINE_STAGES.map((stage) => {
-						const pipelineStage = stages.find((item) => item.key === stage.key);
-						const stageKey = stage.key as DealStage;
+						const pipelineStage = stages.find((item) => item.key === stage.key)
+						const stageKey = stage.key as DealStage
 						return (
 							<PipelineStageColumn
 								key={stage.key}
@@ -156,14 +156,14 @@ function NegotiationsPipelineCard({
 								isDragTargetAllowed={canDropOnStage(stageKey)}
 								updatingDealId={updatingDealId}
 								onCardDragStart={(deal) => {
-									setDraggedDeal(deal);
+									setDraggedDeal(deal)
 								}}
 								onCardDragEnd={clearDragState}
 								onColumnDragOver={setDragOverStage}
 								onColumnDragLeave={(currentStage) => {
 									setDragOverStage((value) =>
-										value === currentStage ? null : value,
-									);
+										value === currentStage ? null : value
+									)
 								}}
 								onColumnDrop={handleDropStage}
 								hasNextPage={pipelineStage?.hasNextPage ?? false}
@@ -178,14 +178,14 @@ function NegotiationsPipelineCard({
 								onCreateDeal={onCreateDeal}
 								onEdit={onEdit}
 							/>
-						);
+						)
 					})}
 				</div>
 
 				<PipelineMotivationBanner />
 			</CardContent>
 		</Card>
-	);
+	)
 }
 
-export { NegotiationsPipelineCard };
+export { NegotiationsPipelineCard }

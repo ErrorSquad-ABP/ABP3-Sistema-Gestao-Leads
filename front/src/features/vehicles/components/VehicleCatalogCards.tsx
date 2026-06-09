@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
 	Archive,
@@ -8,44 +8,44 @@ import {
 	MoreHorizontal,
 	PencilLine,
 	Trash2,
-} from 'lucide-react';
+} from "lucide-react"
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu"
 
 import type {
 	Vehicle,
 	VehicleCatalogItem,
 	VehicleStatus,
-} from '../model/vehicles.model';
+} from "../model/vehicles.model"
 import {
 	formatFuelType,
 	formatMileage,
 	formatVehiclePriceBRL,
-} from '../lib/vehicle-formatters';
-import { formatVehicleStatusLabel } from '../lib/vehicle-labels';
-import { VehicleImage } from './VehicleImage';
+} from "../lib/vehicle-formatters"
+import { formatVehicleStatusLabel } from "../lib/vehicle-labels"
+import { VehicleImage } from "./VehicleImage"
 
 type VehicleCatalogCardsProps = {
-	items: readonly VehicleCatalogItem[];
-	onDeactivate: (vehicle: Vehicle) => void;
-	onDelete: (vehicle: Vehicle) => void;
-	onEdit: (vehicle: Vehicle) => void;
-	onOpenDetails: (vehicle: Vehicle) => void;
-};
+	items: readonly VehicleCatalogItem[]
+	onDeactivate: (vehicle: Vehicle) => void
+	onDelete: (vehicle: Vehicle) => void
+	onEdit: (vehicle: Vehicle) => void
+	onOpenDetails: (vehicle: Vehicle) => void
+}
 
 const statusClassName: Record<VehicleStatus, string> = {
-	AVAILABLE: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-	RESERVED: 'border-orange-100 bg-orange-50 text-orange-700',
-	SOLD: 'border-violet-100 bg-violet-50 text-violet-700',
-	INACTIVE: 'border-slate-100 bg-slate-100 text-slate-600',
-};
+	AVAILABLE: "border-emerald-100 bg-emerald-50 text-emerald-700",
+	RESERVED: "border-orange-100 bg-orange-50 text-orange-700",
+	SOLD: "border-violet-100 bg-violet-50 text-violet-700",
+	INACTIVE: "border-slate-100 bg-slate-100 text-slate-600",
+}
 
 function VehicleCatalogCards({
 	items,
@@ -59,7 +59,7 @@ function VehicleCatalogCards({
 			<div className="rounded-xl border border-[#dde4ed] bg-white px-4 py-12 text-center text-sm text-[#667085]">
 				Nenhum veículo encontrado.
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -136,7 +136,7 @@ function VehicleCatalogCards({
 									{item.vehicle.brand} {item.vehicle.model}
 								</h2>
 								<p className="mt-0.5 truncate text-sm text-[#667085]">
-									{item.vehicle.version ?? 'Sem versão'}{' '}
+									{item.vehicle.version ?? "Sem versão"}{" "}
 									{item.vehicle.modelYear}
 								</p>
 							</div>
@@ -166,10 +166,10 @@ function VehicleCatalogCards({
 							<p className="mt-1 text-xs text-[#667085]">{item.storeName}</p>
 						</div>
 					</article>
-				);
+				)
 			})}
 		</div>
-	);
+	)
 }
 
-export { VehicleCatalogCards, statusClassName };
+export { VehicleCatalogCards, statusClassName }

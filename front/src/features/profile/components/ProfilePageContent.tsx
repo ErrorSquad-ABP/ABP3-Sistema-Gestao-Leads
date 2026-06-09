@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
 import {
 	AlertCircle,
 	CheckCircle2,
@@ -10,109 +10,109 @@ import {
 	Mail,
 	ShieldCheck,
 	UserRound,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+} from "lucide-react"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import type {
 	AuthenticatedUser,
 	UserRole,
-} from '@/features/login/types/login.types';
-import { queryKeys } from '@/lib/constants/query-keys';
-import { isApiError } from '@/lib/http/api-error';
-import { cn } from '@/lib/utils';
+} from "@/features/login/types/login.types"
+import { queryKeys } from "@/lib/constants/query-keys"
+import { isApiError } from "@/lib/http/api-error"
+import { cn } from "@/lib/utils"
 
 import {
 	useUpdateOwnEmailMutation,
 	useUpdateOwnPasswordMutation,
-} from '../hooks/profile.mutations';
+} from "../hooks/profile.mutations"
 import {
 	updateOwnEmailSchema,
 	updateOwnPasswordSchema,
-} from '../schemas/profile.schema';
+} from "../schemas/profile.schema"
 import type {
 	UpdateOwnEmailInput,
 	UpdateOwnPasswordInput,
-} from '../types/profile.types';
+} from "../types/profile.types"
 
 function resolveRoleLabel(role: UserRole) {
 	switch (role) {
-		case 'ATTENDANT':
-			return 'Atendente';
-		case 'MANAGER':
-			return 'Gerente';
-		case 'GENERAL_MANAGER':
-			return 'Gerente geral';
-		case 'ADMINISTRATOR':
-			return 'Administrador';
+		case "ATTENDANT":
+			return "Atendente"
+		case "MANAGER":
+			return "Gerente"
+		case "GENERAL_MANAGER":
+			return "Gerente geral"
+		case "ADMINISTRATOR":
+			return "Administrador"
 	}
 }
 
 function resolveCredentialErrorMessage(
 	error: unknown,
-	context: 'email' | 'password',
+	context: "email" | "password"
 ) {
 	if (!isApiError(error)) {
-		return 'Não foi possível concluir a atualização agora. Tente novamente em instantes.';
+		return "Não foi possível concluir a atualização agora. Tente novamente em instantes."
 	}
 
 	if (error.status === 401) {
-		return 'A senha atual informada não confere ou sua sessão já não é mais válida.';
+		return "A senha atual informada não confere ou sua sessão já não é mais válida."
 	}
 
-	if (error.status === 409 && context === 'email') {
-		return 'O e-mail informado já está em uso por outro utilizador.';
+	if (error.status === 409 && context === "email") {
+		return "O e-mail informado já está em uso por outro utilizador."
 	}
 
 	if (error.status === 429) {
-		return 'Muitas tentativas de alteração em sequência. Aguarde um momento antes de tentar novamente.';
+		return "Muitas tentativas de alteração em sequência. Aguarde um momento antes de tentar novamente."
 	}
 
-	if (error.status === 400 && error.code === 'user.password.unchanged') {
-		return 'A nova senha deve ser diferente da senha atual.';
+	if (error.status === 400 && error.code === "user.password.unchanged") {
+		return "A nova senha deve ser diferente da senha atual."
 	}
 
-	return error.message;
+	return error.message
 }
 
 type SuccessFeedback = {
-	title: string;
-	description: string;
-};
+	title: string
+	description: string
+}
 
 type PasswordFormValues = UpdateOwnPasswordInput & {
-	confirmPassword: string;
-};
+	confirmPassword: string
+}
 
 function buildSuccessFeedback(
-	context: 'email' | 'password',
+	context: "email" | "password",
 	refreshSessionsRevoked: boolean,
-	email?: string,
+	email?: string
 ): SuccessFeedback {
-	if (context === 'email') {
+	if (context === "email") {
 		return {
-			title: 'E-mail atualizado',
+			title: "E-mail atualizado",
 			description: refreshSessionsRevoked
 				? `Alterações guardadas. Da próxima vez que iniciar sessão nesta aplicação, utilize o endereço ${email}.`
-				: 'Alterações guardadas. O e-mail que utiliza para entrar mantém-se o mesmo.',
-		};
+				: "Alterações guardadas. O e-mail que utiliza para entrar mantém-se o mesmo.",
+		}
 	}
 
 	return {
-		title: 'Palavra-passe atualizada',
+		title: "Palavra-passe atualizada",
 		description:
-			'Alterações guardadas. Na próxima vez que iniciar sessão, utilize a nova palavra-passe.',
-	};
+			"Alterações guardadas. Na próxima vez que iniciar sessão, utilize a nova palavra-passe.",
+	}
 }
 
 function FieldError({ message }: { message?: string }) {
 	if (!message) {
-		return null;
+		return null
 	}
 
 	return (
@@ -120,122 +120,116 @@ function FieldError({ message }: { message?: string }) {
 			<AlertCircle className="size-4 shrink-0" />
 			{message}
 		</p>
-	);
+	)
 }
 
 const inputClass =
-	'h-10 rounded-md border-[#d6dce5] bg-[#f8fafc] shadow-none focus-visible:border-[#2d3648]/45';
+	"h-10 rounded-md border-[#d6dce5] bg-[#f8fafc] shadow-none focus-visible:border-[#2d3648]/45"
 
 type ProfilePageContentProps = {
-	currentUser: AuthenticatedUser;
-};
+	currentUser: AuthenticatedUser
+}
 
 function ProfilePageContent({
 	currentUser: initialCurrentUser,
 }: ProfilePageContentProps) {
-	const queryClient = useQueryClient();
-	const [currentUser, setCurrentUser] = useState(initialCurrentUser);
-	const updateOwnEmailMutation = useUpdateOwnEmailMutation();
-	const updateOwnPasswordMutation = useUpdateOwnPasswordMutation();
-	const [emailSuccess, setEmailSuccess] = useState<SuccessFeedback | null>(
-		null,
-	);
+	const queryClient = useQueryClient()
+	const [currentUser, setCurrentUser] = useState(initialCurrentUser)
+	const updateOwnEmailMutation = useUpdateOwnEmailMutation()
+	const updateOwnPasswordMutation = useUpdateOwnPasswordMutation()
+	const [emailSuccess, setEmailSuccess] = useState<SuccessFeedback | null>(null)
 	const [passwordSuccess, setPasswordSuccess] =
-		useState<SuccessFeedback | null>(null);
+		useState<SuccessFeedback | null>(null)
 
 	const emailForm = useForm<UpdateOwnEmailInput>({
 		resolver: zodResolver(updateOwnEmailSchema),
 		defaultValues: {
-			currentPassword: '',
-			email: '',
+			currentPassword: "",
+			email: "",
 		},
-	});
+	})
 
 	const passwordForm = useForm<PasswordFormValues>({
 		resolver: zodResolver(updateOwnPasswordSchema),
 		defaultValues: {
-			currentPassword: '',
-			newPassword: '',
-			confirmPassword: '',
+			currentPassword: "",
+			newPassword: "",
+			confirmPassword: "",
 		},
-	});
+	})
 
 	useEffect(() => {
 		emailForm.reset({
-			currentPassword: '',
+			currentPassword: "",
 			email: currentUser.email,
-		});
-	}, [currentUser, emailForm]);
+		})
+	}, [currentUser, emailForm])
 
 	useEffect(() => {
-		queryClient.setQueryData(queryKeys.auth.currentUser, currentUser);
-	}, [currentUser, queryClient]);
+		queryClient.setQueryData(queryKeys.auth.currentUser, currentUser)
+	}, [currentUser, queryClient])
 
 	const syncCurrentUserCache = (user: AuthenticatedUser) => {
-		setCurrentUser(user);
-		queryClient.setQueryData(queryKeys.auth.currentUser, user);
-	};
+		setCurrentUser(user)
+		queryClient.setQueryData(queryKeys.auth.currentUser, user)
+	}
 
 	const handleEmailSubmit = emailForm.handleSubmit(async (values) => {
-		setEmailSuccess(null);
-		const result = await updateOwnEmailMutation.mutateAsync(values);
-		syncCurrentUserCache(result);
+		setEmailSuccess(null)
+		const result = await updateOwnEmailMutation.mutateAsync(values)
+		syncCurrentUserCache(result)
 		setEmailSuccess(
-			buildSuccessFeedback(
-				'email',
-				result.refreshSessionsRevoked,
-				result.email,
-			),
-		);
+			buildSuccessFeedback("email", result.refreshSessionsRevoked, result.email)
+		)
 		emailForm.reset({
-			currentPassword: '',
+			currentPassword: "",
 			email: result.email,
-		});
-	});
+		})
+	})
 
 	const handlePasswordSubmit = passwordForm.handleSubmit(async (values) => {
-		setPasswordSuccess(null);
+		setPasswordSuccess(null)
 		const result = await updateOwnPasswordMutation.mutateAsync({
 			currentPassword: values.currentPassword,
 			newPassword: values.newPassword,
-		});
-		syncCurrentUserCache(result);
+		})
+		syncCurrentUserCache(result)
 		setPasswordSuccess(
-			buildSuccessFeedback('password', result.refreshSessionsRevoked),
-		);
+			buildSuccessFeedback("password", result.refreshSessionsRevoked)
+		)
 		passwordForm.reset({
-			currentPassword: '',
-			newPassword: '',
-			confirmPassword: '',
-		});
-	});
+			currentPassword: "",
+			newPassword: "",
+			confirmPassword: "",
+		})
+	})
 
 	const emailErrorMessage = updateOwnEmailMutation.error
-		? resolveCredentialErrorMessage(updateOwnEmailMutation.error, 'email')
-		: null;
+		? resolveCredentialErrorMessage(updateOwnEmailMutation.error, "email")
+		: null
 	const passwordErrorMessage = updateOwnPasswordMutation.error
-		? resolveCredentialErrorMessage(updateOwnPasswordMutation.error, 'password')
-		: null;
+		? resolveCredentialErrorMessage(updateOwnPasswordMutation.error, "password")
+		: null
 
 	const summaryItems = currentUser
 		? [
 				{
-					label: 'Nome',
+					label: "Nome",
 					value: currentUser.name,
 					icon: UserRound,
 				},
 				{
-					label: 'Papel',
+					label: "Papel",
 					value: resolveRoleLabel(currentUser.role),
 					icon: ShieldCheck,
 				},
 				{
-					label: 'E-mail atual',
+					label: "E-mail atual",
 					value: currentUser.email,
 					icon: Mail,
 				},
 			]
-		: [];
+		: []
 
 	return (
 		<div className="space-y-6">
@@ -347,14 +341,14 @@ function ProfilePageContent({
 									className={cn(
 										inputClass,
 										emailForm.formState.errors.email
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
+											? "border-destructive focus-visible:border-destructive"
+											: null
 									)}
 									id="profile-email"
 									inputMode="email"
 									placeholder="exemplo@empresa.com"
 									type="email"
-									{...emailForm.register('email')}
+									{...emailForm.register("email")}
 								/>
 								<FieldError
 									message={emailForm.formState.errors.email?.message}
@@ -370,13 +364,13 @@ function ProfilePageContent({
 									className={cn(
 										inputClass,
 										emailForm.formState.errors.currentPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
+											? "border-destructive focus-visible:border-destructive"
+											: null
 									)}
 									id="profile-email-current-password"
 									placeholder="Senha atual"
 									type="password"
-									{...emailForm.register('currentPassword')}
+									{...emailForm.register("currentPassword")}
 								/>
 								<FieldError
 									message={emailForm.formState.errors.currentPassword?.message}
@@ -393,7 +387,7 @@ function ProfilePageContent({
 										<LoaderCircle className="size-4 animate-spin" />A guardar…
 									</span>
 								) : (
-									'Guardar e-mail'
+									"Guardar e-mail"
 								)}
 							</Button>
 						</form>
@@ -463,13 +457,13 @@ function ProfilePageContent({
 									className={cn(
 										inputClass,
 										passwordForm.formState.errors.currentPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
+											? "border-destructive focus-visible:border-destructive"
+											: null
 									)}
 									id="profile-current-password"
 									placeholder="Senha atual"
 									type="password"
-									{...passwordForm.register('currentPassword')}
+									{...passwordForm.register("currentPassword")}
 								/>
 								<FieldError
 									message={
@@ -485,13 +479,13 @@ function ProfilePageContent({
 									className={cn(
 										inputClass,
 										passwordForm.formState.errors.newPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
+											? "border-destructive focus-visible:border-destructive"
+											: null
 									)}
 									id="profile-new-password"
 									placeholder="Mínimo de 8 caracteres"
 									type="password"
-									{...passwordForm.register('newPassword')}
+									{...passwordForm.register("newPassword")}
 								/>
 								<FieldError
 									message={passwordForm.formState.errors.newPassword?.message}
@@ -507,13 +501,13 @@ function ProfilePageContent({
 									className={cn(
 										inputClass,
 										passwordForm.formState.errors.confirmPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
+											? "border-destructive focus-visible:border-destructive"
+											: null
 									)}
 									id="profile-confirm-password"
 									placeholder="Repita a nova senha"
 									type="password"
-									{...passwordForm.register('confirmPassword')}
+									{...passwordForm.register("confirmPassword")}
 								/>
 								<FieldError
 									message={
@@ -532,7 +526,7 @@ function ProfilePageContent({
 										<LoaderCircle className="size-4 animate-spin" />A guardar…
 									</span>
 								) : (
-									'Guardar nova senha'
+									"Guardar nova senha"
 								)}
 							</Button>
 						</form>
@@ -540,7 +534,7 @@ function ProfilePageContent({
 				</Card>
 			</div>
 		</div>
-	);
+	)
 }
 
-export { ProfilePageContent };
+export { ProfilePageContent }

@@ -1,24 +1,23 @@
-'use client';
+"use client"
 
-import Image from 'next/image';
-import { Car } from 'lucide-react';
+import Image from "next/image"
+import { Car } from "lucide-react"
 
-import type { Vehicle } from '../model/vehicles.model';
+import type { Vehicle } from "../model/vehicles.model"
 
 type VehicleImageProps = {
-	vehicle: Vehicle;
-	className?: string;
-	priority?: boolean;
-};
+	vehicle: Vehicle
+	className?: string
+	priority?: boolean
+}
 
 function VehicleImage({
 	vehicle,
-	className = '',
+	className = "",
 	priority = false,
 }: VehicleImageProps) {
 	const label =
-		vehicle.imageAlt ??
-		`${vehicle.brand} ${vehicle.model} ${vehicle.modelYear}`;
+		vehicle.imageAlt ?? `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear}`
 
 	return (
 		<div
@@ -40,7 +39,7 @@ function VehicleImage({
 				</div>
 			)}
 		</div>
-	);
+	)
 }
 
-export { VehicleImage };
+export { VehicleImage }

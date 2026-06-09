@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-import Image from 'next/image';
+import Image from "next/image"
 import {
 	type LucideIcon,
 	AppWindowMac,
@@ -13,7 +13,7 @@ import {
 	FolderMinus,
 	SearchIcon,
 	EllipsisVertical,
-} from 'lucide-react';
+} from "lucide-react"
 import {
 	Table,
 	TableBody,
@@ -21,142 +21,142 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
+} from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Progress } from "@/components/ui/progress"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu"
 import {
 	Card,
 	CardHeader,
 	CardTitle,
 	CardContent,
 	CardDescription,
-} from '@/components/ui/card';
+} from "@/components/ui/card"
 import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
-} from '@/components/ui/input-group';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/input-group"
+import { cn } from "@/lib/utils"
 
 interface TableAction {
-	icon: LucideIcon;
-	listtitle: string;
+	icon: LucideIcon
+	listtitle: string
 }
 
 interface ProjectData {
-	id: string;
-	project: string;
-	date: string;
-	budget: string;
-	icon: LucideIcon;
-	iconcolor: string;
-	iconbg: string;
-	avatar: string;
-	name: string;
-	handle: string;
-	progress: number;
-	progressColor: string;
+	id: string
+	project: string
+	date: string
+	budget: string
+	icon: LucideIcon
+	iconcolor: string
+	iconbg: string
+	avatar: string
+	name: string
+	handle: string
+	progress: number
+	progressColor: string
 }
 
 const TopProductTable = () => {
 	const tableActionData: TableAction[] = [
-		{ icon: FolderPlus, listtitle: 'Add' },
-		{ icon: FolderPen, listtitle: 'Edit' },
-		{ icon: FolderMinus, listtitle: 'Delete' },
-	];
+		{ icon: FolderPlus, listtitle: "Add" },
+		{ icon: FolderPen, listtitle: "Edit" },
+		{ icon: FolderMinus, listtitle: "Delete" },
+	]
 
 	const checkboxTableData: ProjectData[] = [
 		{
-			id: 'row-1',
-			project: 'Web App Project',
-			date: '04 June 2026',
-			budget: '12,000',
+			id: "row-1",
+			project: "Web App Project",
+			date: "04 June 2026",
+			budget: "12,000",
 			icon: AppWindowMac,
-			iconcolor: 'text-orange-400',
-			iconbg: 'bg-orange-400/20',
-			avatar: 'https://images.shadcnspace.com/assets/profiles/user-11.jpg',
-			name: 'Olivia Rhye',
-			handle: 'olivia@ui.com',
+			iconcolor: "text-orange-400",
+			iconbg: "bg-orange-400/20",
+			avatar: "https://images.shadcnspace.com/assets/profiles/user-11.jpg",
+			name: "Olivia Rhye",
+			handle: "olivia@ui.com",
 			progress: 60,
-			progressColor: '**:data-[slot=progress-indicator]:bg-orange-400',
+			progressColor: "**:data-[slot=progress-indicator]:bg-orange-400",
 		},
 		{
-			id: 'row-2',
-			project: 'MaterialM Admin',
-			date: '09 January 2026',
-			budget: '8000',
+			id: "row-2",
+			project: "MaterialM Admin",
+			date: "09 January 2026",
+			budget: "8000",
 			icon: HandMetal,
-			iconcolor: 'text-sky-400',
-			iconbg: 'bg-sky-400/20',
-			avatar: 'https://images.shadcnspace.com/assets/profiles/user-8.jpg',
-			name: 'Barbara Steele',
-			handle: 'steele@ui.com',
+			iconcolor: "text-sky-400",
+			iconbg: "bg-sky-400/20",
+			avatar: "https://images.shadcnspace.com/assets/profiles/user-8.jpg",
+			name: "Barbara Steele",
+			handle: "steele@ui.com",
 			progress: 30,
-			progressColor: '**:data-[slot=progress-indicator]:bg-blue-500',
+			progressColor: "**:data-[slot=progress-indicator]:bg-blue-500",
 		},
 		{
-			id: 'row-3',
-			project: 'Digital Marketing',
-			date: '15 April 2026',
-			budget: '15,000',
+			id: "row-3",
+			project: "Digital Marketing",
+			date: "15 April 2026",
+			budget: "15,000",
 			icon: Megaphone,
-			iconcolor: 'text-teal-400',
-			iconbg: 'bg-teal-400/20',
-			avatar: 'https://images.shadcnspace.com/assets/profiles/user-3.jpg',
-			name: 'Leonard Gordon',
-			handle: 'olivia@ui.com',
+			iconcolor: "text-teal-400",
+			iconbg: "bg-teal-400/20",
+			avatar: "https://images.shadcnspace.com/assets/profiles/user-3.jpg",
+			name: "Leonard Gordon",
+			handle: "olivia@ui.com",
 			progress: 45,
-			progressColor: '**:data-[slot=progress-indicator]:bg-amber-300',
+			progressColor: "**:data-[slot=progress-indicator]:bg-amber-300",
 		},
 		{
-			id: 'row-4',
-			project: 'Shadcn Space Design',
-			date: '30 March 2026',
-			budget: '1000',
+			id: "row-4",
+			project: "Shadcn Space Design",
+			date: "30 March 2026",
+			budget: "1000",
 			icon: Contrast,
-			iconcolor: 'text-red-500',
-			iconbg: 'bg-red-500/20',
-			avatar: 'https://images.shadcnspace.com/assets/profiles/user-4.jpg',
-			name: 'Evelyn Pope',
-			handle: 'steele@ui.com',
+			iconcolor: "text-red-500",
+			iconbg: "bg-red-500/20",
+			avatar: "https://images.shadcnspace.com/assets/profiles/user-4.jpg",
+			name: "Evelyn Pope",
+			handle: "steele@ui.com",
 			progress: 37,
-			progressColor: '**:data-[slot=progress-indicator]:bg-red-500',
+			progressColor: "**:data-[slot=progress-indicator]:bg-red-500",
 		},
 		{
-			id: 'row-5',
-			project: 'Graphic Design',
-			date: '23 October 2026',
-			budget: '7000',
+			id: "row-5",
+			project: "Graphic Design",
+			date: "23 October 2026",
+			budget: "7000",
 			icon: Brush,
-			iconcolor: 'text-blue-500',
-			iconbg: 'bg-blue-500/20',
-			avatar: 'https://images.shadcnspace.com/assets/profiles/user-5.jpg',
-			name: 'Tommy Garza',
-			handle: 'olivia@ui.com',
+			iconcolor: "text-blue-500",
+			iconbg: "bg-blue-500/20",
+			avatar: "https://images.shadcnspace.com/assets/profiles/user-5.jpg",
+			name: "Tommy Garza",
+			handle: "olivia@ui.com",
 			progress: 87,
-			progressColor: '**:data-[slot=progress-indicator]:bg-teal-400',
+			progressColor: "**:data-[slot=progress-indicator]:bg-teal-400",
 		},
 		{
-			id: 'row-6',
-			project: 'Digital Marketing',
-			date: '15 April 2026',
-			budget: '15,000',
+			id: "row-6",
+			project: "Digital Marketing",
+			date: "15 April 2026",
+			budget: "15,000",
 			icon: Megaphone,
-			iconcolor: 'text-teal-400',
-			iconbg: 'bg-teal-400/20',
-			avatar: 'https://images.shadcnspace.com/assets/profiles/user-3.jpg',
-			name: 'Leonard Gordon',
-			handle: 'olivia@ui.com',
+			iconcolor: "text-teal-400",
+			iconbg: "bg-teal-400/20",
+			avatar: "https://images.shadcnspace.com/assets/profiles/user-3.jpg",
+			name: "Leonard Gordon",
+			handle: "olivia@ui.com",
 			progress: 45,
-			progressColor: '**:data-[slot=progress-indicator]:bg-amber-300',
+			progressColor: "**:data-[slot=progress-indicator]:bg-amber-300",
 		},
-	];
+	]
 
 	return (
 		<Card className="h-full w-full gap-6 pt-6 pb-0">
@@ -203,8 +203,8 @@ const TopProductTable = () => {
 										<div className="flex items-center gap-2">
 											<div
 												className={cn(
-													'flex h-9 w-9 items-center justify-center rounded-full',
-													item.iconbg,
+													"flex h-9 w-9 items-center justify-center rounded-full",
+													item.iconbg
 												)}
 											>
 												<item.icon
@@ -251,8 +251,8 @@ const TopProductTable = () => {
 										<Progress
 											value={item.progress}
 											className={cn(
-												'h-1.5 w-full [&>div]:h-1.5',
-												`${item.progressColor}`,
+												"h-1.5 w-full [&>div]:h-1.5",
+												`${item.progressColor}`
 											)}
 										/>
 									</TableCell>
@@ -288,7 +288,7 @@ const TopProductTable = () => {
 				</div>
 			</CardContent>
 		</Card>
-	);
-};
+	)
+}
 
-export default TopProductTable;
+export default TopProductTable

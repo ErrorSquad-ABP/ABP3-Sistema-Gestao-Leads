@@ -1,77 +1,77 @@
-'use client';
+"use client"
 
-import { useState, type MouseEvent } from 'react';
+import { useState, type MouseEvent } from "react"
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from "@/components/ui/card"
 
 import type {
 	PipelineSummaryData,
 	PipelineSummarySegment,
-} from './negotiations-right-summary.data';
+} from "./negotiations-right-summary.data"
 
 function conicFromSegments(segments: PipelineSummarySegment[]) {
-	const sum = segments.reduce((a, s) => a + s.percentage, 0);
+	const sum = segments.reduce((a, s) => a + s.percentage, 0)
 	if (sum <= 0) {
-		return 'conic-gradient(from -90deg, var(--muted) 0deg 360deg)';
+		return "conic-gradient(from -90deg, var(--muted) 0deg 360deg)"
 	}
-	let deg = 0;
-	const parts: string[] = [];
+	let deg = 0
+	const parts: string[] = []
 	for (const s of segments) {
-		const w = (s.percentage / 100) * 360;
-		parts.push(`${s.color} ${deg}deg ${deg + w}deg`);
-		deg += w;
+		const w = (s.percentage / 100) * 360
+		parts.push(`${s.color} ${deg}deg ${deg + w}deg`)
+		deg += w
 	}
-	return `conic-gradient(from -90deg, ${parts.join(', ')})`;
+	return `conic-gradient(from -90deg, ${parts.join(", ")})`
 }
 
 type Props = {
-	data: PipelineSummaryData;
-};
+	data: PipelineSummaryData
+}
 
 type TooltipState = {
-	segment: PipelineSummarySegment;
-	x: number;
-	y: number;
-};
+	segment: PipelineSummarySegment
+	x: number
+	y: number
+}
 
 function segmentAtAngle(segments: PipelineSummarySegment[], angle: number) {
-	let cursor = 0;
+	let cursor = 0
 	for (const segment of segments) {
-		const width = (segment.percentage / 100) * 360;
+		const width = (segment.percentage / 100) * 360
 		if (width <= 0) {
-			continue;
+			continue
 		}
 		if (angle >= cursor && angle < cursor + width) {
-			return segment;
+			return segment
 		}
-		cursor += width;
+		cursor += width
 	}
-	return segments.find((segment) => segment.percentage > 0) ?? null;
+	return segments.find((segment) => segment.percentage > 0) ?? null
 }
 
 function PipelineSummaryCard({ data }: Props) {
-	const { segments, centerValueLabel, centerSubLabel } = data;
-	const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+	const { segments, centerValueLabel, centerSubLabel } = data
+	const [tooltip, setTooltip] = useState<TooltipState | null>(null)
 
 	function handleDonutMouseMove(event: MouseEvent<HTMLDivElement>) {
-		const rect = event.currentTarget.getBoundingClientRect();
-		const x = event.clientX - rect.left;
-		const y = event.clientY - rect.top;
-		const dx = x - rect.width / 2;
-		const dy = y - rect.height / 2;
-		const radius = Math.hypot(dx, dy);
-		const outerRadius = rect.width / 2;
-		const innerRadius = rect.width * 0.29;
+		const rect = event.currentTarget.getBoundingClientRect()
+		const x = event.clientX - rect.left
+		const y = event.clientY - rect.top
+		const dx = x - rect.width / 2
+		const dy = y - rect.height / 2
+		const radius = Math.hypot(dx, dy)
+		const outerRadius = rect.width / 2
+		const innerRadius = rect.width * 0.29
 		if (radius < innerRadius || radius > outerRadius) {
-			setTooltip(null);
-			return;
+			setTooltip(null)
+			return
 		}
-		const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-		const angleFromTop = (angle + 90 + 360) % 360;
-		const normalizedAngle = (angleFromTop + 90) % 360;
-		const segment = segmentAtAngle(segments, normalizedAngle);
+		const angle = (Math.atan2(dy, dx) * 180) / Math.PI
+		const angleFromTop = (angle + 90 + 360) % 360
+		const normalizedAngle = (angleFromTop + 90) % 360
+		const segment = segmentAtAngle(segments, normalizedAngle)
 
-		setTooltip(segment ? { segment, x, y } : null);
+		setTooltip(segment ? { segment, x, y } : null)
 	}
 
 	return (
@@ -142,7 +142,7 @@ function PipelineSummaryCard({ data }: Props) {
 				</div>
 			</CardContent>
 		</Card>
-	);
+	)
 }
 
-export { PipelineSummaryCard, conicFromSegments };
+export { PipelineSummaryCard, conicFromSegments }

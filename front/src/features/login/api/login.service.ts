@@ -1,56 +1,56 @@
-import { ApiError } from '@/lib/http/api-error';
-import { apiFetch } from '@/lib/http/api-client';
-import { clearAccessToken } from '@/lib/auth/access-token';
+import { ApiError } from "@/lib/http/api-error"
+import { apiFetch } from "@/lib/http/api-client"
+import { clearAccessToken } from "@/lib/auth/access-token"
 
 import {
 	authenticatedUserSchema,
 	loginResponseSchema,
-} from '../schemas/login.schema';
+} from "../schemas/login.schema"
 import type {
 	AuthenticatedUser,
 	LoginInput,
 	LoginResponse,
-} from '../types/login.types';
+} from "../types/login.types"
 
 async function login(input: LoginInput): Promise<LoginResponse> {
-	const payload = await apiFetch<unknown>('/api/auth/login', {
-		method: 'POST',
+	const payload = await apiFetch<unknown>("/api/auth/login", {
+		method: "POST",
 		body: input,
-	});
+	})
 
-	return loginResponseSchema.parse(payload);
+	return loginResponseSchema.parse(payload)
 }
 
 type FetchCurrentUserOptions = {
-	signal?: AbortSignal;
-};
+	signal?: AbortSignal
+}
 
 async function fetchCurrentUser(
-	options: FetchCurrentUserOptions = {},
+	options: FetchCurrentUserOptions = {}
 ): Promise<AuthenticatedUser | null> {
 	try {
-		const payload = await apiFetch<unknown>('/api/auth/me', {
+		const payload = await apiFetch<unknown>("/api/auth/me", {
 			signal: options.signal,
-		});
-		return authenticatedUserSchema.parse(payload);
+		})
+		return authenticatedUserSchema.parse(payload)
 	} catch (error) {
 		if (
 			error instanceof ApiError &&
 			(error.status === 401 || error.status === 403)
 		) {
-			clearAccessToken();
-			return null;
+			clearAccessToken()
+			return null
 		}
 
-		throw error;
+		throw error
 	}
 }
 
 async function logout() {
-	await apiFetch('/api/auth/logout', {
-		method: 'POST',
-	});
-	clearAccessToken();
+	await apiFetch("/api/auth/logout", {
+		method: "POST",
+	})
+	clearAccessToken()
 }
 
-export { fetchCurrentUser, login, logout };
+export { fetchCurrentUser, login, logout }

@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
 import {
 	AlertCircle,
 	Eye,
@@ -11,126 +11,126 @@ import {
 	Mail,
 	ShieldCheck,
 	WifiOff,
-} from 'lucide-react';
-import { startTransition, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+} from "lucide-react"
+import { startTransition, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
-} from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { queryKeys } from '@/lib/constants/query-keys';
-import { setAccessToken } from '@/lib/auth/access-token';
-import { isApiError } from '@/lib/http/api-error';
-import { appRoutes } from '@/lib/routes/app-routes';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { queryKeys } from "@/lib/constants/query-keys"
+import { setAccessToken } from "@/lib/auth/access-token"
+import { isApiError } from "@/lib/http/api-error"
+import { appRoutes } from "@/lib/routes/app-routes"
+import { cn } from "@/lib/utils"
 
-import { useLoginMutation } from '../hooks/login.mutations';
-import { useCurrentUserQuery } from '../hooks/login.queries';
-import { loginSchema } from '../schemas/login.schema';
-import type { LoginInput } from '../types/login.types';
-import { AuthStatusIndicator } from './AuthStatusIndicator';
-import { AuthAccentLink } from './AuthAccentLink';
-import { LoginScreenLayout } from './LoginScreenLayout';
+import { useLoginMutation } from "../hooks/login.mutations"
+import { useCurrentUserQuery } from "../hooks/login.queries"
+import { loginSchema } from "../schemas/login.schema"
+import type { LoginInput } from "../types/login.types"
+import { AuthStatusIndicator } from "./AuthStatusIndicator"
+import { AuthAccentLink } from "./AuthAccentLink"
+import { LoginScreenLayout } from "./LoginScreenLayout"
 
 function getLoginErrorMessage(error: unknown) {
 	if (!isApiError(error)) {
-		return 'Não foi possível concluir o login agora. Tente novamente em instantes.';
+		return "Não foi possível concluir o login agora. Tente novamente em instantes."
 	}
 
 	if (error.status === 401) {
-		return 'Credenciais inválidas. Verifique o e-mail e a senha informados.';
+		return "Credenciais inválidas. Verifique o e-mail e a senha informados."
 	}
 
 	if (error.status === 429) {
-		return 'Muitas tentativas de acesso em sequência. Aguarde um momento antes de tentar novamente.';
+		return "Muitas tentativas de acesso em sequência. Aguarde um momento antes de tentar novamente."
 	}
 
-	return error.message;
+	return error.message
 }
 
 function LoginForm() {
-	const router = useRouter();
-	const queryClient = useQueryClient();
-	const currentUserQuery = useCurrentUserQuery();
-	const loginMutation = useLoginMutation();
-	const currentUser = currentUserQuery.data ?? null;
-	const [passwordVisible, setPasswordVisible] = useState(false);
+	const router = useRouter()
+	const queryClient = useQueryClient()
+	const currentUserQuery = useCurrentUserQuery()
+	const loginMutation = useLoginMutation()
+	const currentUser = currentUserQuery.data ?? null
+	const [passwordVisible, setPasswordVisible] = useState(false)
 	const form = useForm<LoginInput>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
-			email: '',
-			password: '',
+			email: "",
+			password: "",
 		},
-	});
+	})
 
 	useEffect(() => {
 		if (!currentUser) {
-			return;
+			return
 		}
 
 		startTransition(() => {
-			router.replace(appRoutes.app.root);
-		});
-	}, [currentUser, router]);
+			router.replace(appRoutes.app.root)
+		})
+	}, [currentUser, router])
 
 	const handleSubmit = form.handleSubmit(async (values) => {
 		await queryClient.cancelQueries({
 			queryKey: queryKeys.auth.currentUser,
-		});
+		})
 
 		try {
-			const result = await loginMutation.mutateAsync(values);
-			setAccessToken(result.accessToken);
-			queryClient.setQueryData(queryKeys.auth.currentUser, result.user);
+			const result = await loginMutation.mutateAsync(values)
+			setAccessToken(result.accessToken)
+			queryClient.setQueryData(queryKeys.auth.currentUser, result.user)
 			startTransition(() => {
-				router.replace(appRoutes.app.root);
-			});
+				router.replace(appRoutes.app.root)
+			})
 		} catch {
 			// The mutation state already stores the error for the inline feedback UI.
 		}
-	});
+	})
 
 	const loginErrorMessage = loginMutation.error
 		? getLoginErrorMessage(loginMutation.error)
-		: null;
+		: null
 
 	const sessionStatus = currentUserQuery.isPending
 		? {
-				id: 'validating-session',
+				id: "validating-session",
 				icon: (
 					<LoaderCircle
 						aria-hidden="true"
 						className="size-4 animate-spin text-primary"
 					/>
 				),
-				label: 'Status da sessão',
+				label: "Status da sessão",
 				message:
-					'Validando sessão existente. Se já houver uma sessão ativa, o redirecionamento será automático.',
+					"Validando sessão existente. Se já houver uma sessão ativa, o redirecionamento será automático.",
 			}
 		: currentUserQuery.isError
 			? {
-					id: 'session-unavailable',
+					id: "session-unavailable",
 					icon: (
 						<WifiOff
 							aria-hidden="true"
 							className="size-4 text-[color:var(--brand-accent)]"
 						/>
 					),
-					label: 'Sessão indisponível',
+					label: "Sessão indisponível",
 					message:
-						'Não foi possível validar a sessão atual. Você ainda pode entrar normalmente; se o problema persistir, verifique a disponibilidade da API.',
+						"Não foi possível validar a sessão atual. Você ainda pode entrar normalmente; se o problema persistir, verifique a disponibilidade da API.",
 				}
-			: null;
+			: null
 
 	return (
 		<LoginScreenLayout
@@ -186,16 +186,16 @@ function LoginForm() {
 										<Input
 											autoComplete="email"
 											className={cn(
-												'h-11 rounded-xl border-border bg-white pl-10 text-[0.9rem] text-foreground shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/50',
+												"h-11 rounded-xl border-border bg-white pl-10 text-[0.9rem] text-foreground shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/50",
 												form.formState.errors.email
-													? 'border-destructive focus-visible:ring-destructive/20'
-													: null,
+													? "border-destructive focus-visible:ring-destructive/20"
+													: null
 											)}
 											id="email"
 											inputMode="email"
 											placeholder="seu@email.com"
 											type="email"
-											{...form.register('email')}
+											{...form.register("email")}
 										/>
 									</div>
 									{form.formState.errors.email ? (
@@ -218,19 +218,19 @@ function LoginForm() {
 										<Input
 											autoComplete="current-password"
 											className={cn(
-												'h-11 rounded-xl border-border bg-white pr-10 pl-10 text-[0.9rem] text-foreground shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/50',
+												"h-11 rounded-xl border-border bg-white pr-10 pl-10 text-[0.9rem] text-foreground shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/50",
 												form.formState.errors.password
-													? 'border-destructive focus-visible:ring-destructive/20'
-													: null,
+													? "border-destructive focus-visible:ring-destructive/20"
+													: null
 											)}
 											id="password"
 											placeholder="Digite sua senha"
-											type={passwordVisible ? 'text' : 'password'}
-											{...form.register('password')}
+											type={passwordVisible ? "text" : "password"}
+											{...form.register("password")}
 										/>
 										<button
 											aria-label={
-												passwordVisible ? 'Ocultar senha' : 'Mostrar senha'
+												passwordVisible ? "Ocultar senha" : "Mostrar senha"
 											}
 											className="absolute top-1/2 right-2.5 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground/80 hover:bg-muted/40 hover:text-foreground"
 											onClick={() => setPasswordVisible((prev) => !prev)}
@@ -276,7 +276,7 @@ function LoginForm() {
 										Entrando...
 									</>
 								) : (
-									'Entrar'
+									"Entrar"
 								)}
 							</Button>
 
@@ -305,7 +305,7 @@ function LoginForm() {
 				</Card>
 			</div>
 		</LoginScreenLayout>
-	);
+	)
 }
 
-export { LoginForm };
+export { LoginForm }

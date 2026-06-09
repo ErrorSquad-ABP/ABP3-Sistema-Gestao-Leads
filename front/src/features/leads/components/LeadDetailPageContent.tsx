@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation"
 import {
 	ArrowLeft,
 	Building2,
@@ -12,12 +12,12 @@ import {
 	PencilLine,
 	Phone,
 	Shuffle,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
+} from "lucide-react"
+import { useMemo, useState } from "react"
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
 	Dialog,
 	DialogContent,
@@ -25,95 +25,95 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LeadDealsDialog } from '@/features/deals/components/LeadDealsDialog';
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { LeadDealsDialog } from "@/features/deals/components/LeadDealsDialog"
 import {
 	formatDealHistoryFieldName,
 	formatDealHistoryValueDisplay,
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
-} from '@/features/deals/lib/deal-labels';
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError, isApiError } from '@/lib/http/api-error';
-import { appRoutes } from '@/lib/routes/app-routes';
+} from "@/features/deals/lib/deal-labels"
+import type { AuthenticatedUser } from "@/features/login/types/login.types"
+import { ApiError, isApiError } from "@/lib/http/api-error"
+import { appRoutes } from "@/lib/routes/app-routes"
 import {
 	useLeadCustomersQuery,
 	useLeadOwnersQuery,
 	useLeadStoresQuery,
-} from '../hooks/leads.catalog.queries';
-import { useLeadDetailHubQuery } from '../hooks/leads.queries';
+} from "../hooks/leads.catalog.queries"
+import { useLeadDetailHubQuery } from "../hooks/leads.queries"
 import {
 	useConvertLeadMutation,
 	useReassignLeadMutation,
 	useUpdateLeadMutation,
-} from '../hooks/leads.mutations';
+} from "../hooks/leads.mutations"
 import {
 	formatLeadSourceLabel,
 	formatLeadStatusLabel,
 	getLeadSourceBadgeClass,
-} from '../lib/lead-list-labels';
+} from "../lib/lead-list-labels"
 import type {
 	CreateLeadInput,
 	LeadDetailHub,
 	LeadListItem,
 	ReassignLeadInput,
 	UpdateLeadInput,
-} from '../model/leads.model';
+} from "../model/leads.model"
 import {
 	buildOwnerOptions,
 	getLeadsErrorMessage,
 	LeadConfirmDialog,
 	LeadFormDialog,
 	LeadReassignDialog,
-} from './LeadForm';
+} from "./LeadForm"
 
 type LeadDetailPageContentProps = {
-	leadId: string;
-	user: AuthenticatedUser;
-};
+	leadId: string
+	user: AuthenticatedUser
+}
 
-type TimelineEvent = LeadDetailHub['timeline'][number];
+type TimelineEvent = LeadDetailHub["timeline"][number]
 
-const TIMELINE_PAGE_SIZE = 10;
+const TIMELINE_PAGE_SIZE = 10
 
 const timelineFieldOptions = [
-	{ value: 'all', label: 'Todos os registros' },
-	{ value: 'IMPORTANCE', label: 'Importância' },
-	{ value: 'STATUS', label: 'Status' },
-	{ value: 'TITLE', label: 'Título' },
-	{ value: 'STAGE', label: 'Etapa' },
-	{ value: 'VALUE', label: 'Valor' },
-	{ value: 'RESPONSIBLE', label: 'Responsável' },
-	{ value: 'SOURCE', label: 'Origem' },
-	{ value: 'INTEREST', label: 'Interesse' },
-	{ value: 'CREATED', label: 'Criação' },
-	{ value: 'CONVERTED', label: 'Conversão' },
-];
+	{ value: "all", label: "Todos os registros" },
+	{ value: "IMPORTANCE", label: "Importância" },
+	{ value: "STATUS", label: "Status" },
+	{ value: "TITLE", label: "Título" },
+	{ value: "STAGE", label: "Etapa" },
+	{ value: "VALUE", label: "Valor" },
+	{ value: "RESPONSIBLE", label: "Responsável" },
+	{ value: "SOURCE", label: "Origem" },
+	{ value: "INTEREST", label: "Interesse" },
+	{ value: "CREATED", label: "Criação" },
+	{ value: "CONVERTED", label: "Conversão" },
+]
 
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-	dateStyle: 'short',
-	timeStyle: 'short',
-});
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+	dateStyle: "short",
+	timeStyle: "short",
+})
 
 function formatDate(value: string) {
-	return dateFormatter.format(new Date(value));
+	return dateFormatter.format(new Date(value))
 }
 
 function formatPhone(value: string | null) {
 	if (!value) {
-		return 'Telefone não informado';
+		return "Telefone não informado"
 	}
-	const digits = value.replace(/\D/g, '');
+	const digits = value.replace(/\D/g, "")
 	if (digits.length === 11) {
-		return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+		return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
 	}
 	if (digits.length === 10) {
-		return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+		return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
 	}
-	return value;
+	return value
 }
 
 function buildLeadListTarget(data: LeadDetailHub): LeadListItem {
@@ -124,201 +124,199 @@ function buildLeadListTarget(data: LeadDetailHub): LeadListItem {
 		ownerUserId: data.owner?.id ?? null,
 		source: data.lead.source,
 		status: data.lead.status,
-	};
+	}
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-		return null;
+	if (value === null || typeof value !== "object" || Array.isArray(value)) {
+		return null
 	}
-	return value as Record<string, unknown>;
+	return value as Record<string, unknown>
 }
 
 function onlyString(value: unknown) {
-	return typeof value === 'string' ? value : null;
+	return typeof value === "string" ? value : null
 }
 
 function timelineDateKey(value: string) {
-	const date = new Date(value);
+	const date = new Date(value)
 	if (Number.isNaN(date.getTime())) {
-		return value.slice(0, 10);
+		return value.slice(0, 10)
 	}
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const day = String(date.getDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
+	const year = date.getFullYear()
+	const month = String(date.getMonth() + 1).padStart(2, "0")
+	const day = String(date.getDate()).padStart(2, "0")
+	return `${year}-${month}-${day}`
 }
 
 function formatLeadChangeFieldName(field: string) {
-	if (field === 'ownerUserId') return 'Responsável';
-	if (field === 'source') return 'Origem';
-	if (field === 'status') return 'Estado';
-	if (field === 'vehicleInterestText') return 'Interesse';
-	return field;
+	if (field === "ownerUserId") return "Responsável"
+	if (field === "source") return "Origem"
+	if (field === "status") return "Estado"
+	if (field === "vehicleInterestText") return "Interesse"
+	return field
 }
 
 function formatLeadChangeValue(field: string, raw: string | null) {
-	if (raw === null || raw === '') {
-		return '—';
+	if (raw === null || raw === "") {
+		return "—"
 	}
-	if (field === 'status') {
-		return formatLeadStatusLabel(raw);
+	if (field === "status") {
+		return formatLeadStatusLabel(raw)
 	}
-	if (field === 'source') {
-		return formatLeadSourceLabel(raw);
+	if (field === "source") {
+		return formatLeadSourceLabel(raw)
 	}
-	return raw;
+	return raw
 }
 
 function getTimelineChangeRecords(event: TimelineEvent) {
-	const metadata = asRecord(event.metadata);
-	const changes = Array.isArray(metadata?.changes) ? metadata.changes : [];
+	const metadata = asRecord(event.metadata)
+	const changes = Array.isArray(metadata?.changes) ? metadata.changes : []
 	return changes
 		.map((change) => asRecord(change))
-		.filter((change): change is Record<string, unknown> => change !== null);
+		.filter((change): change is Record<string, unknown> => change !== null)
 }
 
 function getTimelineFieldKeys(event: TimelineEvent) {
-	if (event.type === 'CREATED') {
-		return ['CREATED'];
+	if (event.type === "CREATED") {
+		return ["CREATED"]
 	}
-	if (event.type === 'CONVERTED') {
-		return ['CONVERTED'];
+	if (event.type === "CONVERTED") {
+		return ["CONVERTED"]
 	}
-	if (event.type === 'REASSIGNED') {
-		return ['RESPONSIBLE'];
+	if (event.type === "REASSIGNED") {
+		return ["RESPONSIBLE"]
 	}
-	if (event.type === 'DEAL_UPDATED') {
-		const field = onlyString(asRecord(event.metadata)?.field);
-		return field ? [field.toUpperCase()] : [];
+	if (event.type === "DEAL_UPDATED") {
+		const field = onlyString(asRecord(event.metadata)?.field)
+		return field ? [field.toUpperCase()] : []
 	}
 	return getTimelineChangeRecords(event)
 		.map((change) => {
-			const field = onlyString(change.field);
-			if (field === 'ownerUserId') return 'RESPONSIBLE';
-			if (field === 'source') return 'SOURCE';
-			if (field === 'vehicleInterestText') return 'INTEREST';
-			return field?.toUpperCase() ?? null;
+			const field = onlyString(change.field)
+			if (field === "ownerUserId") return "RESPONSIBLE"
+			if (field === "source") return "SOURCE"
+			if (field === "vehicleInterestText") return "INTEREST"
+			return field?.toUpperCase() ?? null
 		})
-		.filter((field): field is string => field !== null);
+		.filter((field): field is string => field !== null)
 }
 
 function formatTimelineDescription(event: TimelineEvent) {
-	if (event.type === 'DEAL_UPDATED' && event.metadata) {
+	if (event.type === "DEAL_UPDATED" && event.metadata) {
 		const field =
-			typeof event.metadata.field === 'string' ? event.metadata.field : '';
+			typeof event.metadata.field === "string" ? event.metadata.field : ""
 		const fromValue =
-			typeof event.metadata.fromValue === 'string'
+			typeof event.metadata.fromValue === "string"
 				? event.metadata.fromValue
-				: null;
+				: null
 		const toValue =
-			typeof event.metadata.toValue === 'string'
-				? event.metadata.toValue
-				: null;
+			typeof event.metadata.toValue === "string" ? event.metadata.toValue : null
 		return `${formatDealHistoryFieldName(field)} alterado de ${formatDealHistoryValueDisplay(
 			field,
-			fromValue,
-		)} para ${formatDealHistoryValueDisplay(field, toValue)}.`;
+			fromValue
+		)} para ${formatDealHistoryValueDisplay(field, toValue)}.`
 	}
-	if (event.type === 'REASSIGNED') {
-		const metadata = asRecord(event.metadata);
-		const fromOwner = asRecord(metadata?.fromOwner);
-		const toOwner = asRecord(metadata?.toOwner);
-		const fromName = onlyString(fromOwner?.name) ?? 'Sem responsável';
-		const toName = onlyString(toOwner?.name) ?? 'Sem responsável';
-		return `Responsável alterado de ${fromName} para ${toName}.`;
+	if (event.type === "REASSIGNED") {
+		const metadata = asRecord(event.metadata)
+		const fromOwner = asRecord(metadata?.fromOwner)
+		const toOwner = asRecord(metadata?.toOwner)
+		const fromName = onlyString(fromOwner?.name) ?? "Sem responsável"
+		const toName = onlyString(toOwner?.name) ?? "Sem responsável"
+		return `Responsável alterado de ${fromName} para ${toName}.`
 	}
-	return event.description;
+	return event.description
 }
 
 function formatTimelineOwner(owner: Record<string, unknown> | null) {
-	const name = onlyString(owner?.name);
-	const email = onlyString(owner?.email);
+	const name = onlyString(owner?.name)
+	const email = onlyString(owner?.email)
 	if (!name || !email) {
-		return 'Sem responsável';
+		return "Sem responsável"
 	}
-	return `${name} · ${email}`;
+	return `${name} · ${email}`
 }
 
 function getTimelineDetails(event: TimelineEvent) {
 	const details: { label: string; value: string }[] = [
-		{ label: 'Registro', value: event.title },
-		{ label: 'Data', value: formatDate(event.createdAt) },
-	];
+		{ label: "Registro", value: event.title },
+		{ label: "Data", value: formatDate(event.createdAt) },
+	]
 	if (event.actor) {
 		details.push({
-			label: 'Responsável pela ação',
+			label: "Responsável pela ação",
 			value: `${event.actor.name} · ${event.actor.email}`,
-		});
+		})
 	}
-	if (event.type === 'DEAL_UPDATED') {
-		const metadata = asRecord(event.metadata);
-		const field = onlyString(metadata?.field) ?? '';
+	if (event.type === "DEAL_UPDATED") {
+		const metadata = asRecord(event.metadata)
+		const field = onlyString(metadata?.field) ?? ""
 		details.push(
-			{ label: 'Campo alterado', value: formatDealHistoryFieldName(field) },
+			{ label: "Campo alterado", value: formatDealHistoryFieldName(field) },
 			{
-				label: 'Valor anterior',
+				label: "Valor anterior",
 				value: formatDealHistoryValueDisplay(
 					field,
-					onlyString(metadata?.fromValue),
+					onlyString(metadata?.fromValue)
 				),
 			},
 			{
-				label: 'Novo valor',
+				label: "Novo valor",
 				value: formatDealHistoryValueDisplay(
 					field,
-					onlyString(metadata?.toValue),
+					onlyString(metadata?.toValue)
 				),
-			},
-		);
-		return details;
+			}
+		)
+		return details
 	}
-	if (event.type === 'REASSIGNED') {
-		const metadata = asRecord(event.metadata);
-		const fromOwner = asRecord(metadata?.fromOwner);
-		const toOwner = asRecord(metadata?.toOwner);
+	if (event.type === "REASSIGNED") {
+		const metadata = asRecord(event.metadata)
+		const fromOwner = asRecord(metadata?.fromOwner)
+		const toOwner = asRecord(metadata?.toOwner)
 		details.push(
 			{
-				label: 'Responsável anterior',
+				label: "Responsável anterior",
 				value: formatTimelineOwner(fromOwner),
 			},
 			{
-				label: 'Novo responsável',
+				label: "Novo responsável",
 				value: formatTimelineOwner(toOwner),
-			},
-		);
-		return details;
+			}
+		)
+		return details
 	}
 	for (const change of getTimelineChangeRecords(event)) {
-		const field = onlyString(change.field) ?? '';
-		const fromLabel = onlyString(change.fromLabel);
-		const toLabel = onlyString(change.toLabel);
+		const field = onlyString(change.field) ?? ""
+		const fromLabel = onlyString(change.fromLabel)
+		const toLabel = onlyString(change.toLabel)
 		details.push(
-			{ label: 'Campo alterado', value: formatLeadChangeFieldName(field) },
+			{ label: "Campo alterado", value: formatLeadChangeFieldName(field) },
 			{
-				label: 'Valor anterior',
+				label: "Valor anterior",
 				value:
 					fromLabel ??
 					formatLeadChangeValue(field, onlyString(change.fromValue)),
 			},
 			{
-				label: 'Novo valor',
+				label: "Novo valor",
 				value:
 					toLabel ?? formatLeadChangeValue(field, onlyString(change.toValue)),
-			},
-		);
+			}
+		)
 	}
 	if (details.length === (event.actor ? 3 : 2)) {
-		details.push({ label: 'Descrição', value: event.description });
+		details.push({ label: "Descrição", value: event.description })
 	}
-	return details;
+	return details
 }
 
 function timelineMatchesText(event: TimelineEvent, search: string) {
 	if (!search.trim()) {
-		return true;
+		return true
 	}
-	const needle = search.trim().toLowerCase();
+	const needle = search.trim().toLowerCase()
 	const haystack = [
 		event.title,
 		event.description,
@@ -331,9 +329,9 @@ function timelineMatchesText(event: TimelineEvent, search: string) {
 		]),
 	]
 		.filter((value): value is string => Boolean(value))
-		.join(' ')
-		.toLowerCase();
-	return haystack.includes(needle);
+		.join(" ")
+		.toLowerCase()
+	return haystack.includes(needle)
 }
 
 function DetailMetric({ label, value }: { label: string; value: string }) {
@@ -344,137 +342,137 @@ function DetailMetric({ label, value }: { label: string; value: string }) {
 			</p>
 			<p className="mt-1 text-sm font-medium text-[#1b2430]">{value}</p>
 		</div>
-	);
+	)
 }
 
 function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
-	const router = useRouter();
+	const router = useRouter()
 	const detailQuery = useLeadDetailHubQuery(leadId, {
 		enabled: Boolean(leadId),
-	});
-	const customersQuery = useLeadCustomersQuery();
-	const storesQuery = useLeadStoresQuery();
-	const ownersQuery = useLeadOwnersQuery();
-	const updateLeadMutation = useUpdateLeadMutation();
-	const reassignLeadMutation = useReassignLeadMutation();
-	const convertLeadMutation = useConvertLeadMutation();
+	})
+	const customersQuery = useLeadCustomersQuery()
+	const storesQuery = useLeadStoresQuery()
+	const ownersQuery = useLeadOwnersQuery()
+	const updateLeadMutation = useUpdateLeadMutation()
+	const reassignLeadMutation = useReassignLeadMutation()
+	const convertLeadMutation = useConvertLeadMutation()
 
-	const [editOpen, setEditOpen] = useState(false);
-	const [reassignOpen, setReassignOpen] = useState(false);
-	const [convertOpen, setConvertOpen] = useState(false);
-	const [dealsOpen, setDealsOpen] = useState(false);
-	const [dialogError, setDialogError] = useState<string | null>(null);
-	const [timelineSearch, setTimelineSearch] = useState('');
-	const [timelineField, setTimelineField] = useState('all');
-	const [timelineStartDate, setTimelineStartDate] = useState('');
-	const [timelineEndDate, setTimelineEndDate] = useState('');
-	const [timelinePage, setTimelinePage] = useState(1);
+	const [editOpen, setEditOpen] = useState(false)
+	const [reassignOpen, setReassignOpen] = useState(false)
+	const [convertOpen, setConvertOpen] = useState(false)
+	const [dealsOpen, setDealsOpen] = useState(false)
+	const [dialogError, setDialogError] = useState<string | null>(null)
+	const [timelineSearch, setTimelineSearch] = useState("")
+	const [timelineField, setTimelineField] = useState("all")
+	const [timelineStartDate, setTimelineStartDate] = useState("")
+	const [timelineEndDate, setTimelineEndDate] = useState("")
+	const [timelinePage, setTimelinePage] = useState(1)
 	const [selectedTimelineEvent, setSelectedTimelineEvent] =
-		useState<TimelineEvent | null>(null);
+		useState<TimelineEvent | null>(null)
 
-	const detail = detailQuery.data;
+	const detail = detailQuery.data
 	const targetLead = useMemo(
 		() => (detail ? buildLeadListTarget(detail) : null),
-		[detail],
-	);
+		[detail]
+	)
 	const customers = useMemo(
 		() => customersQuery.data ?? [],
-		[customersQuery.data],
-	);
-	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
-	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data]);
+		[customersQuery.data]
+	)
+	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data])
+	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data])
 	const ownerOptions = targetLead
 		? buildOwnerOptions({
 				leadOwners: owners,
 				selectedStoreId: targetLead.storeId,
 			})
-		: [];
+		: []
 	const filteredTimeline = useMemo(() => {
-		const events = detail?.timeline ?? [];
+		const events = detail?.timeline ?? []
 		return events.filter((event) => {
-			const eventDate = timelineDateKey(event.createdAt);
+			const eventDate = timelineDateKey(event.createdAt)
 			if (timelineStartDate && eventDate < timelineStartDate) {
-				return false;
+				return false
 			}
 			if (timelineEndDate && eventDate > timelineEndDate) {
-				return false;
+				return false
 			}
 			if (
-				timelineField !== 'all' &&
+				timelineField !== "all" &&
 				!getTimelineFieldKeys(event).includes(timelineField)
 			) {
-				return false;
+				return false
 			}
-			return timelineMatchesText(event, timelineSearch);
-		});
+			return timelineMatchesText(event, timelineSearch)
+		})
 	}, [
 		detail?.timeline,
 		timelineEndDate,
 		timelineField,
 		timelineSearch,
 		timelineStartDate,
-	]);
+	])
 	const timelineTotalPages = Math.max(
 		1,
-		Math.ceil(filteredTimeline.length / TIMELINE_PAGE_SIZE),
-	);
-	const safeTimelinePage = Math.min(timelinePage, timelineTotalPages);
+		Math.ceil(filteredTimeline.length / TIMELINE_PAGE_SIZE)
+	)
+	const safeTimelinePage = Math.min(timelinePage, timelineTotalPages)
 	const visibleTimeline = filteredTimeline.slice(
 		(safeTimelinePage - 1) * TIMELINE_PAGE_SIZE,
-		safeTimelinePage * TIMELINE_PAGE_SIZE,
-	);
+		safeTimelinePage * TIMELINE_PAGE_SIZE
+	)
 	const selectedTimelineDetails = selectedTimelineEvent
 		? getTimelineDetails(selectedTimelineEvent)
-		: [];
+		: []
 
 	function resetTimelinePage() {
-		setTimelinePage(1);
+		setTimelinePage(1)
 	}
 
 	function clearTimelineFilters() {
-		setTimelineSearch('');
-		setTimelineField('all');
-		setTimelineStartDate('');
-		setTimelineEndDate('');
-		setTimelinePage(1);
+		setTimelineSearch("")
+		setTimelineField("all")
+		setTimelineStartDate("")
+		setTimelineEndDate("")
+		setTimelinePage(1)
 	}
 
 	async function handleEditSubmit(values: CreateLeadInput | UpdateLeadInput) {
-		if (!targetLead) return;
-		setDialogError(null);
+		if (!targetLead) return
+		setDialogError(null)
 		try {
 			await updateLeadMutation.mutateAsync({
 				leadId: targetLead.id,
 				payload: values as UpdateLeadInput,
-			});
-			setEditOpen(false);
+			})
+			setEditOpen(false)
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(getLeadsErrorMessage(error))
 		}
 	}
 
 	async function handleReassignSubmit(values: ReassignLeadInput) {
-		if (!targetLead) return;
-		setDialogError(null);
+		if (!targetLead) return
+		setDialogError(null)
 		try {
 			await reassignLeadMutation.mutateAsync({
 				leadId: targetLead.id,
 				payload: values,
-			});
-			setReassignOpen(false);
+			})
+			setReassignOpen(false)
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(getLeadsErrorMessage(error))
 		}
 	}
 
 	async function handleConvertConfirm() {
-		if (!targetLead) return;
-		setDialogError(null);
+		if (!targetLead) return
+		setDialogError(null)
 		try {
-			await convertLeadMutation.mutateAsync(targetLead.id);
-			setConvertOpen(false);
+			await convertLeadMutation.mutateAsync(targetLead.id)
+			setConvertOpen(false)
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(getLeadsErrorMessage(error))
 		}
 	}
 
@@ -485,7 +483,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					Carregando informações do lead...
 				</div>
 			</div>
-		);
+		)
 	}
 
 	if (detailQuery.isError || !detail) {
@@ -507,7 +505,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					<p>
 						{detailQuery.error instanceof ApiError
 							? detailQuery.error.message
-							: 'Não foi possível carregar as informações do lead.'}
+							: "Não foi possível carregar as informações do lead."}
 					</p>
 					<Button
 						className="mt-3 rounded-md shadow-none"
@@ -519,14 +517,14 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					</Button>
 				</div>
 			</div>
-		);
+		)
 	}
 
 	const ownerLabel = detail.owner
 		? `${detail.owner.name} · ${detail.owner.email}`
-		: 'Sem responsável';
+		: "Sem responsável"
 	const catalogError =
-		customersQuery.error ?? storesQuery.error ?? ownersQuery.error ?? null;
+		customersQuery.error ?? storesQuery.error ?? ownersQuery.error ?? null
 
 	return (
 		<div className="space-y-6">
@@ -578,7 +576,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								title={
 									detail.permissions.canManageDeals
 										? undefined
-										: 'Você não tem permissão para alterar negociações deste lead.'
+										: "Você não tem permissão para alterar negociações deste lead."
 								}
 								type="button"
 							>
@@ -609,7 +607,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 				>
 					{isApiError(catalogError)
 						? catalogError.message
-						: 'Não foi possível carregar as opções para as ações deste lead.'}
+						: "Não foi possível carregar as opções para as ações deste lead."}
 				</div>
 			) : null}
 
@@ -625,7 +623,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 						<div className="grid gap-3">
 							<div className="flex items-center gap-3 rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3 text-sm text-[#1b2430]">
 								<Mail className="size-4 text-[#6b7687]" />
-								{detail.customer.email ?? 'E-mail não informado'}
+								{detail.customer.email ?? "E-mail não informado"}
 							</div>
 							<div className="flex items-center gap-3 rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3 text-sm text-[#1b2430]">
 								<Phone className="size-4 text-[#6b7687]" />
@@ -642,7 +640,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 							</p>
 							<p className="mt-2 text-sm text-[#1b2430]">
 								{detail.lead.vehicleInterestText ??
-									'Nenhum interesse em veículo foi informado.'}
+									"Nenhum interesse em veículo foi informado."}
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-2">
@@ -684,8 +682,8 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								<Input
 									id="timeline-search"
 									onChange={(event) => {
-										setTimelineSearch(event.target.value);
-										resetTimelinePage();
+										setTimelineSearch(event.target.value)
+										resetTimelinePage()
 									}}
 									placeholder="Título, status, valor, responsável..."
 									value={timelineSearch}
@@ -697,8 +695,8 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 									className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="timeline-field"
 									onChange={(event) => {
-										setTimelineField(event.target.value);
-										resetTimelinePage();
+										setTimelineField(event.target.value)
+										resetTimelinePage()
 									}}
 									value={timelineField}
 								>
@@ -714,8 +712,8 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								<Input
 									id="timeline-start-date"
 									onChange={(event) => {
-										setTimelineStartDate(event.target.value);
-										resetTimelinePage();
+										setTimelineStartDate(event.target.value)
+										resetTimelinePage()
 									}}
 									type="date"
 									value={timelineStartDate}
@@ -726,8 +724,8 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								<Input
 									id="timeline-end-date"
 									onChange={(event) => {
-										setTimelineEndDate(event.target.value);
-										resetTimelinePage();
+										setTimelineEndDate(event.target.value)
+										resetTimelinePage()
 									}}
 									type="date"
 									value={timelineEndDate}
@@ -735,7 +733,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 							</div>
 							<div className="flex items-center justify-between gap-3 sm:col-span-2">
 								<p className="text-xs text-[#6b7687]">
-									Mostrando {visibleTimeline.length} de{' '}
+									Mostrando {visibleTimeline.length} de{" "}
 									{filteredTimeline.length} registros encontrados.
 								</p>
 								<Button
@@ -816,7 +814,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 										disabled={safeTimelinePage >= timelineTotalPages}
 										onClick={() =>
 											setTimelinePage((current) =>
-												Math.min(timelineTotalPages, current + 1),
+												Math.min(timelineTotalPages, current + 1)
 											)
 										}
 										type="button"
@@ -877,7 +875,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			<Dialog
 				onOpenChange={(open) => {
 					if (!open) {
-						setSelectedTimelineEvent(null);
+						setSelectedTimelineEvent(null)
 					}
 				}}
 				open={selectedTimelineEvent !== null}
@@ -885,7 +883,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 				<DialogContent className="max-w-2xl">
 					<DialogHeader>
 						<DialogTitle>
-							{selectedTimelineEvent?.title ?? 'Detalhes do histórico'}
+							{selectedTimelineEvent?.title ?? "Detalhes do histórico"}
 						</DialogTitle>
 						<DialogDescription>
 							Informações completas do registro selecionado no histórico do
@@ -921,13 +919,13 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			</Dialog>
 
 			<LeadFormDialog
-				key={`lead-detail-edit-${targetLead?.id ?? 'none'}`}
+				key={`lead-detail-edit-${targetLead?.id ?? "none"}`}
 				customers={customers}
 				isPending={updateLeadMutation.isPending}
 				mode="edit"
 				onClose={() => {
-					setEditOpen(false);
-					setDialogError(null);
+					setEditOpen(false)
+					setDialogError(null)
 				}}
 				onSubmit={handleEditSubmit}
 				open={editOpen}
@@ -938,12 +936,12 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			/>
 
 			<LeadReassignDialog
-				key={`lead-detail-reassign-${targetLead?.id ?? 'none'}`}
+				key={`lead-detail-reassign-${targetLead?.id ?? "none"}`}
 				currentOwnerLabel={ownerLabel}
 				isPending={reassignLeadMutation.isPending}
 				onClose={() => {
-					setReassignOpen(false);
-					setDialogError(null);
+					setReassignOpen(false)
+					setDialogError(null)
 				}}
 				onSubmit={handleReassignSubmit}
 				open={reassignOpen}
@@ -959,8 +957,8 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 				icon="convert"
 				isPending={convertLeadMutation.isPending}
 				onClose={() => {
-					setConvertOpen(false);
-					setDialogError(null);
+					setConvertOpen(false)
+					setDialogError(null)
 				}}
 				onConfirm={handleConvertConfirm}
 				open={convertOpen}
@@ -971,13 +969,13 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 				leadId={targetLead?.id ?? null}
 				leadStoreId={targetLead?.storeId ?? null}
 				onClose={() => {
-					setDealsOpen(false);
-					setDialogError(null);
+					setDealsOpen(false)
+					setDialogError(null)
 				}}
 				open={dealsOpen}
 			/>
 		</div>
-	);
+	)
 }
 
-export { LeadDetailPageContent };
+export { LeadDetailPageContent }

@@ -1,15 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query"
 
-import { useLeadCustomersQuery } from '@/features/leads/hooks/leads.catalog.queries';
-import { queryKeys } from '@/lib/constants/query-keys';
+import { useLeadCustomersQuery } from "@/features/leads/hooks/leads.catalog.queries"
+import { queryKeys } from "@/lib/constants/query-keys"
 
 import {
 	listCustomerCatalog,
 	type CustomerCatalogFilters,
-} from '../api/customers.service';
+} from "../api/customers.service"
 
 function useCustomersQuery() {
-	return useLeadCustomersQuery();
+	return useLeadCustomersQuery()
 }
 
 function useCustomerCatalogQuery(filters: CustomerCatalogFilters) {
@@ -17,7 +17,7 @@ function useCustomerCatalogQuery(filters: CustomerCatalogFilters) {
 		queryKey: queryKeys.customers.catalog(filters),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			listCustomerCatalog(filters, signal),
-	});
+	})
 }
 
-export { useCustomerCatalogQuery, useCustomersQuery };
+export { useCustomerCatalogQuery, useCustomersQuery }

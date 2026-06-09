@@ -1,13 +1,13 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react"
 
 type AuthScreenLayoutProps = {
-	asideTitle: string;
-	children: ReactNode;
-	contentClassName?: string;
-	overlay?: ReactNode;
-	subtitle: string;
-	title: string;
-};
+	asideTitle: string
+	children: ReactNode
+	contentClassName?: string
+	overlay?: ReactNode
+	subtitle: string
+	title: string
+}
 
 function AuthScreenLayout({
 	asideTitle,
@@ -59,14 +59,14 @@ function AuthScreenLayout({
 							</div>
 						</div>
 
-						<div className={contentClassName ?? 'w-full max-w-92'}>
+						<div className={contentClassName ?? "w-full max-w-92"}>
 							{children}
 						</div>
 					</div>
 				</section>
 			</div>
 		</main>
-	);
+	)
 }
 
-export { AuthScreenLayout };
+export { AuthScreenLayout }

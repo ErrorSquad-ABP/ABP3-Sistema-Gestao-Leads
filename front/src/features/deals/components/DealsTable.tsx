@@ -1,15 +1,15 @@
-'use client';
+"use client"
 
-import { Eye, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
+import { Eye, MoreHorizontal, PencilLine, Trash2 } from "lucide-react"
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu"
 import {
 	Table,
 	TableBody,
@@ -17,7 +17,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table"
 
 import {
 	formatDealImportanceLabel,
@@ -26,18 +26,18 @@ import {
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
-} from '../lib/deal-labels';
-import { DealVehicleLabelText } from './DealVehicleLabelText';
-import type { Deal } from '../model/deals.model';
+} from "../lib/deal-labels"
+import { DealVehicleLabelText } from "./DealVehicleLabelText"
+import type { Deal } from "../model/deals.model"
 
 type DealsTableProps = {
-	deals: Deal[];
+	deals: Deal[]
 	/** Só passar `onDelete` quando há linhas mutáveis na vista atual; cada linha só excluirá se `deal.canMutate`. */
-	onDelete?: (deal: Deal) => void;
+	onDelete?: (deal: Deal) => void
 	/** Quando definido, oferece “Editar”; o callback deve validar permissão/status (ex.: toast se bloqueado). */
-	onEdit?: (deal: Deal) => void;
-	onOpenDetails?: (deal: Deal) => void;
-};
+	onEdit?: (deal: Deal) => void
+	onOpenDetails?: (deal: Deal) => void
+}
 
 function DealsTable({
 	deals,
@@ -50,7 +50,7 @@ function DealsTable({
 			<div className="rounded-2xl border border-border/80 bg-card px-4 py-10 text-center text-sm text-[#6b7687]">
 				Nenhuma negociação encontrada.
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -97,7 +97,7 @@ function DealsTable({
 								{formatDealValueBRL(deal.value)}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
-								{formatDealLeadCustomerDisplay(deal.leadCustomerName ?? '')}
+								{formatDealLeadCustomerDisplay(deal.leadCustomerName ?? "")}
 							</TableCell>
 							<TableCell className="text-sm text-[#6b7687]">
 								{formatDealLeadOwnerDisplay(deal.leadOwnerName)}
@@ -166,7 +166,7 @@ function DealsTable({
 				</TableBody>
 			</Table>
 		</div>
-	);
+	)
 }
 
-export { DealsTable };
+export { DealsTable }

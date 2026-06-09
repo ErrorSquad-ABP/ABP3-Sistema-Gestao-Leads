@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from "zod"
 
-import { ApiError } from '@/lib/http/api-error';
+import { ApiError } from "@/lib/http/api-error"
 
 /** Resposta `data` de listagens paginadas de leads. */
 const leadListItemSchema = z.object({
@@ -10,7 +10,7 @@ const leadListItemSchema = z.object({
 	ownerUserId: z.string().uuid().nullable(),
 	source: z.string(),
 	status: z.string(),
-});
+})
 
 const leadListPagedDataSchema = z.object({
 	items: z.array(leadListItemSchema),
@@ -18,7 +18,7 @@ const leadListPagedDataSchema = z.object({
 	limit: z.number().int().min(1).max(10),
 	total: z.number().int().min(0),
 	totalPages: z.number().int().min(0),
-});
+})
 
 const leadCatalogItemSchema = z.object({
 	lead: leadListItemSchema,
@@ -45,12 +45,12 @@ const leadCatalogItemSchema = z.object({
 	openDealsCount: z.number().int().min(0),
 	totalDealsCount: z.number().int().min(0),
 	hasInteraction: z.boolean(),
-});
+})
 
 const leadCatalogBreakdownItemSchema = z.object({
 	label: z.string(),
 	count: z.number().int().min(0),
-});
+})
 
 const leadCatalogSchema = z.object({
 	items: z.array(leadCatalogItemSchema),
@@ -60,7 +60,7 @@ const leadCatalogSchema = z.object({
 		converted: z.number().int().min(0),
 		staleNoContact: z.number().int().min(0),
 		conversionRate: z.number().int().min(0),
-		wonValue: z.string().default('0.00'),
+		wonValue: z.string().default("0.00"),
 	}),
 	funnel: z.object({
 		totalLeads: z.number().int().min(0),
@@ -73,26 +73,26 @@ const leadCatalogSchema = z.object({
 	limit: z.number().int().min(1).max(50),
 	total: z.number().int().min(0),
 	totalPages: z.number().int().min(0),
-});
+})
 
 function parseLeadListPagedResponse(data: unknown) {
-	const parsed = leadListPagedDataSchema.safeParse(data);
+	const parsed = leadListPagedDataSchema.safeParse(data)
 	if (!parsed.success) {
-		throw new ApiError('Resposta da API em formato inesperado.', 502, {
-			code: 'leads.invalid_response_shape',
-		});
+		throw new ApiError("Resposta da API em formato inesperado.", 502, {
+			code: "leads.invalid_response_shape",
+		})
 	}
-	return parsed.data;
+	return parsed.data
 }
 
 function parseLeadCatalogResponse(data: unknown) {
-	const parsed = leadCatalogSchema.safeParse(data);
+	const parsed = leadCatalogSchema.safeParse(data)
 	if (!parsed.success) {
-		throw new ApiError('Resposta de leads em formato inesperado.', 502, {
-			code: 'leads.invalid_catalog_response_shape',
-		});
+		throw new ApiError("Resposta de leads em formato inesperado.", 502, {
+			code: "leads.invalid_catalog_response_shape",
+		})
 	}
-	return parsed.data;
+	return parsed.data
 }
 
 export {
@@ -102,4 +102,4 @@ export {
 	leadListPagedDataSchema,
 	parseLeadCatalogResponse,
 	parseLeadListPagedResponse,
-};
+}

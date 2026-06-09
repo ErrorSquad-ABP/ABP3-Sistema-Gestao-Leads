@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { queryKeys } from '@/lib/constants/query-keys';
+import type { AuthenticatedUser } from "@/features/login/types/login.types"
+import { queryKeys } from "@/lib/constants/query-keys"
 
 import {
 	fetchLeadCatalog,
@@ -12,58 +12,58 @@ import {
 	findLeadDetailHub,
 	findLeadById,
 	type LeadCatalogFilters,
-} from '../api/leads.service';
-import { type LeadsListScope, resolveLeadsListScope } from '../lib/leads-scope';
-import type { LeadListItem } from '../model/leads.model';
+} from "../api/leads.service"
+import { type LeadsListScope, resolveLeadsListScope } from "../lib/leads-scope"
+import type { LeadListItem } from "../model/leads.model"
 
 function useLeadDetailQuery(
 	leadId: string,
-	options?: { readonly enabled?: boolean },
+	options?: { readonly enabled?: boolean }
 ) {
 	return useQuery({
 		queryKey: queryKeys.leads.detail(leadId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			findLeadById(leadId, signal),
 		enabled: options?.enabled,
-	});
+	})
 }
 
 function useLeadDetailHubQuery(
 	leadId: string,
-	options?: { readonly enabled?: boolean },
+	options?: { readonly enabled?: boolean }
 ) {
 	return useQuery({
 		queryKey: queryKeys.leads.detailHub(leadId),
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			findLeadDetailHub(leadId, signal),
 		enabled: options?.enabled,
-	});
+	})
 }
 
 function isLeadsListQueryEnabled(scope: LeadsListScope | null) {
-	return scope !== null && scope.kind !== 'none';
+	return scope !== null && scope.kind !== "none"
 }
 
 function buildLeadsListQueryKey(user: AuthenticatedUser, page: number) {
-	const s = resolveLeadsListScope(user);
-	if (!s || s.kind === 'none') {
-		return queryKeys.leads.inactive(user.id);
+	const s = resolveLeadsListScope(user)
+	if (!s || s.kind === "none") {
+		return queryKeys.leads.inactive(user.id)
 	}
-	if (s.kind === 'all') {
-		return queryKeys.leads.list({ scope: 'all', page });
+	if (s.kind === "all") {
+		return queryKeys.leads.list({ scope: "all", page })
 	}
-	if (s.kind === 'manager') {
-		return queryKeys.leads.list({ scope: 'manager', page });
+	if (s.kind === "manager") {
+		return queryKeys.leads.list({ scope: "manager", page })
 	}
-	return queryKeys.leads.list({ scope: 'owner', id: s.id, page });
+	return queryKeys.leads.list({ scope: "owner", id: s.id, page })
 }
 
 function useLeadCatalogQuery(
 	user: AuthenticatedUser,
-	filters: LeadCatalogFilters,
+	filters: LeadCatalogFilters
 ) {
-	const scope = useMemo(() => resolveLeadsListScope(user), [user]);
-	const enabled = scope !== null && scope.kind !== 'none';
+	const scope = useMemo(() => resolveLeadsListScope(user), [user])
+	const enabled = scope !== null && scope.kind !== "none"
 
 	const catalogQuery = useQuery({
 		queryKey: enabled
@@ -72,69 +72,69 @@ function useLeadCatalogQuery(
 		queryFn: ({ signal }: { signal: AbortSignal }) =>
 			fetchLeadCatalog(filters, signal),
 		enabled,
-	});
+	})
 
 	return {
 		scope,
 		...catalogQuery,
-	};
+	}
 }
 
 type UseLeadsListQueryOptions = {
-	withoutOpenDeal?: boolean;
-};
+	withoutOpenDeal?: boolean
+}
 
 type UseLeadsListQueryResult = {
-	scope: ReturnType<typeof resolveLeadsListScope> | null;
-	data: LeadListItem[] | undefined;
-	page: number;
-	limit: number;
-	total: number;
-	totalPages: number;
-	isPending: boolean;
-	isError: boolean;
-	isSuccess: boolean;
-	error: unknown;
-	refetch: () => Promise<void>;
-};
+	scope: ReturnType<typeof resolveLeadsListScope> | null
+	data: LeadListItem[] | undefined
+	page: number
+	limit: number
+	total: number
+	totalPages: number
+	isPending: boolean
+	isError: boolean
+	isSuccess: boolean
+	error: unknown
+	refetch: () => Promise<void>
+}
 
 function useLeadsListQuery(
 	user: AuthenticatedUser,
 	page: number,
-	options?: UseLeadsListQueryOptions,
+	options?: UseLeadsListQueryOptions
 ): UseLeadsListQueryResult {
-	const scope = useMemo(() => resolveLeadsListScope(user), [user]);
-	const withoutOpenDeal = options?.withoutOpenDeal === true;
+	const scope = useMemo(() => resolveLeadsListScope(user), [user])
+	const withoutOpenDeal = options?.withoutOpenDeal === true
 
-	const enabled = scope !== null && scope.kind !== 'none';
+	const enabled = scope !== null && scope.kind !== "none"
 
 	const listQuery = useQuery({
 		queryKey:
-			scope?.kind === 'owner'
+			scope?.kind === "owner"
 				? [
-						...queryKeys.leads.list({ scope: 'owner', id: scope.id, page }),
-						withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+						...queryKeys.leads.list({ scope: "owner", id: scope.id, page }),
+						withoutOpenDeal ? "without-open-deal" : "all-deals",
 					]
-				: scope?.kind === 'all'
+				: scope?.kind === "all"
 					? [
-							...queryKeys.leads.list({ scope: 'all', page }),
-							withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+							...queryKeys.leads.list({ scope: "all", page }),
+							withoutOpenDeal ? "without-open-deal" : "all-deals",
 						]
-					: scope?.kind === 'manager'
+					: scope?.kind === "manager"
 						? [
-								...queryKeys.leads.list({ scope: 'manager', page }),
-								withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+								...queryKeys.leads.list({ scope: "manager", page }),
+								withoutOpenDeal ? "without-open-deal" : "all-deals",
 							]
 						: queryKeys.leads.inactive(user.id),
 		queryFn: ({ signal }: { signal: AbortSignal }) => {
-			if (scope?.kind === 'owner') {
-				return fetchLeadsByOwner(scope.id, page, signal, { withoutOpenDeal });
+			if (scope?.kind === "owner") {
+				return fetchLeadsByOwner(scope.id, page, signal, { withoutOpenDeal })
 			}
-			if (scope?.kind === 'all') {
-				return fetchLeadsAll(page, signal, { withoutOpenDeal });
+			if (scope?.kind === "all") {
+				return fetchLeadsAll(page, signal, { withoutOpenDeal })
 			}
-			if (scope?.kind === 'manager') {
-				return fetchLeadsManager(page, signal, { withoutOpenDeal });
+			if (scope?.kind === "manager") {
+				return fetchLeadsManager(page, signal, { withoutOpenDeal })
 			}
 			return Promise.resolve({
 				items: [],
@@ -142,12 +142,12 @@ function useLeadsListQuery(
 				limit: 10,
 				total: 0,
 				totalPages: 0,
-			});
+			})
 		},
 		enabled,
-	});
+	})
 
-	const paged = listQuery.data;
+	const paged = listQuery.data
 
 	return {
 		scope,
@@ -161,9 +161,9 @@ function useLeadsListQuery(
 		isSuccess: listQuery.isSuccess,
 		error: listQuery.error,
 		refetch: async () => {
-			await listQuery.refetch();
+			await listQuery.refetch()
 		},
-	};
+	}
 }
 
 export {
@@ -174,4 +174,4 @@ export {
 	resolveLeadsListScope,
 	useLeadCatalogQuery,
 	useLeadsListQuery,
-};
+}

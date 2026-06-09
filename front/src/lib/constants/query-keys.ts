@@ -1,25 +1,25 @@
 const queryKeys = {
 	auth: {
-		currentUser: ['auth', 'current-user'] as const,
+		currentUser: ["auth", "current-user"] as const,
 	},
 	users: {
-		all: ['users'] as const,
+		all: ["users"] as const,
 		list: (page: number, limit: number) =>
-			['users', 'list', page, limit] as const,
-		accessGroups: ['users', 'access-groups'] as const,
+			["users", "list", page, limit] as const,
+		accessGroups: ["users", "access-groups"] as const,
 	},
 	auditLogs: {
 		list: (params: {
-			category?: string;
-			action?: string;
-			page: number;
-			limit: number;
+			category?: string
+			action?: string
+			page: number
+			limit: number
 		}) =>
 			[
-				'audit-logs',
-				'list',
-				params.category ?? 'all-categories',
-				params.action ?? 'all-actions',
+				"audit-logs",
+				"list",
+				params.category ?? "all-categories",
+				params.action ?? "all-actions",
 				params.page,
 				params.limit,
 			] as const,
@@ -30,197 +30,197 @@ const queryKeys = {
 	 */
 	leads: {
 		/** Prefixo comum a todas as queries de listagem; adequado a `invalidateQueries`. */
-		listRoot: ['leads', 'list'] as const,
-		catalogRoot: ['leads', 'catalog'] as const,
-		detail: (leadId: string) => ['leads', 'detail', leadId] as const,
-		detailHub: (leadId: string) => ['leads', 'detail-hub', leadId] as const,
+		listRoot: ["leads", "list"] as const,
+		catalogRoot: ["leads", "catalog"] as const,
+		detail: (leadId: string) => ["leads", "detail", leadId] as const,
+		detailHub: (leadId: string) => ["leads", "detail-hub", leadId] as const,
 		list: (
 			params:
-				| { scope: 'owner'; id: string; page: number }
-				| { scope: 'team'; id: string; page: number }
-				| { scope: 'all'; page: number }
-				| { scope: 'manager'; page: number },
+				| { scope: "owner"; id: string; page: number }
+				| { scope: "team"; id: string; page: number }
+				| { scope: "all"; page: number }
+				| { scope: "manager"; page: number }
 		) =>
-			params.scope === 'all'
-				? (['leads', 'list', 'all', params.page] as const)
-				: params.scope === 'manager'
-					? (['leads', 'list', 'manager', params.page] as const)
-					: (['leads', 'list', params.scope, params.id, params.page] as const),
+			params.scope === "all"
+				? (["leads", "list", "all", params.page] as const)
+				: params.scope === "manager"
+					? (["leads", "list", "manager", params.page] as const)
+					: (["leads", "list", params.scope, params.id, params.page] as const),
 		inactive: (userId: string) =>
-			['leads', 'list', 'inactive', userId] as const,
+			["leads", "list", "inactive", userId] as const,
 		catalog: (params: {
-			search?: string;
-			status?: string;
-			source?: string;
-			storeId?: string;
-			ownerUserId?: string;
-			activityStartDate?: string;
-			activityEndDate?: string;
-			sort?: string;
-			page: number;
-			limit: number;
+			search?: string
+			status?: string
+			source?: string
+			storeId?: string
+			ownerUserId?: string
+			activityStartDate?: string
+			activityEndDate?: string
+			sort?: string
+			page: number
+			limit: number
 		}) =>
 			[
-				'leads',
-				'catalog',
-				params.search?.trim() ?? '',
-				params.status ?? 'all-statuses',
-				params.source ?? 'all-sources',
-				params.storeId ?? 'all-stores',
-				params.ownerUserId ?? 'all-owners',
-				params.activityStartDate ?? 'any-start-date',
-				params.activityEndDate ?? 'any-end-date',
-				params.sort ?? 'recent',
+				"leads",
+				"catalog",
+				params.search?.trim() ?? "",
+				params.status ?? "all-statuses",
+				params.source ?? "all-sources",
+				params.storeId ?? "all-stores",
+				params.ownerUserId ?? "all-owners",
+				params.activityStartDate ?? "any-start-date",
+				params.activityEndDate ?? "any-end-date",
+				params.sort ?? "recent",
 				params.page,
 				params.limit,
 			] as const,
-		customers: ['leads', 'catalog', 'customers'] as const,
-		stores: ['leads', 'catalog', 'stores'] as const,
-		teams: ['leads', 'catalog', 'teams'] as const,
-		owners: ['leads', 'catalog', 'owners'] as const,
+		customers: ["leads", "catalog", "customers"] as const,
+		stores: ["leads", "catalog", "stores"] as const,
+		teams: ["leads", "catalog", "teams"] as const,
+		owners: ["leads", "catalog", "owners"] as const,
 	},
 	vehicles: {
-		listRoot: ['vehicles', 'list'] as const,
-		catalogRoot: ['vehicles', 'catalog'] as const,
+		listRoot: ["vehicles", "list"] as const,
+		catalogRoot: ["vehicles", "catalog"] as const,
 		list: (params: {
-			storeId?: string;
-			status?: string;
-			withoutOpenDeal?: boolean;
+			storeId?: string
+			status?: string
+			withoutOpenDeal?: boolean
 		}) =>
 			[
-				'vehicles',
-				'list',
-				params.storeId ?? 'all-stores',
-				params.status ?? 'all-statuses',
-				params.withoutOpenDeal ? 'without-open-deal' : 'all-deals',
+				"vehicles",
+				"list",
+				params.storeId ?? "all-stores",
+				params.status ?? "all-statuses",
+				params.withoutOpenDeal ? "without-open-deal" : "all-deals",
 			] as const,
 		catalog: (params: {
-			storeId?: string;
-			status?: string;
-			search?: string;
-			sort?: string;
-			page: number;
-			limit: number;
+			storeId?: string
+			status?: string
+			search?: string
+			sort?: string
+			page: number
+			limit: number
 		}) =>
 			[
-				'vehicles',
-				'catalog',
-				params.storeId ?? 'all-stores',
-				params.status ?? 'all-statuses',
-				params.search?.trim() ?? '',
-				params.sort ?? 'recent',
+				"vehicles",
+				"catalog",
+				params.storeId ?? "all-stores",
+				params.status ?? "all-statuses",
+				params.search?.trim() ?? "",
+				params.sort ?? "recent",
 				params.page,
 				params.limit,
 			] as const,
-		detail: (vehicleId: string) => ['vehicles', 'detail', vehicleId] as const,
+		detail: (vehicleId: string) => ["vehicles", "detail", vehicleId] as const,
 	},
 	customers: {
-		catalogRoot: ['customers', 'catalog'] as const,
+		catalogRoot: ["customers", "catalog"] as const,
 		catalog: (params: {
-			search?: string;
-			storeId?: string;
-			status?: string;
-			sort?: string;
-			page: number;
-			limit: number;
+			search?: string
+			storeId?: string
+			status?: string
+			sort?: string
+			page: number
+			limit: number
 		}) =>
 			[
-				'customers',
-				'catalog',
-				params.search?.trim() ?? '',
-				params.storeId ?? 'all-stores',
-				params.status ?? 'all-statuses',
-				params.sort ?? 'recent',
+				"customers",
+				"catalog",
+				params.search?.trim() ?? "",
+				params.storeId ?? "all-stores",
+				params.status ?? "all-statuses",
+				params.sort ?? "recent",
 				params.page,
 				params.limit,
 			] as const,
 	},
 	deals: {
-		listRoot: ['deals', 'list'] as const,
-		pipelineRoot: ['deals', 'pipeline'] as const,
+		listRoot: ["deals", "list"] as const,
+		pipelineRoot: ["deals", "pipeline"] as const,
 		/**
 		 * Lista de negociações por lead (`useDealsByLeadQuery`). Após mutação,
 		 * invalidar com `queryKeys.deals.byLead(leadId)`.
 		 */
-		byLead: (leadId: string) => ['deals', 'by-lead', leadId] as const,
-		detail: (dealId: string) => ['deals', 'detail', dealId] as const,
-		history: (dealId: string) => ['deals', 'history', dealId] as const,
+		byLead: (leadId: string) => ["deals", "by-lead", leadId] as const,
+		detail: (dealId: string) => ["deals", "detail", dealId] as const,
+		history: (dealId: string) => ["deals", "history", dealId] as const,
 		list: (params: {
-			storeId?: string;
-			ownerUserId?: string;
-			status?: string;
-			page: number;
-			limit: number;
+			storeId?: string
+			ownerUserId?: string
+			status?: string
+			page: number
+			limit: number
 		}) =>
 			[
-				'deals',
-				'list',
-				params.storeId ?? 'all-stores',
-				params.ownerUserId ?? 'all-owners',
-				params.status ?? 'all-statuses',
+				"deals",
+				"list",
+				params.storeId ?? "all-stores",
+				params.ownerUserId ?? "all-owners",
+				params.status ?? "all-statuses",
 				params.page,
 				params.limit,
 			] as const,
 		pipeline: (params: {
-			status?: string;
-			importance?: string;
-			search?: string;
-			pageSize: number;
-			valueSort?: string;
+			status?: string
+			importance?: string
+			search?: string
+			pageSize: number
+			valueSort?: string
 		}) =>
 			[
-				'deals',
-				'pipeline',
-				params.status ?? 'all-statuses',
-				params.importance ?? 'all-importances',
-				params.search?.trim() ?? '',
+				"deals",
+				"pipeline",
+				params.status ?? "all-statuses",
+				params.importance ?? "all-importances",
+				params.search?.trim() ?? "",
 				params.pageSize,
-				params.valueSort ?? 'recent',
+				params.valueSort ?? "recent",
 			] as const,
 		pipelineStage: (params: {
-			stage: string;
-			status?: string;
-			importance?: string;
-			search?: string;
-			page: number;
-			pageSize: number;
-			valueSort?: string;
+			stage: string
+			status?: string
+			importance?: string
+			search?: string
+			page: number
+			pageSize: number
+			valueSort?: string
 		}) =>
 			[
-				'deals',
-				'pipeline-stage',
+				"deals",
+				"pipeline-stage",
 				params.stage,
-				params.status ?? 'all-statuses',
-				params.importance ?? 'all-importances',
-				params.search?.trim() ?? '',
+				params.status ?? "all-statuses",
+				params.importance ?? "all-importances",
+				params.search?.trim() ?? "",
 				params.page,
 				params.pageSize,
-				params.valueSort ?? 'recent',
+				params.valueSort ?? "recent",
 			] as const,
 	},
 	dashboards: {
 		operational: (params: { startDate?: string; endDate?: string } = {}) =>
 			[
-				'dashboards',
-				'operational',
-				params.startDate ?? 'default',
-				params.endDate ?? 'default',
+				"dashboards",
+				"operational",
+				params.startDate ?? "default",
+				params.endDate ?? "default",
 			] as const,
 		analytic: (params: {
-			mode: string;
-			referenceDate?: string;
-			startDate?: string;
-			endDate?: string;
+			mode: string
+			referenceDate?: string
+			startDate?: string
+			endDate?: string
 		}) =>
 			[
-				'dashboards',
-				'analytic',
+				"dashboards",
+				"analytic",
 				params.mode,
-				params.referenceDate ?? 'no-reference-date',
-				params.startDate ?? 'no-start-date',
-				params.endDate ?? 'no-end-date',
+				params.referenceDate ?? "no-reference-date",
+				params.startDate ?? "no-start-date",
+				params.endDate ?? "no-end-date",
 			] as const,
 	},
-};
+}
 
-export { queryKeys };
+export { queryKeys }

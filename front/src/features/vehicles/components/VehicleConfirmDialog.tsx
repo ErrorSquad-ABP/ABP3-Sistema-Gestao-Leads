@@ -1,26 +1,26 @@
-'use client';
+"use client"
 
-import { Trash2 } from 'lucide-react';
+import { Trash2 } from "lucide-react"
 
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog"
 import {
 	VehicleModalHeader,
 	VehicleModalInfoBanner,
 	VehicleModalSection,
 	vehicleModalContentClass,
-} from './VehicleModalLayout';
+} from "./VehicleModalLayout"
 
 type VehicleConfirmDialogProps = {
-	confirmLabel: string;
-	description: string;
-	error: string | null;
-	isPending: boolean;
-	onClose: () => void;
-	onConfirm: () => Promise<void>;
-	open: boolean;
-	title: string;
-};
+	confirmLabel: string
+	description: string
+	error: string | null
+	isPending: boolean
+	onClose: () => void
+	onConfirm: () => Promise<void>
+	open: boolean
+	title: string
+}
 
 function VehicleConfirmDialog({
 	confirmLabel,
@@ -72,12 +72,12 @@ function VehicleConfirmDialog({
 						onClick={() => void onConfirm()}
 						type="button"
 					>
-						{isPending ? 'Processando...' : confirmLabel}
+						{isPending ? "Processando..." : confirmLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
-export { VehicleConfirmDialog };
+export { VehicleConfirmDialog }

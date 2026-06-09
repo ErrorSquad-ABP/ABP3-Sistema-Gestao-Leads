@@ -1,31 +1,31 @@
 const appRoutes = {
-	root: '/',
+	root: "/",
 	auth: {
-		forgotPassword: '/forgot-password',
-		login: '/login',
-		register: '/register',
+		forgotPassword: "/forgot-password",
+		login: "/login",
+		register: "/register",
 	},
 	app: {
-		root: '/app',
-		customers: '/app/customers',
-		leads: '/app/leads',
-		deals: '/app/deals',
-		vehicles: '/app/vehicles',
-		stores: '/app/stores',
-		teams: '/app/teams',
-		operations: '/app/operations',
-		profile: '/app/profile',
-		auditLogs: '/app/audit-logs',
-		users: '/app/users',
+		root: "/app",
+		customers: "/app/customers",
+		leads: "/app/leads",
+		deals: "/app/deals",
+		vehicles: "/app/vehicles",
+		stores: "/app/stores",
+		teams: "/app/teams",
+		operations: "/app/operations",
+		profile: "/app/profile",
+		auditLogs: "/app/audit-logs",
+		users: "/app/users",
 		dashboard: {
-			operational: '/app/dashboard/operational',
-			analytic: '/app/dashboard/analytic',
+			operational: "/app/dashboard/operational",
+			analytic: "/app/dashboard/analytic",
 		},
 	},
 	system: {
-		unauthorized: '/401',
-		forbidden: '/403',
+		unauthorized: "/401",
+		forbidden: "/403",
 	},
-} as const;
+} as const
 
-export { appRoutes };
+export { appRoutes }

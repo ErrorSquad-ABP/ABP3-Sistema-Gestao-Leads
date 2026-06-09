@@ -1,26 +1,26 @@
-import { z } from 'zod';
+import { z } from "zod"
 
-import { ApiError } from '@/lib/http/api-error';
+import { ApiError } from "@/lib/http/api-error"
 
-const dealStatuses = ['OPEN', 'WON', 'LOST'] as const;
+const dealStatuses = ["OPEN", "WON", "LOST"] as const
 
 const dealLossReasons = [
-	'NO_INTEREST',
-	'PRICE_EXPECTATION',
-	'BOUGHT_ELSEWHERE',
-	'NO_RESPONSE',
-	'VEHICLE_UNAVAILABLE',
-	'OTHER',
-] as const;
+	"NO_INTEREST",
+	"PRICE_EXPECTATION",
+	"BOUGHT_ELSEWHERE",
+	"NO_RESPONSE",
+	"VEHICLE_UNAVAILABLE",
+	"OTHER",
+] as const
 
 const dealStages = [
-	'INITIAL_CONTACT',
-	'NEGOTIATION',
-	'PROPOSAL',
-	'CLOSING',
-] as const;
+	"INITIAL_CONTACT",
+	"NEGOTIATION",
+	"PROPOSAL",
+	"CLOSING",
+] as const
 
-const dealImportances = ['COLD', 'WARM', 'HOT'] as const;
+const dealImportances = ["COLD", "WARM", "HOT"] as const
 
 const dealSchema = z.object({
 	id: z.string().uuid(),
@@ -39,7 +39,7 @@ const dealSchema = z.object({
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 	canMutate: z.boolean(),
-});
+})
 
 const dealHistoryItemSchema = z.object({
 	id: z.string().uuid(),
@@ -49,26 +49,26 @@ const dealHistoryItemSchema = z.object({
 	toValue: z.string(),
 	actorUserId: z.string().uuid().nullable(),
 	createdAt: z.coerce.date(),
-});
+})
 
 function parseDealResponse(data: unknown) {
-	const parsed = dealSchema.safeParse(data);
+	const parsed = dealSchema.safeParse(data)
 	if (!parsed.success) {
-		throw new ApiError('Resposta da API em formato inesperado.', 502, {
-			code: 'deals.invalid_response_shape',
-		});
+		throw new ApiError("Resposta da API em formato inesperado.", 502, {
+			code: "deals.invalid_response_shape",
+		})
 	}
-	return parsed.data;
+	return parsed.data
 }
 
 function parseDealHistoryResponse(data: unknown) {
-	const parsed = z.array(dealHistoryItemSchema).safeParse(data);
+	const parsed = z.array(dealHistoryItemSchema).safeParse(data)
 	if (!parsed.success) {
-		throw new ApiError('Resposta da API em formato inesperado.', 502, {
-			code: 'deals.invalid_history_response_shape',
-		});
+		throw new ApiError("Resposta da API em formato inesperado.", 502, {
+			code: "deals.invalid_history_response_shape",
+		})
 	}
-	return parsed.data;
+	return parsed.data
 }
 
 export {
@@ -80,4 +80,4 @@ export {
 	dealStatuses,
 	parseDealHistoryResponse,
 	parseDealResponse,
-};
+}

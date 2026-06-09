@@ -1,30 +1,30 @@
-'use client';
+"use client"
 
-import { Flame, Snowflake, Sun } from 'lucide-react';
+import { Flame, Snowflake, Sun } from "lucide-react"
 
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 import type {
 	ImportanceKind,
 	ImportanceSummaryData,
-} from './negotiations-right-summary.data';
+} from "./negotiations-right-summary.data"
 
 const iconByKind: Record<ImportanceKind, typeof Flame> = {
 	HOT: Flame,
 	WARM: Sun,
 	COLD: Snowflake,
-};
+}
 
 const textByKind: Record<ImportanceKind, string> = {
-	HOT: 'text-[color:var(--brand-accent)]',
-	WARM: 'text-amber-600',
-	COLD: 'text-sky-500',
-};
+	HOT: "text-[color:var(--brand-accent)]",
+	WARM: "text-amber-600",
+	COLD: "text-sky-500",
+}
 
 type Props = {
-	data: ImportanceSummaryData;
-};
+	data: ImportanceSummaryData
+}
 
 function ImportanceSummaryCard({ data }: Props) {
 	return (
@@ -35,7 +35,7 @@ function ImportanceSummaryCard({ data }: Props) {
 				</h3>
 				<ul className="mt-3.5 space-y-3" aria-label="Valores por importância">
 					{data.items.map((row) => {
-						const Icon = iconByKind[row.kind];
+						const Icon = iconByKind[row.kind]
 						return (
 							<li
 								key={row.kind}
@@ -43,14 +43,14 @@ function ImportanceSummaryCard({ data }: Props) {
 							>
 								<div className="flex min-w-0 items-center gap-2.5">
 									<Icon
-										className={cn('size-[18px] shrink-0', textByKind[row.kind])}
+										className={cn("size-[18px] shrink-0", textByKind[row.kind])}
 										strokeWidth={2.25}
 										aria-hidden
 									/>
 									<span
 										className={cn(
-											'truncate text-[12.5px] font-medium',
-											textByKind[row.kind],
+											"truncate text-[12.5px] font-medium",
+											textByKind[row.kind]
 										)}
 									>
 										{row.label}
@@ -65,12 +65,12 @@ function ImportanceSummaryCard({ data }: Props) {
 									</span>
 								</div>
 							</li>
-						);
+						)
 					})}
 				</ul>
 			</CardContent>
 		</Card>
-	);
+	)
 }
 
-export { ImportanceSummaryCard };
+export { ImportanceSummaryCard }

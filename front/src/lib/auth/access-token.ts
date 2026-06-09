@@ -1,34 +1,34 @@
-const ACCESS_TOKEN_STORAGE_KEY = 'abp3.auth.access-token';
+const ACCESS_TOKEN_STORAGE_KEY = "abp3.auth.access-token"
 
 function canUseWebStorage() {
 	return (
-		typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
-	);
+		typeof window !== "undefined" && typeof window.localStorage !== "undefined"
+	)
 }
 
 function getAccessToken() {
 	if (!canUseWebStorage()) {
-		return null;
+		return null
 	}
 
-	const value = window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
-	return value && value.length > 0 ? value : null;
+	const value = window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+	return value && value.length > 0 ? value : null
 }
 
 function setAccessToken(token: string) {
 	if (!canUseWebStorage()) {
-		return;
+		return
 	}
 
-	window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
+	window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token)
 }
 
 function clearAccessToken() {
 	if (!canUseWebStorage()) {
-		return;
+		return
 	}
 
-	window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+	window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY)
 }
 
-export { clearAccessToken, getAccessToken, setAccessToken };
+export { clearAccessToken, getAccessToken, setAccessToken }

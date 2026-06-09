@@ -1,15 +1,15 @@
-import { Headset, ShieldCheck, UserRoundCog } from 'lucide-react';
+import { Headset, ShieldCheck, UserRoundCog } from "lucide-react"
 
-import { appRoutes } from '@/lib/routes/app-routes';
-import { AuthAccentLink } from './AuthAccentLink';
+import { appRoutes } from "@/lib/routes/app-routes"
+import { AuthAccentLink } from "./AuthAccentLink"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from '@/components/ui/card';
-import { LoginScreenLayout } from './LoginScreenLayout';
+} from "@/components/ui/card"
+import { LoginScreenLayout } from "./LoginScreenLayout"
 
 function ForgotPasswordForm() {
 	return (
@@ -104,7 +104,7 @@ function ForgotPasswordForm() {
 				</CardContent>
 			</Card>
 		</LoginScreenLayout>
-	);
+	)
 }
 
-export { ForgotPasswordForm };
+export { ForgotPasswordForm }

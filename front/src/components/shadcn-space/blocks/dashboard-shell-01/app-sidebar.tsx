@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import type { ReactNode } from 'react';
-import Image from 'next/image';
+import type { ReactNode } from "react"
+import Image from "next/image"
 import {
 	Activity,
 	Building2,
@@ -15,10 +15,10 @@ import {
 	Users,
 	UserCog,
 	UserRound,
-} from 'lucide-react';
-import SimpleBar from 'simplebar-react';
+} from "lucide-react"
+import SimpleBar from "simplebar-react"
 
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import type { AuthenticatedUser } from "@/features/login/types/login.types"
 import {
 	Sidebar,
 	SidebarContent,
@@ -26,139 +26,139 @@ import {
 	SidebarHeader,
 	SidebarProvider,
 	useSidebar,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar"
 import {
 	type AppRouteAccessKey,
 	hasFeatureAccess,
-} from '@/lib/auth/permissions';
-import { NavMain } from '@/components/shadcn-space/blocks/dashboard-shell-01/nav-main';
-import UserDropdown from '@/components/shadcn-space/blocks/dashboard-shell-01/user-dropdown';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import 'simplebar-react/dist/simplebar.min.css';
+} from "@/lib/auth/permissions"
+import { NavMain } from "@/components/shadcn-space/blocks/dashboard-shell-01/nav-main"
+import UserDropdown from "@/components/shadcn-space/blocks/dashboard-shell-01/user-dropdown"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import "simplebar-react/dist/simplebar.min.css"
 
 export type NavItem = {
-	label?: string;
-	isSection?: boolean;
-	title?: string;
-	icon?: LucideIcon;
-	href?: string;
-	children?: NavItem[];
-	isActive?: boolean;
-};
+	label?: string
+	isSection?: boolean
+	title?: string
+	icon?: LucideIcon
+	href?: string
+	children?: NavItem[]
+	isActive?: boolean
+}
 
 type VisualNavItem = {
-	title: string;
-	href: string;
-	icon: LucideIcon;
-	accessKey?: AppRouteAccessKey;
-};
+	title: string
+	href: string
+	icon: LucideIcon
+	accessKey?: AppRouteAccessKey
+}
 
 const NAV_DASHBOARD: VisualNavItem[] = [
 	{
-		title: 'Operacional',
-		href: '/app/dashboard/operational',
+		title: "Operacional",
+		href: "/app/dashboard/operational",
 		icon: Activity,
-		accessKey: 'dashboardOperational',
+		accessKey: "dashboardOperational",
 	},
 	{
-		title: 'Analítico',
-		href: '/app/dashboard/analytic',
+		title: "Analítico",
+		href: "/app/dashboard/analytic",
 		icon: ChartColumn,
-		accessKey: 'dashboardAnalytic',
+		accessKey: "dashboardAnalytic",
 	},
-];
+]
 
 const NAV_WORKSPACE: VisualNavItem[] = [
 	{
-		title: 'Clientes',
-		href: '/app/customers',
+		title: "Clientes",
+		href: "/app/customers",
 		icon: UserRound,
-		accessKey: 'customers',
+		accessKey: "customers",
 	},
 	{
-		title: 'Leads',
-		href: '/app/leads',
+		title: "Leads",
+		href: "/app/leads",
 		icon: ClipboardList,
-		accessKey: 'leads',
+		accessKey: "leads",
 	},
 	{
-		title: 'Negociações',
-		href: '/app/deals',
+		title: "Negociações",
+		href: "/app/deals",
 		icon: Handshake,
-		accessKey: 'deals',
+		accessKey: "deals",
 	},
 	{
-		title: 'Veículos',
-		href: '/app/vehicles',
+		title: "Veículos",
+		href: "/app/vehicles",
 		icon: Car,
-		accessKey: 'vehicles',
+		accessKey: "vehicles",
 	},
-];
+]
 
 const NAV_ADMIN: VisualNavItem[] = [
 	{
-		title: 'Lojas',
-		href: '/app/stores',
+		title: "Lojas",
+		href: "/app/stores",
 		icon: Building2,
-		accessKey: 'stores',
+		accessKey: "stores",
 	},
 	{
-		title: 'Equipes',
-		href: '/app/teams',
+		title: "Equipes",
+		href: "/app/teams",
 		icon: Users,
-		accessKey: 'teams',
+		accessKey: "teams",
 	},
 	{
-		title: 'Usuários',
-		href: '/app/users',
+		title: "Usuários",
+		href: "/app/users",
 		icon: UserCog,
-		accessKey: 'users',
+		accessKey: "users",
 	},
 	{
-		title: 'Auditoria',
-		href: '/app/audit-logs',
+		title: "Auditoria",
+		href: "/app/audit-logs",
 		icon: ScrollText,
-		accessKey: 'auditLogs',
+		accessKey: "auditLogs",
 	},
-];
+]
 
 function buildNavData(currentUser: AuthenticatedUser): NavItem[] {
 	const dashboardItems = NAV_DASHBOARD.filter((item) =>
-		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true,
-	);
+		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true
+	)
 
 	const workspaceItems = NAV_WORKSPACE.filter((item) =>
-		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true,
-	);
+		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true
+	)
 
 	const adminItems = NAV_ADMIN.filter((item) =>
-		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true,
-	);
+		item.accessKey ? hasFeatureAccess(currentUser, item.accessKey) : true
+	)
 
-	const rows: NavItem[] = [];
+	const rows: NavItem[] = []
 
 	if (dashboardItems.length) {
-		rows.push({ isSection: true, label: 'DASHBOARDS' });
+		rows.push({ isSection: true, label: "DASHBOARDS" })
 		for (const item of dashboardItems) {
-			rows.push({ href: item.href, icon: item.icon, title: item.title });
+			rows.push({ href: item.href, icon: item.icon, title: item.title })
 		}
 	}
 
 	if (workspaceItems.length) {
-		rows.push({ isSection: true, label: 'WORKSPACE' });
+		rows.push({ isSection: true, label: "WORKSPACE" })
 		for (const item of workspaceItems) {
-			rows.push({ href: item.href, icon: item.icon, title: item.title });
+			rows.push({ href: item.href, icon: item.icon, title: item.title })
 		}
 	}
 
 	if (adminItems.length) {
-		rows.push({ isSection: true, label: 'ADMINISTRAÇÃO' });
+		rows.push({ isSection: true, label: "ADMINISTRAÇÃO" })
 		for (const item of adminItems) {
-			rows.push({ href: item.href, icon: item.icon, title: item.title });
+			rows.push({ href: item.href, icon: item.icon, title: item.title })
 		}
 	}
 
-	return rows;
+	return rows
 }
 
 function getInitials(name: string) {
@@ -166,12 +166,12 @@ function getInitials(name: string) {
 		.trim()
 		.split(/\s+/)
 		.slice(0, 2)
-		.map((part) => part.at(0)?.toUpperCase() ?? '')
-		.join('');
+		.map((part) => part.at(0)?.toUpperCase() ?? "")
+		.join("")
 }
 
 function SidebarLogo() {
-	const { toggleSidebar } = useSidebar();
+	const { toggleSidebar } = useSidebar()
 
 	return (
 		<button
@@ -198,7 +198,7 @@ function SidebarLogo() {
 				</p>
 			</div>
 		</button>
-	);
+	)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -209,16 +209,16 @@ const AppSidebar = ({
 	children,
 	currentUser,
 }: {
-	children: ReactNode;
-	currentUser: AuthenticatedUser;
+	children: ReactNode
+	currentUser: AuthenticatedUser
 }) => {
-	const navData = buildNavData(currentUser);
+	const navData = buildNavData(currentUser)
 
 	return (
 		<SidebarProvider
 			style={
 				{
-					'--sidebar-width-icon': '4.5rem',
+					"--sidebar-width-icon": "4.5rem",
 				} as React.CSSProperties
 			}
 		>
@@ -282,7 +282,7 @@ const AppSidebar = ({
 				</main>
 			</div>
 		</SidebarProvider>
-	);
-};
+	)
+}
 
-export default AppSidebar;
+export default AppSidebar

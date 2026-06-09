@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
 	Activity,
@@ -21,11 +21,11 @@ import {
 	Tag,
 	User,
 	UserCircle,
-} from 'lucide-react';
-import type { ReactNode } from 'react';
-import { useMemo } from 'react';
+} from "lucide-react"
+import type { ReactNode } from "react"
+import { useMemo } from "react"
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button"
 import {
 	Dialog,
 	DialogContent,
@@ -33,11 +33,11 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ApiError } from '@/lib/http/api-error';
+} from "@/components/ui/dialog"
+import { Skeleton } from "@/components/ui/skeleton"
+import { ApiError } from "@/lib/http/api-error"
 
-import { useDealHistoryQuery } from '../hooks/deals.queries';
+import { useDealHistoryQuery } from "../hooks/deals.queries"
 import {
 	formatDealHistoryFieldName,
 	formatDealHistoryValueDisplay,
@@ -47,165 +47,165 @@ import {
 	formatDealStageLabel,
 	formatDealStatusLabel,
 	formatDealValueBRL,
-} from '../lib/deal-labels';
+} from "../lib/deal-labels"
 import type {
 	Deal,
 	DealImportance,
 	DealStage,
 	DealStatus,
-} from '../model/deals.model';
-import { DealVehicleLabelText } from './DealVehicleLabelText';
+} from "../model/deals.model"
+import { DealVehicleLabelText } from "./DealVehicleLabelText"
 
 type DealDetailsDialogProps = {
-	deal: Deal | null;
-	onClose: () => void;
-	open: boolean;
-};
+	deal: Deal | null
+	onClose: () => void
+	open: boolean
+}
 
 const labelIconClass =
-	'size-4 shrink-0 text-[#9aa3b2] [.group-label:hover_&]:text-[#7a8494]';
+	"size-4 shrink-0 text-[#9aa3b2] [.group-label:hover_&]:text-[#7a8494]"
 
 function formatDateTime(value: Date) {
-	return value.toLocaleString('pt-BR');
+	return value.toLocaleString("pt-BR")
 }
 
 function getStatusBadgeVisual(status: DealStatus) {
 	switch (status) {
-		case 'OPEN':
+		case "OPEN":
 			return {
 				Icon: Activity,
 				wrapClassName:
-					'border border-emerald-100 bg-emerald-50 text-emerald-700',
-			};
-		case 'WON':
+					"border border-emerald-100 bg-emerald-50 text-emerald-700",
+			}
+		case "WON":
 			return {
 				Icon: CircleCheck,
-				wrapClassName: 'border border-teal-100 bg-teal-50 text-teal-700',
-			};
-		case 'LOST':
+				wrapClassName: "border border-teal-100 bg-teal-50 text-teal-700",
+			}
+		case "LOST":
 			return {
 				Icon: CircleX,
-				wrapClassName: 'border border-rose-100 bg-rose-50 text-rose-700',
-			};
+				wrapClassName: "border border-rose-100 bg-rose-50 text-rose-700",
+			}
 	}
 }
 
 function getImportanceBadgeVisual(importance: DealImportance) {
 	switch (importance) {
-		case 'HOT':
+		case "HOT":
 			return {
 				Icon: Flame,
 				wrapClassName:
-					'border border-[color:var(--brand-accent)]/25 bg-[color:var(--brand-accent-soft)]/40 text-[color:var(--brand-accent)]',
-			};
-		case 'WARM':
+					"border border-[color:var(--brand-accent)]/25 bg-[color:var(--brand-accent-soft)]/40 text-[color:var(--brand-accent)]",
+			}
+		case "WARM":
 			return {
 				Icon: SunMedium,
-				wrapClassName: 'border border-amber-100 bg-amber-50 text-amber-700',
-			};
-		case 'COLD':
+				wrapClassName: "border border-amber-100 bg-amber-50 text-amber-700",
+			}
+		case "COLD":
 			return {
 				Icon: Snowflake,
-				wrapClassName: 'border border-sky-100 bg-sky-50 text-sky-700',
-			};
+				wrapClassName: "border border-sky-100 bg-sky-50 text-sky-700",
+			}
 	}
 }
 
 function getStageBadgeVisual(stage: DealStage) {
 	switch (stage) {
-		case 'INITIAL_CONTACT':
+		case "INITIAL_CONTACT":
 			return {
 				Icon: User,
 				wrapClassName:
-					'border border-[color:var(--brand-accent)]/25 bg-[color:var(--brand-accent-soft)]/40 text-[color:var(--brand-accent)]',
-			};
-		case 'NEGOTIATION':
+					"border border-[color:var(--brand-accent)]/25 bg-[color:var(--brand-accent-soft)]/40 text-[color:var(--brand-accent)]",
+			}
+		case "NEGOTIATION":
 			return {
 				Icon: Handshake,
 				wrapClassName:
-					'border border-[color:var(--brand-accent)]/25 bg-[color:var(--brand-accent-soft)]/40 text-[color:var(--brand-accent)]',
-			};
-		case 'PROPOSAL':
+					"border border-[color:var(--brand-accent)]/25 bg-[color:var(--brand-accent-soft)]/40 text-[color:var(--brand-accent)]",
+			}
+		case "PROPOSAL":
 			return {
 				Icon: ScrollText,
-				wrapClassName: 'border border-violet-100 bg-violet-50 text-violet-700',
-			};
-		case 'CLOSING':
+				wrapClassName: "border border-violet-100 bg-violet-50 text-violet-700",
+			}
+		case "CLOSING":
 			return {
 				Icon: MessageSquareText,
-				wrapClassName: 'border border-amber-100 bg-amber-50 text-amber-700',
-			};
+				wrapClassName: "border border-amber-100 bg-amber-50 text-amber-700",
+			}
 	}
 }
 
 function getHistoryEventTitle(field: string): string {
-	const k = field.trim().toUpperCase();
+	const k = field.trim().toUpperCase()
 	switch (k) {
-		case 'STAGE':
-			return 'Etapa alterada';
-		case 'IMPORTANCE':
-			return 'Importância alterada';
-		case 'VEHICLE':
-			return 'Veículo alterado';
-		case 'STATUS':
-			return 'Status alterado';
-		case 'TITLE':
-			return 'Título alterado';
-		case 'VALUE':
-			return 'Valor alterado';
+		case "STAGE":
+			return "Etapa alterada"
+		case "IMPORTANCE":
+			return "Importância alterada"
+		case "VEHICLE":
+			return "Veículo alterado"
+		case "STATUS":
+			return "Status alterado"
+		case "TITLE":
+			return "Título alterado"
+		case "VALUE":
+			return "Valor alterado"
 		default:
-			return `${formatDealHistoryFieldName(field)} alterado`;
+			return `${formatDealHistoryFieldName(field)} alterado`
 	}
 }
 
 function getHistoryTimelineVisual(field: string) {
 	switch (field.trim().toUpperCase()) {
-		case 'STAGE':
+		case "STAGE":
 			return {
 				Icon: Flag,
 				wrapClassName:
-					'bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)] ring-4 ring-white',
-			};
-		case 'IMPORTANCE':
+					"bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)] ring-4 ring-white",
+			}
+		case "IMPORTANCE":
 			return {
 				Icon: Flame,
 				wrapClassName:
-					'bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)] ring-4 ring-white',
-			};
-		case 'VEHICLE':
+					"bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)] ring-4 ring-white",
+			}
+		case "VEHICLE":
 			return {
 				Icon: Car,
-				wrapClassName: 'bg-sky-50 text-sky-600 ring-4 ring-white',
-			};
-		case 'STATUS':
+				wrapClassName: "bg-sky-50 text-sky-600 ring-4 ring-white",
+			}
+		case "STATUS":
 			return {
 				Icon: Activity,
-				wrapClassName: 'bg-emerald-50 text-emerald-600 ring-4 ring-white',
-			};
-		case 'TITLE':
+				wrapClassName: "bg-emerald-50 text-emerald-600 ring-4 ring-white",
+			}
+		case "TITLE":
 			return {
 				Icon: Tag,
-				wrapClassName: 'bg-muted text-muted-foreground ring-4 ring-white',
-			};
-		case 'VALUE':
+				wrapClassName: "bg-muted text-muted-foreground ring-4 ring-white",
+			}
+		case "VALUE":
 			return {
 				Icon: Sparkles,
-				wrapClassName: 'bg-amber-50 text-amber-700 ring-4 ring-white',
-			};
+				wrapClassName: "bg-amber-50 text-amber-700 ring-4 ring-white",
+			}
 		default:
 			return {
 				Icon: History,
-				wrapClassName: 'bg-muted text-muted-foreground ring-4 ring-white',
-			};
+				wrapClassName: "bg-muted text-muted-foreground ring-4 ring-white",
+			}
 	}
 }
 
 type DetailSlotProps = {
-	label: string;
-	labelIcon?: ReactNode;
-	children: ReactNode;
-	className?: string;
-};
+	label: string
+	labelIcon?: ReactNode
+	children: ReactNode
+	className?: string
+}
 
 function DetailSlot({
 	label,
@@ -221,26 +221,26 @@ function DetailSlot({
 			</div>
 			<div className="mt-2 min-w-0">{children}</div>
 		</div>
-	);
+	)
 }
 
 function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
-	const dealId = deal?.id ?? '';
+	const dealId = deal?.id ?? ""
 	const historyQuery = useDealHistoryQuery(dealId, {
 		enabled: open && Boolean(dealId),
-	});
-	const history = useMemo(() => historyQuery.data ?? [], [historyQuery.data]);
+	})
+	const history = useMemo(() => historyQuery.data ?? [], [historyQuery.data])
 
 	if (!deal) {
-		return null;
+		return null
 	}
 
-	const statusBadge = getStatusBadgeVisual(deal.status);
-	const importanceBadge = getImportanceBadgeVisual(deal.importance);
-	const stageBadge = getStageBadgeVisual(deal.stage);
-	const StatusIcon = statusBadge.Icon;
-	const ImportanceIcon = importanceBadge.Icon;
-	const StageIcon = stageBadge.Icon;
+	const statusBadge = getStatusBadgeVisual(deal.status)
+	const importanceBadge = getImportanceBadgeVisual(deal.importance)
+	const stageBadge = getStageBadgeVisual(deal.stage)
+	const StatusIcon = statusBadge.Icon
+	const ImportanceIcon = importanceBadge.Icon
+	const StageIcon = stageBadge.Icon
 
 	return (
 		<Dialog
@@ -339,7 +339,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 										/>
 										<span>
 											{formatDealLeadCustomerDisplay(
-												deal.leadCustomerName ?? '',
+												deal.leadCustomerName ?? ""
 											)}
 										</span>
 									</div>
@@ -430,7 +430,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									>
 										{historyQuery.error instanceof ApiError
 											? historyQuery.error.message
-											: 'Não foi possível carregar o histórico da negociação.'}
+											: "Não foi possível carregar o histórico da negociação."}
 									</div>
 								) : null}
 
@@ -442,30 +442,30 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 									) : (
 										<ul className="space-y-4">
 											{history.map((item, index) => {
-												const visual = getHistoryTimelineVisual(item.field);
-												const HistIcon = visual.Icon;
-												const detailLineParts: string[] = [];
-												if (item.fromValue != null && item.fromValue !== '') {
+												const visual = getHistoryTimelineVisual(item.field)
+												const HistIcon = visual.Icon
+												const detailLineParts: string[] = []
+												if (item.fromValue != null && item.fromValue !== "") {
 													detailLineParts.push(
 														`De: ${formatDealHistoryValueDisplay(
 															item.field,
-															item.fromValue,
-														)}`,
-													);
+															item.fromValue
+														)}`
+													)
 												}
 												detailLineParts.push(
 													`Para: ${formatDealHistoryValueDisplay(
 														item.field,
-														item.toValue,
-													)}`,
-												);
+														item.toValue
+													)}`
+												)
 												const connector =
 													index < history.length - 1 ? (
 														<div
 															aria-hidden
 															className="mx-auto mt-1 min-h-4 w-px shrink-0 bg-[#dfe4eb]"
 														/>
-													) : null;
+													) : null
 												return (
 													<li className="flex gap-3" key={item.id}>
 														<div className="flex w-11 shrink-0 flex-col items-center pt-1">
@@ -481,7 +481,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 																{getHistoryEventTitle(item.field)}
 															</p>
 															<p className="mt-1 text-[12.5px] leading-[1.35] text-[#5c6570]">
-																{detailLineParts.join(' · ')}
+																{detailLineParts.join(" · ")}
 															</p>
 															<p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#7a8494]">
 																<Clock
@@ -492,7 +492,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 															</p>
 														</div>
 													</li>
-												);
+												)
 											})}
 										</ul>
 									)
@@ -514,7 +514,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
-export { DealDetailsDialog };
+export { DealDetailsDialog }

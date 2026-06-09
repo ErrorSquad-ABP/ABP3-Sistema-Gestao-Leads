@@ -3,68 +3,68 @@ import type {
 	Vehicle,
 	VehicleCatalogItem,
 	VehicleStatus,
-} from '../model/vehicles.model';
+} from "../model/vehicles.model"
 import {
 	formatSupportedFuelTypeLabel,
 	formatVehicleStatusLabel,
-} from './vehicle-labels';
+} from "./vehicle-labels"
 
 function formatVehiclePriceBRL(value: string) {
-	const numberValue = Number(value);
+	const numberValue = Number(value)
 	if (!Number.isFinite(numberValue)) {
-		return value;
+		return value
 	}
-	return numberValue.toLocaleString('pt-BR', {
-		style: 'currency',
-		currency: 'BRL',
-	});
+	return numberValue.toLocaleString("pt-BR", {
+		style: "currency",
+		currency: "BRL",
+	})
 }
 
 function formatMileage(value: number) {
-	return `${value.toLocaleString('pt-BR')} km`;
+	return `${value.toLocaleString("pt-BR")} km`
 }
 
 function formatVehicleStatus(value: VehicleStatus) {
-	return formatVehicleStatusLabel(value);
+	return formatVehicleStatusLabel(value)
 }
 
 function formatFuelType(value: SupportedFuelType) {
-	return formatSupportedFuelTypeLabel(value);
+	return formatSupportedFuelTypeLabel(value)
 }
 
 function formatDaysInStock(value: number) {
 	if (value <= 0) {
-		return 'Hoje';
+		return "Hoje"
 	}
 	if (value === 1) {
-		return '1 dia';
+		return "1 dia"
 	}
-	return `${value} dias`;
+	return `${value} dias`
 }
 
 function formatVehiclePriceComparison(
-	value: VehicleCatalogItem['priceComparison'],
+	value: VehicleCatalogItem["priceComparison"]
 ) {
 	switch (value) {
-		case 'ABOVE_AVERAGE':
-			return 'acima da média';
-		case 'BELOW_AVERAGE':
-			return 'abaixo da média';
-		case 'AT_AVERAGE':
-			return 'na média';
+		case "ABOVE_AVERAGE":
+			return "acima da média"
+		case "BELOW_AVERAGE":
+			return "abaixo da média"
+		case "AT_AVERAGE":
+			return "na média"
 		case null:
-			return 'sem comparação';
+			return "sem comparação"
 		default: {
-			const _exhaustive: never = value;
-			return _exhaustive;
+			const _exhaustive: never = value
+			return _exhaustive
 		}
 	}
 }
 
 /** Uma linha legível para selects de negociação (criar/editar, hook de etiqueta). */
 function formatVehicleDealSelectLabel(vehicle: Vehicle) {
-	const plate = vehicle.plate ? vehicle.plate.trim() : '';
-	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || 'Sem placa'}`;
+	const plate = vehicle.plate ? vehicle.plate.trim() : ""
+	return `${vehicle.brand} ${vehicle.model} ${vehicle.modelYear} · ${plate || "Sem placa"}`
 }
 
 export {
@@ -75,4 +75,4 @@ export {
 	formatVehiclePriceBRL,
 	formatVehiclePriceComparison,
 	formatVehicleStatus,
-};
+}

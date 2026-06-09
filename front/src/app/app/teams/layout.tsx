@@ -1,15 +1,15 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react"
 
-import { requireUserWithRouteAccess } from '@/lib/auth/session';
+import { requireUserWithRouteAccess } from "@/lib/auth/session"
 
 type TeamsLayoutProps = {
-	children: ReactNode;
-};
-
-async function TeamsLayout({ children }: TeamsLayoutProps) {
-	await requireUserWithRouteAccess('teams');
-
-	return children;
+	children: ReactNode
 }
 
-export default TeamsLayout;
+async function TeamsLayout({ children }: TeamsLayoutProps) {
+	await requireUserWithRouteAccess("teams")
+
+	return children
+}
+
+export default TeamsLayout
