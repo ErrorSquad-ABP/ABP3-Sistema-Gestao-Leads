@@ -1,6 +1,6 @@
 import type { OperationalDashboardQueryInput } from '../model/operational-dashboard.model';
 
-type OperationalDashboardPeriodMode = 'last30' | 'week' | 'month' | 'year';
+type OperationalDashboardPeriodMode = 'week' | 'month' | 'year';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
@@ -27,9 +27,19 @@ function toDateInputValue(value: Date) {
 	return `${year}-${month}-${day}`;
 }
 
+function toMonthInputValue(value: Date) {
+	const year = value.getUTCFullYear();
+	const month = `${value.getUTCMonth() + 1}`.padStart(2, '0');
+	return `${year}-${month}`;
+}
+
 function dateInputToLocalDate(value: string) {
 	const [yearRaw, monthRaw, dayRaw] = value.split('-');
 	return new Date(Number(yearRaw), Number(monthRaw) - 1, Number(dayRaw));
+}
+
+function isValidMonthInput(value: string) {
+	return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
 }
 
 function toQuery(startInclusive: Date, endExclusive: Date) {
@@ -43,10 +53,6 @@ function buildPresetPeriodQuery(
 	mode: OperationalDashboardPeriodMode,
 	now = new Date(),
 ): OperationalDashboardQueryInput {
-	if (mode === 'last30') {
-		return {};
-	}
-
 	const today = startOfLocalDay(now);
 
 	if (mode === 'week') {
@@ -67,6 +73,15 @@ function buildPresetPeriodQuery(
 	return toQuery(start, end);
 }
 
+function buildMonthPeriodQuery(month: string): OperationalDashboardQueryInput {
+	const [yearRaw, monthRaw] = month.split('-');
+	const year = Number(yearRaw);
+	const monthIndex = Number(monthRaw) - 1;
+	const start = new Date(Date.UTC(year, monthIndex, 1));
+	const end = new Date(Date.UTC(year, monthIndex + 1, 1));
+	return toQuery(start, end);
+}
+
 function buildCustomPeriodQuery(
 	startDate: string,
 	endDate: string,
@@ -76,5 +91,12 @@ function buildCustomPeriodQuery(
 	return toQuery(start, end);
 }
 
-export { buildCustomPeriodQuery, buildPresetPeriodQuery, toDateInputValue };
 export type { OperationalDashboardPeriodMode };
+export {
+	buildCustomPeriodQuery,
+	buildMonthPeriodQuery,
+	buildPresetPeriodQuery,
+	isValidMonthInput,
+	toDateInputValue,
+	toMonthInputValue,
+};
