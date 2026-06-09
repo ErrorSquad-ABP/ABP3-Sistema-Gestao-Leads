@@ -42,9 +42,9 @@ import type {
 	AuditLogRecord,
 } from '../model/audit-logs.model';
 import {
-	auditLogActionLabels,
-	auditLogCategoryLabels,
-	auditLogEntityLabels,
+	formatAuditLogEntityLabel,
+	getAuditLogActionLabel,
+	getAuditLogCategoryLabel,
 } from '../model/audit-logs.model';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
@@ -80,10 +80,6 @@ function formatDateTime(date: Date) {
 	}).format(date);
 }
 
-function entityLabel(entityName: string) {
-	return auditLogEntityLabels[entityName] ?? entityName;
-}
-
 function stringifyMetadata(metadata: unknown) {
 	try {
 		return JSON.stringify(metadata ?? null, null, 2);
@@ -108,15 +104,20 @@ function dateInputToIso(value: string, boundary: 'start' | 'end') {
 }
 
 function actionBadgeClass(action: AuditLogAction) {
-	const classes: Record<AuditLogAction, string> = {
-		CREATE: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-		DELETE: 'border-rose-200 bg-rose-50 text-rose-700',
-		LOGIN: 'border-sky-200 bg-sky-50 text-sky-700',
-		STAGE_CHANGE: 'border-violet-200 bg-violet-50 text-violet-700',
-		STATUS_CHANGE: 'border-amber-200 bg-amber-50 text-amber-800',
-		UPDATE: 'border-blue-200 bg-blue-50 text-blue-700',
-	};
-	return classes[action];
+	switch (action) {
+		case 'CREATE':
+			return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+		case 'DELETE':
+			return 'border-rose-200 bg-rose-50 text-rose-700';
+		case 'LOGIN':
+			return 'border-sky-200 bg-sky-50 text-sky-700';
+		case 'STAGE_CHANGE':
+			return 'border-violet-200 bg-violet-50 text-violet-700';
+		case 'STATUS_CHANGE':
+			return 'border-amber-200 bg-amber-50 text-amber-800';
+		case 'UPDATE':
+			return 'border-blue-200 bg-blue-50 text-blue-700';
+	}
 }
 
 function getErrorMessage(error: unknown) {
@@ -127,56 +128,87 @@ function getErrorMessage(error: unknown) {
 	return 'Não foi possível carregar os logs de auditoria.';
 }
 
-const entityActionText: Record<
+const entityActionTextByEntity = new Map<
 	string,
-	Partial<Record<AuditLogAction, string>>
-> = {
-	AccessGroup: {
-		CREATE: 'Grupo de acesso criado',
-		DELETE: 'Grupo de acesso removido',
-		UPDATE: 'Grupo de acesso atualizado',
-	},
-	Customer: {
-		CREATE: 'Cliente criado',
-		DELETE: 'Cliente removido',
-		UPDATE: 'Cliente atualizado',
-	},
-	Deal: {
-		CREATE: 'Negociação criada',
-		DELETE: 'Negociação removida',
-		STAGE_CHANGE: 'Etapa da negociação alterada',
-		STATUS_CHANGE: 'Status da negociação alterado',
-		UPDATE: 'Negociação atualizada',
-	},
-	Lead: {
-		CREATE: 'Lead criado',
-		DELETE: 'Lead removido',
-		STATUS_CHANGE: 'Status do lead alterado',
-		UPDATE: 'Lead atualizado',
-	},
-	Store: {
-		CREATE: 'Loja criada',
-		DELETE: 'Loja removida',
-		UPDATE: 'Loja atualizada',
-	},
-	Team: {
-		CREATE: 'Equipe criada',
-		DELETE: 'Equipe removida',
-		UPDATE: 'Equipe atualizada',
-	},
-	User: {
-		CREATE: 'Usuário criado',
-		DELETE: 'Usuário removido',
-		LOGIN: 'Login realizado',
-		UPDATE: 'Usuário atualizado',
-	},
-	Vehicle: {
-		CREATE: 'Veículo criado',
-		DELETE: 'Veículo removido',
-		STATUS_CHANGE: 'Status do veículo alterado',
-		UPDATE: 'Veículo atualizado',
-	},
-};
+	ReadonlyMap<AuditLogAction, string>
+>([
+	[
+		'AccessGroup',
+		new Map([
+			['CREATE', 'Grupo de acesso criado'],
+			['DELETE', 'Grupo de acesso removido'],
+			['UPDATE', 'Grupo de acesso atualizado'],
+		]),
+	],
+	[
+		'Customer',
+		new Map([
+			['CREATE', 'Cliente criado'],
+			['DELETE', 'Cliente removido'],
+			['UPDATE', 'Cliente atualizado'],
+		]),
+	],
+	[
+		'Deal',
+		new Map([
+			['CREATE', 'Negociação criada'],
+			['DELETE', 'Negociação removida'],
+			['STAGE_CHANGE', 'Etapa da negociação alterada'],
+			['STATUS_CHANGE', 'Status da negociação alterado'],
+			['UPDATE', 'Negociação atualizada'],
+		]),
+	],
+	[
+		'Lead',
+		new Map([
+			['CREATE', 'Lead criado'],
+			['DELETE', 'Lead removido'],
+			['STATUS_CHANGE', 'Status do lead alterado'],
+			['UPDATE', 'Lead atualizado'],
+		]),
+	],
+	[
+		'Store',
+		new Map([
+			['CREATE', 'Loja criada'],
+			['DELETE', 'Loja removida'],
+			['UPDATE', 'Loja atualizada'],
+		]),
+	],
+	[
+		'Team',
+		new Map([
+			['CREATE', 'Equipe criada'],
+			['DELETE', 'Equipe removida'],
+			['UPDATE', 'Equipe atualizada'],
+		]),
+	],
+	[
+		'User',
+		new Map([
+			['CREATE', 'Usuário criado'],
+			['DELETE', 'Usuário removido'],
+			['LOGIN', 'Login realizado'],
+			['UPDATE', 'Usuário atualizado'],
+		]),
+	],
+	[
+		'Vehicle',
+		new Map([
+			['CREATE', 'Veículo criado'],
+			['DELETE', 'Veículo removido'],
+			['STATUS_CHANGE', 'Status do veículo alterado'],
+			['UPDATE', 'Veículo atualizado'],
+		]),
+	],
+]);
+
+function getEntityActionText(
+	entityName: string,
+	action: AuditLogAction,
+): string | undefined {
+	return entityActionTextByEntity.get(entityName)?.get(action);
+}
 
 function actorDescription(log: AuditLogRecord) {
 	if (!log.actor) {
@@ -198,8 +230,8 @@ function auditLogSummary(log: AuditLogRecord) {
 	}
 
 	const actionText =
-		entityActionText[log.entityName]?.[log.action] ??
-		`${entityLabel(log.entityName)} atualizado`;
+		getEntityActionText(log.entityName, log.action) ??
+		`${formatAuditLogEntityLabel(log.entityName)} atualizado`;
 
 	return `${actionText} ${actorDescription(log)}`;
 }
@@ -239,13 +271,13 @@ function AuditLogDetailsDialog({
 											actionBadgeClass(log.action),
 										)}
 									>
-										{auditLogActionLabels[log.action]}
+										{getAuditLogActionLabel(log.action)}
 									</Badge>
 									<Badge
 										className="h-7 rounded-md border-[#d7dee8] bg-white px-3 text-[#314155]"
 										variant="outline"
 									>
-										{entityLabel(log.entityName)}
+										{formatAuditLogEntityLabel(log.entityName)}
 									</Badge>
 								</div>
 							</div>
@@ -421,7 +453,7 @@ function AuditLogsPageContent() {
 									type="button"
 								>
 									<span className="font-medium">
-										{auditLogCategoryLabels[option]}
+										{getAuditLogCategoryLabel(option)}
 									</span>
 									<span
 										className={cn(
@@ -441,12 +473,12 @@ function AuditLogsPageContent() {
 							<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 								<div>
 									<CardTitle className="text-xl">
-										{auditLogCategoryLabels[activeCategory]}
+										{getAuditLogCategoryLabel(activeCategory)}
 									</CardTitle>
 									<CardDescription>
 										{activeAction === 'ALL'
 											? 'Todas as ações registradas nesta seleção.'
-											: auditLogActionLabels[activeAction]}
+											: getAuditLogActionLabel(activeAction)}
 									</CardDescription>
 								</div>
 
@@ -466,7 +498,7 @@ function AuditLogsPageContent() {
 										>
 											{option === 'ALL'
 												? 'Todos'
-												: auditLogActionLabels[option]}
+												: getAuditLogActionLabel(option)}
 										</Button>
 									))}
 								</div>
@@ -577,13 +609,13 @@ function AuditLogsPageContent() {
 																	actionBadgeClass(log.action),
 																)}
 															>
-																{auditLogActionLabels[log.action]}
+																{getAuditLogActionLabel(log.action)}
 															</Badge>
 															<Badge
 																className="h-6 rounded-md border-[#d7dee8] bg-white px-2.5 text-[#314155]"
 																variant="outline"
 															>
-																{entityLabel(log.entityName)}
+																{formatAuditLogEntityLabel(log.entityName)}
 															</Badge>
 														</div>
 

@@ -107,6 +107,67 @@ const auditLogEntityLabels: Record<string, string> = {
 	Vehicle: 'Veículo',
 };
 
+const auditLogEntityLabelsByKey: Record<string, string> = auditLogEntityLabels;
+
+function labelFromMapOrToken(
+	labels: Record<string, string>,
+	value: string,
+): string {
+	const key = value.trim();
+	const fromMap = new Map(Object.entries(labels)).get(key);
+	if (fromMap !== undefined) {
+		return fromMap;
+	}
+
+	return key || value;
+}
+
+function formatAuditLogEntityLabel(entityName: string): string {
+	return labelFromMapOrToken(auditLogEntityLabelsByKey, entityName);
+}
+
+function getAuditLogCategoryLabel(category: AuditLogCategory | 'all'): string {
+	switch (category) {
+		case 'all':
+			return auditLogCategoryLabels.all;
+		case 'access-groups':
+			return auditLogCategoryLabels['access-groups'];
+		case 'cars':
+			return auditLogCategoryLabels.cars;
+		case 'customers':
+			return auditLogCategoryLabels.customers;
+		case 'deals':
+			return auditLogCategoryLabels.deals;
+		case 'leads':
+			return auditLogCategoryLabels.leads;
+		case 'stores':
+			return auditLogCategoryLabels.stores;
+		case 'teams':
+			return auditLogCategoryLabels.teams;
+		case 'users':
+			return auditLogCategoryLabels.users;
+		case 'vehicles':
+			return auditLogCategoryLabels.vehicles;
+	}
+}
+
+function getAuditLogActionLabel(action: AuditLogAction): string {
+	switch (action) {
+		case 'CREATE':
+			return auditLogActionLabels.CREATE;
+		case 'DELETE':
+			return auditLogActionLabels.DELETE;
+		case 'LOGIN':
+			return auditLogActionLabels.LOGIN;
+		case 'STAGE_CHANGE':
+			return auditLogActionLabels.STAGE_CHANGE;
+		case 'STATUS_CHANGE':
+			return auditLogActionLabels.STATUS_CHANGE;
+		case 'UPDATE':
+			return auditLogActionLabels.UPDATE;
+	}
+}
+
 export type {
 	AuditLogAction,
 	AuditLogActor,
@@ -121,4 +182,7 @@ export {
 	auditLogCategories,
 	auditLogCategoryLabels,
 	auditLogEntityLabels,
+	formatAuditLogEntityLabel,
+	getAuditLogActionLabel,
+	getAuditLogCategoryLabel,
 };
