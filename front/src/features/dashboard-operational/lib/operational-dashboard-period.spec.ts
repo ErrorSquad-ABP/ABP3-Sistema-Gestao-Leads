@@ -60,11 +60,11 @@ describe('isValidMonthInput', () => {
 });
 
 describe('buildMonthPeriodQuery', () => {
-	it('builds exclusive-end ranges from YYYY-MM values', () => {
+	it('builds exclusive-end UTC ranges from YYYY-MM values', () => {
 		const query = buildMonthPeriodQuery('2026-04');
 
-		assert.equal(query.startDate?.slice(0, 10), '2026-04-01');
-		assert.equal(query.endDate?.slice(0, 10), '2026-05-01');
+		assert.equal(query.startDate, '2026-04-01T00:00:00.000Z');
+		assert.equal(query.endDate, '2026-05-01T00:00:00.000Z');
 	});
 });
 
@@ -84,7 +84,10 @@ describe('toDateInputValue', () => {
 });
 
 describe('toMonthInputValue', () => {
-	it('formats local month inputs', () => {
-		assert.equal(toMonthInputValue(new Date(2026, 4, 9)), '2026-05');
+	it('formats UTC month inputs', () => {
+		assert.equal(
+			toMonthInputValue(new Date('2026-05-09T12:00:00.000Z')),
+			'2026-05',
+		);
 	});
 });

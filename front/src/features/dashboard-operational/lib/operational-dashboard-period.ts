@@ -28,8 +28,8 @@ function toDateInputValue(value: Date) {
 }
 
 function toMonthInputValue(value: Date) {
-	const year = value.getFullYear();
-	const month = `${value.getMonth() + 1}`.padStart(2, '0');
+	const year = value.getUTCFullYear();
+	const month = `${value.getUTCMonth() + 1}`.padStart(2, '0');
 	return `${year}-${month}`;
 }
 
@@ -40,11 +40,6 @@ function dateInputToLocalDate(value: string) {
 
 function isValidMonthInput(value: string) {
 	return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
-}
-
-function monthInputToLocalDate(value: string) {
-	const [yearRaw, monthRaw] = value.split('-');
-	return new Date(Number(yearRaw), Number(monthRaw) - 1, 1);
 }
 
 function toQuery(startInclusive: Date, endExclusive: Date) {
@@ -79,8 +74,11 @@ function buildPresetPeriodQuery(
 }
 
 function buildMonthPeriodQuery(month: string): OperationalDashboardQueryInput {
-	const start = startOfLocalDay(monthInputToLocalDate(month));
-	const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+	const [yearRaw, monthRaw] = month.split('-');
+	const year = Number(yearRaw);
+	const monthIndex = Number(monthRaw) - 1;
+	const start = new Date(Date.UTC(year, monthIndex, 1));
+	const end = new Date(Date.UTC(year, monthIndex + 1, 1));
 	return toQuery(start, end);
 }
 
