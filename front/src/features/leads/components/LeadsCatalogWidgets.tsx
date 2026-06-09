@@ -146,7 +146,7 @@ type LeadsListCardProps = {
 	onConvert?: (lead: LeadListItem) => void;
 	onDeals?: (lead: LeadListItem) => void;
 	onDelete?: (lead: LeadListItem) => void;
-	onDetail: (lead: LeadListItem) => void;
+	onDetail: (item: LeadCatalogItem) => void;
 	onEdit: (lead: LeadListItem) => void;
 	onNextPage: () => void;
 	onPageChange: (page: number) => void;
@@ -258,7 +258,7 @@ function LeadsListCard({
 												onConvert={onConvert}
 												onDeals={onDeals}
 												onDelete={onDelete}
-												onDetail={onDetail}
+												onDetail={() => onDetail(item)}
 												onEdit={onEdit}
 												onReassign={onReassign}
 											/>

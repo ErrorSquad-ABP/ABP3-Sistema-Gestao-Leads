@@ -1,7 +1,6 @@
 'use client';
 
 import { CalendarDays, Plus, Search, Target, Trophy, Zap } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { KpiCard } from '@/components/metrics/KpiCard';
 import { Button } from '@/components/ui/button';
@@ -62,7 +61,6 @@ const sortOptions = [
 ] as const;
 
 function LeadsPageContent({ user }: LeadsPageContentProps) {
-	const _router = useRouter();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] =
 		useState<(typeof pageSizeOptions)[number]>(10);
@@ -201,10 +199,8 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 		setDealsOpen(true);
 	}
 
-	function openLeadDetail(lead: LeadListItem) {
-		const fullItem =
-			catalog?.items.find((item) => item.lead.id === lead.id) ?? null;
-		setDetailLeadItem(fullItem);
+	function openLeadDetail(item: LeadCatalogItem) {
+		setDetailLeadItem(item);
 		setDetailDialogOpen(true);
 	}
 

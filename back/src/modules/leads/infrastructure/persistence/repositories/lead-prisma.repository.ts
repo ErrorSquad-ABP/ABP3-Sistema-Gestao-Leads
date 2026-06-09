@@ -348,7 +348,11 @@ class LeadPrismaRepository implements ILeadRepository {
 			...catalogScopeWhere(filters.scope),
 			...(filters.status
 				? filters.status === 'WORKABLE'
-					? { status: { in: ['NEW', 'CONTACTED', 'QUALIFIED'] } }
+					? {
+							status: {
+								in: ['NEW', 'CONTACTED', 'QUALIFIED', 'NEGOTIATING'],
+							},
+						}
 					: { status: filters.status }
 				: {}),
 			...(filters.source ? { source: filters.source } : {}),
