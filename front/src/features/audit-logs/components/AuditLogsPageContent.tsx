@@ -13,7 +13,7 @@ import {
 	X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-
+import { TablePagination } from '@/components/data/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,7 +32,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TablePagination } from '@/components/data/TablePagination';
 import { ApiError } from '@/lib/http/api-error';
 import { cn } from '@/lib/utils';
 
