@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
 	CalendarDays,
@@ -11,121 +11,152 @@ import {
 	ShieldCheck,
 	UserRound,
 	X,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
+} from "lucide-react"
+import { useMemo, useState } from "react"
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card"
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { TablePagination } from '@/components/data/TablePagination';
-import { ApiError } from '@/lib/http/api-error';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
+import { TablePagination } from "@/components/data/TablePagination"
+import { ApiError } from "@/lib/http/api-error"
+import { cn } from "@/lib/utils"
 
-import { useAuditLogsQuery } from '../hooks/audit-logs.queries';
+import { useAuditLogsQuery } from "../hooks/audit-logs.queries"
 import type {
 	AuditLogAction,
 	AuditLogCategory,
 	AuditLogRecord,
-} from '../model/audit-logs.model';
+} from "../model/audit-logs.model"
 import {
 	auditLogActionLabels,
 	auditLogCategoryLabels,
 	auditLogEntityLabels,
-} from '../model/audit-logs.model';
+} from "../model/audit-logs.model"
 
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
-const INITIAL_PAGE = 1;
-const INITIAL_LIMIT = 20;
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const
+const INITIAL_PAGE = 1
+const INITIAL_LIMIT = 20
+const SKELETON_ROWS = [
+	"audit-log-skeleton-1",
+	"audit-log-skeleton-2",
+	"audit-log-skeleton-3",
+	"audit-log-skeleton-4",
+	"audit-log-skeleton-5",
+	"audit-log-skeleton-6",
+] as const
 
-const categoryOptions: readonly (AuditLogCategory | 'all')[] = [
-	'all',
-	'leads',
-	'deals',
-	'cars',
-	'customers',
-	'stores',
-	'teams',
-	'users',
-	'access-groups',
-];
+const categoryOptions: readonly (AuditLogCategory | "all")[] = [
+	"all",
+	"leads",
+	"deals",
+	"cars",
+	"customers",
+	"stores",
+	"teams",
+	"users",
+	"access-groups",
+]
 
-const actionOptions: readonly (AuditLogAction | 'ALL')[] = [
-	'ALL',
-	'CREATE',
-	'UPDATE',
-	'DELETE',
-	'STATUS_CHANGE',
-	'STAGE_CHANGE',
-	'LOGIN',
-];
+const actionOptions: readonly (AuditLogAction | "ALL")[] = [
+	"ALL",
+	"CREATE",
+	"UPDATE",
+	"DELETE",
+	"STATUS_CHANGE",
+	"STAGE_CHANGE",
+	"LOGIN",
+]
+
+const auditLogActionLabelMap = new Map<AuditLogAction, string>(
+	Object.entries(auditLogActionLabels) as [AuditLogAction, string][]
+)
+const auditLogCategoryLabelMap = new Map<AuditLogCategory | "all", string>(
+	Object.entries(auditLogCategoryLabels) as [AuditLogCategory | "all", string][]
+)
+const auditLogEntityLabelMap = new Map<string, string>(
+	Object.entries(auditLogEntityLabels)
+)
 
 function formatDateTime(date: Date) {
-	return new Intl.DateTimeFormat('pt-BR', {
-		dateStyle: 'short',
-		timeStyle: 'short',
-	}).format(date);
+	return new Intl.DateTimeFormat("pt-BR", {
+		dateStyle: "short",
+		timeStyle: "short",
+	}).format(date)
 }
 
 function entityLabel(entityName: string) {
-	return auditLogEntityLabels[entityName] ?? entityName;
+	return auditLogEntityLabelMap.get(entityName) ?? entityName
+}
+
+function actionLabel(action: AuditLogAction) {
+	return auditLogActionLabelMap.get(action) ?? action
+}
+
+function categoryLabel(category: AuditLogCategory | "all") {
+	return auditLogCategoryLabelMap.get(category) ?? category
 }
 
 function stringifyMetadata(metadata: unknown) {
 	try {
-		return JSON.stringify(metadata ?? null, null, 2);
+		return JSON.stringify(metadata ?? null, null, 2)
 	} catch {
-		return String(metadata);
+		return String(metadata)
 	}
 }
 
-function dateInputToIso(value: string, boundary: 'start' | 'end') {
+function dateInputToIso(value: string, boundary: "start" | "end") {
 	if (!value) {
-		return undefined;
+		return undefined
 	}
-	const [year, month, day] = value.split('-').map(Number);
+	const [year, month, day] = value.split("-").map(Number)
 	if (!year || !month || !day) {
-		return undefined;
+		return undefined
 	}
 	const date =
-		boundary === 'start'
+		boundary === "start"
 			? new Date(year, month - 1, day, 0, 0, 0, 0)
-			: new Date(year, month - 1, day, 23, 59, 59, 999);
-	return date.toISOString();
+			: new Date(year, month - 1, day, 23, 59, 59, 999)
+	return date.toISOString()
 }
 
 function actionBadgeClass(action: AuditLogAction) {
-	const classes: Record<AuditLogAction, string> = {
-		CREATE: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-		DELETE: 'border-rose-200 bg-rose-50 text-rose-700',
-		LOGIN: 'border-sky-200 bg-sky-50 text-sky-700',
-		STAGE_CHANGE: 'border-violet-200 bg-violet-50 text-violet-700',
-		STATUS_CHANGE: 'border-amber-200 bg-amber-50 text-amber-800',
-		UPDATE: 'border-blue-200 bg-blue-50 text-blue-700',
-	};
-	return classes[action];
+	switch (action) {
+		case "CREATE":
+			return "border-emerald-200 bg-emerald-50 text-emerald-700"
+		case "DELETE":
+			return "border-rose-200 bg-rose-50 text-rose-700"
+		case "LOGIN":
+			return "border-sky-200 bg-sky-50 text-sky-700"
+		case "STAGE_CHANGE":
+			return "border-violet-200 bg-violet-50 text-violet-700"
+		case "STATUS_CHANGE":
+			return "border-amber-200 bg-amber-50 text-amber-800"
+		case "UPDATE":
+			return "border-blue-200 bg-blue-50 text-blue-700"
+	}
 }
 
 function getErrorMessage(error: unknown) {
 	if (error instanceof ApiError) {
-		return error.message;
+		return error.message
 	}
 
-	return 'Não foi possível carregar os logs de auditoria.';
+	return "Não foi possível carregar os logs de auditoria."
 }
 
 const entityActionText: Record<
@@ -133,83 +164,83 @@ const entityActionText: Record<
 	Partial<Record<AuditLogAction, string>>
 > = {
 	AccessGroup: {
-		CREATE: 'Grupo de acesso criado',
-		DELETE: 'Grupo de acesso removido',
-		UPDATE: 'Grupo de acesso atualizado',
+		CREATE: "Grupo de acesso criado",
+		DELETE: "Grupo de acesso removido",
+		UPDATE: "Grupo de acesso atualizado",
 	},
 	Customer: {
-		CREATE: 'Cliente criado',
-		DELETE: 'Cliente removido',
-		UPDATE: 'Cliente atualizado',
+		CREATE: "Cliente criado",
+		DELETE: "Cliente removido",
+		UPDATE: "Cliente atualizado",
 	},
 	Deal: {
-		CREATE: 'Negociação criada',
-		DELETE: 'Negociação removida',
-		STAGE_CHANGE: 'Etapa da negociação alterada',
-		STATUS_CHANGE: 'Status da negociação alterado',
-		UPDATE: 'Negociação atualizada',
+		CREATE: "Negociação criada",
+		DELETE: "Negociação removida",
+		STAGE_CHANGE: "Etapa da negociação alterada",
+		STATUS_CHANGE: "Status da negociação alterado",
+		UPDATE: "Negociação atualizada",
 	},
 	Lead: {
-		CREATE: 'Lead criado',
-		DELETE: 'Lead removido',
-		STATUS_CHANGE: 'Status do lead alterado',
-		UPDATE: 'Lead atualizado',
+		CREATE: "Lead criado",
+		DELETE: "Lead removido",
+		STATUS_CHANGE: "Status do lead alterado",
+		UPDATE: "Lead atualizado",
 	},
 	Store: {
-		CREATE: 'Loja criada',
-		DELETE: 'Loja removida',
-		UPDATE: 'Loja atualizada',
+		CREATE: "Loja criada",
+		DELETE: "Loja removida",
+		UPDATE: "Loja atualizada",
 	},
 	Team: {
-		CREATE: 'Equipe criada',
-		DELETE: 'Equipe removida',
-		UPDATE: 'Equipe atualizada',
+		CREATE: "Equipe criada",
+		DELETE: "Equipe removida",
+		UPDATE: "Equipe atualizada",
 	},
 	User: {
-		CREATE: 'Usuário criado',
-		DELETE: 'Usuário removido',
-		LOGIN: 'Login realizado',
-		UPDATE: 'Usuário atualizado',
+		CREATE: "Usuário criado",
+		DELETE: "Usuário removido",
+		LOGIN: "Login realizado",
+		UPDATE: "Usuário atualizado",
 	},
 	Vehicle: {
-		CREATE: 'Veículo criado',
-		DELETE: 'Veículo removido',
-		STATUS_CHANGE: 'Status do veículo alterado',
-		UPDATE: 'Veículo atualizado',
+		CREATE: "Veículo criado",
+		DELETE: "Veículo removido",
+		STATUS_CHANGE: "Status do veículo alterado",
+		UPDATE: "Veículo atualizado",
 	},
-};
+}
 
 function actorDescription(log: AuditLogRecord) {
 	if (!log.actor) {
-		return 'pelo sistema';
+		return "pelo sistema"
 	}
 
-	if (log.actor.role === 'ADMINISTRATOR') {
-		return 'pelo administrador';
+	if (log.actor.role === "ADMINISTRATOR") {
+		return "pelo administrador"
 	}
 
-	return `pelo usuário ${log.actor.name}`;
+	return `pelo usuário ${log.actor.name}`
 }
 
 function auditLogSummary(log: AuditLogRecord) {
-	if (log.action === 'LOGIN') {
+	if (log.action === "LOGIN") {
 		return log.actor
 			? `Login realizado por ${log.actor.name}`
-			: 'Login realizado';
+			: "Login realizado"
 	}
 
 	const actionText =
 		entityActionText[log.entityName]?.[log.action] ??
-		`${entityLabel(log.entityName)} atualizado`;
+		`${entityLabel(log.entityName)} atualizado`
 
-	return `${actionText} ${actorDescription(log)}`;
+	return `${actionText} ${actorDescription(log)}`
 }
 
 type AuditLogDetailsDialogProps = {
-	log: AuditLogRecord | null;
-	onClose: () => void;
-	open: boolean;
-};
+	log: AuditLogRecord | null
+	onClose: () => void
+	open: boolean
+}
 
 function AuditLogDetailsDialog({
 	log,
@@ -236,11 +267,11 @@ function AuditLogDetailsDialog({
 								<div className="mt-3 flex flex-wrap items-center gap-2">
 									<Badge
 										className={cn(
-											'h-7 rounded-md border px-3',
-											actionBadgeClass(log.action),
+											"h-7 rounded-md border px-3",
+											actionBadgeClass(log.action)
 										)}
 									>
-										{auditLogActionLabels[log.action]}
+										{actionLabel(log.action)}
 									</Badge>
 									<Badge
 										className="h-7 rounded-md border-[#d7dee8] bg-white px-3 text-[#314155]"
@@ -257,12 +288,12 @@ function AuditLogDetailsDialog({
 										Autor
 									</p>
 									<p className="mt-1 font-semibold text-[#1b2430]">
-										{log.actor?.name ?? 'Sistema'}
+										{log.actor?.name ?? "Sistema"}
 									</p>
 									<p className="text-xs text-muted-foreground">
 										{log.actor?.email ??
 											log.actorUserId ??
-											'Sem usuário vinculado'}
+											"Sem usuário vinculado"}
 									</p>
 								</div>
 								<div>
@@ -278,7 +309,7 @@ function AuditLogDetailsDialog({
 										ID da entidade
 									</p>
 									<p className="mt-1 font-mono text-xs break-all text-[#415066]">
-										{log.entityId ?? 'Não informado'}
+										{log.entityId ?? "Não informado"}
 									</p>
 								</div>
 								<div>
@@ -305,16 +336,16 @@ function AuditLogDetailsDialog({
 				) : null}
 			</DialogContent>
 		</Dialog>
-	);
+	)
 }
 
 function AuditLogSkeletonList() {
 	return (
 		<div className="space-y-3">
-			{Array.from({ length: 6 }, (_, index) => (
+			{SKELETON_ROWS.map((rowId) => (
 				<div
 					className="rounded-xl border border-border/70 bg-white p-4"
-					key={index}
+					key={rowId}
 				>
 					<div className="flex items-start justify-between gap-4">
 						<div className="w-full space-y-3">
@@ -327,55 +358,55 @@ function AuditLogSkeletonList() {
 				</div>
 			))}
 		</div>
-	);
+	)
 }
 
 function AuditLogsPageContent() {
-	const [category, setCategory] = useState<AuditLogCategory | undefined>();
-	const [action, setAction] = useState<AuditLogAction | undefined>();
-	const [userSearch, setUserSearch] = useState('');
-	const [startDate, setStartDate] = useState('');
-	const [endDate, setEndDate] = useState('');
-	const [page, setPage] = useState(INITIAL_PAGE);
-	const [limit, setLimit] = useState(INITIAL_LIMIT);
-	const [selectedLog, setSelectedLog] = useState<AuditLogRecord | null>(null);
-	const normalizedUserSearch = userSearch.trim();
+	const [category, setCategory] = useState<AuditLogCategory | undefined>()
+	const [action, setAction] = useState<AuditLogAction | undefined>()
+	const [userSearch, setUserSearch] = useState("")
+	const [startDate, setStartDate] = useState("")
+	const [endDate, setEndDate] = useState("")
+	const [page, setPage] = useState(INITIAL_PAGE)
+	const [limit, setLimit] = useState(INITIAL_LIMIT)
+	const [selectedLog, setSelectedLog] = useState<AuditLogRecord | null>(null)
+	const normalizedUserSearch = userSearch.trim()
 
 	const filters = useMemo(
 		() => ({
 			action,
 			category,
-			endDate: dateInputToIso(endDate, 'end'),
+			endDate: dateInputToIso(endDate, "end"),
 			limit,
 			page,
-			startDate: dateInputToIso(startDate, 'start'),
+			startDate: dateInputToIso(startDate, "start"),
 			user: normalizedUserSearch || undefined,
 		}),
-		[action, category, endDate, limit, normalizedUserSearch, page, startDate],
-	);
-	const query = useAuditLogsQuery(filters);
-	const pageData = query.data;
-	const logs = pageData?.items ?? [];
-	const totalItems = pageData?.total ?? 0;
-	const totalPages = pageData?.totalPages ?? 0;
-	const activeCategory = category ?? 'all';
-	const activeAction = action ?? 'ALL';
+		[action, category, endDate, limit, normalizedUserSearch, page, startDate]
+	)
+	const query = useAuditLogsQuery(filters)
+	const pageData = query.data
+	const logs = pageData?.items ?? []
+	const totalItems = pageData?.total ?? 0
+	const totalPages = pageData?.totalPages ?? 0
+	const activeCategory = category ?? "all"
+	const activeAction = action ?? "ALL"
 
-	function changeCategory(nextCategory: AuditLogCategory | 'all') {
-		setCategory(nextCategory === 'all' ? undefined : nextCategory);
-		setPage(INITIAL_PAGE);
+	function changeCategory(nextCategory: AuditLogCategory | "all") {
+		setCategory(nextCategory === "all" ? undefined : nextCategory)
+		setPage(INITIAL_PAGE)
 	}
 
-	function changeAction(nextAction: AuditLogAction | 'ALL') {
-		setAction(nextAction === 'ALL' ? undefined : nextAction);
-		setPage(INITIAL_PAGE);
+	function changeAction(nextAction: AuditLogAction | "ALL") {
+		setAction(nextAction === "ALL" ? undefined : nextAction)
+		setPage(INITIAL_PAGE)
 	}
 
 	function clearAdvancedFilters() {
-		setUserSearch('');
-		setStartDate('');
-		setEndDate('');
-		setPage(INITIAL_PAGE);
+		setUserSearch("")
+		setStartDate("")
+		setEndDate("")
+		setPage(INITIAL_PAGE)
 	}
 
 	return (
@@ -408,30 +439,28 @@ function AuditLogsPageContent() {
 					</div>
 					<div className="space-y-1">
 						{categoryOptions.map((option) => {
-							const isActive = activeCategory === option;
+							const isActive = activeCategory === option
 							return (
 								<button
 									className={cn(
-										'flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors',
+										"flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors",
 										isActive
-											? 'bg-[#1f2937] text-white'
-											: 'text-[#415066] hover:bg-[#f4f6f8]',
+											? "bg-[#1f2937] text-white"
+											: "text-[#415066] hover:bg-[#f4f6f8]"
 									)}
 									key={option}
 									onClick={() => changeCategory(option)}
 									type="button"
 								>
-									<span className="font-medium">
-										{auditLogCategoryLabels[option]}
-									</span>
+									<span className="font-medium">{categoryLabel(option)}</span>
 									<span
 										className={cn(
-											'size-2 rounded-full',
-											isActive ? 'bg-[#f07a2a]' : 'bg-[#c9d2df]',
+											"size-2 rounded-full",
+											isActive ? "bg-[#f07a2a]" : "bg-[#c9d2df]"
 										)}
 									/>
 								</button>
-							);
+							)
 						})}
 					</div>
 				</aside>
@@ -442,12 +471,12 @@ function AuditLogsPageContent() {
 							<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 								<div>
 									<CardTitle className="text-xl">
-										{auditLogCategoryLabels[activeCategory]}
+										{categoryLabel(activeCategory)}
 									</CardTitle>
 									<CardDescription>
-										{activeAction === 'ALL'
-											? 'Todas as ações registradas nesta seleção.'
-											: auditLogActionLabels[activeAction]}
+										{activeAction === "ALL"
+											? "Todas as ações registradas nesta seleção."
+											: actionLabel(activeAction)}
 									</CardDescription>
 								</div>
 
@@ -455,19 +484,17 @@ function AuditLogsPageContent() {
 									{actionOptions.map((option) => (
 										<Button
 											className={cn(
-												'h-9 rounded-lg px-3 text-xs shadow-none',
+												"h-9 rounded-lg px-3 text-xs shadow-none",
 												activeAction === option
-													? 'bg-[#1f2937] text-white hover:bg-[#1f2937]'
-													: '',
+													? "bg-[#1f2937] text-white hover:bg-[#1f2937]"
+													: ""
 											)}
 											key={option}
 											onClick={() => changeAction(option)}
 											size="sm"
-											variant={activeAction === option ? 'default' : 'outline'}
+											variant={activeAction === option ? "default" : "outline"}
 										>
-											{option === 'ALL'
-												? 'Todos'
-												: auditLogActionLabels[option]}
+											{option === "ALL" ? "Todos" : actionLabel(option)}
 										</Button>
 									))}
 								</div>
@@ -482,8 +509,8 @@ function AuditLogsPageContent() {
 										aria-label="Pesquisar logs por usuário"
 										className="h-10 bg-white"
 										onChange={(event) => {
-											setUserSearch(event.target.value);
-											setPage(INITIAL_PAGE);
+											setUserSearch(event.target.value)
+											setPage(INITIAL_PAGE)
 										}}
 										placeholder="Nome, e-mail ou ID"
 										value={userSearch}
@@ -498,8 +525,8 @@ function AuditLogsPageContent() {
 										aria-label="Data inicial dos logs"
 										className="h-10 bg-white"
 										onChange={(event) => {
-											setStartDate(event.target.value);
-											setPage(INITIAL_PAGE);
+											setStartDate(event.target.value)
+											setPage(INITIAL_PAGE)
 										}}
 										type="date"
 										value={startDate}
@@ -514,8 +541,8 @@ function AuditLogsPageContent() {
 										aria-label="Data final dos logs"
 										className="h-10 bg-white"
 										onChange={(event) => {
-											setEndDate(event.target.value);
-											setPage(INITIAL_PAGE);
+											setEndDate(event.target.value)
+											setPage(INITIAL_PAGE)
 										}}
 										type="date"
 										value={endDate}
@@ -574,11 +601,11 @@ function AuditLogsPageContent() {
 														<div className="flex flex-wrap items-center gap-2">
 															<Badge
 																className={cn(
-																	'h-6 rounded-md border px-2.5',
-																	actionBadgeClass(log.action),
+																	"h-6 rounded-md border px-2.5",
+																	actionBadgeClass(log.action)
 																)}
 															>
-																{auditLogActionLabels[log.action]}
+																{actionLabel(log.action)}
 															</Badge>
 															<Badge
 																className="h-6 rounded-md border-[#d7dee8] bg-white px-2.5 text-[#314155]"
@@ -597,7 +624,7 @@ function AuditLogsPageContent() {
 														<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
 															<span className="inline-flex items-center gap-1.5">
 																<UserRound className="size-3.5" />
-																{log.actor?.name ?? 'Sistema'}
+																{log.actor?.name ?? "Sistema"}
 															</span>
 															<span className="inline-flex items-center gap-1.5">
 																<Clock3 className="size-3.5" />
@@ -627,8 +654,8 @@ function AuditLogsPageContent() {
 								itemLabel="logs"
 								onPageChange={setPage}
 								onPageSizeChange={(nextLimit) => {
-									setLimit(nextLimit);
-									setPage(INITIAL_PAGE);
+									setLimit(nextLimit)
+									setPage(INITIAL_PAGE)
 								}}
 								page={page}
 								pageSize={limit}
@@ -647,7 +674,7 @@ function AuditLogsPageContent() {
 				open={selectedLog !== null}
 			/>
 		</section>
-	);
+	)
 }
 
-export { AuditLogsPageContent };
+export { AuditLogsPageContent }

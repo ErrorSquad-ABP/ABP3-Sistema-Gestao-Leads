@@ -62,7 +62,15 @@ function toCanonicalRole(
 }
 
 function sameStringArray(a: readonly string[], b: readonly string[]): boolean {
-	return a.length === b.length && a.every((value, index) => value === b[index]);
+	if (a.length !== b.length) {
+		return false;
+	}
+	for (let index = 0; index < a.length; index += 1) {
+		if (a.at(index) !== b.at(index)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 @Injectable()

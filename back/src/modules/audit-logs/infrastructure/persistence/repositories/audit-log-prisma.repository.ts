@@ -10,7 +10,7 @@ import {
 	type IAuditLogRepository,
 } from '../../../domain/repositories/audit-log.repository.js';
 
-type AuditLogRow = Prisma.AuditLogGetPayload<{}>;
+type AuditLogRow = Prisma.AuditLogGetPayload<Prisma.AuditLogDefaultArgs>;
 type AuditLogActorRow = {
 	readonly id: string;
 	readonly name: string;

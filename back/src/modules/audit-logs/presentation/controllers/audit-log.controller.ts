@@ -15,7 +15,7 @@ import { AuditLogResponseDto } from '../../application/dto/audit-log-response.dt
 // biome-ignore lint/style/useImportType: Nest DI
 import { ListAuditLogsUseCase } from '../../application/use-cases/list-audit-logs.use-case.js';
 import { AuditLogPresenter } from '../presenters/audit-log.presenter.js';
-import { ListAuditLogsQueryValidator } from '../validators/list-audit-logs-query.validator.js';
+import type { ListAuditLogsQueryValidator } from '../validators/list-audit-logs-query.validator.js';
 
 const BAD_REQUEST = {
 	description:
