@@ -17,6 +17,7 @@ const LEAD_CATALOG_STATUSES = [
 	'NEGOTIATING',
 	'CONVERTED',
 	'LOST',
+	'WORKABLE',
 ] as const;
 
 const LEAD_CATALOG_SOURCES = [
@@ -201,5 +202,5 @@ class ListLeadCatalogQueryValidator
 	}
 }
 
-export { ListLeadCatalogQueryValidator };
 export type { ListLeadCatalogValidatedQuery };
+export { ListLeadCatalogQueryValidator };
