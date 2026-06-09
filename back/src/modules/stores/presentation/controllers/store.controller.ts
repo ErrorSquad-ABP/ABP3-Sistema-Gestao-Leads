@@ -24,7 +24,13 @@ import {
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import { Roles } from '../../../../shared/presentation/decorators/roles.decorator.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
+import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
@@ -50,6 +56,13 @@ import { StorePresenter } from '../presenters/store.presenter.js';
 import { CreateStoreValidator } from '../validators/create-store.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { UpdateStoreValidator } from '../validators/update-store.validator.js';
+
+function toLeadActor(user: JwtUser): LeadActor {
+	return {
+		userId: user.userId,
+		role: user.role as UserRole,
+	};
+}
 
 const BAD_REQUEST = {
 	description:
@@ -131,9 +144,9 @@ class StoreController {
 	})
 	@ApiOkResponseEnvelopeArray(StoreMetricsResponseDto)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	listMetrics() {
+	listMetrics(@CurrentUser() user: JwtUser) {
 		return this.listStoreMetricsUseCase
-			.execute()
+			.execute(toLeadActor(user))
 			.then((metrics) => StoreMetricsPresenter.toResponseList(metrics));
 	}
 

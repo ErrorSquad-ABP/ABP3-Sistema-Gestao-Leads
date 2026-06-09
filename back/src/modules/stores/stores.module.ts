@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { LeadsModule } from '../leads/leads.module.js';
 import { CreateStoreUseCase } from './application/use-cases/create-store.use-case.js';
 import { DeleteStoreUseCase } from './application/use-cases/delete-store.use-case.js';
 import { FindStoreUseCase } from './application/use-cases/find-store.use-case.js';
@@ -11,6 +12,7 @@ import { StoreRepositoryFactory } from './infrastructure/persistence/factories/s
 import { StoreController } from './presentation/controllers/store.controller.js';
 
 @Module({
+	imports: [LeadsModule],
 	controllers: [StoreController],
 	providers: [
 		StoreFactory,
