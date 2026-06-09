@@ -21,9 +21,7 @@ type CreateSessionInput = {
 };
 
 type CreateSessionOptions = {
-	readonly afterCreate?: (
-		tx: Prisma.TransactionClient,
-	) => Promise<void>;
+	readonly afterCreate?: (tx: Prisma.TransactionClient) => Promise<void>;
 };
 
 function advisoryKeysFromUuid(uuid: string): {
