@@ -231,7 +231,9 @@ function AgendaItemForm({
 		<form className="grid gap-4" onSubmit={handleSubmit}>
 			<div className="grid gap-3 sm:grid-cols-2">
 				<div className="space-y-2">
-					<Label htmlFor="agenda-type">Tipo</Label>
+					<Label htmlFor="agenda-type" required>
+						Tipo
+					</Label>
 					<select
 						className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
 						id="agenda-type"
@@ -287,7 +289,9 @@ function AgendaItemForm({
 			</div>
 
 			<div className="space-y-2">
-				<Label htmlFor="agenda-title">Título</Label>
+				<Label htmlFor="agenda-title" required>
+					Título
+				</Label>
 				<Input
 					id="agenda-title"
 					maxLength={120}
@@ -378,7 +382,9 @@ function AgendaItemForm({
 				{state.type === 'EVENT' ? (
 					<>
 						<div className="space-y-2">
-							<Label htmlFor="agenda-starts-at">Início</Label>
+							<Label htmlFor="agenda-starts-at" required>
+								Início
+							</Label>
 							<Input
 								id="agenda-starts-at"
 								onChange={(event) =>

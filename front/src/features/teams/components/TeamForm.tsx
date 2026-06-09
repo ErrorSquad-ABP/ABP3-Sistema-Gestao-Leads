@@ -99,7 +99,9 @@ function TeamFormDialog({
 				<div className="grid gap-4 px-6 py-5">
 					<div className="grid gap-4 sm:grid-cols-2">
 						<div className="grid gap-2">
-							<Label htmlFor="team-name">Nome da equipe</Label>
+							<Label htmlFor="team-name" required>
+								Nome da equipe
+							</Label>
 							<Input
 								id="team-name"
 								onChange={(event) =>
@@ -112,7 +114,9 @@ function TeamFormDialog({
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="team-store">Loja</Label>
+							<Label htmlFor="team-store" required>
+								Loja
+							</Label>
 							<select
 								className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
 								id="team-store"

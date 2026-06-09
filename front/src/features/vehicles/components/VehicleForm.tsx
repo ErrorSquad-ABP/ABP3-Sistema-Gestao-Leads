@@ -309,28 +309,33 @@ function VehicleFormDialog({
 										<LockKeyhole className="absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 									</div>
 								) : (
-									<VehicleFieldControl icon={Store}>
-										<select
-											className={vehicleFormSelectClass}
-											id="vehicle-form-store"
-											onChange={(event) =>
-												form.setValue('storeId', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
-											}
-											value={selectedStoreId}
-										>
-											<option value="" disabled>
-												Selecione uma loja
-											</option>
-											{stores.map((store) => (
-												<option key={store.id} value={store.id}>
-													{store.name}
+									<>
+										<Label htmlFor="vehicle-form-store" required>
+											Loja do veículo
+										</Label>
+										<VehicleFieldControl icon={Store}>
+											<select
+												className={vehicleFormSelectClass}
+												id="vehicle-form-store"
+												onChange={(event) =>
+													form.setValue('storeId', event.target.value, {
+														shouldDirty: true,
+														shouldValidate: true,
+													})
+												}
+												value={selectedStoreId}
+											>
+												<option value="" disabled>
+													Selecione uma loja
 												</option>
-											))}
-										</select>
-									</VehicleFieldControl>
+												{stores.map((store) => (
+													<option key={store.id} value={store.id}>
+														{store.name}
+													</option>
+												))}
+											</select>
+										</VehicleFieldControl>
+									</>
 								)}
 								{form.formState.errors.storeId ? (
 									<p className="text-xs text-destructive">
@@ -346,7 +351,9 @@ function VehicleFormDialog({
 						>
 							<div className="grid gap-5 md:grid-cols-2">
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-brand">Marca</Label>
+									<Label htmlFor="vehicle-form-brand" required>
+										Marca
+									</Label>
 									<VehicleFieldControl icon={Tag}>
 										<Input
 											className={vehicleFormInputClass}
@@ -368,7 +375,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-model">Modelo</Label>
+									<Label htmlFor="vehicle-form-model" required>
+										Modelo
+									</Label>
 									<VehicleFieldControl icon={CarFront}>
 										<Input
 											className={vehicleFormInputClass}
@@ -436,7 +445,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-model-year">Ano do modelo</Label>
+									<Label htmlFor="vehicle-form-model-year" required>
+										Ano do modelo
+									</Label>
 									<VehicleFieldControl icon={CalendarDays}>
 										<Input
 											autoComplete="off"
@@ -509,7 +520,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-mileage">Quilometragem</Label>
+									<Label htmlFor="vehicle-form-mileage" required>
+										Quilometragem
+									</Label>
 									<VehicleFieldControl icon={Gauge}>
 										<Input
 											autoComplete="off"
@@ -545,7 +558,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-fuel">Combustível</Label>
+									<Label htmlFor="vehicle-form-fuel" required>
+										Combustível
+									</Label>
 									<VehicleFieldControl icon={Fuel}>
 										<select
 											className={vehicleFormSelectClass}
@@ -578,7 +593,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-price">Preço</Label>
+									<Label htmlFor="vehicle-form-price" required>
+										Preço
+									</Label>
 									<VehicleFieldControl icon={BadgeDollarSign}>
 										<Input
 											autoComplete="off"
@@ -606,7 +623,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-status">Status</Label>
+									<Label htmlFor="vehicle-form-status" required>
+										Status
+									</Label>
 									<VehicleFieldControl icon={ShieldCheck}>
 										<select
 											className={vehicleFormSelectClass}

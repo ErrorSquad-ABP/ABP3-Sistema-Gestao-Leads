@@ -275,7 +275,9 @@ function UsersFormDialog({
 
 						<div className="grid gap-5 md:grid-cols-2">
 							<div className="space-y-1.5 md:col-span-2">
-								<Label htmlFor="users-form-name">Nome completo</Label>
+								<Label htmlFor="users-form-name" required>
+									Nome completo
+								</Label>
 								<Input
 									className="h-10 rounded-md border-[#d6dce5] shadow-none focus-visible:border-[#2d3648]/45"
 									id="users-form-name"
@@ -290,7 +292,9 @@ function UsersFormDialog({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="users-form-email">E-mail</Label>
+								<Label htmlFor="users-form-email" required>
+									E-mail
+								</Label>
 								<Input
 									className="h-10 rounded-md border-[#d6dce5] shadow-none focus-visible:border-[#2d3648]/45"
 									id="users-form-email"
@@ -306,7 +310,9 @@ function UsersFormDialog({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="users-form-role">Papel canônico</Label>
+								<Label htmlFor="users-form-role" required>
+									Papel canônico
+								</Label>
 								<select
 									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="users-form-role"
@@ -361,7 +367,7 @@ function UsersFormDialog({
 							</div>
 
 							<div className="space-y-1.5 md:col-span-2">
-								<Label htmlFor="users-form-password">
+								<Label htmlFor="users-form-password" required={!isEditMode}>
 									{isEditMode ? 'Nova senha (opcional)' : 'Senha inicial'}
 								</Label>
 								<Input

@@ -58,8 +58,9 @@ function RegisterForm() {
 						<Label
 							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="name"
+							required
 						>
-							Nome completo*
+							Nome completo
 						</Label>
 						<Input
 							autoComplete="name"
@@ -86,8 +87,9 @@ function RegisterForm() {
 						<Label
 							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="email"
+							required
 						>
-							E-mail*
+							E-mail
 						</Label>
 						<Input
 							autoComplete="email"
@@ -115,8 +117,9 @@ function RegisterForm() {
 						<Label
 							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="password"
+							required
 						>
-							Senha*
+							Senha
 						</Label>
 						<Input
 							autoComplete="new-password"
@@ -143,8 +146,9 @@ function RegisterForm() {
 						<Label
 							className="text-[0.82rem] font-normal text-muted-foreground"
 							htmlFor="confirmPassword"
+							required
 						>
-							Confirmar senha*
+							Confirmar senha
 						</Label>
 						<Input
 							autoComplete="new-password"

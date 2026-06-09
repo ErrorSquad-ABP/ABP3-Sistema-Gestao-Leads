@@ -142,7 +142,9 @@ function CustomerCatalogFormDialog({
 						</div>
 					) : null}
 					<div className="space-y-1.5">
-						<Label htmlFor="catalog-customer-name">Nome</Label>
+						<Label htmlFor="catalog-customer-name" required>
+							Nome
+						</Label>
 						<Input
 							className={cn(
 								fieldInputClass,
@@ -313,7 +315,9 @@ function StoreCatalogFormDialog({
 						</div>
 					) : null}
 					<div className="space-y-1.5">
-						<Label htmlFor="catalog-store-name">Nome da loja</Label>
+						<Label htmlFor="catalog-store-name" required>
+							Nome da loja
+						</Label>
 						<Input
 							className={cn(
 								fieldInputClass,

@@ -315,6 +315,7 @@ function LeadFormDialog({
 								<Label
 									className="text-base font-semibold text-[#1b2430]"
 									htmlFor="lead-form-customer"
+									required
 								>
 									Cliente
 								</Label>
@@ -364,7 +365,9 @@ function LeadFormDialog({
 
 							<div className="grid gap-5 md:grid-cols-2">
 								<div className="space-y-2">
-									<Label htmlFor="lead-form-store">Loja</Label>
+									<Label htmlFor="lead-form-store" required>
+										Loja
+									</Label>
 									<p className="text-xs leading-5 text-[#6b7687]">
 										A loja define o escopo comercial e a lista de responsáveis
 										elegíveis.
@@ -397,7 +400,9 @@ function LeadFormDialog({
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="lead-form-source">Origem</Label>
+									<Label htmlFor="lead-form-source" required>
+										Origem
+									</Label>
 									<select
 										className={leadFormSelectClass}
 										id="lead-form-source"
@@ -471,7 +476,9 @@ function LeadFormDialog({
 
 								{isEditMode ? (
 									<div className="space-y-1.5">
-										<Label htmlFor="lead-form-status">Estado</Label>
+										<Label htmlFor="lead-form-status" required>
+											Estado
+										</Label>
 										<select
 											className={leadFormSelectClass}
 											id="lead-form-status"
