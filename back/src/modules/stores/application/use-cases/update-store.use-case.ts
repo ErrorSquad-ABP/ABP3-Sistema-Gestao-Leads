@@ -26,6 +26,37 @@ function hasStoreUpdatePayload(dto: UpdateStoreDto): boolean {
 	);
 }
 
+function collectStoreChangedFields(dto: UpdateStoreDto): string[] {
+	const changedFields: string[] = [];
+
+	if (dto.name !== undefined) {
+		changedFields.push('name');
+	}
+	if (dto.addressLine !== undefined) {
+		changedFields.push('addressLine');
+	}
+	if (dto.city !== undefined) {
+		changedFields.push('city');
+	}
+	if (dto.coverage !== undefined) {
+		changedFields.push('coverage');
+	}
+	if (dto.distributionRegion !== undefined) {
+		changedFields.push('distributionRegion');
+	}
+	if (dto.region !== undefined) {
+		changedFields.push('region');
+	}
+	if (dto.scope !== undefined) {
+		changedFields.push('scope');
+	}
+	if (dto.state !== undefined) {
+		changedFields.push('state');
+	}
+
+	return changedFields;
+}
+
 function buildStoreDetailUpdates(dto: UpdateStoreDto): Partial<StoreDetails> {
 	return {
 		...(dto.addressLine !== undefined && {
@@ -79,16 +110,13 @@ class UpdateStoreUseCase {
 			existing.updateDetails(buildStoreDetailUpdates(dto));
 
 			const updated = await stores.update(existing);
-			const changedFields = (
-				Object.keys(dto) as (keyof UpdateStoreDto)[]
-			).filter((field) => dto[field] !== undefined);
 
 			await createAuditLogEntry(tx, {
 				actorUserId,
 				action: 'UPDATE',
 				entityName: 'Store',
 				entityId: updated.id.value,
-				metadata: { changedFields },
+				metadata: { changedFields: collectStoreChangedFields(dto) },
 			});
 
 			return updated;
