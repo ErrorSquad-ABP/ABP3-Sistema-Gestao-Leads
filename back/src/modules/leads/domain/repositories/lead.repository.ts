@@ -4,8 +4,10 @@ import type {
 } from '../../../../shared/domain/types/identifiers.js';
 
 import type { Lead } from '../entities/lead.entity.js';
-import type { LeadListPage } from '../types/lead-list-page.js';
-import type { LeadListPagination } from '../types/lead-list-page.js';
+import type {
+	LeadListPage,
+	LeadListPagination,
+} from '../types/lead-list-page.js';
 
 type LeadListFilters = {
 	readonly withoutOpenDeal?: boolean;
@@ -17,7 +19,8 @@ type LeadCatalogStatus =
 	| 'QUALIFIED'
 	| 'NEGOTIATING'
 	| 'CONVERTED'
-	| 'LOST';
+	| 'LOST'
+	| 'WORKABLE';
 
 type LeadCatalogSource =
 	| 'WEBSITE'
