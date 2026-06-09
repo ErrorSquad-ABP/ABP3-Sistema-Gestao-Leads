@@ -7,9 +7,16 @@ import { Name } from '../../../../shared/domain/value-objects/name.value-object.
 import { Store } from '../../domain/entities/store.entity.js';
 import { CreateStoreValidator } from '../validators/create-store.validator.js';
 import { UpdateStoreValidator } from '../validators/update-store.validator.js';
+import type { JwtUser } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import { StoreController } from './store.controller.js';
 
 const storeId = '11111111-1111-4111-8111-111111111111';
+const actorUserId = '22222222-2222-4222-8222-222222222222';
+const actor: JwtUser = {
+	userId: actorUserId,
+	role: 'ADMINISTRATOR',
+	jti: '33333333-3333-4333-8333-333333333333',
+};
 
 function buildStore(body: {
 	readonly addressLine?: string | null;
@@ -43,7 +50,8 @@ describe('StoreController create/update', () => {
 		let persistedBody: typeof createBody | undefined;
 		const controller = new StoreController(
 			{
-				async execute(body: typeof createBody) {
+				async execute(userId: string, body: typeof createBody) {
+					assert.equal(userId, actorUserId);
 					persistedBody = body;
 					return buildStore(body);
 				},
@@ -56,6 +64,7 @@ describe('StoreController create/update', () => {
 		);
 
 		const response = await controller.create(
+			actor,
 			assignValidator(new CreateStoreValidator(), createBody),
 		);
 
@@ -82,7 +91,8 @@ describe('StoreController create/update', () => {
 		const controller = new StoreController(
 			{} as never,
 			{
-				async execute(id: string, body: typeof updateBody) {
+				async execute(userId: string, id: string, body: typeof updateBody) {
+					assert.equal(userId, actorUserId);
 					assert.equal(id, storeId);
 					persistedBody = body;
 					return buildStore(body);
@@ -95,6 +105,7 @@ describe('StoreController create/update', () => {
 		);
 
 		const response = await controller.update(
+			actor,
 			storeId,
 			assignValidator(new UpdateStoreValidator(), updateBody),
 		);
