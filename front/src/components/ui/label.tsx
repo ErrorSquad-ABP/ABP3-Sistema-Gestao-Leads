@@ -12,9 +12,7 @@ type RequiredFieldProps = Pick<
 >;
 
 function requiredFieldProps(isRequired = true): RequiredFieldProps {
-	return isRequired
-		? { 'aria-required': true, required: true }
-		: {};
+	return isRequired ? { 'aria-required': true, required: true } : {};
 }
 
 type LabelProps = LabelHTMLAttributes<HTMLLabelElement> & {

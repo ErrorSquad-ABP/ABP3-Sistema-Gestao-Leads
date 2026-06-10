@@ -241,7 +241,8 @@ function AgendaItemForm({
 							patchState({ type: event.target.value as AgendaItemType })
 						}
 						value={state.type}
-					 {...requiredFieldProps()}>
+						{...requiredFieldProps()}
+					>
 						<option value="TASK">Tarefa</option>
 						<option value="EVENT">Compromisso</option>
 					</select>
@@ -298,7 +299,8 @@ function AgendaItemForm({
 					onChange={(event) => patchState({ title: event.target.value })}
 					required
 					value={state.title}
-				 {...requiredFieldProps()}/>
+					{...requiredFieldProps()}
+				/>
 			</div>
 
 			<div className="space-y-2">
@@ -393,7 +395,8 @@ function AgendaItemForm({
 								required
 								type="datetime-local"
 								value={state.startsAt}
-							 {...requiredFieldProps()}/>
+								{...requiredFieldProps()}
+							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="agenda-ends-at">Fim</Label>

@@ -362,7 +362,8 @@ function CustomerFormDialog({
 												}))
 											}
 											value={formState.name}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 									</CustomerFieldControl>
 								</div>
 

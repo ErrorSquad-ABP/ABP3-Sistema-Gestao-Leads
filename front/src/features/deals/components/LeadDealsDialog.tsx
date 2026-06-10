@@ -325,7 +325,8 @@ function LeadDealsDialog({
 								id="lead-deal-vehicle"
 								onChange={(e) => setVehicleId(e.target.value)}
 								value={vehicleId}
-							 {...requiredFieldProps()}>
+								{...requiredFieldProps()}
+							>
 								<option value="">
 									{vehiclesQuery.isPending
 										? 'Carregando veículos disponíveis...'
@@ -366,7 +367,8 @@ function LeadDealsDialog({
 								id="lead-deal-title"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
-							 {...requiredFieldProps()}/>
+								{...requiredFieldProps()}
+							/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="lead-deal-value">Valor</Label>

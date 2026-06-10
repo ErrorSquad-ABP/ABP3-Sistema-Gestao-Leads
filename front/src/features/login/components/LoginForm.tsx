@@ -197,7 +197,8 @@ function LoginForm() {
 											placeholder="seu@email.com"
 											type="email"
 											{...form.register('email')}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 									</div>
 									{form.formState.errors.email ? (
 										<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -229,7 +230,8 @@ function LoginForm() {
 											placeholder="Digite sua senha"
 											type={passwordVisible ? 'text' : 'password'}
 											{...form.register('password')}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 										<button
 											aria-label={
 												passwordVisible ? 'Ocultar senha' : 'Mostrar senha'

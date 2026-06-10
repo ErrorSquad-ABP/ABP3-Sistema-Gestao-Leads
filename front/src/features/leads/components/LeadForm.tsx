@@ -334,7 +334,8 @@ function LeadFormDialog({
 										})
 									}
 									value={selectedCustomerId}
-								 {...requiredFieldProps()}>
+									{...requiredFieldProps()}
+								>
 									<option value="" disabled>
 										Selecione um cliente
 									</option>
@@ -382,7 +383,8 @@ function LeadFormDialog({
 											})
 										}
 										value={selectedStoreId}
-									 {...requiredFieldProps()}>
+										{...requiredFieldProps()}
+									>
 										<option value="" disabled>
 											Selecione uma loja
 										</option>
@@ -417,7 +419,8 @@ function LeadFormDialog({
 											)
 										}
 										value={sourceValue}
-									 {...requiredFieldProps()}>
+										{...requiredFieldProps()}
+									>
 										{leadSourceOptions.map((source) => (
 											<option key={source.value} value={source.value}>
 												{source.label}
@@ -493,7 +496,8 @@ function LeadFormDialog({
 												)
 											}
 											value={statusValue}
-										 {...requiredFieldProps()}>
+											{...requiredFieldProps()}
+										>
 											{leadStatusOptions.map((status) => (
 												<option key={status.value} value={status.value}>
 													{status.label}

@@ -283,7 +283,8 @@ function UsersFormDialog({
 									id="users-form-name"
 									placeholder="Maria Silva"
 									{...form.register('name')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								{form.formState.errors.name ? (
 									<p className="text-xs text-destructive">
 										{form.formState.errors.name.message}
@@ -301,7 +302,8 @@ function UsersFormDialog({
 									placeholder="maria@leadcrm.com"
 									type="email"
 									{...form.register('email')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								{form.formState.errors.email ? (
 									<p className="text-xs text-destructive">
 										{form.formState.errors.email.message}
@@ -324,7 +326,8 @@ function UsersFormDialog({
 										)
 									}
 									value={selectedRole}
-								 {...requiredFieldProps()}>
+									{...requiredFieldProps()}
+								>
 									{roleOptions.map((option) => (
 										<option key={option.value} value={option.value}>
 											{option.label}
@@ -379,8 +382,9 @@ function UsersFormDialog({
 											: 'Mínimo de 8 caracteres'
 									}
 									type="password"
-									{...form.register('password'), ...requiredFieldProps(!isEditMode)}
-								 {...requiredFieldProps()}/>
+									{...form.register('password')}
+									{...requiredFieldProps(!isEditMode)}
+								/>
 								{form.formState.errors.password ? (
 									<p className="text-xs text-destructive">
 										{form.formState.errors.password.message}

@@ -357,7 +357,8 @@ function ProfilePageContent({
 									placeholder="exemplo@empresa.com"
 									type="email"
 									{...emailForm.register('email')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								<FieldError
 									message={emailForm.formState.errors.email?.message}
 								/>
@@ -379,7 +380,8 @@ function ProfilePageContent({
 									placeholder="Senha atual"
 									type="password"
 									{...emailForm.register('currentPassword')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								<FieldError
 									message={emailForm.formState.errors.currentPassword?.message}
 								/>
@@ -474,7 +476,8 @@ function ProfilePageContent({
 									placeholder="Senha atual"
 									type="password"
 									{...passwordForm.register('currentPassword')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								<FieldError
 									message={
 										passwordForm.formState.errors.currentPassword?.message
@@ -498,7 +501,8 @@ function ProfilePageContent({
 									placeholder="Mínimo de 8 caracteres"
 									type="password"
 									{...passwordForm.register('newPassword')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								<FieldError
 									message={passwordForm.formState.errors.newPassword?.message}
 								/>
@@ -520,7 +524,8 @@ function ProfilePageContent({
 									placeholder="Repita a nova senha"
 									type="password"
 									{...passwordForm.register('confirmPassword')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								<FieldError
 									message={
 										passwordForm.formState.errors.confirmPassword?.message

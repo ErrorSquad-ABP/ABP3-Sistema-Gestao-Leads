@@ -74,7 +74,8 @@ function RegisterForm() {
 							placeholder="Digite seu nome"
 							type="text"
 							{...form.register('name')}
-						 {...requiredFieldProps()}/>
+							{...requiredFieldProps()}
+						/>
 						{form.formState.errors.name ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
 								<AlertCircle className="size-4" />
@@ -104,7 +105,8 @@ function RegisterForm() {
 							placeholder="exemplo@leadcrm.com"
 							type="email"
 							{...form.register('email')}
-						 {...requiredFieldProps()}/>
+							{...requiredFieldProps()}
+						/>
 						{form.formState.errors.email ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
 								<AlertCircle className="size-4" />
@@ -133,7 +135,8 @@ function RegisterForm() {
 							placeholder="Crie uma senha"
 							type="password"
 							{...form.register('password')}
-						 {...requiredFieldProps()}/>
+							{...requiredFieldProps()}
+						/>
 						{form.formState.errors.password ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
 								<AlertCircle className="size-4" />
@@ -162,7 +165,8 @@ function RegisterForm() {
 							placeholder="Repita a senha"
 							type="password"
 							{...form.register('confirmPassword')}
-						 {...requiredFieldProps()}/>
+							{...requiredFieldProps()}
+						/>
 						{form.formState.errors.confirmPassword ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
 								<AlertCircle className="size-4" />

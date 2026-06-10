@@ -545,7 +545,8 @@ function DealFormDialog({
 											})
 										}
 										value={titleValue ?? ''}
-									 {...requiredFieldProps()}/>
+										{...requiredFieldProps()}
+									/>
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
 									Dê um título claro para esta negociação.

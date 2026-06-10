@@ -154,7 +154,8 @@ function CustomerCatalogFormDialog({
 							)}
 							id="catalog-customer-name"
 							{...form.register('name')}
-						 {...requiredFieldProps()}/>
+							{...requiredFieldProps()}
+						/>
 						{form.formState.errors.name ? (
 							<p className="text-xs text-destructive">
 								{form.formState.errors.name.message}
@@ -327,7 +328,8 @@ function StoreCatalogFormDialog({
 							)}
 							id="catalog-store-name"
 							{...form.register('name')}
-						 {...requiredFieldProps()}/>
+							{...requiredFieldProps()}
+						/>
 						{form.formState.errors.name ? (
 							<p className="text-xs text-destructive">
 								{form.formState.errors.name.message}

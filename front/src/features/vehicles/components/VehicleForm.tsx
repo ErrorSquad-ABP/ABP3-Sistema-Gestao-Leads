@@ -324,7 +324,8 @@ function VehicleFormDialog({
 													})
 												}
 												value={selectedStoreId}
-											 {...requiredFieldProps()}>
+												{...requiredFieldProps()}
+											>
 												<option value="" disabled>
 													Selecione uma loja
 												</option>
@@ -365,7 +366,8 @@ function VehicleFormDialog({
 												})
 											}
 											value={brandValue ?? ''}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 									</VehicleFieldControl>
 									{form.formState.errors.brand ? (
 										<p className="text-xs text-destructive">
@@ -389,7 +391,8 @@ function VehicleFormDialog({
 												})
 											}
 											value={modelValue ?? ''}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 									</VehicleFieldControl>
 									{form.formState.errors.model ? (
 										<p className="text-xs text-destructive">
@@ -469,7 +472,8 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(modelYearValue)}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 									</VehicleFieldControl>
 									{form.formState.errors.modelYear ? (
 										<p className="text-xs text-destructive">
@@ -548,7 +552,8 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(mileageValue)}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 									</VehicleFieldControl>
 									{form.formState.errors.mileage ? (
 										<p className="text-xs text-destructive">
@@ -577,7 +582,8 @@ function VehicleFormDialog({
 												)
 											}
 											value={fuelValue}
-										 {...requiredFieldProps()}>
+											{...requiredFieldProps()}
+										>
 											{supportedFuelTypeOptions.map((fuel) => (
 												<option key={fuel.value} value={fuel.value}>
 													{fuel.label}
@@ -613,7 +619,8 @@ function VehicleFormDialog({
 											}}
 											placeholder="R$ 0,00"
 											value={formatCentsDigitsToBrlDisplay(priceCentsDigits)}
-										 {...requiredFieldProps()}/>
+											{...requiredFieldProps()}
+										/>
 									</VehicleFieldControl>
 									{form.formState.errors.price ? (
 										<p className="text-xs text-destructive">
@@ -641,7 +648,8 @@ function VehicleFormDialog({
 												)
 											}
 											value={statusValue}
-										 {...requiredFieldProps()}>
+											{...requiredFieldProps()}
+										>
 											{vehicleStatusOptions.map((status) => (
 												<option key={status.value} value={status.value}>
 													{status.label}

@@ -236,7 +236,8 @@ function AccessGroupDialog({
 									id="access-group-name"
 									placeholder="Gerentes regionais"
 									{...form.register('name')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								{form.formState.errors.name ? (
 									<p className="text-xs text-destructive">
 										{form.formState.errors.name.message}
@@ -253,7 +254,8 @@ function AccessGroupDialog({
 									id="access-group-description"
 									placeholder="Explique quando esse grupo deve ser usado."
 									{...form.register('description')}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 								{form.formState.errors.description ? (
 									<p className="text-xs text-destructive">
 										{form.formState.errors.description.message}

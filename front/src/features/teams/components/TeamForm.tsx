@@ -111,7 +111,8 @@ function TeamFormDialog({
 									}))
 								}
 								value={formState.name}
-							 {...requiredFieldProps()}/>
+								{...requiredFieldProps()}
+							/>
 						</div>
 						<div className="grid gap-2">
 							<Label htmlFor="team-store" required>
@@ -127,7 +128,8 @@ function TeamFormDialog({
 									}))
 								}
 								value={formState.storeId}
-							 {...requiredFieldProps()}>
+								{...requiredFieldProps()}
+							>
 								<option value="">Selecione uma loja</option>
 								{stores.map((store) => (
 									<option key={store.id} value={store.id}>

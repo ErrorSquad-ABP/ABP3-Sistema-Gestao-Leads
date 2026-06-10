@@ -420,7 +420,8 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 									onChange={(e) => setTitle(e.target.value)}
 									placeholder="Ex.: Proposta de Jeep Compass Limited"
 									value={title}
-								 {...requiredFieldProps()}/>
+									{...requiredFieldProps()}
+								/>
 							</div>
 							<p className="text-[11.5px] leading-4 text-[#7a8494]">
 								Dê um título claro para esta negociação.

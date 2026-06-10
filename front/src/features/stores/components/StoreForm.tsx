@@ -125,7 +125,8 @@ function StoreFormDialog({
 							id="store-name"
 							onChange={(event) => onValueChange('name', event.target.value)}
 							value={values.name}
-						 {...requiredFieldProps()}/>
+							{...requiredFieldProps()}
+						/>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2">
 						<div className="grid gap-2">
