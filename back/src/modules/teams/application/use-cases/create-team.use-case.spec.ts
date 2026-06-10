@@ -223,6 +223,9 @@ describe('CreateTeamUseCase', () => {
 						async list() {
 							return [store];
 						},
+						async listMetrics() {
+							return [];
+						},
 						async countBlockingReferences() {
 							return { leads: 0, teams: 0 };
 						},
