@@ -5,13 +5,16 @@ import {
 	ChevronRight,
 	KeyRound,
 	LayoutList,
+	Layers,
 	MoreHorizontal,
 	PencilLine,
 	Plus,
 	Search,
 	ShieldCheck,
+	ShieldOff,
 	Trash2,
 	UserCog,
+	Users,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -41,19 +44,24 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
-import type { AccessGroup, UserRecord } from '../model/users.model';
+import type {
+	AccessGroup,
+	UserRecord,
+	UsersSummary,
+} from '../model/users.model';
 import {
 	getBaseRoleLabel,
 	getFeatureLabels,
 	getRoleBadgeClassName,
 } from './AccessGroupForm';
-import { formatTeamLabel, getRoleCardCopy, getRoleLabel } from './UserForm';
+import { getRoleCardCopy, getRoleLabel } from './UserForm';
 
 type UsersListSectionProps = {
-	adminCount: number;
-	filteredUsers: UserRecord[];
+	accessGroups: AccessGroup[];
+	accessGroupFilter: string;
 	isLoading: boolean;
 	limit: number;
+	onAccessGroupFilterChange: (value: string) => void;
 	onCreate: () => void;
 	onDelete: (user: UserRecord) => void;
 	onEdit: (user: UserRecord) => void;
@@ -65,11 +73,11 @@ type UsersListSectionProps = {
 	page: number;
 	roleFilter: 'ALL' | UserRecord['role'];
 	search: string;
-	totalPages: number;
+	summary: UsersSummary;
 	totalUsers: number;
+	totalPages: number;
 	users: UserRecord[];
 	usersError: string | null;
-	withoutGroupCount: number;
 };
 
 type AccessGroupsSectionProps = {
@@ -81,11 +89,111 @@ type AccessGroupsSectionProps = {
 	onEdit: (group: AccessGroup) => void;
 };
 
+function formatUserInitials(name: string) {
+	const words = name.trim().split(/\s+/).filter(Boolean);
+	if (words.length === 0) {
+		return 'US';
+	}
+	const [first = '', second = ''] = words;
+	return `${first[0] ?? ''}${second[0] ?? first[1] ?? ''}`.toUpperCase();
+}
+
+function UsersSummaryCards({ summary }: { summary: UsersSummary }) {
+	const cards = [
+		{
+			helper: 'Usuários cadastrados no sistema',
+			icon: Users,
+			label: 'Total de usuários',
+			tone: 'flex size-14 items-center justify-center rounded-full bg-orange-50 text-[#f05a28]',
+			value: summary.total,
+		},
+		{
+			helper: 'Acesso completo à administração',
+			icon: UserCog,
+			label: 'Administradores',
+			tone: 'flex size-14 items-center justify-center rounded-full bg-violet-50 text-violet-600',
+			value: summary.administrators,
+		},
+		{
+			helper: 'Regidos apenas pelo papel canônico',
+			icon: ShieldOff,
+			label: 'Sem grupo',
+			tone: 'flex size-14 items-center justify-center rounded-full bg-blue-50 text-blue-600',
+			value: summary.withoutGroup,
+		},
+		{
+			helper: 'Permissões somadas por união de features',
+			icon: Layers,
+			label: 'Multi-grupo',
+			tone: 'flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600',
+			value: summary.withMultipleGroups,
+		},
+	];
+
+	return (
+		<div className="grid gap-4 xl:grid-cols-4">
+			{cards.map((card) => {
+				const Icon = card.icon;
+				return (
+					<Card className="rounded-3xl border-[#dfe7f1] bg-white" key={card.label}>
+						<CardContent className="flex items-center gap-5 p-6">
+							<div className={card.tone}>
+								<Icon className="size-7" />
+							</div>
+							<div>
+								<p className="text-sm font-medium text-[#667085]">
+									{card.label}
+								</p>
+								<p className="mt-1 text-2xl font-bold text-[#101828]">
+									{card.value}
+								</p>
+								<p className="mt-1 text-xs text-[#667085]">{card.helper}</p>
+							</div>
+						</CardContent>
+					</Card>
+				);
+			})}
+		</div>
+	);
+}
+
+function UserGroupsCell({ user }: { user: UserRecord }) {
+	if (user.accessGroups.length === 0) {
+		return <span className="text-sm text-[#667085]">Sem grupo</span>;
+	}
+
+	const visibleGroups = user.accessGroups.slice(0, 2);
+	const hiddenCount = user.accessGroups.length - visibleGroups.length;
+
+	return (
+		<div className="flex flex-wrap items-center gap-1.5">
+			{visibleGroups.map((group) => (
+				<Badge
+					className="rounded-full border-[#e7edf5] bg-[#f8fafc] px-2.5 py-0.5 text-xs font-medium text-[#1e293b]"
+					key={group.id}
+					variant="outline"
+				>
+					{group.name}
+				</Badge>
+			))}
+			{hiddenCount > 0 ? (
+				<Badge
+					className="rounded-full border-orange-100 bg-orange-50 px-2 py-0.5 text-xs font-semibold text-[#c2410c]"
+					variant="outline"
+				>
+					+{hiddenCount}
+				</Badge>
+			) : null}
+		</div>
+	);
+}
+
 function UsersListSection({
-	adminCount,
-	filteredUsers,
+	accessGroups,
+	accessGroupFilter,
 	isLoading,
 	limit,
+	onAccessGroupFilterChange,
 	onCreate,
 	onDelete,
 	onEdit,
@@ -97,62 +205,36 @@ function UsersListSection({
 	page,
 	roleFilter,
 	search,
+	summary,
 	totalPages,
 	totalUsers,
 	users,
 	usersError,
-	withoutGroupCount,
 }: UsersListSectionProps) {
-	return (
-		<div className="space-y-6">
-			<div className="grid gap-4 lg:grid-cols-4">
-				{[
-					['Total cadastrado', totalUsers],
-					['Nesta página', users.length],
-					['Administradores', adminCount],
-					['Sem grupo', withoutGroupCount],
-				].map(([label, value]) => (
-					<Card
-						className="border-border/75 bg-[#f8fafc] shadow-none"
-						key={label}
-					>
-						<CardContent className="p-4">
-							<p className="text-xs tracking-[0.14em] text-[#6b7687] uppercase">
-								{label}
-							</p>
-							<p className="mt-3 text-3xl font-semibold text-[#1b2430]">
-								{value}
-							</p>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+	const safeTotalPages = Math.max(totalPages, 1);
+	const firstVisibleItem = users.length === 0 ? 0 : (page - 1) * limit + 1;
+	const lastVisibleItem = Math.min(page * limit, totalUsers);
 
-			<Card className="border-border/85 bg-white">
-				<CardHeader className="gap-4 border-b border-border/75 pb-5">
-					<div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-						<div>
-							<CardTitle className="text-[1.2rem] font-semibold text-[#1b2430]">
-								Lista de usuários
-							</CardTitle>
-							<CardDescription className="mt-1 text-sm leading-6 text-[#6b7687]">
-								Cada usuário já pode ser associado a um grupo persistido na API.
-							</CardDescription>
+	return (
+		<div className="space-y-5">
+			<UsersSummaryCards summary={summary} />
+
+			<Card className="overflow-hidden rounded-3xl border-[#dfe7f1] bg-white">
+				<CardContent className="p-0">
+					<div className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center">
+						<div className="relative flex-1">
+							<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-[#667085]" />
+							<Input
+								className="h-12 rounded-xl border-[#d8e0ea] bg-white pl-11 shadow-none focus-visible:border-[#f05a28]/45"
+								onChange={(event) => onSearchChange(event.target.value)}
+								placeholder="Buscar por nome ou e-mail"
+								value={search}
+							/>
 						</div>
 
-						<div className="flex flex-1 flex-col gap-3 md:flex-row lg:max-w-2xl lg:justify-end">
-							<div className="relative md:max-w-sm md:flex-1">
-								<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#97a2b1]" />
-								<Input
-									className="h-10 rounded-md border-[#d6dce5] bg-[#f8fafc] pl-9 shadow-none focus-visible:border-[#2d3648]/45"
-									onChange={(event) => onSearchChange(event.target.value)}
-									placeholder="Pesquisar por nome, e-mail ou grupo"
-									value={search}
-								/>
-							</div>
-
+						<div className="flex flex-wrap gap-3">
 							<select
-								className="h-10 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
+								className="h-12 rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
 								onChange={(event) =>
 									onRoleFilterChange(
 										event.target.value as 'ALL' | UserRecord['role'],
@@ -167,82 +249,111 @@ function UsersListSection({
 								<option value="ADMINISTRATOR">Administrador</option>
 							</select>
 
+							<select
+								className="h-12 rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
+								onChange={(event) =>
+									onAccessGroupFilterChange(event.target.value)
+								}
+								value={accessGroupFilter}
+							>
+								<option value="">Todos os grupos</option>
+								{accessGroups.map((group) => (
+									<option key={group.id} value={group.id}>
+										{group.name}
+									</option>
+								))}
+							</select>
+
 							<Button
-								className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+								className="h-12 rounded-xl bg-[#f05a28] px-5 text-white shadow-none hover:bg-[#df4f1f]"
 								onClick={onCreate}
-								size="sm"
 							>
 								<Plus className="size-4" />
 								Novo usuário
 							</Button>
 						</div>
 					</div>
-				</CardHeader>
 
-				<CardContent className="space-y-5 pt-6">
-					<div className="overflow-hidden rounded-2xl border border-border/80">
+					<div className="overflow-hidden border-t border-[#e7edf5]">
 						<Table>
-							<TableHeader className="[&_tr]:border-[#e6ecf3]">
-								<TableRow className="bg-[#f8fafc] hover:bg-[#f8fafc]">
-									<TableHead className="px-4">Nome</TableHead>
-									<TableHead>E-mail</TableHead>
-									<TableHead>Papel</TableHead>
-									<TableHead>Grupo</TableHead>
-									<TableHead>Equipe</TableHead>
-									<TableHead className="w-[4.5rem] text-right">Ações</TableHead>
+							<TableHeader className="bg-white">
+								<TableRow className="border-[#e7edf5]">
+									<TableHead className="w-[26%] pl-7 text-[#1e293b]">
+										Usuário
+									</TableHead>
+									<TableHead className="w-[22%] text-[#1e293b]">
+										E-mail
+									</TableHead>
+									<TableHead className="w-[14%] text-[#1e293b]">
+										Papel
+									</TableHead>
+									<TableHead className="w-[22%] text-[#1e293b]">
+										Grupos de acesso
+									</TableHead>
+									<TableHead className="w-[10%] text-[#1e293b]">
+										Features
+									</TableHead>
+									<TableHead className="pr-6 text-right text-[#1e293b]">
+										Ações
+									</TableHead>
 								</TableRow>
 							</TableHeader>
-							<TableBody className="[&_tr]:border-[#e6ecf3]">
+							<TableBody>
 								{isLoading ? (
-									<TableRow>
+									<TableRow className="border-[#e7edf5]">
 										<TableCell
-											className="px-4 py-8 text-center text-sm text-[#6b7687]"
+											className="py-10 text-center text-sm text-[#667085]"
 											colSpan={6}
 										>
 											Carregando usuários...
 										</TableCell>
 									</TableRow>
 								) : usersError ? (
-									<TableRow>
+									<TableRow className="border-[#e7edf5]">
 										<TableCell
-											className="px-4 py-8 text-center text-sm text-destructive"
+											className="py-10 text-center text-sm text-destructive"
 											colSpan={6}
 										>
 											{usersError}
 										</TableCell>
 									</TableRow>
-								) : filteredUsers.length === 0 ? (
-									<TableRow>
+								) : users.length === 0 ? (
+									<TableRow className="border-[#e7edf5]">
 										<TableCell
-											className="px-4 py-8 text-center text-sm text-[#6b7687]"
+											className="py-10 text-center text-sm text-[#667085]"
 											colSpan={6}
 										>
 											Nenhum usuário encontrado para os filtros atuais.
 										</TableCell>
 									</TableRow>
 								) : (
-									filteredUsers.map((user) => (
+									users.map((user) => (
 										<TableRow
-											className="odd:bg-[#f8fafc]/40 hover:bg-[#f8fafc]/80"
+											className="h-[4.35rem] border-[#e7edf5] hover:bg-[#f8fafc]/80"
 											key={user.id}
 										>
-											<TableCell className="px-4">
-												<div className="space-y-1">
-													<p className="font-medium text-[#1b2430]">
-														{user.name}
-													</p>
-													<p className="text-xs text-[#6b7687]">
-														{getRoleCardCopy(user.role)}
-													</p>
+											<TableCell className="pl-7">
+												<div className="flex items-center gap-3">
+													<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f1f4f8] text-xs font-semibold text-[#667085]">
+														{formatUserInitials(user.name)}
+													</div>
+													<div className="min-w-0">
+														<p className="truncate font-semibold text-[#101828]">
+															{user.name}
+														</p>
+														<p className="mt-0.5 truncate text-xs text-[#667085]">
+															{getRoleCardCopy(user.role)}
+														</p>
+													</div>
 												</div>
 											</TableCell>
-											<TableCell className="text-sm text-[#1b2430]">
+											<TableCell className="text-sm font-medium text-[#1e293b]">
 												{user.email}
 											</TableCell>
 											<TableCell>
 												<Badge
 													className={cn(
-														'rounded-md border px-2.5 py-1 text-[0.72rem] font-medium',
+														'rounded-full border px-2.5 py-1 text-xs font-medium',
 														getRoleBadgeClassName(user.role),
 													)}
 													variant="outline"
@@ -250,91 +361,105 @@ function UsersListSection({
 													{getRoleLabel(user.role)}
 												</Badge>
 											</TableCell>
-											<TableCell className="text-sm text-[#6b7687]">
-												{user.accessGroup?.name ?? 'Sem grupo'}
+											<TableCell>
+												<UserGroupsCell user={user} />
 											</TableCell>
-											<TableCell className="text-sm text-[#6b7687]">
-												{formatTeamLabel(user.teamId)}
+											<TableCell>
+												<span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1e293b]">
+													<ShieldCheck className="size-4 text-[#f05a28]" />
+													{user.featureKeys.length}
+												</span>
 											</TableCell>
-											<TableCell className="text-right">
-												<DropdownMenu>
-													<DropdownMenuTrigger asChild>
-														<Button
-															className="rounded-md"
-															size="icon-sm"
-															variant="ghost"
+											<TableCell className="pr-6">
+												<div className="flex justify-end">
+													<DropdownMenu>
+														<DropdownMenuTrigger asChild>
+															<Button
+																className="rounded-lg border-[#d8e0ea] shadow-none"
+																size="icon-sm"
+																variant="outline"
+															>
+																<MoreHorizontal className="size-4" />
+																<span className="sr-only">
+																	Ações do usuário
+																</span>
+															</Button>
+														</DropdownMenuTrigger>
+														<DropdownMenuContent
+															align="end"
+															className="w-44 rounded-xl bg-white"
 														>
-															<MoreHorizontal className="size-4" />
-															<span className="sr-only">Ações do usuário</span>
-														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent
-														align="end"
-														className="w-44 rounded-xl bg-white"
-													>
-														<DropdownMenuItem
-															className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
-															onSelect={() => onEdit(user)}
-														>
-															<PencilLine className="size-4" />
-															Editar
-														</DropdownMenuItem>
-														<DropdownMenuItem
-															className="cursor-pointer rounded-lg px-3 py-2"
-															onSelect={() => onDelete(user)}
-															variant="destructive"
-														>
-															<Trash2 className="size-4" />
-															Excluir
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
+															<DropdownMenuItem
+																className="cursor-pointer rounded-lg px-3 py-2"
+																onSelect={() => onEdit(user)}
+															>
+																<PencilLine className="size-4" />
+																Editar
+															</DropdownMenuItem>
+															<DropdownMenuItem
+																className="cursor-pointer rounded-lg px-3 py-2"
+																onSelect={() => onDelete(user)}
+																variant="destructive"
+															>
+																<Trash2 className="size-4" />
+																Excluir
+															</DropdownMenuItem>
+														</DropdownMenuContent>
+													</DropdownMenu>
+												</div>
 											</TableCell>
 										</TableRow>
 									))
 								)}
 							</TableBody>
 						</Table>
-					</div>
 
-					<div className="flex flex-col gap-3 border-t border-border/75 pt-4 lg:flex-row lg:items-center lg:justify-between">
-						<div className="flex items-center gap-3 text-sm text-[#6b7687]">
-							<span>Linhas por página</span>
-							<select
-								className="h-9 rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
-								onChange={(event) => onLimitChange(Number(event.target.value))}
-								value={limit}
-							>
-								{[10, 20, 50, 100].map((option) => (
-									<option key={option} value={option}>
-										{option}
-									</option>
-								))}
-							</select>
-						</div>
-
-						<div className="flex items-center gap-2">
-							<p className="mr-2 text-sm text-[#6b7687]">
-								Página {page} de {Math.max(totalPages, 1)}
+						<div className="grid gap-3 border-t border-[#e7edf5] px-7 py-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+							<p className="text-sm text-[#667085]">
+								Mostrando {firstVisibleItem} a {lastVisibleItem} de {totalUsers}{' '}
+								usuários
 							</p>
-							<Button
-								className="rounded-md"
-								disabled={page <= 1 || isLoading}
-								onClick={onPreviousPage}
-								size="icon-sm"
-								variant="outline"
-							>
-								<ChevronLeft className="size-4" />
-							</Button>
-							<Button
-								className="rounded-md"
-								disabled={page >= Math.max(totalPages, 1) || isLoading}
-								onClick={onNextPage}
-								size="icon-sm"
-								variant="outline"
-							>
-								<ChevronRight className="size-4" />
-							</Button>
+
+							<div className="flex items-center justify-center gap-2">
+								<Button
+									className="rounded-lg border-[#d8e0ea]"
+									disabled={page <= 1 || isLoading}
+									onClick={onPreviousPage}
+									size="icon-sm"
+									variant="outline"
+								>
+									<ChevronLeft className="size-4" />
+								</Button>
+								<p className="px-2 text-sm font-medium text-[#1e293b]">
+									Página {page} de {safeTotalPages}
+								</p>
+								<Button
+									className="rounded-lg border-[#d8e0ea]"
+									disabled={page >= safeTotalPages || isLoading}
+									onClick={onNextPage}
+									size="icon-sm"
+									variant="outline"
+								>
+									<ChevronRight className="size-4" />
+								</Button>
+							</div>
+
+							<div className="flex items-center justify-end gap-3 text-sm text-[#667085]">
+								<span>Linhas por página</span>
+								<select
+									className="h-9 rounded-lg border border-[#d8e0ea] bg-white px-3 text-sm text-[#101828] outline-none"
+									onChange={(event) =>
+										onLimitChange(Number(event.target.value))
+									}
+									value={limit}
+								>
+									{[10, 20, 50, 100].map((option) => (
+										<option key={option} value={option}>
+											{option}
+										</option>
+									))}
+								</select>
+							</div>
 						</div>
 					</div>
 				</CardContent>
@@ -352,21 +477,20 @@ function AccessGroupsSection({
 	onEdit,
 }: AccessGroupsSectionProps) {
 	return (
-		<div className="space-y-6">
+		<div className="space-y-5">
 			<div className="flex items-start justify-between gap-4">
 				<div className="space-y-1">
-					<h3 className="text-[1.2rem] font-semibold text-[#1b2430]">
+					<h3 className="text-lg font-bold text-[#101828]">
 						Grupos de acesso
 					</h3>
-					<p className="text-sm leading-6 text-[#6b7687]">
-						Esses grupos já são persistidos na API e controlam os toggles do
-						front.
+					<p className="text-sm leading-6 text-[#667085]">
+						Os grupos governam os toggles de features. Um usuário pode acumular
+						vários grupos — as permissões somam, sem herança.
 					</p>
 				</div>
 				<Button
-					className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+					className="h-12 rounded-xl bg-[#f05a28] px-5 text-white shadow-none hover:bg-[#df4f1f]"
 					onClick={onCreate}
-					size="sm"
 				>
 					<Plus className="size-4" />
 					Novo grupo
@@ -374,13 +498,13 @@ function AccessGroupsSection({
 			</div>
 
 			{isLoading ? (
-				<Card className="border-border/85 bg-white">
-					<CardContent className="p-6 text-sm text-[#6b7687]">
+				<Card className="rounded-3xl border-[#dfe7f1] bg-white">
+					<CardContent className="p-6 text-sm text-[#667085]">
 						Carregando grupos de acesso...
 					</CardContent>
 				</Card>
 			) : error ? (
-				<Card className="border-border/85 bg-white">
+				<Card className="rounded-3xl border-[#dfe7f1] bg-white">
 					<CardContent className="p-6 text-sm text-destructive">
 						{error}
 					</CardContent>
@@ -388,31 +512,31 @@ function AccessGroupsSection({
 			) : (
 				<div className="grid gap-4 xl:grid-cols-2">
 					{accessGroups.map((group) => (
-						<Card className="border-border/85 bg-white" key={group.id}>
-							<CardHeader className="gap-4 border-b border-border/75 pb-5">
+						<Card className="rounded-3xl border-[#dfe7f1] bg-white" key={group.id}>
+							<CardHeader className="gap-4 border-b border-[#e7edf5] pb-5">
 								<div className="flex items-start justify-between gap-3">
 									<div className="space-y-2">
 										<Badge
 											className={cn(
-												'rounded-md border px-2.5 py-1 text-[0.72rem] font-medium',
+												'rounded-full border px-2.5 py-1 text-xs font-medium',
 												group.baseRole
 													? getRoleBadgeClassName(group.baseRole)
-													: 'border-[#d6dce5] bg-white text-[#6b7687]',
+													: 'border-[#d8e0ea] bg-white text-[#667085]',
 											)}
 											variant="outline"
 										>
 											{getBaseRoleLabel(group.baseRole)}
 										</Badge>
-										<CardTitle className="text-[1.15rem] font-semibold text-[#1b2430]">
+										<CardTitle className="text-[1.15rem] font-bold text-[#101828]">
 											{group.name}
 										</CardTitle>
-										<CardDescription className="text-sm leading-6 text-[#6b7687]">
+										<CardDescription className="text-sm leading-6 text-[#667085]">
 											{group.description}
 										</CardDescription>
 									</div>
 
 									<div className="flex items-center gap-2">
-										<div className="flex size-10 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
+										<div className="flex size-10 items-center justify-center rounded-full bg-orange-50 text-[#f05a28]">
 											{group.baseRole === 'ADMINISTRATOR' ? (
 												<UserCog className="size-4" />
 											) : (
@@ -422,9 +546,9 @@ function AccessGroupsSection({
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button
-													className="rounded-md"
+													className="rounded-lg border-[#d8e0ea] shadow-none"
 													size="icon-sm"
-													variant="ghost"
+													variant="outline"
 												>
 													<MoreHorizontal className="size-4" />
 													<span className="sr-only">Ações do grupo</span>
@@ -435,7 +559,7 @@ function AccessGroupsSection({
 												className="w-44 rounded-xl bg-white"
 											>
 												<DropdownMenuItem
-													className="cursor-pointer rounded-lg px-3 py-2 text-[#1b2430] hover:!bg-[#d96c3f]/10 hover:!text-[#D96C3F]"
+													className="cursor-pointer rounded-lg px-3 py-2"
 													onSelect={() => onEdit(group)}
 												>
 													<PencilLine className="size-4" />
@@ -459,13 +583,13 @@ function AccessGroupsSection({
 
 							<CardContent className="grid gap-5 pt-5 lg:grid-cols-[minmax(0,1fr)_minmax(13rem,0.85fr)]">
 								<div>
-									<p className="text-sm font-medium text-[#1b2430]">
+									<p className="text-sm font-semibold text-[#101828]">
 										Features habilitadas
 									</p>
 									<div className="mt-3 flex flex-wrap gap-2">
 										{getFeatureLabels(group.featureKeys).map((featureLabel) => (
 											<Badge
-												className="rounded-md border border-[#d6dce5] bg-white px-2.5 py-1 text-[0.72rem] text-[#2d3648]"
+												className="rounded-full border-[#e7edf5] bg-[#f8fafc] px-2.5 py-1 text-xs text-[#1e293b]"
 												key={featureLabel}
 												variant="outline"
 											>
@@ -475,14 +599,14 @@ function AccessGroupsSection({
 									</div>
 								</div>
 
-								<div className="rounded-2xl border border-border/80 bg-[#f8fafc] p-4">
-									<p className="text-sm font-medium text-[#1b2430]">
+								<div className="rounded-2xl border border-[#e7edf5] bg-[#f8fafc] p-4">
+									<p className="text-sm font-semibold text-[#101828]">
 										Leitura operacional
 									</p>
-									<p className="mt-3 text-sm leading-6 text-[#6b7687]">
+									<p className="mt-3 text-sm leading-6 text-[#667085]">
 										{group.isSystemGroup
 											? 'Grupo canônico do produto, com vínculo estável ao papel validado no backend.'
-											: 'Grupo customizado persistido na API. O front já usa seus toggles para esconder ou liberar módulos.'}
+											: 'Grupo customizado persistido na API. O front usa seus toggles para esconder ou liberar módulos.'}
 									</p>
 								</div>
 							</CardContent>
@@ -496,11 +620,11 @@ function AccessGroupsSection({
 
 function UsersTabs(props: {
 	accessGroups: AccessGroup[];
+	accessGroupFilter: string;
 	accessGroupsError: string | null;
 	accessGroupsLoading: boolean;
-	adminCount: number;
-	filteredUsers: UserRecord[];
 	limit: number;
+	onAccessGroupFilterChange: (value: string) => void;
 	onCreateAccessGroup: () => void;
 	onCreateUser: () => void;
 	onDeleteAccessGroup: (group: AccessGroup) => void;
@@ -515,12 +639,12 @@ function UsersTabs(props: {
 	page: number;
 	roleFilter: 'ALL' | UserRecord['role'];
 	search: string;
+	summary: UsersSummary;
 	totalPages: number;
 	totalUsers: number;
 	users: UserRecord[];
 	usersError: string | null;
 	usersLoading: boolean;
-	withoutGroupCount: number;
 }) {
 	return (
 		<Tabs className="space-y-0" defaultValue="users">
@@ -537,10 +661,11 @@ function UsersTabs(props: {
 
 			<TabsContent value="users">
 				<UsersListSection
-					adminCount={props.adminCount}
-					filteredUsers={props.filteredUsers}
+					accessGroupFilter={props.accessGroupFilter}
+					accessGroups={props.accessGroups}
 					isLoading={props.usersLoading}
 					limit={props.limit}
+					onAccessGroupFilterChange={props.onAccessGroupFilterChange}
 					onCreate={props.onCreateUser}
 					onDelete={props.onDeleteUser}
 					onEdit={props.onEditUser}
@@ -552,11 +677,11 @@ function UsersTabs(props: {
 					page={props.page}
 					roleFilter={props.roleFilter}
 					search={props.search}
+					summary={props.summary}
 					totalPages={props.totalPages}
 					totalUsers={props.totalUsers}
 					users={props.users}
 					usersError={props.usersError}
-					withoutGroupCount={props.withoutGroupCount}
 				/>
 			</TabsContent>
 

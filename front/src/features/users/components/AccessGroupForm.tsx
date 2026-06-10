@@ -116,13 +116,13 @@ function getBaseRoleLabel(role: AccessGroup['baseRole']) {
 function getRoleBadgeClassName(role: UserRecord['role']) {
 	switch (role) {
 		case 'ADMINISTRATOR':
-			return 'border-[#d96c3f]/25 bg-[#d96c3f]/10 text-[#b3542c]';
+			return 'border-orange-100 bg-orange-50 text-[#c2410c]';
 		case 'GENERAL_MANAGER':
-			return 'border-[#2d3648]/15 bg-[#2d3648]/8 text-[#2d3648]';
+			return 'border-violet-100 bg-violet-50 text-violet-700';
 		case 'MANAGER':
-			return 'border-sky-200 bg-sky-50 text-sky-800';
+			return 'border-blue-100 bg-blue-50 text-blue-700';
 		case 'ATTENDANT':
-			return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+			return 'border-emerald-100 bg-emerald-50 text-emerald-700';
 	}
 }
 
@@ -310,14 +310,14 @@ function AccessGroupDialog({
 											className={cn(
 												'flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition-colors',
 												checked
-													? 'border-[#d96c3f]/25 bg-[#d96c3f]/8'
-													: 'border-border/80 bg-white hover:border-[#d96c3f]/20 hover:bg-[#fff9f6]',
+													? 'border-[#f05a28]/35 bg-orange-50/60'
+													: 'border-[#e7edf5] bg-white hover:border-[#f05a28]/25 hover:bg-[#fff9f6]',
 											)}
 											key={feature.key}
 										>
 											<Checkbox
 												checked={checked}
-												className="mt-0.5 rounded-[4px] border-[#cbd5e1] data-checked:border-[#D96C3F] data-checked:bg-[#D96C3F]"
+												className="mt-0.5 rounded-[4px] border-[#cbd5e1] data-checked:border-[#f05a28] data-checked:bg-[#f05a28]"
 												onCheckedChange={(value) =>
 													toggleFeature(feature.key, value === true)
 												}
@@ -353,7 +353,7 @@ function AccessGroupDialog({
 							Cancelar
 						</Button>
 						<Button
-							className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+							className="rounded-xl bg-[#f05a28] text-white hover:bg-[#df4f1f]"
 							disabled={isPending}
 							type="submit"
 						>
