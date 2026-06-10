@@ -507,7 +507,17 @@ export async function runDemoSeed(
 		await tx.accessGroup.deleteMany();
 
 		await tx.accessGroup.createMany({ data: accessGroups });
-		await tx.user.createMany({ data: users });
+		await tx.user.createMany({
+			data: users.map(({ accessGroupIds: _accessGroupIds, ...user }) => user),
+		});
+		await tx.userAccessGroup.createMany({
+			data: users.flatMap((user) =>
+				user.accessGroupIds.map((accessGroupId) => ({
+					userId: user.id,
+					accessGroupId,
+				})),
+			),
+		});
 		await tx.store.createMany({ data: stores });
 		for (const team of teams) {
 			await tx.team.create({
