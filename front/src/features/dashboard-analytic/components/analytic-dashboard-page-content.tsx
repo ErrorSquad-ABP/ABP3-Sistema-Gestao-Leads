@@ -341,7 +341,9 @@ function DonutCenter({ total }: { total: number }) {
 				<p className="text-2xl leading-none font-bold text-foreground">
 					{formatCount(total)}
 				</p>
-				<p className="mt-1 text-[10px] font-semibold text-muted-foreground">Total</p>
+				<p className="mt-1 text-[10px] font-semibold text-muted-foreground">
+					Total
+				</p>
 			</div>
 		</div>
 	);
@@ -788,7 +790,10 @@ function AnalyticDashboardPageContent({
 												data={finalizationData}
 												margin={{ bottom: 20, left: -18, right: 8, top: 18 }}
 											>
-												<CartesianGrid stroke="var(--border)" vertical={false} />
+												<CartesianGrid
+													stroke="var(--border)"
+													vertical={false}
+												/>
 												<XAxis
 													axisLine={false}
 													dataKey="chartLabel"

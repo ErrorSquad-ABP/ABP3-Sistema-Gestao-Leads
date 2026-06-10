@@ -493,7 +493,10 @@ class AnalyticDashboardPrismaRepository
 			importanceDistribution: this.toImportanceDistribution(importanceGroups),
 			finalizationReasons: this.toFinalizationReasons(lostDeals),
 			trendPoints: this.toTrendPoints(trendBuckets),
-			importanceLeads: options?.includeDrillDown === false ? [] : this.toImportanceLeads(dealsWithImportance),
+			importanceLeads:
+				options?.includeDrillDown === false
+					? []
+					: this.toImportanceLeads(dealsWithImportance),
 			conversionLeads:
 				options?.includeDrillDown === false
 					? []
@@ -544,12 +547,14 @@ class AnalyticDashboardPrismaRepository
 		leads: readonly PrismaLeadRow[],
 		lostLeadIds: ReadonlySet<string>,
 	): AnalyticDrillDownLead[] {
-		const outcomeRank: Record<NonNullable<AnalyticDrillDownLead['outcome']>, number> =
-			{
-				converted: 3,
-				lost: 2,
-				open: 1,
-			};
+		const outcomeRank: Record<
+			NonNullable<AnalyticDrillDownLead['outcome']>,
+			number
+		> = {
+			converted: 3,
+			lost: 2,
+			open: 1,
+		};
 
 		return leads
 			.map((lead) => {

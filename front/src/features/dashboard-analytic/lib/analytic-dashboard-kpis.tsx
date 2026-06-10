@@ -1,17 +1,11 @@
 import type { ReactNode } from 'react';
-import {
-	CheckCircle2,
-	Clock3,
-	Target,
-	XCircle,
-} from 'lucide-react';
-import {
-	Line,
-	LineChart,
-	ResponsiveContainer,
-} from 'recharts';
+import { CheckCircle2, Clock3, Target, XCircle } from 'lucide-react';
+import { Line, LineChart, ResponsiveContainer } from 'recharts';
 
-import type { KpiCardDelta, KpiCardVariant } from '@/components/metrics/KpiCard';
+import type {
+	KpiCardDelta,
+	KpiCardVariant,
+} from '@/components/metrics/KpiCard';
 import { CHART_COLORS } from '@/lib/charts/chart-colors';
 
 import type { AnalyticDashboard } from '../model/analytic-dashboard.model';
@@ -91,7 +85,6 @@ function deltaTone(
 function buildSparkline(
 	points: readonly { label: string; value: number }[],
 	color: string,
-	label: string,
 ) {
 	return (
 		<ResponsiveContainer height={36} width={80}>
@@ -130,7 +123,6 @@ function buildAnalyticKpiCards(
 					value: point.conversionRate,
 				})),
 				CHART_COLORS.barDefault,
-				'Variação da taxa de conversão no período',
 			),
 			sparklineLabel: 'Variação da taxa de conversão no período',
 		},
@@ -141,7 +133,9 @@ function buildAnalyticKpiCards(
 			variant: 'success',
 			icon: <CheckCircle2 className="size-5" />,
 			delta: {
-				value: formatDeltaPercent(dashboard.kpis.convertedLeads.deltaPercentage),
+				value: formatDeltaPercent(
+					dashboard.kpis.convertedLeads.deltaPercentage,
+				),
 				tone: deltaTone(dashboard.kpis.convertedLeads.delta, true),
 				label: 'vs. período anterior',
 			},
@@ -151,7 +145,6 @@ function buildAnalyticKpiCards(
 					value: point.convertedLeads,
 				})),
 				CHART_COLORS.performanceOk,
-				'Variação de leads convertidos no período',
 			),
 			sparklineLabel: 'Variação de leads convertidos no período',
 		},
@@ -172,7 +165,6 @@ function buildAnalyticKpiCards(
 					value: point.lostLeads,
 				})),
 				CHART_COLORS.performanceBelow,
-				'Variação de leads perdidos no período',
 			),
 			sparklineLabel: 'Variação de leads perdidos no período',
 		},
@@ -198,7 +190,6 @@ function buildAnalyticKpiCards(
 					value: point.averageTimeToFirstInteractionHours ?? 0,
 				})),
 				CHART_COLORS.neutral,
-				'Variação do tempo médio até atendimento no período',
 			),
 			sparklineLabel: 'Variação do tempo médio até atendimento no período',
 		},

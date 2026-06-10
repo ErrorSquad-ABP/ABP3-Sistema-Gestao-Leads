@@ -15,20 +15,34 @@ import { appRoutes } from '@/lib/routes/app-routes';
 
 import type { AnalyticDashboard } from '../model/analytic-dashboard.model';
 
-const OUTCOME_LABELS = {
-	converted: 'Convertido',
-	lost: 'Perdido',
-	open: 'Em andamento',
-} as const;
+type LeadOutcome = NonNullable<
+	AnalyticDashboard['drillDown']['conversionLeads'][number]['outcome']
+>;
 
-const OUTCOME_COLORS = {
-	converted: CHART_COLORS.performanceOk,
-	lost: CHART_COLORS.performanceBelow,
-	open: CHART_COLORS.neutral,
-} as const;
+const DEFAULT_OUTCOME: LeadOutcome = 'open';
+
+const OUTCOME_LABELS = new Map<LeadOutcome, string>([
+	['converted', 'Convertido'],
+	['lost', 'Perdido'],
+	['open', 'Em andamento'],
+]);
+
+const OUTCOME_COLORS = new Map<LeadOutcome, string>([
+	['converted', CHART_COLORS.performanceOk],
+	['lost', CHART_COLORS.performanceBelow],
+	['open', CHART_COLORS.neutral],
+]);
 
 function formatCount(value: number) {
 	return new Intl.NumberFormat('pt-BR').format(value);
+}
+
+function getOutcomeLabel(outcome: LeadOutcome) {
+	return OUTCOME_LABELS.get(outcome) ?? 'Em andamento';
+}
+
+function getOutcomeColor(outcome: LeadOutcome) {
+	return OUTCOME_COLORS.get(outcome) ?? CHART_COLORS.neutral;
 }
 
 type AnalyticConversionDetailDialogProps = {
@@ -65,7 +79,7 @@ function AnalyticConversionDetailDialog({
 								</p>
 								<p
 									className="mt-1 text-xl font-semibold"
-									style={{ color: OUTCOME_COLORS.converted }}
+									style={{ color: getOutcomeColor('converted') }}
 								>
 									{formatCount(summary.convertedLeads)}
 								</p>
@@ -76,7 +90,7 @@ function AnalyticConversionDetailDialog({
 								</p>
 								<p
 									className="mt-1 text-xl font-semibold"
-									style={{ color: OUTCOME_COLORS.lost }}
+									style={{ color: getOutcomeColor('lost') }}
 								>
 									{formatCount(summary.lostLeads ?? 0)}
 								</p>
@@ -87,7 +101,7 @@ function AnalyticConversionDetailDialog({
 								</p>
 								<p
 									className="mt-1 text-xl font-semibold"
-									style={{ color: OUTCOME_COLORS.open }}
+									style={{ color: getOutcomeColor('open') }}
 								>
 									{formatCount(summary.notConvertedLeads)}
 								</p>
@@ -98,7 +112,9 @@ function AnalyticConversionDetailDialog({
 					{leads.length > 0 ? (
 						<ul className="divide-y divide-border rounded-2xl border border-border">
 							{leads.map((lead) => {
-								const outcome = lead.outcome ?? 'open';
+								const outcome = lead.outcome ?? DEFAULT_OUTCOME;
+								const outcomeColor = getOutcomeColor(outcome);
+								const outcomeLabel = getOutcomeLabel(outcome);
 								return (
 									<li key={lead.id}>
 										<Link
@@ -110,17 +126,17 @@ function AnalyticConversionDetailDialog({
 													{lead.label}
 												</p>
 												<p className="mt-0.5 text-xs text-muted-foreground">
-													{OUTCOME_LABELS[outcome]}
+													{outcomeLabel}
 												</p>
 											</div>
 											<span
 												className="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
 												style={{
-													backgroundColor: `${OUTCOME_COLORS[outcome]}22`,
-													color: OUTCOME_COLORS[outcome],
+													backgroundColor: `${outcomeColor}22`,
+													color: outcomeColor,
 												}}
 											>
-												{OUTCOME_LABELS[outcome]}
+												{outcomeLabel}
 												<ArrowUpRight className="size-3" />
 											</span>
 										</Link>
