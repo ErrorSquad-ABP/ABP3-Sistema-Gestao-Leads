@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit3, MoreHorizontal, Trash2, UserRound } from 'lucide-react';
+import { Edit3, MoreHorizontal, Trash2, UsersRound } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -37,44 +37,15 @@ type TeamTableRow = {
 type TeamsTableProps = {
 	onDelete: (team: TeamRecord) => void;
 	onEdit: (team: TeamRecord) => void;
+	onMembers: (team: TeamRecord) => void;
 	rows: TeamTableRow[];
 };
-
-const MEMBER_MARKERS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
 
 function formatCount(value: number) {
 	return Math.round(value).toLocaleString('pt-BR');
 }
 
-function MemberPreview({
-	colorClass,
-	memberCount,
-}: {
-	colorClass: string;
-	memberCount: number;
-}) {
-	const visibleMembers = Math.min(memberCount, 7);
-	const hiddenMembers = Math.max(0, memberCount - visibleMembers);
-
-	return (
-		<div className="flex items-center gap-1.5">
-			{MEMBER_MARKERS.slice(0, visibleMembers).map((marker) => (
-				<UserRound
-					className={`size-3.5 ${colorClass}`}
-					key={`member-${memberCount}-${marker}`}
-					strokeWidth={2.3}
-				/>
-			))}
-			{hiddenMembers > 0 ? (
-				<span className="text-[11px] font-medium text-[#667085]">
-					+{hiddenMembers}
-				</span>
-			) : null}
-		</div>
-	);
-}
-
-function TeamsTable({ onDelete, onEdit, rows }: TeamsTableProps) {
+function TeamsTable({ onDelete, onEdit, onMembers, rows }: TeamsTableProps) {
 	return (
 		<div className="overflow-hidden rounded-2xl border border-[#e6ecf3] bg-white">
 			<Table>
@@ -148,10 +119,16 @@ function TeamsTable({ onDelete, onEdit, rows }: TeamsTableProps) {
 									<p className="text-xs font-bold text-[#101828]">
 										{formatCount(row.memberCount)}
 									</p>
-									<MemberPreview
-										colorClass={row.colorClass}
-										memberCount={row.memberCount}
-									/>
+									<Button
+										className="h-7 rounded-lg px-2 text-[11px] text-[color:var(--brand-accent-hover)] hover:bg-[color:var(--brand-accent-soft)]"
+										onClick={() => onMembers(row.team)}
+										size="sm"
+										type="button"
+										variant="ghost"
+									>
+										<UsersRound className="size-3.5" />
+										Ver membros
+									</Button>
 								</div>
 							</TableCell>
 							<TableCell className="py-3">

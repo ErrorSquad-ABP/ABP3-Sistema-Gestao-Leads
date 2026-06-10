@@ -17,8 +17,10 @@ import type {
 	LeadOwnerRecord,
 	LeadStore,
 } from '@/features/leads/model/leads.model';
+import type { TeamMemberCandidate } from '@/features/teams/model/teams.model';
 
 import type { TeamDialogMode, TeamRecord } from '../model/teams.model';
+import { TeamMemberSelector } from './TeamMemberSelector';
 
 type TeamDialogState = {
 	mode: TeamDialogMode;
@@ -29,6 +31,7 @@ type TeamFormState = {
 	name: string;
 	storeId: string;
 	managerId: string;
+	memberUserIds: string[];
 };
 
 type TeamFormDialogProps = {
@@ -39,6 +42,8 @@ type TeamFormDialogProps = {
 	onClose: () => void;
 	onSave: () => void;
 	onStateChange: (updater: (current: TeamFormState) => TeamFormState) => void;
+	memberCandidates: TeamMemberCandidate[];
+	membersLoading?: boolean;
 	owners: LeadOwnerRecord[];
 	stores: LeadStore[];
 };
@@ -55,6 +60,7 @@ const emptyTeamForm: TeamFormState = {
 	name: '',
 	storeId: '',
 	managerId: '',
+	memberUserIds: [],
 };
 
 function toTeamPayload(formState: TeamFormState): TeamFormPayload | null {
@@ -67,6 +73,7 @@ function toTeamPayload(formState: TeamFormState): TeamFormPayload | null {
 		name,
 		storeId: formState.storeId,
 		managerId: formState.managerId || null,
+		initialMemberUserIds: [...new Set(formState.memberUserIds)],
 	};
 }
 
@@ -78,6 +85,8 @@ function TeamFormDialog({
 	onClose,
 	onSave,
 	onStateChange,
+	memberCandidates,
+	membersLoading = false,
 	owners,
 	stores,
 }: TeamFormDialogProps) {
@@ -120,6 +129,10 @@ function TeamFormDialog({
 									onStateChange((current) => ({
 										...current,
 										storeId: event.target.value,
+										memberUserIds:
+											event.target.value === current.storeId
+												? current.memberUserIds
+												: [],
 									}))
 								}
 								value={formState.storeId}
@@ -152,11 +165,23 @@ function TeamFormDialog({
 									{owner.name} · {owner.email}
 								</option>
 							))}
-						</select>
+							</select>
 					</div>
-					<div className="rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3 text-sm text-muted-foreground">
-						Os membros continuam refletidos pelo backend. Esta tela foca na
-						organização visível de loja e gerente da equipe.
+					<div className="grid gap-2">
+						<Label>Membros</Label>
+						<TeamMemberSelector
+							candidates={memberCandidates}
+							disabled={!formState.storeId || isPending}
+							emptyLabel="Nenhum membro selecionado para esta equipe."
+							isLoading={membersLoading}
+							onChange={(memberUserIds) =>
+								onStateChange((current) => ({
+									...current,
+									memberUserIds,
+								}))
+							}
+							selectedUserIds={formState.memberUserIds}
+						/>
 					</div>
 					{dialogError ? (
 						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -243,4 +268,5 @@ type TeamFormPayload = {
 	name: string;
 	storeId: string;
 	managerId: string | null;
+	initialMemberUserIds: string[];
 };
