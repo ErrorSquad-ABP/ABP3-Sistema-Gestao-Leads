@@ -76,6 +76,20 @@ const FORBIDDEN = {
 	description: 'Papel insuficiente: operações exigem ADMINISTRATOR.',
 };
 
+/** Compatibilidade: clientes legados ainda enviam `accessGroupId` único. */
+function resolveAccessGroupIds(body: {
+	accessGroupIds?: string[];
+	accessGroupId?: string | null;
+}): string[] | undefined {
+	if (body.accessGroupIds !== undefined) {
+		return body.accessGroupIds;
+	}
+	if (body.accessGroupId === undefined) {
+		return undefined;
+	}
+	return body.accessGroupId === null ? [] : [body.accessGroupId];
+}
+
 @ApiBearerAuth('access-token')
 @ApiTags('users')
 @ApiUnauthorizedResponse(UNAUTHORIZED)
@@ -108,7 +122,7 @@ class UserController {
 		@Body() body: CreateUserValidator,
 	) {
 		const user = await this.createUserUseCase.execute(actor.userId, {
-			accessGroupId: body.accessGroupId ?? null,
+			accessGroupIds: resolveAccessGroupIds(body) ?? [],
 			name: body.name,
 			email: body.email,
 			password: body.password,
@@ -125,17 +139,20 @@ class UserController {
 	})
 	@ApiOkResponseEnvelopePaged(UserResponseDto, {
 		description:
-			'Página de usuários: `data.items`, `data.page`, `data.limit`, `data.total`, `data.totalPages` (0 se não houver registros).',
+			'Página de usuários: `data.items`, `data.page`, `data.limit`, `data.total`, `data.totalPages` (0 se não houver registros) e `data.summary` com agregados globais.',
 	})
 	@ApiBadRequestResponse({
 		description:
-			'Query inválida: `page` ou `limit` fora dos intervalos permitidos (ex.: limit > 100).',
+			'Query inválida: `page`/`limit` fora dos intervalos, `role` desconhecido ou `accessGroupId` não-UUID.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async list(@Query() query: ListUsersQueryValidator) {
 		const result = await this.listUsersUseCase.execute({
 			page: query.page,
 			limit: query.limit,
+			search: query.search,
+			role: query.role,
+			accessGroupId: query.accessGroupId,
 		});
 		return {
 			items: UserPresenter.toResponseList(result.users),
@@ -143,6 +160,7 @@ class UserController {
 			limit: result.limit,
 			total: result.total,
 			totalPages: result.totalPages,
+			summary: result.summary,
 		};
 	}
 
@@ -173,7 +191,13 @@ class UserController {
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateUserValidator,
 	) {
-		const user = await this.updateUserUseCase.execute(actor.userId, id, body);
+		const user = await this.updateUserUseCase.execute(actor.userId, id, {
+			name: body.name,
+			email: body.email,
+			password: body.password,
+			role: body.role,
+			accessGroupIds: resolveAccessGroupIds(body),
+		});
 		return UserPresenter.toResponse(user);
 	}
 
