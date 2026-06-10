@@ -91,7 +91,7 @@ class UpdateUserUseCase {
 				const next = PasswordHash.create(hashed);
 				if (!next.equals(existing.passwordHash)) {
 					existing.changePasswordHash(next);
-					changedFields.push('password');
+					changedFields.push('credentials');
 					shouldPersist = true;
 				}
 			}

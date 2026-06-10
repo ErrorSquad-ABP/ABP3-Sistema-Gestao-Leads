@@ -9,7 +9,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 
 import type { AgendaItem } from '../model/agenda.model';
 import { agendaDateKey, moveAgendaItemToDate } from '../lib/agenda-formatters';
@@ -72,7 +72,7 @@ function AgendaMoveDialog({
 							required
 							type="date"
 							value={date}
-						/>
+						 {...requiredFieldProps()}/>
 					</div>
 					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 						<Button

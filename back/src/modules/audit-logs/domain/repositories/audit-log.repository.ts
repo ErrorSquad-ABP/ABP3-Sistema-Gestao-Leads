@@ -50,7 +50,6 @@ type AuditLogListPage = {
  */
 interface IAuditLogRepository {
 	create(log: AuditLog): Promise<AuditLog>;
-	list(): Promise<AuditLog[]>;
 	listPaged(query: AuditLogListQuery): Promise<AuditLogListPage>;
 }
 

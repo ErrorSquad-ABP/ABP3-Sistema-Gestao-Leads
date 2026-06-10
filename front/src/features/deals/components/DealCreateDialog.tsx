@@ -26,7 +26,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { useLeadCustomersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import { useLeadsListQuery } from '@/features/leads/hooks/leads.queries';
 import type { LeadListItem } from '@/features/leads/model/leads.model';
@@ -420,7 +420,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 									onChange={(e) => setTitle(e.target.value)}
 									placeholder="Ex.: Proposta de Jeep Compass Limited"
 									value={title}
-								/>
+								 {...requiredFieldProps()}/>
 							</div>
 							<p className="text-[11.5px] leading-4 text-[#7a8494]">
 								Dê um título claro para esta negociação.

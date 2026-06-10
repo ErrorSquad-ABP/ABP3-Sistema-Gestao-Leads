@@ -15,7 +15,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
 	useCreateCustomerMutation,
@@ -154,7 +154,7 @@ function CustomerCatalogFormDialog({
 							)}
 							id="catalog-customer-name"
 							{...form.register('name')}
-						/>
+						 {...requiredFieldProps()}/>
 						{form.formState.errors.name ? (
 							<p className="text-xs text-destructive">
 								{form.formState.errors.name.message}
@@ -327,7 +327,7 @@ function StoreCatalogFormDialog({
 							)}
 							id="catalog-store-name"
 							{...form.register('name')}
-						/>
+						 {...requiredFieldProps()}/>
 						{form.formState.errors.name ? (
 							<p className="text-xs text-destructive">
 								{form.formState.errors.name.message}

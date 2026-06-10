@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import type {
 	AuthenticatedUser,
 	UserRole,
@@ -357,7 +357,7 @@ function ProfilePageContent({
 									placeholder="exemplo@empresa.com"
 									type="email"
 									{...emailForm.register('email')}
-								/>
+								 {...requiredFieldProps()}/>
 								<FieldError
 									message={emailForm.formState.errors.email?.message}
 								/>
@@ -379,7 +379,7 @@ function ProfilePageContent({
 									placeholder="Senha atual"
 									type="password"
 									{...emailForm.register('currentPassword')}
-								/>
+								 {...requiredFieldProps()}/>
 								<FieldError
 									message={emailForm.formState.errors.currentPassword?.message}
 								/>
@@ -474,7 +474,7 @@ function ProfilePageContent({
 									placeholder="Senha atual"
 									type="password"
 									{...passwordForm.register('currentPassword')}
-								/>
+								 {...requiredFieldProps()}/>
 								<FieldError
 									message={
 										passwordForm.formState.errors.currentPassword?.message
@@ -498,7 +498,7 @@ function ProfilePageContent({
 									placeholder="Mínimo de 8 caracteres"
 									type="password"
 									{...passwordForm.register('newPassword')}
-								/>
+								 {...requiredFieldProps()}/>
 								<FieldError
 									message={passwordForm.formState.errors.newPassword?.message}
 								/>
@@ -520,7 +520,7 @@ function ProfilePageContent({
 									placeholder="Repita a nova senha"
 									type="password"
 									{...passwordForm.register('confirmPassword')}
-								/>
+								 {...requiredFieldProps()}/>
 								<FieldError
 									message={
 										passwordForm.formState.errors.confirmPassword?.message

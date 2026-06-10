@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { queryKeys } from '@/lib/constants/query-keys';
 import { setAccessToken } from '@/lib/auth/access-token';
 import { isApiError } from '@/lib/http/api-error';
@@ -197,7 +197,7 @@ function LoginForm() {
 											placeholder="seu@email.com"
 											type="email"
 											{...form.register('email')}
-										/>
+										 {...requiredFieldProps()}/>
 									</div>
 									{form.formState.errors.email ? (
 										<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -229,7 +229,7 @@ function LoginForm() {
 											placeholder="Digite sua senha"
 											type={passwordVisible ? 'text' : 'password'}
 											{...form.register('password')}
-										/>
+										 {...requiredFieldProps()}/>
 										<button
 											aria-label={
 												passwordVisible ? 'Ocultar senha' : 'Mostrar senha'

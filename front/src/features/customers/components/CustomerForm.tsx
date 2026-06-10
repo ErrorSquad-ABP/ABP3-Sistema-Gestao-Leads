@@ -29,7 +29,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 
 import type {
 	CustomerCatalogItem,
@@ -362,7 +362,7 @@ function CustomerFormDialog({
 												}))
 											}
 											value={formState.name}
-										/>
+										 {...requiredFieldProps()}/>
 									</CustomerFieldControl>
 								</div>
 

@@ -12,7 +12,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import type {
 	LeadOwnerRecord,
 	LeadStore,
@@ -111,7 +111,7 @@ function TeamFormDialog({
 									}))
 								}
 								value={formState.name}
-							/>
+							 {...requiredFieldProps()}/>
 						</div>
 						<div className="grid gap-2">
 							<Label htmlFor="team-store" required>
@@ -127,7 +127,7 @@ function TeamFormDialog({
 									}))
 								}
 								value={formState.storeId}
-							>
+							 {...requiredFieldProps()}>
 								<option value="">Selecione uma loja</option>
 								{stores.map((store) => (
 									<option key={store.id} value={store.id}>

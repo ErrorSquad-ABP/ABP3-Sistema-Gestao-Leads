@@ -14,7 +14,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 import { ApiError } from '@/lib/http/api-error';
@@ -325,7 +325,7 @@ function LeadDealsDialog({
 								id="lead-deal-vehicle"
 								onChange={(e) => setVehicleId(e.target.value)}
 								value={vehicleId}
-							>
+							 {...requiredFieldProps()}>
 								<option value="">
 									{vehiclesQuery.isPending
 										? 'Carregando veículos disponíveis...'
@@ -366,7 +366,7 @@ function LeadDealsDialog({
 								id="lead-deal-title"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
-							/>
+							 {...requiredFieldProps()}/>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="lead-deal-value">Valor</Label>

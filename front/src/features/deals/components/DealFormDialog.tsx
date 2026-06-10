@@ -39,7 +39,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { useLeadDetailQuery } from '@/features/leads/hooks/leads.queries';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
@@ -545,7 +545,7 @@ function DealFormDialog({
 											})
 										}
 										value={titleValue ?? ''}
-									/>
+									 {...requiredFieldProps()}/>
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
 									Dê um título claro para esta negociação.
