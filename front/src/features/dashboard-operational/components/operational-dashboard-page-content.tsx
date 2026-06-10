@@ -1,8 +1,6 @@
 'use client';
 
 import { Icon } from '@iconify/react';
-import { useMemo, useState } from 'react';
-import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import {
 	CalendarDays,
 	CheckCircle2,
@@ -17,20 +15,30 @@ import {
 	TrendingUp,
 	UsersRound,
 } from 'lucide-react';
-
+import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
+import { KpiCard } from '@/components/metrics/KpiCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { isApiError } from '@/lib/http/api-error';
+import {
+	CHART_COLORS,
+	sourceBrandColor,
+	statusBarColor,
+	storePerformanceColor,
+} from '@/lib/charts/chart-colors';
 import { buildConicGradientStopsTo100 } from '@/lib/conic-gradient';
+import { isApiError } from '@/lib/http/api-error';
 import { cn } from '@/lib/utils';
 
 import { useOperationalDashboardQuery } from '../hooks/operational-dashboard.queries';
 import {
-	buildCustomPeriodQuery,
+	buildMonthPeriodQuery,
 	buildPresetPeriodQuery,
+	isValidMonthInput,
 	type OperationalDashboardPeriodMode,
+	toMonthInputValue,
 } from '../lib/operational-dashboard-period';
 import type {
 	DashboardDistributionItem,
@@ -44,7 +52,7 @@ import type {
 	OperationalDashboardTrendPoint,
 } from '../model/operational-dashboard.model';
 
-type PeriodSelection = OperationalDashboardPeriodMode | 'custom';
+type PeriodSelection = OperationalDashboardPeriodMode;
 
 type SparklineMetric =
 	| 'totalLeads'
@@ -70,22 +78,10 @@ type SourceChartItem = {
 	percentage: number;
 };
 
-type KpiCardProps = {
-	color: string;
-	gradient: string;
-	icon: ComponentType<{ className?: string; style?: CSSProperties }>;
-	kpi: OperationalDashboardKpi;
-	label: string;
-	metric: SparklineMetric;
-	trend: OperationalDashboardTrendPoint[];
-	value: string;
-};
-
 const PRESET_LABELS: {
 	label: string;
 	value: OperationalDashboardPeriodMode;
 }[] = [
-	{ label: 'Últimos 30 dias', value: 'last30' },
 	{ label: 'Semana', value: 'week' },
 	{ label: 'Mês', value: 'month' },
 	{ label: 'Ano', value: 'year' },
@@ -122,6 +118,18 @@ function formatDelta(kpi: OperationalDashboardKpi) {
 	)}%`;
 }
 
+function getKpiDeltaTone(kpi: OperationalDashboardKpi) {
+	if (kpi.delta > 0) {
+		return 'positive' as const;
+	}
+
+	if (kpi.delta < 0) {
+		return 'negative' as const;
+	}
+
+	return 'neutral' as const;
+}
+
 function formatDateOnly(value: string) {
 	const [year, month, day] = value.slice(0, 10).split('-');
 	return `${day}/${month}/${year}`;
@@ -150,19 +158,8 @@ function getStatusLabel(key: OperationalDashboardStatusKey) {
 	}
 }
 
-function getStatusColor(key: OperationalDashboardStatusKey) {
-	switch (key) {
-		case 'NEW':
-			return '#2563eb';
-		case 'CONTACTED':
-			return '#60a5fa';
-		case 'QUALIFIED':
-			return '#22c55e';
-		case 'CONVERTED':
-			return '#ff4f1f';
-		case 'DISQUALIFIED':
-			return '#ef4444';
-	}
+function getStatusColor() {
+	return statusBarColor();
 }
 
 function getSourceLabel(key: OperationalDashboardSourceKey) {
@@ -270,23 +267,6 @@ function getSourceIconBackground(
 	}
 }
 
-function getPaletteColor(index: number) {
-	switch (index % 6) {
-		case 0:
-			return '#22c55e';
-		case 1:
-			return '#ec4899';
-		case 2:
-			return '#2563eb';
-		case 3:
-			return '#f97316';
-		case 4:
-			return '#7c3aed';
-		default:
-			return '#94a3b8';
-	}
-}
-
 function buildSourceChartItems(
 	items: DashboardDistributionItem<OperationalDashboardSourceKey>[],
 ): SourceChartItem[] {
@@ -295,13 +275,13 @@ function buildSourceChartItems(
 		.sort((left, right) => right.count - left.count);
 
 	if (sortedSources.length <= 5) {
-		return sortedSources.map((source, index) => ({
-			color: getPaletteColor(index),
+		return sortedSources.map((source) => ({
+			color: sourceBrandColor(source.key),
 			count: source.count,
-			icon: getSourceIconElement(source.key, getPaletteColor(index)),
+			icon: getSourceIconElement(source.key, sourceBrandColor(source.key)),
 			iconBackground: getSourceIconBackground(
 				source.key,
-				getPaletteColor(index),
+				sourceBrandColor(source.key),
 			),
 			key: source.key,
 			label: getSourceLabel(source.key),
@@ -309,11 +289,14 @@ function buildSourceChartItems(
 		}));
 	}
 
-	const visibleSources = sortedSources.slice(0, 4).map((source, index) => ({
-		color: getPaletteColor(index),
+	const visibleSources = sortedSources.slice(0, 4).map((source) => ({
+		color: sourceBrandColor(source.key),
 		count: source.count,
-		icon: getSourceIconElement(source.key, getPaletteColor(index)),
-		iconBackground: getSourceIconBackground(source.key, getPaletteColor(index)),
+		icon: getSourceIconElement(source.key, sourceBrandColor(source.key)),
+		iconBackground: getSourceIconBackground(
+			source.key,
+			sourceBrandColor(source.key),
+		),
 		key: source.key,
 		label: getSourceLabel(source.key),
 		percentage: source.percentage,
@@ -331,10 +314,13 @@ function buildSourceChartItems(
 	return [
 		...visibleSources,
 		{
-			color: '#94a3b8',
+			color: CHART_COLORS.neutral,
 			count: remainingCount,
-			icon: getSourceIconElement('other-sources', '#94a3b8'),
-			iconBackground: getSourceIconBackground('other-sources', '#94a3b8'),
+			icon: getSourceIconElement('other-sources', CHART_COLORS.neutral),
+			iconBackground: getSourceIconBackground(
+				'other-sources',
+				CHART_COLORS.neutral,
+			),
 			key: 'other-sources',
 			label: 'Outras origens',
 			percentage: remainingPercentage,
@@ -429,7 +415,7 @@ function toStatusRows(
 	items: DashboardDistributionItem<OperationalDashboardStatusKey>[],
 ): StatusBarRow[] {
 	return items.map((item) => ({
-		color: getStatusColor(item.key),
+		color: getStatusColor(),
 		count: item.count,
 		key: item.key,
 		label: getStatusLabel(item.key),
@@ -493,84 +479,16 @@ function Sparkline({
 	);
 }
 
-function KpiCard({
-	color,
-	gradient,
-	icon: Icon,
-	kpi,
-	label,
-	metric,
-	trend,
-	value,
-}: KpiCardProps) {
-	const isPositive = kpi.delta > 0;
-	const isNegative = kpi.delta < 0;
-
-	return (
-		<Card className="overflow-hidden rounded-[18px] border-[#dbe4ef] bg-white shadow-sm">
-			<CardContent className="grid min-h-[116px] grid-cols-[1fr_auto] items-center gap-2.5 p-3.5">
-				<div className="min-w-0">
-					<div className="flex items-center gap-2.5">
-						<span
-							className="flex size-10 items-center justify-center rounded-[13px]"
-							style={{ background: gradient }}
-						>
-							<Icon className="size-[18px]" style={{ color }} />
-						</span>
-						<div>
-							<p className="max-w-24 text-xs leading-snug font-semibold text-[#2d3a56]">
-								{label}
-							</p>
-							<p className="mt-1 text-2xl leading-none font-bold text-[#06142b]">
-								{value}
-							</p>
-						</div>
-					</div>
-					<p className="mt-3.5 flex items-center gap-1.5 text-[11px] text-[#66708a]">
-						<TrendingUp
-							className={cn(
-								'size-3',
-								isNegative ? 'rotate-180 text-red-500' : 'text-[#009966]',
-							)}
-						/>
-						<span
-							className={cn(
-								'font-semibold',
-								isPositive && 'text-[#009966]',
-								isNegative && 'text-red-500',
-							)}
-						>
-							{formatDelta(kpi)}
-						</span>
-						<span>vs. período anterior</span>
-					</p>
-				</div>
-				<Sparkline color={color} metric={metric} points={trend} />
-			</CardContent>
-		</Card>
-	);
-}
-
 function FilterBar({
-	customEndDate,
-	customError,
-	customStartDate,
-	onApplyCustom,
-	onCustomEndChange,
-	onCustomStartChange,
+	monthValue,
+	onMonthChange,
 	onPresetChange,
-	onSelectCustom,
 	periodLabel,
 	periodSelection,
 }: {
-	customEndDate: string;
-	customError: string | null;
-	customStartDate: string;
-	onApplyCustom: () => void;
-	onCustomEndChange: (value: string) => void;
-	onCustomStartChange: (value: string) => void;
+	monthValue: string;
+	onMonthChange: (value: string) => void;
 	onPresetChange: (mode: OperationalDashboardPeriodMode) => void;
-	onSelectCustom: () => void;
 	periodLabel?: string;
 	periodSelection: PeriodSelection;
 }) {
@@ -592,51 +510,18 @@ function FilterBar({
 						{preset.label}
 					</button>
 				))}
-				<button
-					className={cn(
-						'h-9 px-3.5 text-[11px] font-semibold',
-						periodSelection === 'custom'
-							? 'bg-[#fff3ec] text-[#ff4f1f]'
-							: 'text-[#06142b] hover:bg-[#f8fafc]',
-					)}
-					onClick={onSelectCustom}
-					type="button"
-				>
-					Personalizado
-				</button>
 			</div>
+			<Input
+				aria-label="Mes do dashboard operacional"
+				className="h-9 w-[142px] rounded-[13px] border-[#dbe4ef] bg-white text-[11px] font-semibold text-[#2d3a56]"
+				onChange={(event) => onMonthChange(event.target.value)}
+				type="month"
+				value={monthValue}
+			/>
 			<div className="flex h-9 items-center gap-1.5 rounded-[13px] border border-[#dbe4ef] bg-white px-3 text-[11px] font-semibold text-[#2d3a56]">
 				<CalendarDays className="size-3 text-[#66708a]" />
-				<span>{periodLabel ?? 'Período aplicado'}</span>
+				<span>{periodLabel ?? 'Periodo aplicado'}</span>
 			</div>
-			{periodSelection === 'custom' ? (
-				<div className="flex basis-full flex-col gap-2 rounded-[14px] border border-[#dbe4ef] bg-white p-2 sm:flex-row sm:items-center lg:basis-auto">
-					<Input
-						className="h-8 rounded-xl border-[#dbe4ef] text-[11px]"
-						max={customEndDate || undefined}
-						onChange={(event) => onCustomStartChange(event.target.value)}
-						type="date"
-						value={customStartDate}
-					/>
-					<Input
-						className="h-8 rounded-xl border-[#dbe4ef] text-[11px]"
-						min={customStartDate}
-						onChange={(event) => onCustomEndChange(event.target.value)}
-						type="date"
-						value={customEndDate}
-					/>
-					<Button
-						className="h-8 rounded-xl bg-[#ff4f1f] px-3.5 text-[11px] text-white hover:bg-[#e84419]"
-						onClick={onApplyCustom}
-						type="button"
-					>
-						Aplicar
-					</Button>
-					{customError ? (
-						<p className="text-sm font-semibold text-red-600">{customError}</p>
-					) : null}
-				</div>
-			) : null}
 		</div>
 	);
 }
@@ -772,7 +657,7 @@ function StoresCard({ stores }: { stores: DashboardStoreDistributionItem[] }) {
 				<SectionHeader title="Leads por Loja" />
 				{topStores.length > 0 ? (
 					<div className="space-y-3.5">
-						{topStores.map((store, index) => (
+						{topStores.map((store) => (
 							<div className="space-y-2" key={store.storeId}>
 								<div className="flex items-end justify-between gap-4">
 									<div className="min-w-0">
@@ -792,9 +677,9 @@ function StoresCard({ stores }: { stores: DashboardStoreDistributionItem[] }) {
 								</div>
 								<div className="h-2 overflow-hidden rounded-full bg-[#eef2f7]">
 									<div
-										className="h-full rounded-full shadow-[0_10px_24px_rgba(255,79,31,0.18)]"
+										className="h-full rounded-full"
 										style={{
-											background: `linear-gradient(90deg, ${getPaletteColor(index)}, #ff4f1f)`,
+											background: storePerformanceColor(store.percentage / 100),
 											width: `${Math.max((store.count / maxCount) * 100, 6)}%`,
 										}}
 									/>
@@ -937,36 +822,33 @@ function EmptyDashboardState() {
 }
 
 function OperationalDashboardPageContent() {
+	const initialMonth = toMonthInputValue(new Date());
 	const [periodSelection, setPeriodSelection] =
-		useState<PeriodSelection>('last30');
+		useState<PeriodSelection>('month');
+	const [monthValue, setMonthValue] = useState(initialMonth);
 	const [queryInput, setQueryInput] = useState<OperationalDashboardQueryInput>(
-		{},
+		() => buildMonthPeriodQuery(initialMonth),
 	);
-	const [customStartDate, setCustomStartDate] = useState('');
-	const [customEndDate, setCustomEndDate] = useState('');
-	const [customError, setCustomError] = useState<string | null>(null);
 	const dashboardQuery = useOperationalDashboardQuery(queryInput);
 
 	function applyPresetPeriod(mode: OperationalDashboardPeriodMode) {
 		setPeriodSelection(mode);
-		setCustomError(null);
-		setQueryInput(buildPresetPeriodQuery(mode));
+		setQueryInput(
+			mode === 'month'
+				? buildMonthPeriodQuery(monthValue)
+				: buildPresetPeriodQuery(mode),
+		);
 	}
 
-	function applyCustomPeriod() {
-		if (!customStartDate || !customEndDate) {
-			setCustomError('Informe data inicial e final para aplicar o período.');
+	function applyMonthPeriod(value: string) {
+		setMonthValue(value);
+
+		if (!isValidMonthInput(value)) {
 			return;
 		}
 
-		if (customStartDate > customEndDate) {
-			setCustomError('A data inicial precisa ser anterior ou igual à final.');
-			return;
-		}
-
-		setPeriodSelection('custom');
-		setCustomError(null);
-		setQueryInput(buildCustomPeriodQuery(customStartDate, customEndDate));
+		setPeriodSelection('month');
+		setQueryInput(buildMonthPeriodQuery(value));
 	}
 
 	const dashboard = dashboardQuery.data;
@@ -996,14 +878,9 @@ function OperationalDashboardPageContent() {
 					</p>
 				</div>
 				<FilterBar
-					customEndDate={customEndDate}
-					customError={customError}
-					customStartDate={customStartDate}
-					onApplyCustom={applyCustomPeriod}
-					onCustomEndChange={setCustomEndDate}
-					onCustomStartChange={setCustomStartDate}
+					monthValue={monthValue}
+					onMonthChange={applyMonthPeriod}
 					onPresetChange={applyPresetPeriod}
-					onSelectCustom={() => setPeriodSelection('custom')}
 					periodLabel={periodLabel}
 					periodSelection={periodSelection}
 				/>
@@ -1022,44 +899,76 @@ function OperationalDashboardPageContent() {
 				<>
 					<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
 						<KpiCard
-							color="#ff4f1f"
-							gradient="linear-gradient(135deg, #fff3ec 0%, #ffe5d6 100%)"
-							icon={UsersRound}
-							kpi={dashboard.kpis.totalLeads}
-							label="Total de Leads"
-							metric="totalLeads"
-							trend={dashboard.trend.points}
+							delta={{
+								label: 'vs. período anterior',
+								tone: getKpiDeltaTone(dashboard.kpis.totalLeads),
+								value: formatDelta(dashboard.kpis.totalLeads),
+							}}
+							icon={<UsersRound className="size-5" />}
+							sparkline={
+								<Sparkline
+									color="var(--kpi-icon-brand)"
+									metric="totalLeads"
+									points={dashboard.trend.points}
+								/>
+							}
+							title="Total de Leads"
 							value={formatCount(dashboard.kpis.totalLeads.value)}
+							variant="brand"
 						/>
 						<KpiCard
-							color="#16a34a"
-							gradient="linear-gradient(135deg, #e9fbf2 0%, #d6f7e6 100%)"
-							icon={TrendingUp}
-							kpi={dashboard.kpis.activeLeads}
-							label="Leads Abertos"
-							metric="activeLeads"
-							trend={dashboard.trend.points}
+							delta={{
+								label: 'vs. período anterior',
+								tone: getKpiDeltaTone(dashboard.kpis.activeLeads),
+								value: formatDelta(dashboard.kpis.activeLeads),
+							}}
+							icon={<TrendingUp className="size-5" />}
+							sparkline={
+								<Sparkline
+									color="var(--kpi-icon-success)"
+									metric="activeLeads"
+									points={dashboard.trend.points}
+								/>
+							}
+							title="Leads Abertos"
 							value={formatCount(dashboard.kpis.activeLeads.value)}
+							variant="success"
 						/>
 						<KpiCard
-							color="#5b35ff"
-							gradient="linear-gradient(135deg, #f4edff 0%, #e7dcff 100%)"
-							icon={CheckCircle2}
-							kpi={dashboard.kpis.convertedLeads}
-							label="Leads Convertidos"
-							metric="convertedLeads"
-							trend={dashboard.trend.points}
+							delta={{
+								label: 'vs. período anterior',
+								tone: getKpiDeltaTone(dashboard.kpis.convertedLeads),
+								value: formatDelta(dashboard.kpis.convertedLeads),
+							}}
+							icon={<CheckCircle2 className="size-5" />}
+							sparkline={
+								<Sparkline
+									color="var(--kpi-icon-neutral)"
+									metric="convertedLeads"
+									points={dashboard.trend.points}
+								/>
+							}
+							title="Leads Convertidos"
 							value={formatCount(dashboard.kpis.convertedLeads.value)}
+							variant="neutral"
 						/>
 						<KpiCard
-							color="#f97316"
-							gradient="linear-gradient(135deg, #fff7e6 0%, #ffe8bd 100%)"
-							icon={Target}
-							kpi={dashboard.kpis.conversionRate}
-							label="Taxa de Conversão"
-							metric="conversionRate"
-							trend={dashboard.trend.points}
+							delta={{
+								label: 'vs. período anterior',
+								tone: getKpiDeltaTone(dashboard.kpis.conversionRate),
+								value: formatDelta(dashboard.kpis.conversionRate),
+							}}
+							icon={<Target className="size-5" />}
+							sparkline={
+								<Sparkline
+									color="var(--kpi-icon-warning)"
+									metric="conversionRate"
+									points={dashboard.trend.points}
+								/>
+							}
+							title="Taxa de Conversão"
 							value={formatPercentage(dashboard.kpis.conversionRate.value)}
+							variant="warning"
 						/>
 					</div>
 

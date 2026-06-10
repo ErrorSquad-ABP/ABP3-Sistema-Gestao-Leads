@@ -1,7 +1,6 @@
 import type { Prisma } from '../../../../../generated/prisma/client.js';
 import type { TransactionContext } from '../../../../../shared/application/contracts/transaction-context.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
-import { computeTotalPages } from '../../../domain/types/lead-list-page.js';
 import type {
 	ILeadRepository,
 	LeadCatalogBreakdownItem,
@@ -9,6 +8,7 @@ import type {
 	LeadCatalogItem,
 	LeadListFilters,
 } from '../../../domain/repositories/lead.repository.js';
+import { computeTotalPages } from '../../../domain/types/lead-list-page.js';
 import { buildListTeamLeadsWhere } from '../../queries/list-team-leads.query.js';
 import { LeadMapper } from '../mappers/lead.mapper.js';
 
@@ -346,7 +346,15 @@ class LeadPrismaRepository implements ILeadRepository {
 	) {
 		const where: Prisma.LeadWhereInput = {
 			...catalogScopeWhere(filters.scope),
-			...(filters.status ? { status: filters.status } : {}),
+			...(filters.status
+				? filters.status === 'WORKABLE'
+					? {
+							status: {
+								in: ['NEW', 'CONTACTED', 'QUALIFIED', 'NEGOTIATING'],
+							},
+						}
+					: { status: filters.status }
+				: {}),
 			...(filters.source ? { source: filters.source } : {}),
 			...(filters.storeId ? { storeId: filters.storeId.value } : {}),
 			...(filters.ownerUserId
