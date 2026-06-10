@@ -174,6 +174,14 @@ class UserPrismaRepository implements IUserRepository {
 		return user ? this.toDomain(user) : null;
 	}
 
+	async list(): Promise<readonly User[]> {
+		const rows = await this.client.user.findMany({
+			orderBy: { name: 'asc' },
+			include: userRelationsInclude,
+		});
+		return rows.map((row) => this.toDomain(row));
+	}
+
 	async listByIds(ids: readonly UUID[]): Promise<readonly User[]> {
 		if (ids.length === 0) {
 			return [];

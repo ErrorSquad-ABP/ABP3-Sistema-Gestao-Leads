@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import type { User } from '../../../users/domain/entities/user.entity.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { TeamAccessDeniedError } from '../../domain/errors/team-access-denied.error.js';
@@ -123,6 +124,40 @@ class TeamAccessPolicy {
 				'Transferencia da equipe para esta loja nao permitida para o seu escopo.',
 			);
 		}
+	}
+
+	async assertCanUseStore(actor: TeamActor, storeId: string): Promise<void> {
+		await this.assertStoreAllowedForManager(actor, storeId);
+	}
+
+	async userCanBelongToStore(user: User, storeId: string): Promise<boolean> {
+		const teamIds = [
+			...new Set([
+				...user.memberTeamIds.map((teamId) => teamId.value),
+				...user.managedTeamIds.map((teamId) => teamId.value),
+			]),
+		];
+		if (teamIds.length === 0) {
+			return true;
+		}
+
+		const teams = this.teamRepositoryFactory.create();
+		const teamEntities = await teams.listByIds(
+			teamIds.map((teamId) => Uuid.parse(teamId)),
+		);
+		return teamEntities.some((team) => team.storeId.value === storeId);
+	}
+
+	async assertUserCanBelongToStore(
+		user: User,
+		storeId: string,
+	): Promise<void> {
+		if (await this.userCanBelongToStore(user, storeId)) {
+			return;
+		}
+		throw new TeamAccessDeniedError(
+			'O membro precisa pertencer a uma equipe da mesma loja ou ainda nao possuir equipe vinculada.',
+		);
 	}
 
 	async listTeamIdsForActor(

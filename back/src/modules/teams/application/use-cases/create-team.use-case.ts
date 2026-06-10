@@ -66,6 +66,10 @@ class CreateTeamUseCase {
 					if (!member) {
 						throw new UserNotFoundError(uid);
 					}
+					await this.teamAccessPolicy.assertUserCanBelongToStore(
+						member,
+						dto.storeId,
+					);
 				}
 			}
 

@@ -23,6 +23,7 @@ import { CreateTeamUseCase } from './create-team.use-case.js';
 
 const stubTeamAccessPolicy = {
 	assertCanCreateTeam: async () => {},
+	assertUserCanBelongToStore: async () => {},
 } as unknown as TeamAccessPolicy;
 
 const administratorActor: TeamActor = {
@@ -144,6 +145,9 @@ describe('CreateTeamUseCase', () => {
 					.map((id) => (id.equals(manager.id) ? manager : null))
 					.filter((user): user is User => user !== null);
 			},
+			async list() {
+				return [manager];
+			},
 			async listPaged() {
 				return { users: [], total: 0 };
 			},
@@ -168,6 +172,103 @@ describe('CreateTeamUseCase', () => {
 		assert.equal(result.storeId.value, store.id.value);
 		assert.equal(createdTeam?.storeId.value, store.id.value);
 		assert.equal(result.managerId?.value, manager.id.value);
+	});
+
+	it('cria equipe com membros iniciais sem duplicar ids', async () => {
+		const store = buildStore();
+		const attendant = buildAttendant();
+		let createdMemberIds: readonly string[] = [];
+
+		const useCase = new CreateTeamUseCase(
+			stubTeamAccessPolicy,
+			new TeamFactory(),
+			{
+				create: () =>
+					({
+						async create(team) {
+							createdMemberIds = team.memberUserIds.map((id) => id.value);
+							return team;
+						},
+						async update(team) {
+							return team;
+						},
+						async delete() {},
+						async findById() {
+							return null;
+						},
+						async listByIds() {
+							return [];
+						},
+						async list() {
+							return [];
+						},
+					}) as ITeamRepository,
+			} as TeamRepositoryFactory,
+			{
+				create: () =>
+					({
+						async create(entity) {
+							return entity;
+						},
+						async update(entity) {
+							return entity;
+						},
+						async delete() {},
+						async findById(id) {
+							return id.equals(store.id) ? store : null;
+						},
+						async list() {
+							return [store];
+						},
+						async countBlockingReferences() {
+							return { leads: 0, teams: 0 };
+						},
+					}) as IStoreRepository,
+			} as StoreRepositoryFactory,
+			{
+				create: () =>
+					({
+						async create(user) {
+							return user;
+						},
+						async update(user) {
+							return user;
+						},
+						async delete() {},
+						async findById(id) {
+							return id.equals(attendant.id) ? attendant : null;
+						},
+						async findByEmail() {
+							return null;
+						},
+						async list() {
+							return [attendant];
+						},
+						async listByIds(ids) {
+							return ids
+								.map((id) => (id.equals(attendant.id) ? attendant : null))
+								.filter((user): user is User => user !== null);
+						},
+						async listPaged() {
+							return { users: [], total: 0 };
+						},
+					}) as IUserRepository,
+			} as UserRepositoryFactory,
+		);
+		(useCase as unknown as { unitOfWork: IUnitOfWork }).unitOfWork =
+			new FakeUnitOfWork();
+
+		const result = await useCase.execute(administratorActor, {
+			name: 'Equipe com membros',
+			storeId: store.id.value,
+			managerId: null,
+			initialMemberUserIds: [attendant.id.value, attendant.id.value],
+		});
+
+		assert.deepEqual(result.memberUserIds.map((id) => id.value), [
+			attendant.id.value,
+		]);
+		assert.deepEqual(createdMemberIds, [attendant.id.value]);
 	});
 
 	it('rejeita gerente com papel ATTENDANT', async () => {
@@ -239,6 +340,9 @@ describe('CreateTeamUseCase', () => {
 							return ids
 								.map((id) => (id.equals(attendant.id) ? attendant : null))
 								.filter((user): user is User => user !== null);
+						},
+						async list() {
+							return [attendant];
 						},
 						async listPaged() {
 							return { users: [], total: 0 };
@@ -328,6 +432,9 @@ describe('CreateTeamUseCase', () => {
 							return ids
 								.map((id) => (id.equals(manager.id) ? manager : null))
 								.filter((user): user is User => user !== null);
+						},
+						async list() {
+							return [manager];
 						},
 						async listPaged() {
 							return { users: [], total: 0 };
