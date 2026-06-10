@@ -31,6 +31,10 @@ import {
 	ApiOkResponseEnvelopePaged,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { UserResponseDto } from '../../application/dto/user-response.dto.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { CreateUserUseCase } from '../../application/use-cases/create-user.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI
@@ -99,8 +103,11 @@ class UserController {
 		description: 'E-mail já cadastrado.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body() body: CreateUserValidator) {
-		const user = await this.createUserUseCase.execute({
+	async create(
+		@CurrentUser() actor: JwtUser,
+		@Body() body: CreateUserValidator,
+	) {
+		const user = await this.createUserUseCase.execute(actor.userId, {
 			accessGroupId: body.accessGroupId ?? null,
 			name: body.name,
 			email: body.email,
@@ -162,10 +169,11 @@ class UserController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() actor: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateUserValidator,
 	) {
-		const user = await this.updateUserUseCase.execute(id, body);
+		const user = await this.updateUserUseCase.execute(actor.userId, id, body);
 		return UserPresenter.toResponse(user);
 	}
 
@@ -181,8 +189,11 @@ class UserController {
 		description: 'UUID inválido no parâmetro de rota.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-		await this.deleteUserUseCase.execute(id);
+	async delete(
+		@CurrentUser() actor: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteUserUseCase.execute(actor.userId, id);
 	}
 }
 

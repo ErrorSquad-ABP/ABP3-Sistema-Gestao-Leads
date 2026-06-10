@@ -21,7 +21,9 @@ function buildTestPassword(prefix: string) {
 function uowThatRunsCallback(): IUnitOfWork {
 	return {
 		run: async <T>(fn: () => Promise<T>) => fn(),
-		getTransactionContext: () => ({ client: {} }),
+		getTransactionContext: () => ({
+			client: { auditLog: { create: mock.fn(async () => ({})) } },
+		}),
 		begin: async () => {},
 		commit: async () => {},
 		rollback: async () => {},
