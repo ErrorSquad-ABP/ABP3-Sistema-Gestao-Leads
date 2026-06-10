@@ -4,8 +4,22 @@ const queryKeys = {
 	},
 	users: {
 		all: ['users'] as const,
-		list: (page: number, limit: number) =>
-			['users', 'list', page, limit] as const,
+		list: (params: {
+			page: number;
+			limit: number;
+			search?: string;
+			role?: string;
+			accessGroupId?: string;
+		}) =>
+			[
+				'users',
+				'list',
+				params.search?.trim() ?? '',
+				params.role ?? 'all-roles',
+				params.accessGroupId ?? 'all-groups',
+				params.page,
+				params.limit,
+			] as const,
 		accessGroups: ['users', 'access-groups'] as const,
 	},
 	auditLogs: {

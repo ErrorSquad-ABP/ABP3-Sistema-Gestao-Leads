@@ -10,8 +10,21 @@ type UserRecord = {
 	email: string;
 	role: UserRole;
 	teamId: string | null;
+	/** Grupos vinculados (ADR-001: multi-grupo sem herança). */
+	accessGroupIds: string[];
+	accessGroups: AccessGroupSummary[];
+	/** União deduplicada das features de todos os grupos. */
+	featureKeys: AccessFeatureKey[];
+	/** Legado: primeiro grupo ordenado por nome. */
 	accessGroupId: string | null;
 	accessGroup: AccessGroupSummary | null;
+};
+
+type UsersSummary = {
+	total: number;
+	administrators: number;
+	withoutGroup: number;
+	withMultipleGroups: number;
 };
 
 type ListUsersResponse = {
@@ -20,6 +33,15 @@ type ListUsersResponse = {
 	limit: number;
 	total: number;
 	totalPages: number;
+	summary: UsersSummary;
+};
+
+type ListUsersFilters = {
+	page: number;
+	limit: number;
+	search?: string;
+	role?: UserRole;
+	accessGroupId?: string;
 };
 
 type CreateUserInput = {
@@ -28,7 +50,7 @@ type CreateUserInput = {
 	password: string;
 	role: UserRole;
 	teamId?: string | null;
-	accessGroupId?: string | null;
+	accessGroupIds: string[];
 };
 
 type UpdateUserInput = {
@@ -37,7 +59,7 @@ type UpdateUserInput = {
 	password?: string;
 	role?: UserRole;
 	teamId?: string | null;
-	accessGroupId?: string | null;
+	accessGroupIds?: string[];
 };
 
 type AccessGroup = AccessGroupSummary;
@@ -60,8 +82,10 @@ export type {
 	AccessFeatureKey,
 	AccessGroup,
 	CreateUserInput,
+	ListUsersFilters,
 	ListUsersResponse,
 	UpdateUserInput,
 	UserRecord,
+	UsersSummary,
 };
 export { roleLabels, roleOptions };
