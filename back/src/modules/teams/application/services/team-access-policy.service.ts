@@ -148,10 +148,7 @@ class TeamAccessPolicy {
 		return teamEntities.some((team) => team.storeId.value === storeId);
 	}
 
-	async assertUserCanBelongToStore(
-		user: User,
-		storeId: string,
-	): Promise<void> {
+	async assertUserCanBelongToStore(user: User, storeId: string): Promise<void> {
 		if (await this.userCanBelongToStore(user, storeId)) {
 			return;
 		}

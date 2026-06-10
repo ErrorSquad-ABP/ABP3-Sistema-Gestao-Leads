@@ -265,9 +265,10 @@ describe('CreateTeamUseCase', () => {
 			initialMemberUserIds: [attendant.id.value, attendant.id.value],
 		});
 
-		assert.deepEqual(result.memberUserIds.map((id) => id.value), [
-			attendant.id.value,
-		]);
+		assert.deepEqual(
+			result.memberUserIds.map((id) => id.value),
+			[attendant.id.value],
+		);
 		assert.deepEqual(createdMemberIds, [attendant.id.value]);
 	});
 

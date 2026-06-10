@@ -42,7 +42,9 @@ function TeamMembersDialog({
 	team,
 }: TeamMembersDialogProps) {
 	const memberUserIds = team?.memberUserIds ?? [];
-	const memberById = new Map(candidates.map((candidate) => [candidate.id, candidate]));
+	const memberById = new Map(
+		candidates.map((candidate) => [candidate.id, candidate]),
+	);
 	const members = memberUserIds.map(
 		(userId) =>
 			memberById.get(userId) ?? {

@@ -28,9 +28,7 @@ function parseTeamMemberCandidates(data: unknown): TeamMemberCandidate[] {
 			typeof (item as { name?: unknown }).name !== 'string' ||
 			typeof (item as { email?: unknown }).email !== 'string'
 		) {
-			throw new Error(
-				'Resposta de candidato de equipe em formato inesperado.',
-			);
+			throw new Error('Resposta de candidato de equipe em formato inesperado.');
 		}
 		return {
 			id: (item as { id: string }).id,

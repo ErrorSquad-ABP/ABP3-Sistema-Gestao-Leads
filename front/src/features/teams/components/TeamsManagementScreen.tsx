@@ -63,9 +63,7 @@ const TEAM_COLORS = [
 	'text-[#079455]',
 	'text-[#0ba5ec]',
 ] as const;
-const DISTRIBUTION_COLORS = [
-	'var(--chart-bar-default)',
-] as const;
+const DISTRIBUTION_COLORS = ['var(--chart-bar-default)'] as const;
 
 function getTeamsErrorMessage(error: unknown) {
 	if (!isApiError(error)) {
@@ -562,7 +560,9 @@ function TeamsManagementScreen() {
 	) {
 		const currentSet = new Set(currentUserIds);
 		const nextSet = new Set(nextUserIds);
-		const addedUserIds = [...nextSet].filter((userId) => !currentSet.has(userId));
+		const addedUserIds = [...nextSet].filter(
+			(userId) => !currentSet.has(userId),
+		);
 		const removedUserIds = [...currentSet].filter(
 			(userId) => !nextSet.has(userId),
 		);
@@ -673,7 +673,9 @@ function TeamsManagementScreen() {
 				current
 					? {
 							...current,
-							memberUserIds: current.memberUserIds.filter((id) => id !== userId),
+							memberUserIds: current.memberUserIds.filter(
+								(id) => id !== userId,
+							),
 						}
 					: current,
 			);

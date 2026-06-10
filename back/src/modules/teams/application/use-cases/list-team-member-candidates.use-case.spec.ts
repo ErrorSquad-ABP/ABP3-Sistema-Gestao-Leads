@@ -45,7 +45,7 @@ describe('ListTeamMemberCandidatesUseCase', () => {
 				userCanBelongToStore: async (candidate: User) =>
 					allowedIds.has(candidate.id.value),
 			} as unknown as TeamAccessPolicy,
-			({
+			{
 				create: () => ({
 					create: async (candidate: User) => candidate,
 					update: async (candidate: User) => candidate,
@@ -56,7 +56,7 @@ describe('ListTeamMemberCandidatesUseCase', () => {
 					listByIds: async () => [],
 					listPaged: async () => ({ users: [], total: 0 }),
 				}),
-			} as unknown as UserRepositoryFactory),
+			} as unknown as UserRepositoryFactory,
 		);
 
 		const result = await useCase.execute(

@@ -165,7 +165,7 @@ function TeamFormDialog({
 									{owner.name} · {owner.email}
 								</option>
 							))}
-							</select>
+						</select>
 					</div>
 					<div className="grid gap-2">
 						<Label>Membros</Label>
