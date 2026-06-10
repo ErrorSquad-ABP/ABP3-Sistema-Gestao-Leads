@@ -1,13 +1,6 @@
 'use client';
 
-import {
-	ChevronLeft,
-	ChevronRight,
-	Eye,
-	MoreHorizontal,
-	PencilLine,
-	Trash2,
-} from 'lucide-react';
+import { Eye, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,22 +22,11 @@ import {
 import type { CustomerCatalogItem } from '../model/customers.model';
 
 type CustomersTableProps = {
-	currentPage: number;
-	items: CustomerCatalogItem[];
-	onDelete: (item: CustomerCatalogItem) => void;
-	onEdit: (item: CustomerCatalogItem) => void;
-	onNextPage: () => void;
-	onPageChange: (page: number) => void;
-	onPageSizeChange: (pageSize: 6 | 12 | 18 | 24 | 48) => void;
-	onPreviousPage: () => void;
-	onView: (item: CustomerCatalogItem) => void;
-	pageSize: number;
-	pageSizeOptions: readonly (6 | 12 | 18 | 24 | 48)[];
-	totalItems: number;
-	totalPages: number;
+	readonly items: CustomerCatalogItem[];
+	readonly onDelete: (item: CustomerCatalogItem) => void;
+	readonly onEdit: (item: CustomerCatalogItem) => void;
+	readonly onView: (item: CustomerCatalogItem) => void;
 };
-
-type PaginationItem = number | 'ellipsis-start' | 'ellipsis-end';
 
 function formatCustomerInitials(name: string) {
 	const words = name.trim().split(/\s+/).filter(Boolean);
@@ -99,88 +81,39 @@ function formatDealSummary(item: CustomerCatalogItem) {
 	return `${item.openDealsCount} ${item.openDealsCount === 1 ? 'aberta' : 'abertas'}`;
 }
 
-function buildPaginationItems(
-	currentPage: number,
-	totalPages: number,
-): PaginationItem[] {
-	if (totalPages <= 5) {
-		return Array.from({ length: totalPages }, (_, index) => index + 1);
-	}
-
-	const leadingPages = [1, 2, 3, 4];
-	if (currentPage <= 4) {
-		return [...leadingPages, 'ellipsis-end', totalPages];
-	}
-
-	if (currentPage >= totalPages - 2) {
-		return [
-			1,
-			'ellipsis-start',
-			totalPages - 3,
-			totalPages - 2,
-			totalPages - 1,
-			totalPages,
-		];
-	}
-
-	return [
-		1,
-		'ellipsis-start',
-		currentPage - 1,
-		currentPage,
-		currentPage + 1,
-		'ellipsis-end',
-		totalPages,
-	];
-}
-
 function CustomersTable({
-	currentPage,
 	items,
 	onDelete,
 	onEdit,
-	onNextPage,
-	onPageChange,
-	onPageSizeChange,
-	onPreviousPage,
 	onView,
-	pageSize,
-	pageSizeOptions,
-	totalItems,
-	totalPages,
 }: CustomersTableProps) {
-	const paginationItems = buildPaginationItems(currentPage, totalPages);
-	const firstVisibleItem =
-		items.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-	const lastVisibleItem = Math.min(currentPage * pageSize, totalItems);
-
 	return (
-		<div className="overflow-hidden rounded-b-3xl border-t border-[#e7edf5]">
+		<div className="overflow-hidden rounded-b-3xl border-t border-border">
 			<Table>
-				<TableHeader className="bg-white">
-					<TableRow className="border-[#e7edf5]">
-						<TableHead className="w-[22%] pl-7 text-[#1e293b]">
+				<TableHeader className="bg-[color:var(--table-header-bg)]">
+					<TableRow className="border-border hover:bg-transparent">
+						<TableHead className="w-[22%] pl-7 text-foreground">
 							Cliente
 						</TableHead>
-						<TableHead className="w-[18%] text-[#1e293b]">Contato</TableHead>
-						<TableHead className="w-[13%] text-[#1e293b]">Documento</TableHead>
-						<TableHead className="w-[13%] text-[#1e293b]">
+						<TableHead className="w-[18%] text-foreground">Contato</TableHead>
+						<TableHead className="w-[13%] text-foreground">Documento</TableHead>
+						<TableHead className="w-[13%] text-foreground">
 							Negociações
 						</TableHead>
-						<TableHead className="w-[16%] text-[#1e293b]">
+						<TableHead className="w-[16%] text-foreground">
 							Última atividade
 						</TableHead>
-						<TableHead className="w-[10%] text-[#1e293b]">Status</TableHead>
-						<TableHead className="pr-6 text-right text-[#1e293b]">
+						<TableHead className="w-[10%] text-foreground">Status</TableHead>
+						<TableHead className="pr-6 text-right text-foreground">
 							Ações
 						</TableHead>
 					</TableRow>
 				</TableHeader>
-				<TableBody>
+				<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
 					{items.length === 0 ? (
-						<TableRow className="border-[#e7edf5]">
+						<TableRow className="border-border">
 							<TableCell
-								className="py-10 text-center text-sm text-[#667085]"
+								className="py-10 text-center text-sm text-muted-foreground"
 								colSpan={7}
 							>
 								Nenhum cliente encontrado.
@@ -189,51 +122,51 @@ function CustomersTable({
 					) : (
 						items.map((item) => (
 							<TableRow
-								className="h-[4.35rem] border-[#e7edf5] hover:bg-[#f8fafc]/80"
+								className="h-[4.35rem] border-border hover:bg-[color:var(--table-row-hover)]"
 								key={item.customer.id}
 							>
 								<TableCell className="pl-7">
 									<div className="flex items-center gap-3">
-										<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f1f4f8] text-xs font-semibold text-[#667085]">
+										<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
 											{formatCustomerInitials(item.customer.name)}
 										</div>
-										<p className="font-semibold text-[#101828]">
+										<p className="font-semibold text-foreground">
 											{item.customer.name}
 										</p>
 									</div>
 								</TableCell>
 								<TableCell>
-									<p className="text-sm font-medium text-[#1e293b]">
+									<p className="text-sm font-medium text-foreground">
 										{item.customer.email ?? 'Sem e-mail'}
 									</p>
-									<p className="mt-1 text-xs text-[#667085]">
+									<p className="mt-1 text-xs text-muted-foreground">
 										{item.customer.phone ?? 'Sem telefone'}
 									</p>
 								</TableCell>
-								<TableCell className="text-sm text-[#667085]">
+								<TableCell className="text-sm text-muted-foreground">
 									{item.customer.cpf ?? '---'}
 								</TableCell>
 								<TableCell>
 									<p
 										className={
 											item.wonDealsCount > 0
-												? 'text-sm font-semibold text-emerald-600'
-												: 'text-sm font-semibold text-[#1e293b]'
+												? 'text-sm font-semibold text-[color:var(--text-positive)]'
+												: 'text-sm font-semibold text-foreground'
 										}
 									>
 										{formatDealSummary(item)}
 									</p>
-									<p className="mt-1 text-xs text-[#667085]">
+									<p className="mt-1 text-xs text-muted-foreground">
 										{item.totalDealsCount > 0
 											? formatCurrency(item.totalDealValue)
 											: 'Sem negociações'}
 									</p>
 								</TableCell>
 								<TableCell>
-									<p className="text-sm font-medium text-[#1e293b]">
+									<p className="text-sm font-medium text-foreground">
 										{formatActivityDate(item.lastActivityAt)}
 									</p>
-									<p className="mt-1 text-xs text-[#667085]">
+									<p className="mt-1 text-xs text-muted-foreground">
 										{item.lastActivityLabel}
 									</p>
 								</TableCell>
@@ -241,14 +174,14 @@ function CustomersTable({
 									<Badge
 										className={
 											item.status === 'ACTIVE'
-												? 'gap-1.5 rounded-full border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-700'
+												? 'gap-1.5 rounded-full border-emerald-100 bg-[color:var(--kpi-surface-success)] px-3 py-1 text-[color:var(--text-positive)]'
 												: 'gap-1.5 rounded-full border-slate-100 bg-slate-100 px-3 py-1 text-slate-600'
 										}
 									>
 										<span
 											className={
 												item.status === 'ACTIVE'
-													? 'size-1.5 rounded-full bg-emerald-500'
+													? 'size-1.5 rounded-full bg-[color:var(--text-positive)]'
 													: 'size-1.5 rounded-full bg-slate-400'
 											}
 										/>
@@ -260,7 +193,7 @@ function CustomersTable({
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<Button
-													className="rounded-lg border-[#d8e0ea] shadow-none"
+													className="rounded-lg border-border shadow-none"
 													size="icon-sm"
 													variant="outline"
 												>
@@ -270,7 +203,7 @@ function CustomersTable({
 											</DropdownMenuTrigger>
 											<DropdownMenuContent
 												align="end"
-												className="w-44 rounded-xl bg-white"
+												className="w-44 rounded-xl bg-card"
 											>
 												<DropdownMenuItem
 													className="cursor-pointer rounded-lg px-3 py-2"
@@ -303,74 +236,6 @@ function CustomersTable({
 					)}
 				</TableBody>
 			</Table>
-
-			<div className="grid gap-3 border-t border-[#e7edf5] px-7 py-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-				<p className="text-sm text-[#667085]">
-					Mostrando {firstVisibleItem} a {lastVisibleItem} de {totalItems}{' '}
-					clientes
-				</p>
-				<div className="flex items-center justify-center gap-2">
-					<Button
-						className="rounded-lg border-[#d8e0ea]"
-						disabled={currentPage <= 1}
-						onClick={onPreviousPage}
-						size="icon-sm"
-						variant="outline"
-					>
-						<ChevronLeft className="size-4" />
-					</Button>
-					{paginationItems.map((item) =>
-						typeof item === 'string' ? (
-							<span
-								className="px-2 text-sm font-semibold text-[#667085]"
-								key={item}
-							>
-								...
-							</span>
-						) : (
-							<Button
-								className={
-									item === currentPage
-										? 'min-w-9 rounded-lg bg-orange-50 px-3 text-sm font-semibold text-[#f05a28] shadow-none hover:bg-orange-50'
-										: 'min-w-9 rounded-lg px-3 text-sm font-semibold text-[#1e293b] shadow-none hover:bg-[#f8fafc]'
-								}
-								key={item}
-								onClick={() => onPageChange(item)}
-								variant="ghost"
-							>
-								{item}
-							</Button>
-						),
-					)}
-					<Button
-						className="rounded-lg border-[#d8e0ea]"
-						disabled={currentPage >= totalPages}
-						onClick={onNextPage}
-						size="icon-sm"
-						variant="outline"
-					>
-						<ChevronRight className="size-4" />
-					</Button>
-				</div>
-				<label className="flex items-center justify-start gap-2 text-sm text-[#667085] lg:justify-end">
-					Itens por página:
-					<select
-						className="h-9 rounded-lg border border-[#d8e0ea] bg-white px-3 text-sm font-semibold text-[#1e293b] outline-none"
-						onChange={(event) =>
-							onPageSizeChange(
-								Number(event.target.value) as 6 | 12 | 18 | 24 | 48,
-							)
-						}
-						value={pageSize}
-					>
-						{pageSizeOptions.map((option) => (
-							<option key={option} value={option}>
-								{option}
-							</option>
-						))}
-					</select>
-				</label>
-			</div>
 		</div>
 	);
 }
