@@ -7,14 +7,18 @@ import type { AuditLogCategory } from '../../domain/repositories/audit-log.repos
 import { AuditLogRepositoryFactory } from '../../infrastructure/persistence/factories/audit-log-repository.factory.js';
 
 type ListAuditLogsQuery = {
-	readonly page: number;
-	readonly limit: number;
+	readonly page?: number;
+	readonly limit?: number;
 	readonly category?: AuditLogCategory;
 	readonly action?: AuditActionType;
 	readonly user?: string;
 	readonly startDate?: Date;
 	readonly endDate?: Date;
 };
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
 
 type ListAuditLogsResult = {
 	readonly items: readonly AuditLog[];
@@ -31,8 +35,17 @@ class ListAuditLogsUseCase {
 	) {}
 
 	async execute(query: ListAuditLogsQuery): Promise<ListAuditLogsResult> {
+		const page = Math.max(1, query.page ?? DEFAULT_PAGE);
+		const limit = Math.min(
+			MAX_LIMIT,
+			Math.max(1, query.limit ?? DEFAULT_LIMIT),
+		);
 		const auditLogs = this.auditLogRepositoryFactory.create();
-		return auditLogs.listPaged(query);
+		return auditLogs.listPaged({
+			...query,
+			page,
+			limit,
+		});
 	}
 }
 

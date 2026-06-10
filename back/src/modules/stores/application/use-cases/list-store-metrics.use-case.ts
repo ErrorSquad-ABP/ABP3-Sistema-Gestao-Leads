@@ -3,7 +3,8 @@ import { Injectable } from '@nestjs/common';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
-import type { StoreRepositoryFactory } from '../../infrastructure/persistence/factories/store-repository.factory.js';
+// biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
+import { StoreRepositoryFactory } from '../../infrastructure/persistence/factories/store-repository.factory.js';
 
 @Injectable()
 class ListStoreMetricsUseCase {

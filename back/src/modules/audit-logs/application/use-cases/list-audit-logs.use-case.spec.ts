@@ -41,4 +41,25 @@ describe('ListAuditLogsUseCase', () => {
 			endDate: new Date('2026-06-08T23:59:59.999Z'),
 		});
 	});
+
+	it('aplica paginacao padrao quando page e limit nao sao informados', async () => {
+		const listPaged = mock.fn(async (_query: unknown) => ({
+			items: [],
+			page: 1,
+			limit: 20,
+			total: 0,
+			totalPages: 0,
+		}));
+		const factory = {
+			create: () => ({ listPaged }),
+		} as unknown as AuditLogRepositoryFactory;
+		const useCase = new ListAuditLogsUseCase(factory);
+
+		await useCase.execute({});
+
+		assert.deepEqual(listPaged.mock.calls[0]?.arguments[0], {
+			page: 1,
+			limit: 20,
+		});
+	});
 });
