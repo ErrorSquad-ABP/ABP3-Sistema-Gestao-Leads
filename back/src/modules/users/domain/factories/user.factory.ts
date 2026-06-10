@@ -10,7 +10,7 @@ type CreateUserParams = {
 	readonly email: string;
 	readonly passwordHash: string;
 	readonly role: string;
-	readonly accessGroupId: string | null;
+	readonly accessGroupIds: readonly string[];
 };
 
 type UpdateUserParams = {
@@ -18,8 +18,13 @@ type UpdateUserParams = {
 	readonly email?: string;
 	readonly passwordHash?: PasswordHash;
 	readonly role?: string;
-	readonly accessGroupId?: string | null;
+	readonly accessGroupIds?: readonly string[];
 };
+
+function parseAccessGroupIds(ids: readonly string[]) {
+	const unique = [...new Set(ids)];
+	return unique.map((id) => Uuid.parse(id));
+}
 
 class UserFactory {
 	create(params: CreateUserParams): User {
@@ -31,25 +36,20 @@ class UserFactory {
 			parseUserRole(params.role),
 			[],
 			[],
-			params.accessGroupId === null ? null : Uuid.parse(params.accessGroupId),
-			null,
+			parseAccessGroupIds(params.accessGroupIds),
+			[],
 		);
 	}
 
 	update(existing: User, params: UpdateUserParams): User {
-		const nextAccessGroupId =
-			params.accessGroupId !== undefined
-				? params.accessGroupId === null
-					? null
-					: Uuid.parse(params.accessGroupId)
-				: existing.accessGroupId;
-		const nextAccessGroup =
-			params.accessGroupId === undefined
-				? existing.accessGroup
-				: nextAccessGroupId !== null &&
-						(existing.accessGroup?.id.equals(nextAccessGroupId) ?? false)
-					? existing.accessGroup
-					: null;
+		const nextAccessGroupIds =
+			params.accessGroupIds !== undefined
+				? parseAccessGroupIds(params.accessGroupIds)
+				: existing.accessGroupIds;
+		const keepsSameGroups =
+			params.accessGroupIds === undefined ||
+			existing.hasSameAccessGroups(nextAccessGroupIds);
+		const nextAccessGroups = keepsSameGroups ? existing.accessGroups : [];
 
 		return new User(
 			existing.id,
@@ -59,8 +59,8 @@ class UserFactory {
 			params.role !== undefined ? parseUserRole(params.role) : existing.role,
 			existing.memberTeamIds,
 			existing.managedTeamIds,
-			nextAccessGroupId,
-			nextAccessGroup,
+			nextAccessGroupIds,
+			nextAccessGroups,
 		);
 	}
 }
