@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { appRoutes } from '@/lib/routes/app-routes';
 import { cn } from '@/lib/utils';
 
@@ -74,6 +74,7 @@ function RegisterForm() {
 							placeholder="Digite seu nome"
 							type="text"
 							{...form.register('name')}
+							{...requiredFieldProps()}
 						/>
 						{form.formState.errors.name ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -104,6 +105,7 @@ function RegisterForm() {
 							placeholder="exemplo@leadcrm.com"
 							type="email"
 							{...form.register('email')}
+							{...requiredFieldProps()}
 						/>
 						{form.formState.errors.email ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -133,6 +135,7 @@ function RegisterForm() {
 							placeholder="Crie uma senha"
 							type="password"
 							{...form.register('password')}
+							{...requiredFieldProps()}
 						/>
 						{form.formState.errors.password ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">
@@ -162,6 +165,7 @@ function RegisterForm() {
 							placeholder="Repita a senha"
 							type="password"
 							{...form.register('confirmPassword')}
+							{...requiredFieldProps()}
 						/>
 						{form.formState.errors.confirmPassword ? (
 							<p className="inline-flex items-center gap-2 text-sm text-destructive">

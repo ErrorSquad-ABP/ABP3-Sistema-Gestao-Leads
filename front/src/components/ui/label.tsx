@@ -1,6 +1,19 @@
-import type { LabelHTMLAttributes } from 'react';
+import type {
+	AriaAttributes,
+	InputHTMLAttributes,
+	LabelHTMLAttributes,
+} from 'react';
 
 import { cn } from '@/lib/utils';
+
+type RequiredFieldProps = Pick<
+	InputHTMLAttributes<HTMLInputElement>,
+	'required' | keyof AriaAttributes
+>;
+
+function requiredFieldProps(isRequired = true): RequiredFieldProps {
+	return isRequired ? { 'aria-required': true, required: true } : {};
+}
 
 type LabelProps = LabelHTMLAttributes<HTMLLabelElement> & {
 	required?: boolean;
@@ -33,4 +46,5 @@ function Label({
 	);
 }
 
-export { Label };
+export { Label, requiredFieldProps };
+export type { RequiredFieldProps };

@@ -24,7 +24,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { isApiError } from '@/lib/http/api-error';
 
 import {
@@ -324,6 +324,7 @@ function VehicleFormDialog({
 													})
 												}
 												value={selectedStoreId}
+												{...requiredFieldProps()}
 											>
 												<option value="" disabled>
 													Selecione uma loja
@@ -365,6 +366,7 @@ function VehicleFormDialog({
 												})
 											}
 											value={brandValue ?? ''}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.brand ? (
@@ -389,6 +391,7 @@ function VehicleFormDialog({
 												})
 											}
 											value={modelValue ?? ''}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.model ? (
@@ -469,6 +472,7 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(modelYearValue)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.modelYear ? (
@@ -548,6 +552,7 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(mileageValue)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.mileage ? (
@@ -577,6 +582,7 @@ function VehicleFormDialog({
 												)
 											}
 											value={fuelValue}
+											{...requiredFieldProps()}
 										>
 											{supportedFuelTypeOptions.map((fuel) => (
 												<option key={fuel.value} value={fuel.value}>
@@ -613,6 +619,7 @@ function VehicleFormDialog({
 											}}
 											placeholder="R$ 0,00"
 											value={formatCentsDigitsToBrlDisplay(priceCentsDigits)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.price ? (
@@ -641,6 +648,7 @@ function VehicleFormDialog({
 												)
 											}
 											value={statusValue}
+											{...requiredFieldProps()}
 										>
 											{vehicleStatusOptions.map((status) => (
 												<option key={status.value} value={status.value}>

@@ -126,14 +126,6 @@ class AuditLogPrismaRepository implements IAuditLogRepository {
 		return toDomain(created, actorById);
 	}
 
-	async list(): Promise<AuditLog[]> {
-		const rows = await this.prisma.auditLog.findMany({
-			orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-		});
-		const actorById = await this.actorMapFor(rows);
-		return rows.map((row) => toDomain(row, actorById));
-	}
-
 	async listPaged(query: AuditLogListQuery): Promise<AuditLogListPage> {
 		const actorWhere =
 			query.user === undefined ? undefined : actorSearchWhere(query.user);

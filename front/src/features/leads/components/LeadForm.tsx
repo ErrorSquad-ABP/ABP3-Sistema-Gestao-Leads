@@ -15,7 +15,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { isApiError } from '@/lib/http/api-error';
 
@@ -334,6 +334,7 @@ function LeadFormDialog({
 										})
 									}
 									value={selectedCustomerId}
+									{...requiredFieldProps()}
 								>
 									<option value="" disabled>
 										Selecione um cliente
@@ -382,6 +383,7 @@ function LeadFormDialog({
 											})
 										}
 										value={selectedStoreId}
+										{...requiredFieldProps()}
 									>
 										<option value="" disabled>
 											Selecione uma loja
@@ -417,6 +419,7 @@ function LeadFormDialog({
 											)
 										}
 										value={sourceValue}
+										{...requiredFieldProps()}
 									>
 										{leadSourceOptions.map((source) => (
 											<option key={source.value} value={source.value}>
@@ -493,6 +496,7 @@ function LeadFormDialog({
 												)
 											}
 											value={statusValue}
+											{...requiredFieldProps()}
 										>
 											{leadStatusOptions.map((status) => (
 												<option key={status.value} value={status.value}>

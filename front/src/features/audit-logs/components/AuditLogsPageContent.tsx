@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { ApiError } from '@/lib/http/api-error';
 import { cn } from '@/lib/utils';
 
@@ -370,7 +371,7 @@ function AuditLogsPageContent() {
 	const [page, setPage] = useState(INITIAL_PAGE);
 	const [limit, setLimit] = useState(INITIAL_LIMIT);
 	const [selectedLog, setSelectedLog] = useState<AuditLogRecord | null>(null);
-	const normalizedUserSearch = userSearch.trim();
+	const debouncedUserSearch = useDebouncedValue(userSearch.trim(), 300);
 
 	const filters = useMemo(
 		() => ({
@@ -380,9 +381,9 @@ function AuditLogsPageContent() {
 			limit,
 			page,
 			startDate: dateInputToIso(startDate, 'start'),
-			user: normalizedUserSearch || undefined,
+			user: debouncedUserSearch || undefined,
 		}),
-		[action, category, endDate, limit, normalizedUserSearch, page, startDate],
+		[action, category, debouncedUserSearch, endDate, limit, page, startDate],
 	);
 	const query = useAuditLogsQuery(filters);
 	const pageData = query.data;

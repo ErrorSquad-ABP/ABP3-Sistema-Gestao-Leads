@@ -15,7 +15,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { isApiError } from '@/lib/http/api-error';
 
 import {
@@ -283,6 +283,7 @@ function UsersFormDialog({
 									id="users-form-name"
 									placeholder="Maria Silva"
 									{...form.register('name')}
+									{...requiredFieldProps()}
 								/>
 								{form.formState.errors.name ? (
 									<p className="text-xs text-destructive">
@@ -301,6 +302,7 @@ function UsersFormDialog({
 									placeholder="maria@leadcrm.com"
 									type="email"
 									{...form.register('email')}
+									{...requiredFieldProps()}
 								/>
 								{form.formState.errors.email ? (
 									<p className="text-xs text-destructive">
@@ -324,6 +326,7 @@ function UsersFormDialog({
 										)
 									}
 									value={selectedRole}
+									{...requiredFieldProps()}
 								>
 									{roleOptions.map((option) => (
 										<option key={option.value} value={option.value}>
@@ -380,6 +383,7 @@ function UsersFormDialog({
 									}
 									type="password"
 									{...form.register('password')}
+									{...requiredFieldProps(!isEditMode)}
 								/>
 								{form.formState.errors.password ? (
 									<p className="text-xs text-destructive">

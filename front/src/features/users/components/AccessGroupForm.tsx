@@ -16,7 +16,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 import {
@@ -236,6 +236,7 @@ function AccessGroupDialog({
 									id="access-group-name"
 									placeholder="Gerentes regionais"
 									{...form.register('name')}
+									{...requiredFieldProps()}
 								/>
 								{form.formState.errors.name ? (
 									<p className="text-xs text-destructive">
@@ -253,6 +254,7 @@ function AccessGroupDialog({
 									id="access-group-description"
 									placeholder="Explique quando esse grupo deve ser usado."
 									{...form.register('description')}
+									{...requiredFieldProps()}
 								/>
 								{form.formState.errors.description ? (
 									<p className="text-xs text-destructive">
