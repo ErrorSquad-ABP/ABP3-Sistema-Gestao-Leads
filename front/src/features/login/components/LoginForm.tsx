@@ -178,6 +178,7 @@ function LoginForm() {
 									<Label
 										className="text-[0.82rem] font-medium text-muted-foreground"
 										htmlFor="email"
+										required
 									>
 										E-mail
 									</Label>
@@ -210,6 +211,7 @@ function LoginForm() {
 									<Label
 										className="text-[0.82rem] font-medium text-muted-foreground"
 										htmlFor="password"
+										required
 									>
 										Senha
 									</Label>

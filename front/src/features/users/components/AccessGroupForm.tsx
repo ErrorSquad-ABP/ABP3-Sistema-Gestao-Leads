@@ -228,7 +228,9 @@ function AccessGroupDialog({
 							) : null}
 
 							<div className="space-y-1.5">
-								<Label htmlFor="access-group-name">Nome do grupo</Label>
+								<Label htmlFor="access-group-name" required>
+									Nome do grupo
+								</Label>
 								<Input
 									className="h-10 rounded-md border-[#d6dce5] shadow-none focus-visible:border-[#2d3648]/45"
 									id="access-group-name"
@@ -243,7 +245,9 @@ function AccessGroupDialog({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="access-group-description">Descrição</Label>
+								<Label htmlFor="access-group-description" required>
+									Descrição
+								</Label>
 								<textarea
 									className="flex min-h-28 w-full rounded-md border border-[#d6dce5] bg-white px-3 py-2 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="access-group-description"
@@ -286,9 +290,9 @@ function AccessGroupDialog({
 
 						<div className="space-y-4">
 							<div className="rounded-2xl border border-border/80 bg-[#f8fafc] p-4">
-								<p className="text-sm font-medium text-[#1b2430]">
-									Feature toggles persistidos
-								</p>
+								<Label className="text-sm font-medium text-[#1b2430]" required>
+									Permissões do grupo
+								</Label>
 								<p className="mt-2 text-sm leading-6 text-[#6b7687]">
 									O grupo é salvo na API e já governa navegação e gates do
 									front.

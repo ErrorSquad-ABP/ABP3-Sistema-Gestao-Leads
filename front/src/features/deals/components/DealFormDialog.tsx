@@ -528,9 +528,9 @@ function DealFormDialog({
 								<Label
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-title"
+									required
 								>
-									Título{' '}
-									<span className="text-[color:var(--brand-accent)]">*</span>
+									Título
 								</Label>
 								<div className={fieldShellClass}>
 									<Tag className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -557,8 +557,7 @@ function DealFormDialog({
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-value"
 								>
-									Valor{' '}
-									<span className="text-[color:var(--brand-accent)]">*</span>
+									Valor
 								</Label>
 								<div className={fieldShellClass}>
 									<span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-[#e5e9f0] text-[13px] font-medium text-[#4b5565]">
@@ -588,9 +587,9 @@ function DealFormDialog({
 								<Label
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-vehicle"
+									required
 								>
-									Veículo{' '}
-									<span className="text-[color:var(--brand-accent)]">*</span>
+									Veículo
 								</Label>
 								<div className={fieldShellClass}>
 									<Search className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -686,9 +685,9 @@ function DealFormDialog({
 								<Label
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-stage"
+									required
 								>
-									Etapa{' '}
-									<span className="text-[color:var(--brand-accent)]">*</span>
+									Etapa
 								</Label>
 								<div className={fieldShellClass}>
 									<span
@@ -742,9 +741,9 @@ function DealFormDialog({
 								<Label
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-importance"
+									required
 								>
-									Importância{' '}
-									<span className="text-[color:var(--brand-accent)]">*</span>
+									Importância
 								</Label>
 								<div className={fieldShellClass}>
 									<span
@@ -803,9 +802,9 @@ function DealFormDialog({
 								<Label
 									className="text-[12.5px] font-semibold text-[#1b2430]"
 									htmlFor="deal-form-status"
+									required
 								>
-									Status{' '}
-									<span className="text-[color:var(--brand-accent)]">*</span>
+									Status
 								</Label>
 								<div className={fieldShellClass}>
 									<span
@@ -862,9 +861,9 @@ function DealFormDialog({
 									<Label
 										className="text-[12.5px] font-semibold text-[#1b2430]"
 										htmlFor="deal-form-loss-reason"
+										required
 									>
-										Motivo da perda{' '}
-										<span className="text-[color:var(--brand-accent)]">*</span>
+										Motivo da perda
 									</Label>
 									<div className={fieldShellClass}>
 										<span className="pointer-events-none absolute left-3.5 flex size-7 items-center justify-center rounded-full bg-rose-50 text-rose-600">

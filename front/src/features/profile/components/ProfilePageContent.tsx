@@ -341,7 +341,9 @@ function ProfilePageContent({
 
 						<form className="space-y-4" noValidate onSubmit={handleEmailSubmit}>
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-email">Novo e-mail</Label>
+								<Label htmlFor="profile-email" required>
+									Novo e-mail
+								</Label>
 								<Input
 									autoComplete="email"
 									className={cn(
@@ -362,7 +364,7 @@ function ProfilePageContent({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-email-current-password">
+								<Label htmlFor="profile-email-current-password" required>
 									Senha atual
 								</Label>
 								<Input
@@ -457,7 +459,9 @@ function ProfilePageContent({
 							onSubmit={handlePasswordSubmit}
 						>
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-current-password">Senha atual</Label>
+								<Label htmlFor="profile-current-password" required>
+									Senha atual
+								</Label>
 								<Input
 									autoComplete="current-password"
 									className={cn(
@@ -479,7 +483,9 @@ function ProfilePageContent({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-new-password">Nova senha</Label>
+								<Label htmlFor="profile-new-password" required>
+									Nova senha
+								</Label>
 								<Input
 									autoComplete="new-password"
 									className={cn(
@@ -499,7 +505,7 @@ function ProfilePageContent({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-confirm-password">
+								<Label htmlFor="profile-confirm-password" required>
 									Confirmar nova senha
 								</Label>
 								<Input

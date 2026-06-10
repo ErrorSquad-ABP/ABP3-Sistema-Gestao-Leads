@@ -17,7 +17,7 @@ COPY front ./front
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev", "--workspace", "front"]
+CMD ["npm", "run", "dev:docker", "--workspace", "front"]
 
 FROM deps AS build
 

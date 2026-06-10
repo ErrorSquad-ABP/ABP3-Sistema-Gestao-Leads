@@ -348,7 +348,9 @@ function CustomerFormDialog({
 						>
 							<div className="grid gap-5 md:grid-cols-2">
 								<div className="space-y-2 md:col-span-2">
-									<Label htmlFor="customer-name">Nome</Label>
+									<Label htmlFor="customer-name" required>
+										Nome
+									</Label>
 									<CustomerFieldControl icon={UserRound}>
 										<Input
 											className={customerFormInputClass}

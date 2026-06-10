@@ -82,6 +82,11 @@ Ainda fica para refinamento da Sprint 3:
 - `/app/dashboard/operational`
 - `/app/dashboard/analytic`
 
+## Scripts de desenvolvimento
+
+- `npm run dev` — desenvolvimento local com Turbopack.
+- `npm run dev:docker` — desenvolvimento em container com Webpack; usado pelo target `dev` do `front/Dockerfile` porque o bind mount do Docker não combina bem com o watcher do Turbopack.
+
 ## Observações
 
 - `/app/operations` é só alias de compatibilidade para `/app/stores`;

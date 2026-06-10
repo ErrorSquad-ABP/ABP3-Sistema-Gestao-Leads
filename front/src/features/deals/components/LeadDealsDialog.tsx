@@ -316,7 +316,9 @@ function LeadDealsDialog({
 							</div>
 						) : null}
 						<div className="space-y-2">
-							<Label htmlFor="lead-deal-vehicle">Veículo</Label>
+							<Label htmlFor="lead-deal-vehicle" required>
+								Veículo
+							</Label>
 							<select
 								className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45 disabled:cursor-not-allowed disabled:opacity-60"
 								disabled={!leadId || !leadStoreId || vehiclesQuery.isPending}
@@ -357,7 +359,9 @@ function LeadDealsDialog({
 							) : null}
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="lead-deal-title">Título</Label>
+							<Label htmlFor="lead-deal-title" required>
+								Título
+							</Label>
 							<Input
 								id="lead-deal-title"
 								value={title}

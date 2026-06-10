@@ -118,7 +118,9 @@ function StoreFormDialog({
 				</DialogHeader>
 				<div className="grid gap-4 px-6 py-5">
 					<div className="grid gap-2">
-						<Label htmlFor="store-name">Nome da loja</Label>
+						<Label htmlFor="store-name" required>
+							Nome da loja
+						</Label>
 						<Input
 							id="store-name"
 							onChange={(event) => onValueChange('name', event.target.value)}

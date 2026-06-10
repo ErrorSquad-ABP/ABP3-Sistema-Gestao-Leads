@@ -253,8 +253,9 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						<Label
 							className="text-[12.5px] font-semibold text-[#1b2430]"
 							htmlFor="deal-create-lead"
+							required
 						>
-							Lead <span className="text-[color:var(--brand-accent)]">*</span>
+							Lead
 						</Label>
 						<div className={fieldShellClass}>
 							<User className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -317,9 +318,9 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						<Label
 							className="text-[12.5px] font-semibold text-[#1b2430]"
 							htmlFor="deal-create-vehicle"
+							required
 						>
-							Veículo{' '}
-							<span className="text-[color:var(--brand-accent)]">*</span>
+							Veículo
 						</Label>
 						<div className={fieldShellClass}>
 							<Search className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -407,9 +408,9 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 							<Label
 								className="text-[12.5px] font-semibold text-[#1b2430]"
 								htmlFor="deal-create-title"
+								required
 							>
-								Título{' '}
-								<span className="text-[color:var(--brand-accent)]">*</span>
+								Título
 							</Label>
 							<div className={fieldShellClass}>
 								<Tag className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -430,8 +431,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								className="text-[12.5px] font-semibold text-[#1b2430]"
 								htmlFor="deal-create-value"
 							>
-								Valor{' '}
-								<span className="text-[color:var(--brand-accent)]">*</span>
+								Valor
 							</Label>
 							<div className={fieldShellClass}>
 								<span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-[#e5e9f0] text-[13px] font-medium text-[#4b5565]">

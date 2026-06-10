@@ -63,7 +63,9 @@ function AgendaMoveDialog({
 				</DialogHeader>
 				<form className="space-y-4 px-6 py-5" onSubmit={handleSubmit}>
 					<div className="space-y-2">
-						<Label htmlFor="agenda-move-date">Nova data</Label>
+						<Label htmlFor="agenda-move-date" required>
+							Nova data
+						</Label>
 						<Input
 							id="agenda-move-date"
 							onChange={(event) => setDate(event.target.value)}
