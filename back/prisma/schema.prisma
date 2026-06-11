@@ -118,25 +118,36 @@ enum AgendaRecurrence {
 }
 
 model AccessGroup {
-  id            String    @id @default(uuid()) @db.Uuid
-  name          String    @unique
+  id            String            @id @default(uuid()) @db.Uuid
+  name          String            @unique
   description   String
   baseRole      UserRole?
   featureKeys   Json
-  isSystemGroup Boolean   @default(false)
-  users         User[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isSystemGroup Boolean           @default(false)
+  userLinks     UserAccessGroup[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+/// Junção explícita usuário ↔ grupo de acesso (ADR-001: multi-grupo sem herança).
+model UserAccessGroup {
+  userId        String      @db.Uuid
+  accessGroupId String      @db.Uuid
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessGroup   AccessGroup @relation(fields: [accessGroupId], references: [id], onDelete: Cascade)
+  assignedAt    DateTime    @default(now())
+
+  @@id([userId, accessGroupId])
+  @@index([accessGroupId])
 }
 
 model User {
-  id            String       @id @default(uuid()) @db.Uuid
-  name          String
-  email         String       @unique
-  password      String
-  role          UserRole
-  accessGroupId String?      @db.Uuid
-  accessGroup   AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
+  id           String            @id @default(uuid()) @db.Uuid
+  name         String
+  email        String            @unique
+  password     String
+  role         UserRole
+  accessGroups UserAccessGroup[]
 
   memberTeams  Team[] @relation("TeamMembers")
   managedTeams Team[] @relation("TeamManager")

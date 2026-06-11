@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { userRoleValues } from '@/features/login/types/login.types';
 import type { AccessFeatureKey } from '../model/users.model';
 
+const accessGroupIdsSchema = z.array(
+	z.uuid('Selecione grupos de acesso válidos.'),
+);
+
 const createUserSchema = z.object({
 	name: z.string().trim().min(1, 'Informe o nome do usuário.'),
 	email: z.email('Informe um e-mail válido.'),
@@ -10,7 +14,7 @@ const createUserSchema = z.object({
 		.string()
 		.min(8, 'A senha inicial precisa ter pelo menos 8 caracteres.'),
 	role: z.enum(userRoleValues),
-	accessGroupId: z.uuid('Selecione um grupo de acesso válido.').nullable(),
+	accessGroupIds: accessGroupIdsSchema,
 });
 
 const updateUserSchema = z.object({
@@ -24,7 +28,7 @@ const updateUserSchema = z.object({
 			'A nova senha precisa ter pelo menos 8 caracteres.',
 		),
 	role: z.enum(userRoleValues),
-	accessGroupId: z.uuid('Selecione um grupo de acesso válido.').nullable(),
+	accessGroupIds: accessGroupIdsSchema,
 });
 
 const accessFeatureValues = [

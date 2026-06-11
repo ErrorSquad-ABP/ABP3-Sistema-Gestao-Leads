@@ -35,7 +35,7 @@ describe('store-view real API data', () => {
 			access(new URL('./store-catalog-view.ts', import.meta.url)),
 		);
 
-		// eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed source fixture relative to this spec
+		// eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed path relative to this spec module
 		const source = await readFile(
 			new URL('./store-view.ts', import.meta.url),
 			'utf8',

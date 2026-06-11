@@ -86,6 +86,12 @@ function userRepoWithUsers(users: readonly User[]): IUserRepository {
 				.map((id) => byId.get(id.value) ?? null)
 				.filter((user): user is User => user !== null),
 		listPaged: async () => ({ users: [], total: 0 }),
+		aggregateSummary: async () => ({
+			total: 0,
+			administrators: 0,
+			withoutGroup: 0,
+			withMultipleGroups: 0,
+		}),
 	};
 }
 

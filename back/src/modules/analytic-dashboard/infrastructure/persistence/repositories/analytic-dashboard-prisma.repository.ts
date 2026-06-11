@@ -4,6 +4,7 @@ import type {
 	AnalyticDashboardKpi,
 	AnalyticDashboardResult,
 	AnalyticDistributionItem,
+	AnalyticDrillDownLead,
 	AnalyticPerformanceItem,
 	AnalyticTrendPoint,
 	AnalyticsRankingOptions,
@@ -19,6 +20,11 @@ type PrismaLeadRow = Prisma.LeadGetPayload<{
 		status: true;
 		createdAt: true;
 		updatedAt: true;
+		customer: {
+			select: {
+				name: true;
+			};
+		};
 		owner: {
 			select: {
 				id: true;
@@ -60,11 +66,21 @@ type Aggregate = {
 	importanceDistribution: AnalyticDistributionItem[];
 	finalizationReasons: AnalyticDistributionItem[];
 	trendPoints: AnalyticTrendPoint[];
+	importanceLeads: AnalyticDrillDownLead[];
+	conversionLeads: AnalyticDrillDownLead[];
 };
 
 const FIRST_INTERACTION_METHODOLOGY =
 	'Aproximacao baseada no primeiro evento operacional registrado, na primeira negociacao criada ou, sem esses registros, em updatedAt do lead.';
 const DAY_IN_MS = 86_400_000;
+const DRILL_DOWN_LIMIT = 50;
+/** Cap DB fetch before in-memory dedup by lead (one lead may have multiple deals). */
+const DRILL_DOWN_DEAL_FETCH_LIMIT = DRILL_DOWN_LIMIT * 10;
+const IMPORTANCE_RANK: Record<string, number> = {
+	HOT: 3,
+	WARM: 2,
+	COLD: 1,
+};
 
 function emptyCounter(): Counter {
 	return {
@@ -234,11 +250,14 @@ class AnalyticDashboardPrismaRepository
 		timeRange: AnalyticsTimeRange,
 		options?: AnalyticsRankingOptions,
 	): Promise<AnalyticDashboardResult> {
-		const current = await this.loadAggregate(scope, timeRange, options);
+		const current = await this.loadAggregate(scope, timeRange, {
+			...options,
+			includeDrillDown: true,
+		});
 		const previous = await this.loadAggregate(
 			scope,
 			previousTimeRange(timeRange),
-			options,
+			{ ...options, includeDrillDown: false },
 		);
 
 		return {
@@ -272,13 +291,17 @@ class AnalyticDashboardPrismaRepository
 				isApproximate: true,
 				methodology: FIRST_INTERACTION_METHODOLOGY,
 			},
+			drillDown: {
+				importanceLeads: current.importanceLeads,
+				conversionLeads: current.conversionLeads,
+			},
 		};
 	}
 
 	private async loadAggregate(
 		scope: AnalyticsScope,
 		timeRange: AnalyticsTimeRange,
-		options?: AnalyticsRankingOptions,
+		options?: AnalyticsRankingOptions & { readonly includeDrillDown?: boolean },
 	): Promise<Aggregate> {
 		const leadWhere = this.buildLeadWhere(scope, timeRange);
 		const dealWhere: Prisma.DealWhereInput = { lead: leadWhere };
@@ -290,6 +313,7 @@ class AnalyticDashboardPrismaRepository
 			firstDealByLead,
 			firstLeadEventByLead,
 			leads,
+			dealsWithImportance,
 		] = await Promise.all([
 			this.prisma.deal.groupBy({
 				by: ['importance'],
@@ -333,6 +357,11 @@ class AnalyticDashboardPrismaRepository
 					status: true,
 					createdAt: true,
 					updatedAt: true,
+					customer: {
+						select: {
+							name: true,
+						},
+					},
 					owner: {
 						select: {
 							id: true,
@@ -347,6 +376,27 @@ class AnalyticDashboardPrismaRepository
 					},
 				},
 			}),
+			options?.includeDrillDown === false
+				? Promise.resolve([])
+				: this.prisma.deal.findMany({
+						where: dealWhere,
+						select: {
+							importance: true,
+							leadId: true,
+							lead: {
+								select: {
+									id: true,
+									customer: {
+										select: {
+											name: true,
+										},
+									},
+								},
+							},
+						},
+						orderBy: { updatedAt: 'desc' },
+						take: DRILL_DOWN_DEAL_FETCH_LIMIT,
+					}),
 		]);
 
 		const lostLeadIds = new Set(lostDeals.map((deal) => deal.leadId));
@@ -446,7 +496,89 @@ class AnalyticDashboardPrismaRepository
 			importanceDistribution: this.toImportanceDistribution(importanceGroups),
 			finalizationReasons: this.toFinalizationReasons(lostDeals),
 			trendPoints: this.toTrendPoints(trendBuckets),
+			importanceLeads:
+				options?.includeDrillDown === false
+					? []
+					: this.toImportanceLeads(dealsWithImportance),
+			conversionLeads:
+				options?.includeDrillDown === false
+					? []
+					: this.toConversionLeads(leads, lostLeadIds),
 		};
+	}
+
+	private toImportanceLeads(
+		deals: readonly {
+			importance: string;
+			leadId: string;
+			lead: { id: string; customer: { name: string } };
+		}[],
+	): AnalyticDrillDownLead[] {
+		const byLead = new Map<string, AnalyticDrillDownLead>();
+
+		for (const deal of deals) {
+			const current = byLead.get(deal.leadId);
+			const nextRank = IMPORTANCE_RANK[deal.importance] ?? 0;
+			const currentRank = current?.importance
+				? (IMPORTANCE_RANK[current.importance] ?? 0)
+				: 0;
+
+			if (!current || nextRank > currentRank) {
+				byLead.set(deal.leadId, {
+					id: deal.lead.id,
+					label: deal.lead.customer.name,
+					importance: deal.importance,
+				});
+			}
+		}
+
+		return [...byLead.values()]
+			.sort((left, right) => {
+				const leftRank = left.importance
+					? (IMPORTANCE_RANK[left.importance] ?? 0)
+					: 0;
+				const rightRank = right.importance
+					? (IMPORTANCE_RANK[right.importance] ?? 0)
+					: 0;
+				if (rightRank !== leftRank) return rightRank - leftRank;
+				return left.label.localeCompare(right.label);
+			})
+			.slice(0, DRILL_DOWN_LIMIT);
+	}
+
+	private toConversionLeads(
+		leads: readonly PrismaLeadRow[],
+		lostLeadIds: ReadonlySet<string>,
+	): AnalyticDrillDownLead[] {
+		const outcomeRank: Record<
+			NonNullable<AnalyticDrillDownLead['outcome']>,
+			number
+		> = {
+			converted: 3,
+			lost: 2,
+			open: 1,
+		};
+
+		return leads
+			.map((lead) => {
+				const isConverted = lead.status === 'CONVERTED';
+				const isLost = lostLeadIds.has(lead.id);
+				const outcome: NonNullable<AnalyticDrillDownLead['outcome']> =
+					isConverted ? 'converted' : isLost ? 'lost' : 'open';
+
+				return {
+					id: lead.id,
+					label: lead.customer.name,
+					outcome,
+				};
+			})
+			.sort((left, right) => {
+				const leftRank = left.outcome ? outcomeRank[left.outcome] : 0;
+				const rightRank = right.outcome ? outcomeRank[right.outcome] : 0;
+				if (rightRank !== leftRank) return rightRank - leftRank;
+				return left.label.localeCompare(right.label);
+			})
+			.slice(0, DRILL_DOWN_LIMIT);
 	}
 
 	private incrementCounter(

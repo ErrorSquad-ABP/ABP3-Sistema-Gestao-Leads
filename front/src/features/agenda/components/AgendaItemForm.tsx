@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
 import type { LeadCatalogItem } from '@/features/leads/model/leads.model';
@@ -231,7 +231,9 @@ function AgendaItemForm({
 		<form className="grid gap-4" onSubmit={handleSubmit}>
 			<div className="grid gap-3 sm:grid-cols-2">
 				<div className="space-y-2">
-					<Label htmlFor="agenda-type">Tipo</Label>
+					<Label htmlFor="agenda-type" required>
+						Tipo
+					</Label>
 					<select
 						className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
 						id="agenda-type"
@@ -239,6 +241,7 @@ function AgendaItemForm({
 							patchState({ type: event.target.value as AgendaItemType })
 						}
 						value={state.type}
+						{...requiredFieldProps()}
 					>
 						<option value="TASK">Tarefa</option>
 						<option value="EVENT">Compromisso</option>
@@ -287,13 +290,16 @@ function AgendaItemForm({
 			</div>
 
 			<div className="space-y-2">
-				<Label htmlFor="agenda-title">Título</Label>
+				<Label htmlFor="agenda-title" required>
+					Título
+				</Label>
 				<Input
 					id="agenda-title"
 					maxLength={120}
 					onChange={(event) => patchState({ title: event.target.value })}
 					required
 					value={state.title}
+					{...requiredFieldProps()}
 				/>
 			</div>
 
@@ -378,7 +384,9 @@ function AgendaItemForm({
 				{state.type === 'EVENT' ? (
 					<>
 						<div className="space-y-2">
-							<Label htmlFor="agenda-starts-at">Início</Label>
+							<Label htmlFor="agenda-starts-at" required>
+								Início
+							</Label>
 							<Input
 								id="agenda-starts-at"
 								onChange={(event) =>
@@ -387,6 +395,7 @@ function AgendaItemForm({
 								required
 								type="datetime-local"
 								value={state.startsAt}
+								{...requiredFieldProps()}
 							/>
 						</div>
 						<div className="space-y-2">

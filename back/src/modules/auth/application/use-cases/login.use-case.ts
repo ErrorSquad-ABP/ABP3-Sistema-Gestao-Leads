@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import type { User } from '../../../users/domain/entities/user.entity.js';
@@ -48,11 +49,28 @@ class LoginUseCase {
 		}
 
 		const access = await this.tokens.signAccessToken(user);
-		const { refreshToken } = await this.authSessions.createSession({
-			userId: user.id.value,
-			userAgent: meta.userAgent,
-			ipAddress: meta.ipAddress,
-		});
+		const { refreshToken } = await this.authSessions.createSession(
+			{
+				userId: user.id.value,
+				userAgent: meta.userAgent,
+				ipAddress: meta.ipAddress,
+			},
+			{
+				afterCreate: async (tx) => {
+					await createAuditLogEntry(tx, {
+						actorUserId: user.id.value,
+						action: 'LOGIN',
+						entityName: 'User',
+						entityId: user.id.value,
+						metadata: {
+							role: user.role,
+							ipAddress: meta.ipAddress ?? null,
+							userAgent: meta.userAgent ?? null,
+						},
+					});
+				},
+			},
+		);
 
 		return {
 			user,

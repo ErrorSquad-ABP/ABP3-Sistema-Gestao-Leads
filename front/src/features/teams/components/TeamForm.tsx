@@ -1,7 +1,8 @@
 'use client';
 
-import { AlertCircle, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -12,7 +13,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import type {
 	LeadOwnerRecord,
 	LeadStore,
@@ -99,7 +100,9 @@ function TeamFormDialog({
 				<div className="grid gap-4 px-6 py-5">
 					<div className="grid gap-4 sm:grid-cols-2">
 						<div className="grid gap-2">
-							<Label htmlFor="team-name">Nome da equipe</Label>
+							<Label htmlFor="team-name" required>
+								Nome da equipe
+							</Label>
 							<Input
 								id="team-name"
 								onChange={(event) =>
@@ -109,10 +112,13 @@ function TeamFormDialog({
 									}))
 								}
 								value={formState.name}
+								{...requiredFieldProps()}
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="team-store">Loja</Label>
+							<Label htmlFor="team-store" required>
+								Loja
+							</Label>
 							<select
 								className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
 								id="team-store"
@@ -123,6 +129,7 @@ function TeamFormDialog({
 									}))
 								}
 								value={formState.storeId}
+								{...requiredFieldProps()}
 							>
 								<option value="">Selecione uma loja</option>
 								{stores.map((store) => (
@@ -158,12 +165,7 @@ function TeamFormDialog({
 						Os membros continuam refletidos pelo backend. Esta tela foca na
 						organização visível de loja e gerente da equipe.
 					</div>
-					{dialogError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{dialogError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={dialogError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">
@@ -206,12 +208,7 @@ function TeamDeleteDialog({
 					<p className="text-sm text-[#1b2430]">
 						Equipe: <span className="font-medium">{target?.name}</span>
 					</p>
-					{deleteError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{deleteError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={deleteError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">

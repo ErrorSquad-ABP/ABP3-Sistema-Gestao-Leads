@@ -117,8 +117,11 @@ class StoreController {
 			'Conflito de negocio relacionado ao contrato da loja, quando aplicavel.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body() body: CreateStoreValidator) {
-		const store = await this.createStoreUseCase.execute(body);
+	async create(
+		@CurrentUser() actor: JwtUser,
+		@Body() body: CreateStoreValidator,
+	) {
+		const store = await this.createStoreUseCase.execute(actor.userId, body);
 		return StorePresenter.toResponse(store);
 	}
 
@@ -176,10 +179,11 @@ class StoreController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() actor: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateStoreValidator,
 	) {
-		const store = await this.updateStoreUseCase.execute(id, body);
+		const store = await this.updateStoreUseCase.execute(actor.userId, id, body);
 		return StorePresenter.toResponse(store);
 	}
 
@@ -202,8 +206,11 @@ class StoreController {
 			'Loja vinculada a leads existentes; exclusao bloqueada por regra de negocio.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-		await this.deleteStoreUseCase.execute(id);
+	async delete(
+		@CurrentUser() actor: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteStoreUseCase.execute(actor.userId, id);
 	}
 }
 

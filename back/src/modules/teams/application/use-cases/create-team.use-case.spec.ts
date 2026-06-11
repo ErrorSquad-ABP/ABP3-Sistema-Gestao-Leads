@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it, mock } from 'node:test';
 
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
@@ -42,7 +42,7 @@ class FakeUnitOfWork implements IUnitOfWork {
 	async rollback(): Promise<void> {}
 
 	getTransactionContext() {
-		return { client: {} };
+		return { client: { auditLog: { create: mock.fn(async () => ({})) } } };
 	}
 }
 
@@ -150,6 +150,14 @@ describe('CreateTeamUseCase', () => {
 			async listPaged() {
 				return { users: [], total: 0 };
 			},
+			async aggregateSummary() {
+				return {
+					total: 0,
+					administrators: 0,
+					withoutGroup: 0,
+					withMultipleGroups: 0,
+				};
+			},
 		};
 
 		const useCase = new CreateTeamUseCase(
@@ -249,6 +257,14 @@ describe('CreateTeamUseCase', () => {
 						async listPaged() {
 							return { users: [], total: 0 };
 						},
+						async aggregateSummary() {
+							return {
+								total: 0,
+								administrators: 0,
+								withoutGroup: 0,
+								withMultipleGroups: 0,
+							};
+						},
 					}) as IUserRepository,
 			} as UserRepositoryFactory,
 		);
@@ -340,6 +356,14 @@ describe('CreateTeamUseCase', () => {
 						},
 						async listPaged() {
 							return { users: [], total: 0 };
+						},
+						async aggregateSummary() {
+							return {
+								total: 0,
+								administrators: 0,
+								withoutGroup: 0,
+								withMultipleGroups: 0,
+							};
 						},
 					}) as IUserRepository,
 			} as UserRepositoryFactory,

@@ -29,7 +29,7 @@ import {
 	storePerformanceColor,
 } from '@/lib/charts/chart-colors';
 import { buildConicGradientStopsTo100 } from '@/lib/conic-gradient';
-import { isApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 import { cn } from '@/lib/utils';
 
 import { useOperationalDashboardQuery } from '../hooks/operational-dashboard.queries';
@@ -862,9 +862,7 @@ function OperationalDashboardPageContent() {
 				dashboard.period.endDate,
 			)
 		: undefined;
-	const errorMessage = isApiError(dashboardQuery.error)
-		? dashboardQuery.error.message
-		: 'Não foi possível carregar os indicadores agora.';
+	const errorMessage = humanizePageApiError(dashboardQuery.error);
 
 	return (
 		<section className="space-y-3.5">

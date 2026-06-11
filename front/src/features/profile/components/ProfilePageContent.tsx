@@ -18,13 +18,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import type {
 	AuthenticatedUser,
 	UserRole,
 } from '@/features/login/types/login.types';
 import { queryKeys } from '@/lib/constants/query-keys';
-import { isApiError } from '@/lib/http/api-error';
+import { humanizeFormApiError } from '@/lib/http/humanize-api-error';
 import { cn } from '@/lib/utils';
 
 import {
@@ -53,31 +53,8 @@ function resolveRoleLabel(role: UserRole) {
 	}
 }
 
-function resolveCredentialErrorMessage(
-	error: unknown,
-	context: 'email' | 'password',
-) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a atualização agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 401) {
-		return 'A senha atual informada não confere ou sua sessão já não é mais válida.';
-	}
-
-	if (error.status === 409 && context === 'email') {
-		return 'O e-mail informado já está em uso por outro utilizador.';
-	}
-
-	if (error.status === 429) {
-		return 'Muitas tentativas de alteração em sequência. Aguarde um momento antes de tentar novamente.';
-	}
-
-	if (error.status === 400 && error.code === 'user.password.unchanged') {
-		return 'A nova senha deve ser diferente da senha atual.';
-	}
-
-	return error.message;
+function resolveCredentialErrorMessage(error: unknown) {
+	return humanizeFormApiError(error);
 }
 
 type SuccessFeedback = {
@@ -211,10 +188,10 @@ function ProfilePageContent({
 	});
 
 	const emailErrorMessage = updateOwnEmailMutation.error
-		? resolveCredentialErrorMessage(updateOwnEmailMutation.error, 'email')
+		? resolveCredentialErrorMessage(updateOwnEmailMutation.error)
 		: null;
 	const passwordErrorMessage = updateOwnPasswordMutation.error
-		? resolveCredentialErrorMessage(updateOwnPasswordMutation.error, 'password')
+		? resolveCredentialErrorMessage(updateOwnPasswordMutation.error)
 		: null;
 
 	const summaryItems = currentUser
@@ -341,7 +318,9 @@ function ProfilePageContent({
 
 						<form className="space-y-4" noValidate onSubmit={handleEmailSubmit}>
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-email">Novo e-mail</Label>
+								<Label htmlFor="profile-email" required>
+									Novo e-mail
+								</Label>
 								<Input
 									autoComplete="email"
 									className={cn(
@@ -355,6 +334,7 @@ function ProfilePageContent({
 									placeholder="exemplo@empresa.com"
 									type="email"
 									{...emailForm.register('email')}
+									{...requiredFieldProps()}
 								/>
 								<FieldError
 									message={emailForm.formState.errors.email?.message}
@@ -362,7 +342,7 @@ function ProfilePageContent({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-email-current-password">
+								<Label htmlFor="profile-email-current-password" required>
 									Senha atual
 								</Label>
 								<Input
@@ -377,6 +357,7 @@ function ProfilePageContent({
 									placeholder="Senha atual"
 									type="password"
 									{...emailForm.register('currentPassword')}
+									{...requiredFieldProps()}
 								/>
 								<FieldError
 									message={emailForm.formState.errors.currentPassword?.message}
@@ -457,7 +438,9 @@ function ProfilePageContent({
 							onSubmit={handlePasswordSubmit}
 						>
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-current-password">Senha atual</Label>
+								<Label htmlFor="profile-current-password" required>
+									Senha atual
+								</Label>
 								<Input
 									autoComplete="current-password"
 									className={cn(
@@ -470,6 +453,7 @@ function ProfilePageContent({
 									placeholder="Senha atual"
 									type="password"
 									{...passwordForm.register('currentPassword')}
+									{...requiredFieldProps()}
 								/>
 								<FieldError
 									message={
@@ -479,7 +463,9 @@ function ProfilePageContent({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-new-password">Nova senha</Label>
+								<Label htmlFor="profile-new-password" required>
+									Nova senha
+								</Label>
 								<Input
 									autoComplete="new-password"
 									className={cn(
@@ -492,6 +478,7 @@ function ProfilePageContent({
 									placeholder="Mínimo de 8 caracteres"
 									type="password"
 									{...passwordForm.register('newPassword')}
+									{...requiredFieldProps()}
 								/>
 								<FieldError
 									message={passwordForm.formState.errors.newPassword?.message}
@@ -499,7 +486,7 @@ function ProfilePageContent({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="profile-confirm-password">
+								<Label htmlFor="profile-confirm-password" required>
 									Confirmar nova senha
 								</Label>
 								<Input
@@ -514,6 +501,7 @@ function ProfilePageContent({
 									placeholder="Repita a nova senha"
 									type="password"
 									{...passwordForm.register('confirmPassword')}
+									{...requiredFieldProps()}
 								/>
 								<FieldError
 									message={
