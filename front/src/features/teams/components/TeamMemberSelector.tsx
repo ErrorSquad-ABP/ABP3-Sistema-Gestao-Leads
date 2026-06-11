@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import type { TeamMemberCandidate } from '@/features/teams/model/teams.model';
@@ -84,15 +84,6 @@ function TeamMemberSelector({
 						</option>
 					))}
 				</select>
-				<Button
-					aria-hidden="true"
-					className="pointer-events-none size-10 rounded-lg"
-					size="icon"
-					type="button"
-					variant="outline"
-				>
-					<Plus className="size-4" />
-				</Button>
 			</div>
 
 			{!showSelectedList ? null : selectedMembers.length === 0 ? (

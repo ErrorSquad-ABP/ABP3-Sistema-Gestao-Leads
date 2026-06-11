@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCircle, UserPlus } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +42,9 @@ function TeamMembersDialog({
 	storeName,
 	team,
 }: TeamMembersDialogProps) {
+	const [memberPendingRemovalId, setMemberPendingRemovalId] = useState<
+		string | null
+	>(null);
 	const memberUserIds = team?.memberUserIds ?? [];
 	const memberById = new Map(
 		candidates.map((candidate) => [candidate.id, candidate]),
@@ -53,9 +57,27 @@ function TeamMembersDialog({
 				email: 'Dados indisponíveis',
 			},
 	);
+	const memberPendingRemoval =
+		members.find((member) => member.id === memberPendingRemovalId) ?? null;
+
+	function closeMembersDialog() {
+		setMemberPendingRemovalId(null);
+		onClose();
+	}
+
+	function confirmRemoval() {
+		if (!memberPendingRemoval) {
+			return;
+		}
+		onRemove(memberPendingRemoval.id);
+		setMemberPendingRemovalId(null);
+	}
 
 	return (
-		<Dialog onOpenChange={(open) => !open && onClose()} open={team !== null}>
+		<Dialog
+			onOpenChange={(open) => !open && closeMembersDialog()}
+			open={team !== null}
+		>
 			<DialogContent className="max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>Membros da equipe</DialogTitle>
@@ -111,7 +133,7 @@ function TeamMembersDialog({
 										<Button
 											className="rounded-lg"
 											disabled={isPending}
-											onClick={() => onRemove(member.id)}
+											onClick={() => setMemberPendingRemovalId(member.id)}
 											size="sm"
 											type="button"
 											variant="outline"
@@ -149,11 +171,52 @@ function TeamMembersDialog({
 				</div>
 
 				<DialogFooter>
-					<Button className="rounded-md" onClick={onClose} variant="outline">
+					<Button
+						className="rounded-md"
+						onClick={closeMembersDialog}
+						variant="outline"
+					>
 						Fechar
 					</Button>
 				</DialogFooter>
 			</DialogContent>
+			<Dialog
+				onOpenChange={(open) => !open && setMemberPendingRemovalId(null)}
+				open={memberPendingRemoval !== null}
+			>
+				<DialogContent className="max-w-md">
+					<DialogHeader>
+						<DialogTitle>Confirmar remoção</DialogTitle>
+						<DialogDescription>
+							{memberPendingRemoval
+								? `Remover ${memberPendingRemoval.name} desta equipe?`
+								: 'Remover membro desta equipe?'}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="px-6 py-4 text-sm text-muted-foreground">
+						Essa ação remove o vínculo do membro com a equipe atual.
+					</div>
+					<DialogFooter>
+						<Button
+							className="rounded-md"
+							disabled={isPending}
+							onClick={() => setMemberPendingRemovalId(null)}
+							type="button"
+							variant="outline"
+						>
+							Cancelar
+						</Button>
+						<Button
+							className="rounded-md"
+							disabled={isPending}
+							onClick={confirmRemoval}
+							type="button"
+						>
+							Confirmar remoção
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</Dialog>
 	);
 }

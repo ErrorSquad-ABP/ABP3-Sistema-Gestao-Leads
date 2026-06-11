@@ -151,6 +151,9 @@ describe('CreateTeamUseCase', () => {
 			async list() {
 				return [manager];
 			},
+			async listTeamMemberCandidatesByStoreId() {
+				return [manager];
+			},
 			async listPaged() {
 				return { users: [], total: 0 };
 			},
@@ -248,6 +251,9 @@ describe('CreateTeamUseCase', () => {
 							return null;
 						},
 						async list() {
+							return [attendant];
+						},
+						async listTeamMemberCandidatesByStoreId() {
 							return [attendant];
 						},
 						async listByIds(ids) {
@@ -354,6 +360,9 @@ describe('CreateTeamUseCase', () => {
 						async list() {
 							return [attendant];
 						},
+						async listTeamMemberCandidatesByStoreId() {
+							return [attendant];
+						},
 						async listPaged() {
 							return { users: [], total: 0 };
 						},
@@ -447,6 +456,9 @@ describe('CreateTeamUseCase', () => {
 								.filter((user): user is User => user !== null);
 						},
 						async list() {
+							return [manager];
+						},
+						async listTeamMemberCandidatesByStoreId() {
 							return [manager];
 						},
 						async listPaged() {

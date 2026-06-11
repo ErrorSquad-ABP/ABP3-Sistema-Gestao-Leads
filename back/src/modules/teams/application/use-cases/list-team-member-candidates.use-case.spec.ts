@@ -26,7 +26,7 @@ function user(id: string, name: string, email: string): User {
 }
 
 describe('ListTeamMemberCandidatesUseCase', () => {
-	it('retorna apenas id, nome e email dos usuarios elegiveis para a loja', async () => {
+	it('busca no repositorio apenas usuarios elegiveis para a loja', async () => {
 		const first = user(
 			'11111111-1111-4111-8111-111111111111',
 			'Ana Silva',
@@ -37,13 +37,11 @@ describe('ListTeamMemberCandidatesUseCase', () => {
 			'Bruno Lima',
 			'bruno@example.com',
 		);
-		const allowedIds = new Set([first.id.value]);
+		let queriedStoreId: string | null = null;
 
 		const useCase = new ListTeamMemberCandidatesUseCase(
 			{
 				assertCanUseStore: async () => {},
-				userCanBelongToStore: async (candidate: User) =>
-					allowedIds.has(candidate.id.value),
 			} as unknown as TeamAccessPolicy,
 			{
 				create: () => ({
@@ -53,6 +51,10 @@ describe('ListTeamMemberCandidatesUseCase', () => {
 					findById: async () => null,
 					findByEmail: async () => null,
 					list: async () => [first, second],
+					listTeamMemberCandidatesByStoreId: async (storeId: Uuid) => {
+						queriedStoreId = storeId.value;
+						return [first];
+					},
 					listByIds: async () => [],
 					listPaged: async () => ({ users: [], total: 0 }),
 				}),
@@ -67,6 +69,7 @@ describe('ListTeamMemberCandidatesUseCase', () => {
 			'33333333-3333-4333-8333-333333333333',
 		);
 
+		assert.equal(queriedStoreId, '33333333-3333-4333-8333-333333333333');
 		assert.deepEqual(result, [
 			{
 				id: first.id.value,

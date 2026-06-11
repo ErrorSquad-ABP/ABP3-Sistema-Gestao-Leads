@@ -29,4 +29,17 @@ describe('TeamMemberSelector', () => {
 		assert.equal(getInitials('Ana Silva'), 'AS');
 		assert.equal(getInitials(''), 'US');
 	});
+
+	it('nao renderiza botao decorativo para adicionar membros', () => {
+		const html = renderToStaticMarkup(
+			createElement(TeamMemberSelector, {
+				candidates: [],
+				onChange: () => {},
+				selectedUserIds: [],
+			}),
+		);
+
+		assert.doesNotMatch(html, /aria-hidden="true"/);
+		assert.doesNotMatch(html, /pointer-events-none/);
+	});
 });

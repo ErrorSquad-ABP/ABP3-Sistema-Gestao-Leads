@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injecao
@@ -26,22 +27,14 @@ class ListTeamMemberCandidatesUseCase {
 		await this.teamAccessPolicy.assertCanUseStore(actor, storeId);
 
 		const users = this.userRepositoryFactory.create();
-		const allUsers = await users.list();
-		const candidates: TeamMemberCandidateResponse[] = [];
-
-		for (const user of allUsers) {
-			if (!(await this.teamAccessPolicy.userCanBelongToStore(user, storeId))) {
-				continue;
-			}
-
-			candidates.push({
+		const candidates = await users.listTeamMemberCandidatesByStoreId(
+			Uuid.parse(storeId),
+		);
+		return candidates.map((user) => ({
 				id: user.id.value,
 				name: user.name.value,
 				email: user.email.value,
-			});
-		}
-
-		return candidates;
+		}));
 	}
 }
 
