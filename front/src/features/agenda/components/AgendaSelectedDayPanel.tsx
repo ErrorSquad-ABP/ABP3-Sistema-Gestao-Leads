@@ -26,11 +26,11 @@ function AgendaSelectedDayPanel({
 	onMove,
 }: Props) {
 	return (
-		<Card className="rounded-lg border-border bg-card shadow-none">
+		<Card className="h-full rounded-lg border-border bg-card shadow-none">
 			<CardHeader className="flex flex-col items-start justify-between gap-3 sm:flex-row">
 				<div>
 					<CardTitle className="text-base">Atividades do dia</CardTitle>
-					<p className="mt-1 text-sm capitalize text-muted-foreground">
+					<p className="mt-1 text-sm text-muted-foreground capitalize">
 						{dateLabel}
 					</p>
 				</div>

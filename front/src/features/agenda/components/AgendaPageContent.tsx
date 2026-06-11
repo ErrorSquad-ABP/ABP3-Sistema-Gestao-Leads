@@ -79,9 +79,7 @@ function AgendaPageContent() {
 	const [dialogState, setDialogState] = useState<AgendaDialogState>({
 		mode: 'closed',
 	});
-	const [moveDialogItem, setMoveDialogItem] = useState<AgendaItem | null>(
-		null,
-	);
+	const [moveDialogItem, setMoveDialogItem] = useState<AgendaItem | null>(null);
 	const [searchInput, setSearchInput] = useState('');
 	const [submittedSearch, setSubmittedSearch] = useState('');
 	const [viewMode, setViewMode] = useState<AgendaViewMode>('month');
@@ -253,7 +251,7 @@ function AgendaPageContent() {
 	}
 
 	return (
-		<div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
+		<div className="flex w-full min-w-0 flex-col gap-4">
 			<AgendaHeader
 				monthLabel={headerLabel}
 				onCreateClick={() => openCreateDialog(selectedDate)}
@@ -286,11 +284,7 @@ function AgendaPageContent() {
 					/>
 				</div>
 				<div className="flex flex-wrap gap-2">
-					<Button
-						onClick={submitSearch}
-						type="button"
-						variant="outline"
-					>
+					<Button onClick={submitSearch} type="button" variant="outline">
 						Buscar
 					</Button>
 					<Button onClick={clearSearch} type="button" variant="ghost">
@@ -305,13 +299,9 @@ function AgendaPageContent() {
 						: null
 				}
 				initialDate={
-					dialogState.mode === 'create'
-						? dialogState.date
-						: selectedDate
+					dialogState.mode === 'create' ? dialogState.date : selectedDate
 				}
-				isSubmitting={
-					createAgendaItem.isPending || updateAgendaItem.isPending
-				}
+				isSubmitting={createAgendaItem.isPending || updateAgendaItem.isPending}
 				item={dialogState.mode === 'edit' ? dialogState.item : null}
 				mode={dialogState.mode === 'edit' ? 'edit' : 'create'}
 				onOpenChange={(open) => {
@@ -365,9 +355,7 @@ function AgendaPageContent() {
 						onComplete={(id) => completeAgendaItem.mutate(id)}
 						onEdit={openEditDialog}
 						onMove={openMoveDialog}
-						remindersPanel={
-							<AgendaRemindersPanel items={visibleItems} />
-						}
+						remindersPanel={<AgendaRemindersPanel items={visibleItems} />}
 					/>
 					<div className="flex flex-wrap items-center gap-2">
 						<button
@@ -399,32 +387,23 @@ function AgendaPageContent() {
 						))}
 					</div>
 					{viewMode === 'month' ? (
-						<div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+						<div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.32fr)]">
 							<AgendaCalendarMonth
 								days={calendarDays}
 								onCreateDate={openCreateDialog}
 								onSelectDate={(date) => {
 									setSelectedDate(date);
-									if (
-										date.getMonth() !==
-										currentMonth.getMonth()
-									) {
+									if (date.getMonth() !== currentMonth.getMonth()) {
 										setCurrentMonth(date);
 									}
 								}}
 							/>
 							<AgendaSelectedDayPanel
-								dateLabel={formatAgendaDate(
-									selectedDate.toISOString(),
-								)}
+								dateLabel={formatAgendaDate(selectedDate.toISOString())}
 								items={selectedDayItems}
 								onCancel={(id) => cancelAgendaItem.mutate(id)}
-								onComplete={(id) =>
-									completeAgendaItem.mutate(id)
-								}
-								onCreateClick={() =>
-									openCreateDialog(selectedDate)
-								}
+								onComplete={(id) => completeAgendaItem.mutate(id)}
+								onCreateClick={() => openCreateDialog(selectedDate)}
 								onEdit={openEditDialog}
 								onMove={openMoveDialog}
 							/>
@@ -443,9 +422,7 @@ function AgendaPageContent() {
 					) : null}
 					{viewMode === 'day' ? (
 						<AgendaDayView
-							dateLabel={formatAgendaDate(
-								selectedDate.toISOString(),
-							)}
+							dateLabel={formatAgendaDate(selectedDate.toISOString())}
 							items={selectedDayItems}
 							onCancel={(id) => cancelAgendaItem.mutate(id)}
 							onComplete={(id) => completeAgendaItem.mutate(id)}

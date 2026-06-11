@@ -85,8 +85,7 @@ function AgendaTodayPanel({
 					icon={<CalendarClock className="size-5" />}
 					title="Atividades hoje"
 					value={String(
-						metrics?.activitiesTodayCount ??
-							overview.todayItems.length,
+						metrics?.activitiesTodayCount ?? overview.todayItems.length,
 					)}
 					variant="brand"
 				/>
@@ -94,12 +93,9 @@ function AgendaTodayPanel({
 					description="Precisam de atenção"
 					icon={<AlertTriangle className="size-5" />}
 					title="Atrasadas"
-					value={String(
-						metrics?.overdueCount ?? overview.overdueItems.length,
-					)}
+					value={String(metrics?.overdueCount ?? overview.overdueItems.length)}
 					variant={
-						(metrics?.overdueCount ??
-							overview.overdueItems.length) > 0
+						(metrics?.overdueCount ?? overview.overdueItems.length) > 0
 							? 'danger-soft'
 							: 'neutral'
 					}
@@ -109,8 +105,7 @@ function AgendaTodayPanel({
 					icon={<CheckSquare className="size-5" />}
 					title="Tarefas pendentes"
 					value={String(
-						metrics?.pendingTasksCount ??
-							overview.pendingTasks.length,
+						metrics?.pendingTasksCount ?? overview.pendingTasks.length,
 					)}
 					variant="success"
 				/>
@@ -123,13 +118,10 @@ function AgendaTodayPanel({
 				/>
 			</div>
 
-			<div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)]">
+			<div className="grid min-w-0 items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.34fr)]">
 				<Card className="min-w-0 rounded-lg border-border bg-card shadow-none">
 					<CardHeader>
-						<CardTitle
-							className="text-base"
-							id="agenda-today-title"
-						>
+						<CardTitle className="text-base" id="agenda-today-title">
 							Hoje
 						</CardTitle>
 						<p className="text-sm text-muted-foreground">
