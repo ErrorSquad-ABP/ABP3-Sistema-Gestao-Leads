@@ -4,6 +4,7 @@ import { LeadsModule } from '../leads/leads.module.js';
 import { CancelAgendaItemUseCase } from './application/use-cases/cancel-agenda-item.use-case.js';
 import { CompleteAgendaItemUseCase } from './application/use-cases/complete-agenda-item.use-case.js';
 import { CreateAgendaItemUseCase } from './application/use-cases/create-agenda-item.use-case.js';
+import { DeleteAgendaItemUseCase } from './application/use-cases/delete-agenda-item.use-case.js';
 import { GetAgendaMetricsUseCase } from './application/use-cases/get-agenda-metrics.use-case.js';
 import {
 	AGENDA_ITEM_REPOSITORY,
@@ -31,6 +32,7 @@ import { LeadAgendaController } from './presentation/controllers/lead-agenda.con
 		UpdateAgendaItemUseCase,
 		CompleteAgendaItemUseCase,
 		CancelAgendaItemUseCase,
+		DeleteAgendaItemUseCase,
 	],
 })
 class AgendaModule {}

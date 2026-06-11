@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AgendaConfirmDeleteDialog } from '@/features/agenda/components/AgendaConfirmDeleteDialog';
 import { AgendaEventList } from '@/features/agenda/components/AgendaEventList';
 import { AgendaItemDialog } from '@/features/agenda/components/AgendaItemDialog';
 import type { AgendaItemFormValues } from '@/features/agenda/components/AgendaItemForm';
@@ -12,6 +13,7 @@ import {
 	useCancelAgendaItemMutation,
 	useCompleteAgendaItemMutation,
 	useCreateAgendaItemMutation,
+	useDeleteAgendaItemMutation,
 	useLeadAgendaItemsQuery,
 	useUpdateAgendaItemMutation,
 } from '@/features/agenda/hooks/agenda.queries';
@@ -41,11 +43,13 @@ function LeadUpcomingActivitiesCard({
 	const [dialogState, setDialogState] = useState<DialogState>({
 		mode: 'closed',
 	});
+	const [deleteTarget, setDeleteTarget] = useState<AgendaItem | null>(null);
 	const leadAgenda = useLeadAgendaItemsQuery(leadId);
 	const createAgendaItem = useCreateAgendaItemMutation();
 	const updateAgendaItem = useUpdateAgendaItemMutation();
 	const completeAgendaItem = useCompleteAgendaItemMutation();
 	const cancelAgendaItem = useCancelAgendaItemMutation();
+	const deleteAgendaItem = useDeleteAgendaItemMutation();
 	const initialLead: AgendaLeadSummary = {
 		id: leadId,
 		customerName,
@@ -70,6 +74,25 @@ function LeadUpcomingActivitiesCard({
 		createAgendaItem.mutate(createPayload, {
 			onSuccess: closeDialog,
 		});
+	}
+
+	function closeDeleteDialog() {
+		deleteAgendaItem.reset();
+		setDeleteTarget(null);
+	}
+
+	async function handleDeleteConfirm() {
+		if (!deleteTarget) {
+			return;
+		}
+		await deleteAgendaItem.mutateAsync(deleteTarget.id);
+		if (
+			dialogState.mode === 'edit' &&
+			dialogState.item.id === deleteTarget.id
+		) {
+			closeDialog();
+		}
+		closeDeleteDialog();
 	}
 
 	return (
@@ -118,6 +141,18 @@ function LeadUpcomingActivitiesCard({
 					onSubmit={handleSubmit}
 					open={dialogState.mode !== 'closed'}
 				/>
+				<AgendaConfirmDeleteDialog
+					error={
+						deleteAgendaItem.isError
+							? 'Não foi possível excluir a atividade.'
+							: null
+					}
+					isPending={deleteAgendaItem.isPending}
+					itemTitle={deleteTarget?.title ?? 'atividade'}
+					onClose={closeDeleteDialog}
+					onConfirm={handleDeleteConfirm}
+					open={deleteTarget !== null}
+				/>
 				{leadAgenda.isPending ? (
 					<div className="h-24 animate-pulse rounded-lg border border-border bg-muted/50" />
 				) : null}
@@ -131,6 +166,7 @@ function LeadUpcomingActivitiesCard({
 						items={leadAgenda.data.items}
 						onCancel={(id) => cancelAgendaItem.mutate(id)}
 						onComplete={(id) => completeAgendaItem.mutate(id)}
+						onDelete={setDeleteTarget}
 						onEdit={(item) => setDialogState({ mode: 'edit', item })}
 					/>
 				) : null}

@@ -121,6 +121,13 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 		return this.toAgendaItem(updated);
 	}
 
+	async deleteForUser(id: string, userId: string): Promise<boolean> {
+		const result = await this.prisma.agendaItem.deleteMany({
+			where: { id, userId },
+		});
+		return result.count > 0;
+	}
+
 	async findLeadAccessSnapshot(
 		leadId: string,
 	): Promise<LeadAccessSnapshot | null> {

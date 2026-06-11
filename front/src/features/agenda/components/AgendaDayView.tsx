@@ -11,6 +11,7 @@ type Props = {
 	items: readonly AgendaItem[];
 	onCancel: (id: string) => void;
 	onComplete: (id: string) => void;
+	onDelete: (item: AgendaItem) => void;
 	onCreateClick: () => void;
 	onEdit: (item: AgendaItem) => void;
 	onMove: (item: AgendaItem) => void;
@@ -21,6 +22,7 @@ function AgendaDayView({
 	items,
 	onCancel,
 	onComplete,
+	onDelete,
 	onCreateClick,
 	onEdit,
 	onMove,
@@ -50,6 +52,7 @@ function AgendaDayView({
 						items={items}
 						onCancel={onCancel}
 						onComplete={onComplete}
+						onDelete={onDelete}
 						onEdit={onEdit}
 						onMove={onMove}
 					/>
