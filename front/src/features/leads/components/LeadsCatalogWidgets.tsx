@@ -193,7 +193,7 @@ function LeadsListCard({
 							<TableRow className="border-[#e7edf5] hover:bg-white">
 								<TableHead>Lead</TableHead>
 								<TableHead>Status</TableHead>
-								<TableHead>Cliente</TableHead>
+								<TableHead>Veículo em interesse</TableHead>
 								<TableHead>Origem</TableHead>
 								<TableHead>Responsável</TableHead>
 								<TableHead>Última atividade</TableHead>
@@ -231,8 +231,13 @@ function LeadsListCard({
 											{formatLeadStatusLabel(item.lead.status)}
 										</span>
 									</TableCell>
-									<TableCell className="text-sm text-[#344054]">
-										{item.customer.name}
+									<TableCell className="max-w-[220px] text-sm text-[#344054]">
+										<span
+											className="line-clamp-2"
+											title={item.lead.vehicleInterestText ?? undefined}
+										>
+											{item.lead.vehicleInterestText ?? 'Não informado'}
+										</span>
 									</TableCell>
 									<TableCell>
 										<div className="flex items-center gap-2 text-sm text-[#344054]">
