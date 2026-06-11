@@ -84,13 +84,10 @@ function showCrudSuccessToast(
 	action: CrudAction,
 	options?: ShowCrudSuccessToastOptions,
 ) {
-	toast.success(
-		options?.message ?? resolveCrudSuccessMessage(entity, action),
-		{
-			id: options?.id,
-			...appToastStyle,
-		},
-	);
+	toast.success(options?.message ?? resolveCrudSuccessMessage(entity, action), {
+		id: options?.id,
+		...appToastStyle,
+	});
 }
 
 export {
