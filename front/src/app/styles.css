@@ -180,8 +180,9 @@ a {
 	background-color: var(--table-row-alt);
 }
 
-.table-zebra-body tr:hover {
-	background-color: var(--table-row-hover) !important;
+.table-zebra-body tr:hover,
+.table-zebra-body tr:nth-child(even):hover {
+	background-color: var(--table-row-hover);
 }
 
 @keyframes negotiations-right-in {

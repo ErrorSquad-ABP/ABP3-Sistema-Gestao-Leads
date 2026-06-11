@@ -93,9 +93,8 @@ function buildAgendaItemsForUser(
 		const dayOffset = index - 2;
 		const day = addDays(today, dayOffset);
 		const isEvent = index % 3 === 0;
-		const title = isEvent
-			? AGENDA_EVENT_TITLES[index % AGENDA_EVENT_TITLES.length]
-			: AGENDA_TASK_TITLES[index % AGENDA_TASK_TITLES.length];
+		const titlePool = isEvent ? AGENDA_EVENT_TITLES : AGENDA_TASK_TITLES;
+		const title = titlePool[index % titlePool.length] ?? 'Atividade comercial';
 		const startsAt = isEvent
 			? atTime(day, 9 + (index % 6), (index * 15) % 60)
 			: null;
