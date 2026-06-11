@@ -1,19 +1,29 @@
 'use client';
 
 import {
+	Building2,
 	CalendarDays,
+	CarFront,
 	Clock3,
 	Code2,
 	Eye,
 	FileClock,
 	Filter,
+	Handshake,
+	KeyRound,
 	Search,
 	ShieldCheck,
+	Store,
+	UsersRound,
 	UserRound,
 	X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { TablePagination } from '@/components/data/TablePagination';
+import {
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,13 +33,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
@@ -118,6 +122,29 @@ function actionBadgeClass(action: AuditLogAction) {
 			return 'border-amber-200 bg-amber-50 text-amber-800';
 		case 'UPDATE':
 			return 'border-blue-200 bg-blue-50 text-blue-700';
+	}
+}
+
+function categoryIcon(category: AuditLogCategory | 'all') {
+	const className = 'size-4 shrink-0';
+
+	switch (category) {
+		case 'all':
+		case 'leads':
+			return <UsersRound className={className} />;
+		case 'access-groups':
+			return <KeyRound className={className} />;
+		case 'cars':
+			return <CarFront className={className} />;
+		case 'customers':
+		case 'users':
+			return <UserRound className={className} />;
+		case 'deals':
+			return <Handshake className={className} />;
+		case 'stores':
+			return <Store className={className} />;
+		case 'teams':
+			return <Building2 className={className} />;
 	}
 }
 
@@ -246,18 +273,19 @@ function AuditLogDetailsDialog({
 }: AuditLogDetailsDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-			<DialogContent className="max-h-[88vh] max-w-4xl overflow-hidden">
-				<DialogHeader>
-					<DialogTitle>Detalhes do log</DialogTitle>
-					<DialogDescription>
-						Registro completo da ação capturada pela auditoria.
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} max-w-4xl`}>
+				<AppModalHeader
+					category="Auditoria"
+					description="Registro completo da ação capturada pela auditoria."
+					icon={FileClock}
+					title="Detalhes do log"
+					tone="violet"
+				/>
 
 				{log ? (
 					<div className="grid max-h-[calc(88vh-9rem)] gap-5 overflow-y-auto px-6 py-5 lg:grid-cols-[0.82fr_1.18fr]">
 						<div className="space-y-4">
-							<div className="rounded-xl border border-border/80 bg-[#fbfcfe] p-4">
+							<div className="rounded-xl border border-border/80 bg-white p-4">
 								<p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
 									Ação
 								</p>
@@ -320,12 +348,12 @@ function AuditLogDetailsDialog({
 							</div>
 						</div>
 
-						<div className="min-w-0">
-							<div className="flex items-center gap-2 border-b border-[#202938] bg-[#111827] px-4 py-3 text-sm font-semibold text-white">
+						<div className="min-w-0 overflow-hidden rounded-xl border border-[#e8edf4]">
+							<div className="flex items-center gap-2 border-b border-[#e8edf4] bg-white px-4 py-3 text-sm font-semibold text-[#1b2430]">
 								<Code2 className="size-4" />
 								Metadata JSON
 							</div>
-							<pre className="max-h-[30rem] overflow-auto rounded-b-xl bg-[#0b1020] p-4 font-mono text-xs leading-6 text-[#d8dee9]">
+							<pre className="max-h-[30rem] overflow-auto bg-white p-4 font-mono text-xs leading-6 text-[#506078]">
 								<code>{stringifyMetadata(log.metadata)}</code>
 							</pre>
 						</div>
@@ -338,19 +366,19 @@ function AuditLogDetailsDialog({
 
 function AuditLogSkeletonList() {
 	return (
-		<div className="space-y-3">
+		<div className="space-y-2">
 			{Array.from({ length: 6 }, (_, index) => (
 				<div
-					className="rounded-xl border border-border/70 bg-white p-4"
+					className="rounded-xl border border-[#e2e8f0] bg-white px-5 py-4"
 					key={index}
 				>
 					<div className="flex items-start justify-between gap-4">
-						<div className="w-full space-y-3">
-							<Skeleton className="h-5 w-44 rounded-md" />
+						<div className="w-full space-y-2.5">
+							<Skeleton className="h-5 w-36 rounded-full" />
 							<Skeleton className="h-4 w-72 rounded-md" />
-							<Skeleton className="h-4 w-56 rounded-md" />
+							<Skeleton className="h-3.5 w-56 rounded-md" />
 						</div>
-						<Skeleton className="size-9 rounded-lg" />
+						<Skeleton className="h-9 w-28 rounded-lg" />
 					</div>
 				</div>
 			))}
@@ -408,16 +436,14 @@ function AuditLogsPageContent() {
 
 	return (
 		<section className="space-y-5">
-			<div className="flex flex-col gap-4 rounded-2xl border border-border/85 bg-white p-5 lg:flex-row lg:items-center lg:justify-between">
+			<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 				<div className="flex items-start gap-4">
-					<div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#d96c3f]/20 bg-[#d96c3f]/10 text-[#d96c3f]">
+					<div className="hidden">
 						<FileClock className="size-5" />
 					</div>
 					<div className="min-w-0 space-y-1">
-						<p className="text-xs font-semibold tracking-[0.18em] text-[#d96c3f] uppercase">
-							Auditoria
-						</p>
-						<h1 className="text-2xl font-semibold tracking-tight text-[#1b2430]">
+						<p className="hidden">Auditoria</p>
+						<h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
 							Logs do sistema
 						</h1>
 						<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -428,34 +454,46 @@ function AuditLogsPageContent() {
 				</div>
 			</div>
 
-			<div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-				<aside className="space-y-3 rounded-2xl border border-border/85 bg-white p-3">
-					<div className="flex items-center gap-2 px-2 py-1 text-sm font-semibold text-[#1b2430]">
-						<Filter className="size-4 text-[#d96c3f]" />
+			<div className="grid items-start gap-5 xl:min-h-[calc(100dvh-8rem)] xl:grid-cols-[17.5rem_minmax(0,1fr)]">
+				<aside className="overflow-hidden rounded-2xl border border-[#dde5ef] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)] xl:sticky xl:top-5 xl:flex xl:h-[calc(100dvh-8rem)] xl:flex-col">
+					<div className="flex items-center gap-2 border-b border-[#e7edf5] px-5 py-4 text-sm font-semibold text-[#172033]">
+						<Filter className="size-4 text-[color:var(--brand-accent)]" />
 						Categorias
 					</div>
-					<div className="space-y-1">
+					<div className="space-y-1 overflow-y-auto p-3">
 						{categoryOptions.map((option) => {
 							const isActive = activeCategory === option;
 							return (
 								<button
 									className={cn(
-										'flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors',
+										'group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors',
 										isActive
-											? 'bg-[#1f2937] text-white'
-											: 'text-[#415066] hover:bg-[#f4f6f8]',
+											? 'bg-[color:var(--brand-accent-soft)] text-[#172033]'
+											: 'text-[#172033] hover:bg-[#f6f8fb]',
 									)}
 									key={option}
 									onClick={() => changeCategory(option)}
 									type="button"
 								>
-									<span className="font-medium">
+									<span
+										className={cn(
+											'flex size-8 items-center justify-center rounded-lg border transition-colors',
+											isActive
+												? 'border-[color:var(--brand-accent)]/20 bg-white text-[color:var(--brand-accent)]'
+												: 'border-transparent bg-[#f6f8fb] text-[#64748b] group-hover:bg-white',
+										)}
+									>
+										{categoryIcon(option)}
+									</span>
+									<span className="min-w-0 flex-1 truncate font-medium">
 										{getAuditLogCategoryLabel(option)}
 									</span>
 									<span
 										className={cn(
-											'size-2 rounded-full',
-											isActive ? 'bg-[#f07a2a]' : 'bg-[#c9d2df]',
+											'size-1.5 rounded-full',
+											isActive
+												? 'bg-[color:var(--brand-accent)]'
+												: 'bg-[#d5dde8]',
 										)}
 									/>
 								</button>
@@ -465,14 +503,16 @@ function AuditLogsPageContent() {
 				</aside>
 
 				<div className="min-w-0 space-y-4">
-					<Card className="overflow-hidden rounded-2xl border-border/85 bg-white">
-						<CardHeader className="gap-4 border-b border-border/75 pb-5">
+					<Card className="contents">
+						<CardHeader className="gap-4 rounded-2xl border border-[#dde5ef] bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
 							<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 								<div>
-									<CardTitle className="text-xl">
-										{getAuditLogCategoryLabel(activeCategory)}
+									<CardTitle className="text-base font-semibold text-[#172033]">
+										Tipo de ação
 									</CardTitle>
 									<CardDescription>
+										{getAuditLogCategoryLabel(activeCategory)}
+										{' · '}
 										{activeAction === 'ALL'
 											? 'Todas as ações registradas nesta seleção.'
 											: getAuditLogActionLabel(activeAction)}
@@ -483,10 +523,10 @@ function AuditLogsPageContent() {
 									{actionOptions.map((option) => (
 										<Button
 											className={cn(
-												'h-9 rounded-lg px-3 text-xs shadow-none',
+												'h-8 rounded-full border-[#d8e1ec] px-4 text-xs shadow-none',
 												activeAction === option
-													? 'bg-[#1f2937] text-white hover:bg-[#1f2937]'
-													: '',
+													? 'border-[#172033] bg-[#172033] text-white hover:bg-[#172033]'
+													: 'bg-white text-[#415066] hover:bg-[#f6f8fb]',
 											)}
 											key={option}
 											onClick={() => changeAction(option)}
@@ -500,7 +540,10 @@ function AuditLogsPageContent() {
 									))}
 								</div>
 							</div>
-							<div className="grid gap-3 rounded-xl border border-border/75 bg-[#fbfcfe] p-3 md:grid-cols-[minmax(14rem,1.2fr)_minmax(10rem,0.8fr)_minmax(10rem,0.8fr)_auto] md:items-end">
+							<p className="border-t border-[#e7edf5] pt-4 text-sm font-semibold text-[#172033]">
+								Filtros avançados
+							</p>
+							<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(14rem,1.2fr)_minmax(10rem,0.8fr)_minmax(10rem,0.8fr)_auto] xl:items-end">
 								<label className="min-w-0 space-y-1.5">
 									<span className="flex items-center gap-1.5 text-xs font-semibold text-[#415066]">
 										<Search className="size-3.5 text-[#d96c3f]" />
@@ -508,7 +551,7 @@ function AuditLogsPageContent() {
 									</span>
 									<Input
 										aria-label="Pesquisar logs por usuário"
-										className="h-10 bg-white"
+										className="h-10 rounded-xl border-[#d8e1ec] bg-white shadow-none"
 										onChange={(event) => {
 											setUserSearch(event.target.value);
 											setPage(INITIAL_PAGE);
@@ -524,7 +567,7 @@ function AuditLogsPageContent() {
 									</span>
 									<Input
 										aria-label="Data inicial dos logs"
-										className="h-10 bg-white"
+										className="h-10 rounded-xl border-[#d8e1ec] bg-white shadow-none"
 										onChange={(event) => {
 											setStartDate(event.target.value);
 											setPage(INITIAL_PAGE);
@@ -540,7 +583,7 @@ function AuditLogsPageContent() {
 									</span>
 									<Input
 										aria-label="Data final dos logs"
-										className="h-10 bg-white"
+										className="h-10 rounded-xl border-[#d8e1ec] bg-white shadow-none"
 										onChange={(event) => {
 											setEndDate(event.target.value);
 											setPage(INITIAL_PAGE);
@@ -550,7 +593,7 @@ function AuditLogsPageContent() {
 									/>
 								</label>
 								<Button
-									className="h-10 gap-2"
+									className="h-10 gap-2 rounded-xl border-[#d8e1ec] px-5 shadow-none"
 									disabled={!userSearch && !startDate && !endDate}
 									onClick={clearAdvancedFilters}
 									type="button"
@@ -562,8 +605,8 @@ function AuditLogsPageContent() {
 							</div>
 						</CardHeader>
 
-						<CardContent className="p-0">
-							<div className="min-h-[30rem] bg-[#fbfcfe] p-4">
+						<CardContent className="contents">
+							<div className="min-h-[30rem]">
 								{query.isLoading ? <AuditLogSkeletonList /> : null}
 
 								{query.isError ? (
@@ -591,25 +634,25 @@ function AuditLogsPageContent() {
 								) : null}
 
 								{query.isSuccess && logs.length > 0 ? (
-									<div className="space-y-3">
+									<div className="space-y-2">
 										{logs.map((log) => (
 											<article
-												className="rounded-xl border border-border/80 bg-white p-4 transition-colors hover:border-[#d96c3f]/35"
+												className="rounded-xl border border-[#e1e8f0] bg-white px-5 py-3.5 transition-colors hover:border-[color:var(--brand-accent)]/35 hover:bg-[#fffdfc]"
 												key={log.id}
 											>
-												<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-													<div className="min-w-0 space-y-3">
+												<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+													<div className="min-w-0 space-y-2">
 														<div className="flex flex-wrap items-center gap-2">
 															<Badge
 																className={cn(
-																	'h-6 rounded-md border px-2.5',
+																	'h-5 rounded-full border px-2.5 text-[11px]',
 																	actionBadgeClass(log.action),
 																)}
 															>
 																{getAuditLogActionLabel(log.action)}
 															</Badge>
 															<Badge
-																className="h-6 rounded-md border-[#d7dee8] bg-white px-2.5 text-[#314155]"
+																className="h-5 rounded-full border-[#d7dee8] bg-white px-2.5 text-[11px] text-[#314155]"
 																variant="outline"
 															>
 																{formatAuditLogEntityLabel(log.entityName)}
@@ -617,12 +660,12 @@ function AuditLogsPageContent() {
 														</div>
 
 														<div>
-															<h2 className="text-base font-semibold text-[#1b2430]">
+															<h2 className="text-sm font-semibold text-[#172033]">
 																{auditLogSummary(log)}
 															</h2>
 														</div>
 
-														<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+														<div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#667085]">
 															<span className="inline-flex items-center gap-1.5">
 																<UserRound className="size-3.5" />
 																{log.actor?.name ?? 'Sistema'}
@@ -635,7 +678,7 @@ function AuditLogsPageContent() {
 													</div>
 
 													<Button
-														className="shrink-0"
+														className="h-9 shrink-0 rounded-lg border-[#d8e1ec] px-4 shadow-none"
 														onClick={() => setSelectedLog(log)}
 														size="sm"
 														variant="outline"
@@ -651,6 +694,7 @@ function AuditLogsPageContent() {
 							</div>
 
 							<TablePagination
+								className="mt-4 rounded-2xl border border-[#dde5ef] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)]"
 								isLoading={query.isFetching}
 								itemLabel="logs"
 								onPageChange={setPage}

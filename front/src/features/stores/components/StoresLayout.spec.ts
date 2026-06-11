@@ -32,15 +32,19 @@ function textContent(node: ReactNode): string {
 }
 
 describe('Stores page layout', () => {
-	it('keeps the stores list above analytics blocks', async () => {
+	it('keeps KPI metrics immediately after the page header', async () => {
 		const source = await readFile(
 			'src/features/stores/components/StoresManagementScreen.tsx',
 			'utf8',
 		);
 
 		assert.ok(
-			source.indexOf('<StoresCatalogCard') <
+			source.indexOf('<StoresPageHeader') <
 				source.indexOf('<StoresMetricsGrid'),
+		);
+		assert.ok(
+			source.indexOf('<StoresMetricsGrid') <
+				source.indexOf('<StoresCatalogCard'),
 		);
 		assert.ok(
 			source.indexOf('<StoresCatalogCard') <

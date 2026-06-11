@@ -157,7 +157,7 @@ function CustomerManagerDialog({
 							<div className="relative w-full lg:max-w-md">
 								<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#6b7687]" />
 								<Input
-									className="h-11 rounded-xl border-[#d6dce5] bg-[#f8fafc] pl-9 shadow-none focus-visible:border-[#2d3648]/45"
+									className="h-11 rounded-xl border-[#d6dce5] bg-white pl-9 shadow-none focus-visible:border-[#2d3648]/45"
 									onChange={(event) => setSearch(event.target.value)}
 									placeholder="Pesquisar cliente por nome, e-mail ou CPF"
 									value={search}
@@ -205,7 +205,7 @@ function CustomerManagerDialog({
 						</div>
 
 						<div className="grid min-h-0 flex-1 gap-4 overflow-hidden lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-							<div className="flex min-h-0 flex-col overflow-hidden rounded-3xl border border-[#e5ebf3] bg-[#f9fbfd]">
+							<div className="flex min-h-0 flex-col overflow-hidden rounded-3xl border border-[#e5ebf3] bg-white">
 								<div className="border-b border-[#e5ebf3] px-5 py-4">
 									<h3 className="text-sm font-semibold text-[#1b2430]">
 										Clientes disponíveis
@@ -282,7 +282,7 @@ function CustomerManagerDialog({
 										</div>
 									</div>
 								) : (
-									<div className="mt-4 rounded-2xl border border-dashed border-[#d6dce5] bg-[#f9fbfd] px-4 py-10 text-center text-sm text-[#6b7687]">
+									<div className="mt-4 rounded-2xl border border-dashed border-[#d6dce5] bg-white px-4 py-10 text-center text-sm text-[#6b7687]">
 										Selecione um cliente para editar ou excluir.
 									</div>
 								)}
@@ -443,7 +443,7 @@ function StoreManagerDialog({
 						</div>
 
 						<div className="grid min-h-0 flex-1 gap-4 overflow-hidden lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
-							<div className="flex min-h-0 flex-col overflow-hidden rounded-3xl border border-[#e5ebf3] bg-[#f9fbfd]">
+							<div className="flex min-h-0 flex-col overflow-hidden rounded-3xl border border-[#e5ebf3] bg-white">
 								<div className="border-b border-[#e5ebf3] px-5 py-4">
 									<h3 className="text-sm font-semibold text-[#1b2430]">
 										Lojas disponíveis
@@ -486,7 +486,7 @@ function StoreManagerDialog({
 												{selectedStore.name}
 											</p>
 										</div>
-										<p className="rounded-2xl border border-[#e5ebf3] bg-[#f9fbfd] px-4 py-4 leading-6 text-[#6b7687]">
+										<p className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-4 leading-6 text-[#6b7687]">
 											As lojas organizam a distribuição operacional dos leads e
 											controlam os responsáveis elegíveis no fluxo comercial.
 										</p>
@@ -498,7 +498,7 @@ function StoreManagerDialog({
 										) : null}
 									</div>
 								) : (
-									<div className="mt-4 rounded-2xl border border-dashed border-[#d6dce5] bg-[#f9fbfd] px-4 py-10 text-center text-sm text-[#6b7687]">
+									<div className="mt-4 rounded-2xl border border-dashed border-[#d6dce5] bg-white px-4 py-10 text-center text-sm text-[#6b7687]">
 										Selecione uma loja para editar ou excluir.
 									</div>
 								)}

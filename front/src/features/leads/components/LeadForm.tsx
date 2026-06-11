@@ -82,6 +82,14 @@ const LEAD_FORM_FIELD_MAP = {
 	'lead.invalid_store': 'storeId',
 } as const;
 
+const leadFormFieldById: Readonly<Record<string, keyof LeadFormValues>> = {
+	'lead-form-customer': 'customerId',
+	'lead-form-owner': 'ownerUserId',
+	'lead-form-source': 'source',
+	'lead-form-status': 'status',
+	'lead-form-store': 'storeId',
+};
+
 function buildOwnerOptions(params: {
 	leadOwners: LeadOwnerRecord[];
 	selectedStoreId: string;
@@ -119,6 +127,8 @@ function LeadFormDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const form = useForm<LeadFormValues>({
 		resolver: zodResolver(leadFormSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			customerId: '',
 			storeId: '',
@@ -195,7 +205,9 @@ function LeadFormDialog({
 		if (!currentCustomerId || !customerIds.has(currentCustomerId)) {
 			const nextCustomerId = customers[0]?.id ?? '';
 			if (nextCustomerId) {
-				form.setValue('customerId', nextCustomerId, { shouldValidate: true });
+				form.setValue('customerId', nextCustomerId, {
+					shouldValidate: true,
+				});
 			}
 		}
 
@@ -283,6 +295,10 @@ function LeadFormDialog({
 
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
+					onBlurCapture={(event) => {
+						const field = leadFormFieldById[(event.target as HTMLElement).id];
+						if (field) void form.trigger(field);
+					}}
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
 					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pt-7 pb-8">
@@ -291,7 +307,7 @@ function LeadFormDialog({
 							message={submitError}
 						/>
 
-						<div className="rounded-3xl border border-[#e5ebf3] bg-[#f9fbfd] p-5">
+						<div className="rounded-3xl border border-[#e5ebf3] bg-white p-5">
 							<div className="space-y-1">
 								<Label
 									className="text-base font-semibold text-[#1b2430]"
@@ -418,7 +434,7 @@ function LeadFormDialog({
 								<div className="space-y-1.5">
 									<Label htmlFor="lead-form-owner">Responsável</Label>
 									{user.role === 'ATTENDANT' ? (
-										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
+										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#6b7687]">
 											{user.name} (você)
 										</div>
 									) : allowOwnerSelect ? (
@@ -441,7 +457,7 @@ function LeadFormDialog({
 											))}
 										</select>
 									) : (
-										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
+										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#6b7687]">
 											Selecione uma loja com responsáveis disponíveis.
 										</div>
 									)}
@@ -538,6 +554,8 @@ function LeadReassignDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const form = useForm<ReassignLeadFormValues>({
 		resolver: zodResolver(reassignLeadSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			ownerUserId: '',
 		},
@@ -594,9 +612,14 @@ function LeadReassignDialog({
 
 				<form
 					className="space-y-5 px-6 py-5"
+					onBlurCapture={(event) => {
+						if ((event.target as HTMLElement).id === 'lead-reassign-owner') {
+							void form.trigger('ownerUserId');
+						}
+					}}
 					onSubmit={form.handleSubmit(handleSubmit)}
 				>
-					<div className="rounded-xl border border-border/75 bg-[#f8fafc] px-3 py-3 text-sm text-[#6b7687]">
+					<div className="rounded-xl border border-border/75 bg-white px-3 py-3 text-sm text-[#6b7687]">
 						Responsável atual:{' '}
 						<span className="font-medium text-[#1b2430]">
 							{currentOwnerLabel}
@@ -627,7 +650,7 @@ function LeadReassignDialog({
 								))}
 							</select>
 						) : (
-							<div className="flex h-10 items-center rounded-md border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
+							<div className="flex h-10 items-center rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#6b7687]">
 								{user.role === 'ATTENDANT'
 									? 'Reatribuição indisponível para este papel'
 									: 'Nenhum responsável elegível dentro do seu escopo.'}
@@ -691,7 +714,7 @@ function LeadConfirmDialog({
 					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4 px-6 py-5">
-					<div className="flex items-start gap-3 rounded-xl border border-border/75 bg-[#f8fafc] px-4 py-4 text-sm text-[#6b7687]">
+					<div className="flex items-start gap-3 rounded-xl border border-border/75 bg-white px-4 py-4 text-sm text-[#6b7687]">
 						{icon === 'convert' ? (
 							<CheckCheck className="mt-0.5 size-4 text-[#d96c3f]" />
 						) : (

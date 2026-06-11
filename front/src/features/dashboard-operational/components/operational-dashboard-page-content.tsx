@@ -759,10 +759,10 @@ function DashboardLoadingState() {
 	return (
 		<section className="space-y-3.5">
 			<div className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-4">
-				<Skeleton className="h-[116px] rounded-[18px]" />
-				<Skeleton className="h-[116px] rounded-[18px]" />
-				<Skeleton className="h-[116px] rounded-[18px]" />
-				<Skeleton className="h-[116px] rounded-[18px]" />
+				<Skeleton className="h-28 rounded-[18px]" />
+				<Skeleton className="h-28 rounded-[18px]" />
+				<Skeleton className="h-28 rounded-[18px]" />
+				<Skeleton className="h-28 rounded-[18px]" />
 			</div>
 			<div className="grid gap-3.5 xl:grid-cols-2">
 				<Skeleton className="h-[286px] rounded-[18px]" />

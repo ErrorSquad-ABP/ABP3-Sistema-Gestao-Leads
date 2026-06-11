@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { KeyRound, LoaderCircle, Mail, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { toast } from 'sonner';
 
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
@@ -233,14 +234,10 @@ function ProfilePageContent({
 
 	return (
 		<div className="space-y-6">
-			<div>
-				<h1 className="text-3xl font-bold tracking-tight text-foreground">
-					Minha conta
-				</h1>
-				<p className="mt-2 text-sm text-muted-foreground">
-					Gerencie o e-mail e a senha usados para entrar no sistema.
-				</p>
-			</div>
+			<AppPageHeader
+				description="Gerencie o e-mail e a senha usados para entrar no sistema."
+				title="Minha conta"
+			/>
 
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,18rem)_1fr]">
 				<Card className="h-fit overflow-hidden rounded-3xl border-border bg-card shadow-sm">

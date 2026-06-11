@@ -1,10 +1,11 @@
+import { CalendarPlus, PencilLine } from 'lucide-react';
+
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalBody,
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 import {
 	AgendaItemForm,
@@ -46,12 +47,14 @@ function AgendaItemDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
-				</DialogHeader>
-				<div className="px-6 py-5">
+			<DialogContent className={`${appModalContentClass} max-w-2xl`}>
+				<AppModalHeader
+					category="Agenda"
+					description={description}
+					icon={mode === 'edit' ? PencilLine : CalendarPlus}
+					title={title}
+				/>
+				<AppModalBody>
 					<AgendaItemForm
 						initialDate={initialDate}
 						initialLead={initialLead}
@@ -66,7 +69,7 @@ function AgendaItemDialog({
 							{errorMessage}
 						</p>
 					) : null}
-				</div>
+				</AppModalBody>
 			</DialogContent>
 		</Dialog>
 	);

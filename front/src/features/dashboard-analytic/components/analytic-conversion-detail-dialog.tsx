@@ -1,15 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, ChartNoAxesCombined } from 'lucide-react';
 
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalBody,
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CHART_COLORS } from '@/lib/charts/chart-colors';
 import { appRoutes } from '@/lib/routes/app-routes';
 
@@ -61,30 +60,32 @@ function AnalyticConversionDetailDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="flex max-h-[84vh] max-w-2xl flex-col overflow-hidden rounded-[1.75rem] border border-border bg-card p-0">
-				<DialogHeader className="gap-2 border-b border-border px-6 py-5">
-					<DialogTitle>Detalhes da conversão</DialogTitle>
-					<DialogDescription>
-						Resumo de convertidos, perdidos e em andamento com atalhos para a
-						gestão de leads.
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} max-w-2xl`}>
+				<AppModalHeader
+					category="Dashboard analítico"
+					description="Resumo de convertidos, perdidos e em andamento com atalhos para a gestão de leads."
+					icon={ChartNoAxesCombined}
+					title="Detalhes da conversão"
+					tone="success"
+				/>
 
-				<div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+				<AppModalBody className="py-4">
 					{summary ? (
 						<div className="mb-4 grid gap-3 sm:grid-cols-3">
-							<div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+							<div className="rounded-2xl border border-border bg-white px-4 py-3">
 								<p className="text-xs font-medium text-muted-foreground">
 									Convertidos
 								</p>
 								<p
 									className="mt-1 text-xl font-semibold"
-									style={{ color: getOutcomeColor('converted') }}
+									style={{
+										color: getOutcomeColor('converted'),
+									}}
 								>
 									{formatCount(summary.convertedLeads)}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+							<div className="rounded-2xl border border-border bg-white px-4 py-3">
 								<p className="text-xs font-medium text-muted-foreground">
 									Perdidos
 								</p>
@@ -95,7 +96,7 @@ function AnalyticConversionDetailDialog({
 									{formatCount(summary.lostLeads ?? 0)}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+							<div className="rounded-2xl border border-border bg-white px-4 py-3">
 								<p className="text-xs font-medium text-muted-foreground">
 									Em andamento
 								</p>
@@ -118,7 +119,7 @@ function AnalyticConversionDetailDialog({
 								return (
 									<li key={lead.id}>
 										<Link
-											className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-muted/40"
+											className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-white"
 											href={`${appRoutes.app.leads}/${lead.id}`}
 										>
 											<div className="min-w-0">
@@ -149,7 +150,7 @@ function AnalyticConversionDetailDialog({
 							Nenhum lead encontrado no período selecionado.
 						</p>
 					)}
-				</div>
+				</AppModalBody>
 			</DialogContent>
 		</Dialog>
 	);

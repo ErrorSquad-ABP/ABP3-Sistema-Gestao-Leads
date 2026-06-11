@@ -1,19 +1,17 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PencilLine, ShieldPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -139,6 +137,8 @@ function AccessGroupDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const form = useForm<AccessGroupFormValues>({
 		resolver: zodResolver(accessGroupSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			name: '',
 			description: '',
@@ -195,16 +195,14 @@ function AccessGroupDialog({
 
 	return (
 		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-			<DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
-				<DialogHeader>
-					<DialogTitle>
-						{isEditMode ? 'Editar grupo de acesso' : 'Novo grupo de acesso'}
-					</DialogTitle>
-					<DialogDescription>
-						Defina o papel-base e as features que esse grupo libera na
-						aplicação.
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} sm:max-w-3xl`}>
+				<AppModalHeader
+					category="Grupos de acesso"
+					description="Defina o papel-base e as features que esse grupo libera na aplicação."
+					icon={isEditMode ? PencilLine : ShieldPlus}
+					title={isEditMode ? 'Editar grupo de acesso' : 'Novo grupo de acesso'}
+					tone="violet"
+				/>
 
 				<form
 					className="flex max-h-[calc(100vh-10rem)] flex-col"
@@ -275,7 +273,10 @@ function AccessGroupDialog({
 												? null
 												: (event.target
 														.value as AccessGroupFormValues['baseRole']),
-											{ shouldDirty: true, shouldValidate: true },
+											{
+												shouldDirty: true,
+												shouldValidate: true,
+											},
 										)
 									}
 									value={selectedBaseRole ?? 'NONE'}
@@ -291,7 +292,7 @@ function AccessGroupDialog({
 						</div>
 
 						<div className="space-y-4">
-							<div className="rounded-2xl border border-border/80 bg-[#f8fafc] p-4">
+							<div className="rounded-2xl border border-border/80 bg-white p-4">
 								<Label className="text-sm font-medium text-[#1b2430]" required>
 									Permissões do grupo
 								</Label>
@@ -353,7 +354,7 @@ function AccessGroupDialog({
 							Cancelar
 						</Button>
 						<Button
-							className="rounded-xl bg-[#f05a28] text-white hover:bg-[#df4f1f]"
+							className="rounded-xl bg-[#101a33] text-white hover:bg-[#17223d]"
 							disabled={isPending}
 							type="submit"
 						>

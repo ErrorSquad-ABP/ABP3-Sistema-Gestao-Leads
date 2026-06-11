@@ -103,7 +103,7 @@ export function LeadDetailSummaryDialog({
 							Dados do Cliente
 						</h3>
 						<div className="grid gap-3 sm:grid-cols-2">
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3">
 								<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
 									Nome Completo
 								</p>
@@ -111,7 +111,7 @@ export function LeadDetailSummaryDialog({
 									{customer.name}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3">
 								<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
 									CPF
 								</p>
@@ -119,7 +119,7 @@ export function LeadDetailSummaryDialog({
 									{formatCPF(customer.cpf)}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3 flex items-center gap-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3 flex items-center gap-3">
 								<Mail className="size-4 text-[#667085]" />
 								<div className="min-w-0">
 									<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
@@ -130,7 +130,7 @@ export function LeadDetailSummaryDialog({
 									</p>
 								</div>
 							</div>
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3 flex items-center gap-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3 flex items-center gap-3">
 								<Phone className="size-4 text-[#667085]" />
 								<div>
 									<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
@@ -151,7 +151,7 @@ export function LeadDetailSummaryDialog({
 							Informações da Operação
 						</h3>
 						<div className="grid gap-3 sm:grid-cols-2">
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3">
 								<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
 									Status
 								</p>
@@ -159,7 +159,7 @@ export function LeadDetailSummaryDialog({
 									{formatLeadStatusLabel(lead.status)}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3">
 								<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
 									Origem
 								</p>
@@ -167,7 +167,7 @@ export function LeadDetailSummaryDialog({
 									{formatLeadSourceLabel(lead.source)}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3">
 								<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
 									Loja Atribuída
 								</p>
@@ -175,7 +175,7 @@ export function LeadDetailSummaryDialog({
 									{store.name}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-3 flex items-center gap-3">
+							<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-3 flex items-center gap-3">
 								<UserCheck className="size-4 text-[#667085]" />
 								<div>
 									<p className="text-[0.72rem] font-semibold tracking-[0.1em] text-[#667085] uppercase">
@@ -195,7 +195,7 @@ export function LeadDetailSummaryDialog({
 							<FileText className="size-4 text-[#667085]" />
 							Produto de Interesse
 						</h3>
-						<div className="rounded-2xl border border-[#e5ebf3] bg-[#f8fafc] px-4 py-4">
+						<div className="rounded-2xl border border-[#e5ebf3] bg-white px-4 py-4">
 							<p className="text-sm text-[#344054] leading-relaxed">
 								{lead.vehicleInterestText ??
 									'Nenhum produto/veículo de interesse informado.'}
@@ -204,7 +204,7 @@ export function LeadDetailSummaryDialog({
 					</div>
 				</div>
 
-				<DialogFooter className="border-t border-[#e5ebf3] bg-[#f8fafc] px-8 py-4 gap-2 sm:gap-0">
+				<DialogFooter className="border-t border-[#e5ebf3] bg-white px-8 py-4 gap-2 sm:gap-0">
 					<Button
 						onClick={onClose}
 						type="button"
@@ -214,7 +214,7 @@ export function LeadDetailSummaryDialog({
 						Fechar
 					</Button>
 					<Button
-						className="bg-[#f05a28] hover:bg-[#df4f1f] text-white rounded-xl shadow-none"
+						className="rounded-xl bg-[#101a33] text-white shadow-none hover:bg-[#17223d]"
 						onClick={handleNavigateToFull}
 						type="button"
 					>

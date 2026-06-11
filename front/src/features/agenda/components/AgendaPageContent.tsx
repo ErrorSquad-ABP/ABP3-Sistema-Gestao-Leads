@@ -6,6 +6,7 @@ import { AgendaCalendarMonth, type CalendarDay } from './AgendaCalendarMonth';
 import { AgendaDayView } from './AgendaDayView';
 import { AgendaErrorState } from './AgendaErrorState';
 import { AgendaHeader } from './AgendaHeader';
+import { AgendaMetricsGrid } from './AgendaMetricsGrid';
 import { AgendaItemDialog } from './AgendaItemDialog';
 import { AgendaMoveDialog } from './AgendaMoveDialog';
 import { AgendaRemindersPanel } from './AgendaRemindersPanel';
@@ -250,13 +251,17 @@ function AgendaPageContent() {
 	}
 
 	return (
-		<div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
+		<div className="flex w-full min-w-0 flex-col gap-4">
 			<AgendaHeader
 				monthLabel={headerLabel}
 				onCreateClick={() => openCreateDialog(selectedDate)}
 				onNextMonth={navigateNext}
 				onPreviousMonth={navigatePrevious}
 				onTodayClick={handleTodayClick}
+			/>
+			<AgendaMetricsGrid
+				items={visibleItems}
+				metrics={metricsQuery.data ?? null}
 			/>
 			<div className="grid gap-3 rounded-lg border border-border bg-card p-4 shadow-none lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
 				<div className="space-y-2">
@@ -350,9 +355,9 @@ function AgendaPageContent() {
 						onComplete={(id) => completeAgendaItem.mutate(id)}
 						onEdit={openEditDialog}
 						onMove={openMoveDialog}
+						remindersPanel={<AgendaRemindersPanel items={visibleItems} />}
 					/>
-					<AgendaRemindersPanel items={visibleItems} />
-					<div className="flex flex-wrap gap-2">
+					<div className="flex flex-wrap items-center gap-2">
 						<button
 							className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
 							data-active={viewFilter === 'all'}
@@ -369,8 +374,6 @@ function AgendaPageContent() {
 						>
 							Atrasadas
 						</button>
-					</div>
-					<div className="flex flex-wrap gap-2">
 						{AGENDA_VIEW_OPTIONS.map((option) => (
 							<button
 								className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
@@ -384,7 +387,7 @@ function AgendaPageContent() {
 						))}
 					</div>
 					{viewMode === 'month' ? (
-						<div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+						<div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.32fr)]">
 							<AgendaCalendarMonth
 								days={calendarDays}
 								onCreateDate={openCreateDialog}

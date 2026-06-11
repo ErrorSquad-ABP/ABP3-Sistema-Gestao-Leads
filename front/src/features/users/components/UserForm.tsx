@@ -1,20 +1,18 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ShieldCheck } from 'lucide-react';
+import { PencilLine, ShieldCheck, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogDescription,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalConfirmPanel,
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
@@ -136,6 +134,8 @@ function UsersFormDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const createForm = useForm<CreateUserFormValues>({
 		resolver: zodResolver(createUserSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			name: '',
 			email: '',
@@ -146,6 +146,8 @@ function UsersFormDialog({
 	});
 	const updateForm = useForm<UpdateUserFormValues>({
 		resolver: zodResolver(updateUserSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			name: '',
 			email: '',
@@ -224,17 +226,18 @@ function UsersFormDialog({
 
 	return (
 		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-			<DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>
-						{isEditMode ? 'Editar usuário' : 'Novo usuário'}
-					</DialogTitle>
-					<DialogDescription>
-						{isEditMode
+			<DialogContent className={`${appModalContentClass} sm:max-w-2xl`}>
+				<AppModalHeader
+					category="Usuários"
+					description={
+						isEditMode
 							? 'Atualize papel, credenciais e os grupos de acesso deste usuário.'
-							: 'Cadastre um novo acesso e vincule um ou mais grupos. As permissões somam as features de todos os grupos.'}
-					</DialogDescription>
-				</DialogHeader>
+							: 'Cadastre um novo acesso e vincule um ou mais grupos. As permissões somam as features de todos os grupos.'
+					}
+					icon={isEditMode ? PencilLine : UserPlus}
+					title={isEditMode ? 'Editar usuário' : 'Novo usuário'}
+					tone="violet"
+				/>
 
 				<form
 					className="flex max-h-[calc(100vh-10rem)] flex-col"
@@ -293,7 +296,10 @@ function UsersFormDialog({
 										form.setValue(
 											'role',
 											event.target.value as UserRecord['role'],
-											{ shouldDirty: true, shouldValidate: true },
+											{
+												shouldDirty: true,
+												shouldValidate: true,
+											},
 										)
 									}
 									value={selectedRole}
@@ -346,7 +352,7 @@ function UsersFormDialog({
 												}`}
 									</span>
 								</div>
-								<div className="max-h-56 space-y-2 overflow-y-auto rounded-2xl border border-[#e7edf5] bg-[#f8fafc] p-3">
+								<div className="max-h-56 space-y-2 overflow-y-auto rounded-2xl border border-[#e7edf5] bg-white p-3">
 									{accessGroups.length === 0 ? (
 										<p className="px-1 py-2 text-sm text-[#667085]">
 											Nenhum grupo de acesso cadastrado.
@@ -416,7 +422,7 @@ function UsersFormDialog({
 							Cancelar
 						</Button>
 						<Button
-							className="rounded-xl bg-[#f05a28] text-white hover:bg-[#df4f1f]"
+							className="rounded-xl bg-[#101a33] text-white hover:bg-[#17223d]"
 							disabled={isPending}
 							type="submit"
 						>
@@ -446,17 +452,20 @@ function ConfirmDialog({
 }: DeleteDialogProps) {
 	return (
 		<Dialog onOpenChange={(nextOpen) => !nextOpen && onClose()} open={open}>
-			<DialogContent className="p-0 sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} sm:max-w-lg`}>
+				<AppModalHeader
+					category="Usuários"
+					description={description}
+					icon={Trash2}
+					title={title}
+					tone="danger"
+				/>
 
 				<div className="space-y-4 px-6 py-6">
-					<div className="rounded-2xl border border-[#f1d6d4] bg-[#fff7f7] p-4 text-sm leading-6 text-[#7a2f2a]">
+					<AppModalConfirmPanel icon={Trash2}>
 						A ação será aplicada imediatamente e não pode ser revertida pela
 						interface.
-					</div>
+					</AppModalConfirmPanel>
 
 					<ModalFormErrorBanner message={error} />
 				</div>

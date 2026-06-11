@@ -49,8 +49,8 @@ function TeamsTable({ onDelete, onEdit, onMembers, rows }: TeamsTableProps) {
 	return (
 		<div className="overflow-hidden rounded-2xl border border-[#e6ecf3] bg-white">
 			<Table>
-				<TableHeader className="bg-[#f8fafc]/80">
-					<TableRow className="border-[#e6ecf3]">
+				<TableHeader className="bg-[color:var(--table-header-bg)]">
+					<TableRow className="border-border hover:bg-transparent">
 						<TableHead className="h-10 min-w-[190px] text-xs text-[#1f2a44]">
 							Equipe
 						</TableHead>
@@ -77,9 +77,12 @@ function TeamsTable({ onDelete, onEdit, onMembers, rows }: TeamsTableProps) {
 						</TableHead>
 					</TableRow>
 				</TableHeader>
-				<TableBody>
+				<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
 					{rows.map((row) => (
-						<TableRow className="border-[#e6ecf3]" key={row.team.id}>
+						<TableRow
+							className="border-border hover:bg-[color:var(--table-row-hover)]"
+							key={row.team.id}
+						>
 							<TableCell className="py-3">
 								<div className="flex items-center gap-3">
 									<div
