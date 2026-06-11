@@ -31,6 +31,9 @@ function toSearchParams(query: AgendaItemsQuery) {
 	if (query.search?.trim()) {
 		params.set('search', query.search.trim());
 	}
+	if (query.ownerUserId) {
+		params.set('ownerUserId', query.ownerUserId);
+	}
 	return params;
 }
 

@@ -17,7 +17,7 @@ async function main() {
 	console.log('Running agenda demo seed...');
 	const summary = await runAgendaDemoSeed(prisma);
 	console.log(
-		`Agenda seed completed: ${summary.items} items for ${summary.users} users.`,
+		`Agenda seed completed: ${summary.items} items for ${summary.users} users (${summary.emails.join(', ')}).`,
 	);
 }
 

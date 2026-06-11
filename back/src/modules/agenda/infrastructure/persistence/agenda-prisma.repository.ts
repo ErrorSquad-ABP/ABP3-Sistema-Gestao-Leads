@@ -13,6 +13,13 @@ import type {
 } from '../../domain/agenda-item.types.js';
 
 const AGENDA_ITEM_INCLUDE = {
+	user: {
+		select: {
+			id: true,
+			name: true,
+			email: true,
+		},
+	},
 	lead: {
 		select: {
 			id: true,
@@ -42,7 +49,7 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 
 	async list(filters: AgendaItemListFilters): Promise<AgendaItem[]> {
 		const where: Prisma.AgendaItemWhereInput = {
-			userId: filters.userId,
+			...(filters.userId ? { userId: filters.userId } : {}),
 			...(filters.leadId ? { leadId: filters.leadId } : {}),
 			...(filters.type ? { type: filters.type } : {}),
 			...(filters.status ? { status: filters.status } : {}),
@@ -57,6 +64,14 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 			take: filters.limit,
 		});
 		return items.map(this.toAgendaItem);
+	}
+
+	async findById(id: string): Promise<AgendaItem | null> {
+		const item = await this.prisma.agendaItem.findUnique({
+			include: AGENDA_ITEM_INCLUDE,
+			where: { id },
+		});
+		return item ? this.toAgendaItem(item) : null;
 	}
 
 	async findByIdForUser(
@@ -142,7 +157,7 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 
 	async getMetrics(input: {
 		now: Date;
-		userId: string;
+		userId?: string;
 	}): Promise<AgendaMetrics> {
 		const todayStart = new Date(input.now);
 		todayStart.setHours(0, 0, 0, 0);
@@ -153,6 +168,7 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 		monthStart.setHours(0, 0, 0, 0);
 		const monthEnd = new Date(monthStart);
 		monthEnd.setMonth(monthEnd.getMonth() + 1);
+		const ownerFilter = input.userId ? { userId: input.userId } : {};
 
 		const [
 			pendingTasksCount,
@@ -162,14 +178,14 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 		] = await Promise.all([
 			this.prisma.agendaItem.count({
 				where: {
-					userId: input.userId,
+					...ownerFilter,
 					type: 'TASK',
 					status: 'SCHEDULED',
 				},
 			}),
 			this.prisma.agendaItem.count({
 				where: {
-					userId: input.userId,
+					...ownerFilter,
 					status: { not: 'CANCELLED' },
 					OR: [
 						{ startsAt: { gte: todayStart, lte: todayEnd } },
@@ -179,7 +195,7 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 			}),
 			this.prisma.agendaItem.count({
 				where: {
-					userId: input.userId,
+					...ownerFilter,
 					status: 'SCHEDULED',
 					OR: [
 						{ type: 'TASK', dueAt: { lt: input.now } },
@@ -194,7 +210,7 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 			}),
 			this.prisma.agendaItem.count({
 				where: {
-					userId: input.userId,
+					...ownerFilter,
 					status: 'DONE',
 					updatedAt: { gte: monthStart, lt: monthEnd },
 				},
@@ -268,6 +284,13 @@ class AgendaPrismaRepository implements AgendaItemRepository {
 		return {
 			id: item.id,
 			userId: item.userId,
+			owner: item.user
+				? {
+						id: item.user.id,
+						name: item.user.name,
+						email: item.user.email,
+					}
+				: null,
 			leadId: item.leadId,
 			lead: item.lead
 				? {

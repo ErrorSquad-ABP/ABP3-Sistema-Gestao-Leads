@@ -46,6 +46,10 @@ class ListAgendaItemsQueryValidator {
 	@IsString()
 	@MaxLength(120)
 	search?: string;
+
+	@IsOptional()
+	@IsUUID()
+	ownerUserId?: string;
 }
 
 class CreateAgendaItemValidator {

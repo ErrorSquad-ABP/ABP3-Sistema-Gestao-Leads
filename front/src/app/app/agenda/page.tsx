@@ -11,7 +11,7 @@ async function AgendaPage() {
 		redirect(appRoutes.auth.login);
 	}
 
-	return <AgendaPageContent />;
+	return <AgendaPageContent user={user} />;
 }
 
 export default AgendaPage;

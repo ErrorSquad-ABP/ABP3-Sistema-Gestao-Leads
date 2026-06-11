@@ -139,6 +139,11 @@ function LeadUpcomingActivitiesCard({
 						}
 					}}
 					onSubmit={handleSubmit}
+					onDelete={
+						dialogState.mode === 'edit'
+							? () => setDeleteTarget(dialogState.item)
+							: undefined
+					}
 					open={dialogState.mode !== 'closed'}
 				/>
 				<AgendaConfirmDeleteDialog

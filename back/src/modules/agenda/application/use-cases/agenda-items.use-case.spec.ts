@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	ForbiddenException,
+	NotFoundException,
+} from '@nestjs/common';
+
+import { AgendaAccessPolicy } from '../services/agenda-access-policy.service.js';
 
 import { CompleteAgendaItemUseCase } from './complete-agenda-item.use-case.js';
 import { CancelAgendaItemUseCase } from './cancel-agenda-item.use-case.js';
@@ -36,6 +42,9 @@ const BASE_ITEM: AgendaItem = {
 	updatedAt: new Date('2026-06-01T10:00:00.000Z'),
 };
 
+const ACTOR = { userId: 'user-1', role: 'ATTENDANT' as const };
+const ADMIN_ACTOR = { userId: 'admin-1', role: 'ADMINISTRATOR' as const };
+
 function repository(overrides: Partial<AgendaItemRepository> = {}) {
 	return {
 		cancelForUser: mock.fn(async () => ({
@@ -54,6 +63,7 @@ function repository(overrides: Partial<AgendaItemRepository> = {}) {
 			createdAt: BASE_ITEM.createdAt,
 			updatedAt: BASE_ITEM.updatedAt,
 		})),
+		findById: mock.fn(async () => BASE_ITEM),
 		findByIdForUser: mock.fn(async () => BASE_ITEM),
 		findLeadAccessSnapshot: mock.fn(async () => ({
 			ownerUserId: 'user-1',
@@ -75,6 +85,10 @@ function repository(overrides: Partial<AgendaItemRepository> = {}) {
 	} satisfies AgendaItemRepository;
 }
 
+function accessPolicy() {
+	return new AgendaAccessPolicy();
+}
+
 describe('agenda item use cases', () => {
 	it('lists only with the received authenticated user scope and safe default limit', async () => {
 		const calls: unknown[] = [];
@@ -84,14 +98,43 @@ describe('agenda item use cases', () => {
 				return [BASE_ITEM];
 			}),
 		});
-		const useCase = new ListAgendaItemsUseCase(repo);
+		const useCase = new ListAgendaItemsUseCase(repo, accessPolicy());
 
-		await useCase.execute({ userId: 'user-1' });
+		await useCase.execute({ actor: ACTOR });
 
-		assert.deepEqual(calls[0], {
-			userId: 'user-1',
-			limit: 50,
+		const filters = calls[0] as { userId?: string; limit: number };
+		assert.equal(filters.userId, 'user-1');
+		assert.equal(filters.limit, 50);
+	});
+
+	it('lists all users for administrator without owner filter', async () => {
+		const calls: unknown[] = [];
+		const repo = repository({
+			list: mock.fn(async (filters) => {
+				calls.push(filters);
+				return [BASE_ITEM];
+			}),
 		});
+		const useCase = new ListAgendaItemsUseCase(repo, accessPolicy());
+
+		await useCase.execute({ actor: ADMIN_ACTOR });
+
+		const filters = calls[0] as { userId?: string; limit: number };
+		assert.equal(filters.userId, undefined);
+		assert.equal(filters.limit, 50);
+	});
+
+	it('rejects owner filter for non-administrator', async () => {
+		const useCase = new ListAgendaItemsUseCase(repository(), accessPolicy());
+
+		await assert.rejects(
+			() =>
+				useCase.execute({
+					actor: ACTOR,
+					ownerUserId: 'other-user',
+				}),
+			ForbiddenException,
+		);
 	});
 
 	it('creates task with optional due date and trims text fields', async () => {
@@ -219,10 +262,10 @@ describe('agenda item use cases', () => {
 				pendingTasksCount: 4,
 			})),
 		});
-		const useCase = new GetAgendaMetricsUseCase(repo);
+		const useCase = new GetAgendaMetricsUseCase(repo, accessPolicy());
 
 		const metrics = await useCase.execute(
-			'user-1',
+			ACTOR,
 			new Date('2026-06-03T12:00:00.000Z'),
 		);
 
@@ -271,7 +314,7 @@ describe('agenda item use cases', () => {
 	it('rejects event end before start on update', async () => {
 		const useCase = new UpdateAgendaItemUseCase(
 			repository({
-				findByIdForUser: mock.fn(
+				findById: mock.fn(
 					async () =>
 						({
 							...BASE_ITEM,
@@ -280,13 +323,15 @@ describe('agenda item use cases', () => {
 						}) satisfies AgendaItem,
 				),
 			}),
+			undefined,
+			accessPolicy(),
 		);
 
 		await assert.rejects(
 			() =>
 				useCase.execute({
 					id: 'item-1',
-					userId: 'user-1',
+					actor: ACTOR,
 					endsAt: new Date('2026-06-01T11:00:00.000Z'),
 				}),
 			BadRequestException,
@@ -306,11 +351,13 @@ describe('agenda item use cases', () => {
 					};
 				}),
 			}),
+			undefined,
+			accessPolicy(),
 		);
 
 		const result = await useCase.execute({
 			id: 'item-1',
-			userId: 'user-1',
+			actor: ACTOR,
 			title: '  Reunião remarcada  ',
 			status: 'DONE',
 			type: 'EVENT',
@@ -326,13 +373,17 @@ describe('agenda item use cases', () => {
 	});
 
 	it('rejects changing task to event without a start date', async () => {
-		const useCase = new UpdateAgendaItemUseCase(repository());
+		const useCase = new UpdateAgendaItemUseCase(
+			repository(),
+			undefined,
+			accessPolicy(),
+		);
 
 		await assert.rejects(
 			() =>
 				useCase.execute({
 					id: 'item-1',
-					userId: 'user-1',
+					actor: ACTOR,
 					type: 'EVENT',
 				}),
 			BadRequestException,
@@ -342,18 +393,23 @@ describe('agenda item use cases', () => {
 	it('does not update items outside the current user scope', async () => {
 		const useCase = new UpdateAgendaItemUseCase(
 			repository({
-				findByIdForUser: mock.fn(async () => null),
+				findById: mock.fn(async () => ({
+					...BASE_ITEM,
+					userId: 'other-user',
+				})),
 			}),
+			undefined,
+			accessPolicy(),
 		);
 
 		await assert.rejects(
 			() =>
 				useCase.execute({
 					id: 'item-1',
-					userId: 'other-user',
+					actor: ACTOR,
 					title: 'Outro título',
 				}),
-			NotFoundException,
+			ForbiddenException,
 		);
 	});
 
@@ -418,9 +474,9 @@ describe('agenda item use cases', () => {
 	});
 
 	it('allows completing tasks', async () => {
-		const useCase = new CompleteAgendaItemUseCase(repository());
+		const useCase = new CompleteAgendaItemUseCase(repository(), accessPolicy());
 
-		const result = await useCase.execute('item-1', 'user-1');
+		const result = await useCase.execute('item-1', ACTOR);
 
 		assert.equal(result.status, 'DONE');
 	});
@@ -428,14 +484,39 @@ describe('agenda item use cases', () => {
 	it('does not complete items outside the current user scope', async () => {
 		const useCase = new CompleteAgendaItemUseCase(
 			repository({
-				findByIdForUser: mock.fn(async () => null),
+				findById: mock.fn(async () => ({
+					...BASE_ITEM,
+					userId: 'other-user',
+				})),
 			}),
+			accessPolicy(),
 		);
 
 		await assert.rejects(
-			() => useCase.execute('item-1', 'other-user'),
-			NotFoundException,
+			() => useCase.execute('item-1', ACTOR),
+			ForbiddenException,
 		);
+	});
+
+	it('allows administrator to complete items from other users', async () => {
+		const calls: [string, string][] = [];
+		const useCase = new CompleteAgendaItemUseCase(
+			repository({
+				findById: mock.fn(async () => ({
+					...BASE_ITEM,
+					userId: 'other-user',
+				})),
+				completeTaskForUser: mock.fn(async (id, userId) => {
+					calls.push([id, userId]);
+					return { ...BASE_ITEM, status: 'DONE' as const };
+				}),
+			}),
+			accessPolicy(),
+		);
+
+		await useCase.execute('item-1', ADMIN_ACTOR);
+
+		assert.deepEqual(calls[0], ['item-1', 'other-user']);
 	});
 
 	it('cancels only items owned by the current user', async () => {
@@ -449,9 +530,9 @@ describe('agenda item use cases', () => {
 				} satisfies AgendaItem;
 			}),
 		});
-		const useCase = new CancelAgendaItemUseCase(repo);
+		const useCase = new CancelAgendaItemUseCase(repo, accessPolicy());
 
-		const result = await useCase.execute('item-1', 'user-1');
+		const result = await useCase.execute('item-1', ACTOR);
 
 		assert.equal(result.status, 'CANCELLED');
 		assert.deepEqual(calls[0], ['item-1', 'user-1']);
@@ -465,9 +546,9 @@ describe('agenda item use cases', () => {
 				return true;
 			}),
 		});
-		const useCase = new DeleteAgendaItemUseCase(repo);
+		const useCase = new DeleteAgendaItemUseCase(repo, accessPolicy());
 
-		await useCase.execute('item-1', 'user-1');
+		await useCase.execute('item-1', ACTOR);
 
 		assert.deepEqual(calls[0], ['item-1', 'user-1']);
 	});
@@ -475,13 +556,17 @@ describe('agenda item use cases', () => {
 	it('throws when deleting an item outside the current user scope', async () => {
 		const useCase = new DeleteAgendaItemUseCase(
 			repository({
-				deleteForUser: mock.fn(async () => false),
+				findById: mock.fn(async () => ({
+					...BASE_ITEM,
+					userId: 'other-user',
+				})),
 			}),
+			accessPolicy(),
 		);
 
 		await assert.rejects(
-			() => useCase.execute('item-1', 'other-user'),
-			NotFoundException,
+			() => useCase.execute('item-1', ACTOR),
+			ForbiddenException,
 		);
 	});
 });
