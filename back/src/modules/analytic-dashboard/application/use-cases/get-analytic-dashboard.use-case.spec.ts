@@ -81,6 +81,10 @@ describe('GetAnalyticDashboardUseCase', () => {
 									isApproximate: true,
 									methodology: 'Aproximacao operacional.',
 								},
+								drillDown: {
+									importanceLeads: [],
+									conversionLeads: [],
+								},
 							};
 						},
 					}) as never,
