@@ -74,6 +74,8 @@ const FIRST_INTERACTION_METHODOLOGY =
 	'Aproximacao baseada no primeiro evento operacional registrado, na primeira negociacao criada ou, sem esses registros, em updatedAt do lead.';
 const DAY_IN_MS = 86_400_000;
 const DRILL_DOWN_LIMIT = 50;
+/** Cap DB fetch before in-memory dedup by lead (one lead may have multiple deals). */
+const DRILL_DOWN_DEAL_FETCH_LIMIT = DRILL_DOWN_LIMIT * 10;
 const IMPORTANCE_RANK: Record<string, number> = {
 	HOT: 3,
 	WARM: 2,
@@ -393,6 +395,7 @@ class AnalyticDashboardPrismaRepository
 							},
 						},
 						orderBy: { updatedAt: 'desc' },
+						take: DRILL_DOWN_DEAL_FETCH_LIMIT,
 					}),
 		]);
 

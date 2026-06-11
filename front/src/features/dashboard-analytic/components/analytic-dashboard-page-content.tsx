@@ -29,6 +29,7 @@ import { Input } from '@/components/ui/input';
 import { KpiCard } from '@/components/metrics/KpiCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { CHART_COLORS, chartSeriesColor } from '@/lib/charts/chart-colors';
 import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 import { cn } from '@/lib/utils';
 
