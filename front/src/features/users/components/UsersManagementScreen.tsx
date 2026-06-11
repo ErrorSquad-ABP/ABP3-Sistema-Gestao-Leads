@@ -21,6 +21,8 @@ import type {
 	UserRecord,
 	UsersSummary,
 } from '../model/users.model';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { AccessGroupDialog } from './AccessGroupForm';
 import {
 	humanizeFormApiError,
@@ -170,6 +172,7 @@ function UsersManagementScreen() {
 
 		try {
 			await deleteUserMutation.mutateAsync(selectedUser.id);
+			showCrudSuccessToast('user', 'deleted');
 			setIsDeleteDialogOpen(false);
 			setSelectedUser(null);
 		} catch (error) {
@@ -202,6 +205,7 @@ function UsersManagementScreen() {
 
 		try {
 			await deleteAccessGroupMutation.mutateAsync(selectedAccessGroup.id);
+			showCrudSuccessToast('accessGroup', 'deleted');
 			setIsDeleteAccessGroupDialogOpen(false);
 			setSelectedAccessGroup(null);
 		} catch (error) {

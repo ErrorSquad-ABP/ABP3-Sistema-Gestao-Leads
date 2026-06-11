@@ -17,6 +17,8 @@ import {
 } from '../hooks/deals.mutations';
 import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
 import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from '../lib/deal-invalid-stage-transition-user-message';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
@@ -200,9 +202,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 				dealId: targetDeal.id,
 				leadId: targetDeal.leadId,
 			});
-			toast.success('Negociação excluída com sucesso.', {
-				...dealDarkSidebarToast,
-			});
+			showCrudSuccessToast('deal', 'deleted');
 			setDeleteOpen(false);
 			setTargetDeal(null);
 		} catch (error) {

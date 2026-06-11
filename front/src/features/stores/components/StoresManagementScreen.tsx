@@ -14,6 +14,7 @@ import {
 	useStoresQuery,
 } from '@/features/stores/hooks/stores.queries';
 import type { StoreRecord } from '@/features/stores/model/stores.model';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 
 import {
 	getPersonInitials,
@@ -211,8 +212,10 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 					id: storeDialogState.store.id,
 					body: payload,
 				});
+				showCrudSuccessToast('store', 'updated');
 			} else {
 				await createStoreMutation.mutateAsync(payload);
+				showCrudSuccessToast('store', 'created');
 			}
 
 			setStoreDialogState(null);
@@ -230,6 +233,7 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		setDeleteError(null);
 		try {
 			await deleteStoreMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('store', 'deleted');
 			setDeleteTarget(null);
 		} catch (error) {
 			setDeleteError(getStoresErrorMessage(error));

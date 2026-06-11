@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
 import {
@@ -224,6 +225,7 @@ function VehicleFormDialog({
 		try {
 			const parsed = vehicleFormSchema.parse(values);
 			await onSubmit(parsed);
+			showCrudSuccessToast('vehicle', isEditMode ? 'updated' : 'created');
 			onClose();
 		} catch (error) {
 			setSubmitError(applyFormSubmitErrors(form.setError, error));

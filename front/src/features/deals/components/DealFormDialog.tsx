@@ -56,6 +56,8 @@ import {
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
 import { getDealsErrorMessage } from '../lib/deal-api-errors';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
@@ -395,9 +397,7 @@ function DealFormDialog({
 				value: valueAsApi,
 			} satisfies DealUpdateFormInput);
 			await onSubmit(parsed as DealUpdateInput);
-			toast.success('Negociação alterada com sucesso.', {
-				...dealDarkSidebarToast,
-			});
+			showCrudSuccessToast('deal', 'updated');
 			onClose();
 		} catch (error) {
 			const message = getDealsErrorMessage(error);

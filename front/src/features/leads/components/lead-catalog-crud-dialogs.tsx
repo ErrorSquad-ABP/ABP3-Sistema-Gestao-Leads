@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -99,12 +100,14 @@ function CustomerCatalogFormDialog({
 			if (mode === 'create') {
 				const created = await createMutation.mutateAsync(body);
 				onSaved(created);
+				showCrudSuccessToast('customer', 'created');
 			} else if (customer) {
 				const updated = await updateMutation.mutateAsync({
 					id: customer.id,
 					body,
 				});
 				onSaved(updated);
+				showCrudSuccessToast('customer', 'updated');
 			}
 			onOpenChange(false);
 		} catch (nextError) {
@@ -279,12 +282,14 @@ function StoreCatalogFormDialog({
 					name: values.name.trim(),
 				});
 				onSaved(created);
+				showCrudSuccessToast('store', 'created');
 			} else if (store) {
 				const updated = await updateMutation.mutateAsync({
 					id: store.id,
 					body: { name: values.name.trim() },
 				});
 				onSaved(updated);
+				showCrudSuccessToast('store', 'updated');
 			}
 			onOpenChange(false);
 		} catch (nextError) {

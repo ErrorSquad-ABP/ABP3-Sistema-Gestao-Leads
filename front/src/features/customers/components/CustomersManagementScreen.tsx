@@ -28,6 +28,7 @@ import {
 	mapApiFieldErrors,
 	resolveFormSubmitError,
 } from '@/lib/http/apply-api-form-errors';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import {
 	humanizeFormApiError,
 	humanizePageApiError,
@@ -250,8 +251,10 @@ function CustomersManagementScreen() {
 					id: dialogState.customer.id,
 					body: payload,
 				});
+				showCrudSuccessToast('customer', 'updated');
 			} else {
 				await createCustomerMutation.mutateAsync(payload);
+				showCrudSuccessToast('customer', 'created');
 			}
 
 			setDialogState(null);
@@ -270,6 +273,7 @@ function CustomersManagementScreen() {
 		setDeleteError(null);
 		try {
 			await deleteCustomerMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('customer', 'deleted');
 			setDeleteTarget(null);
 		} catch (error) {
 			setDeleteError(humanizeFormApiError(error));

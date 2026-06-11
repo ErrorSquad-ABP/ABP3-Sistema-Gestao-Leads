@@ -63,6 +63,7 @@ import type {
 	ReassignLeadInput,
 	UpdateLeadInput,
 } from '../model/leads.model';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import { humanizeFormApiError } from '@/lib/http/humanize-api-error';
 
 import {
@@ -451,6 +452,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 				leadId: targetLead.id,
 				payload: values as UpdateLeadInput,
 			});
+			showCrudSuccessToast('lead', 'updated');
 			setEditOpen(false);
 		} catch (error) {
 			setDialogError(humanizeFormApiError(error));
@@ -465,6 +467,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 				leadId: targetLead.id,
 				payload: values,
 			});
+			showCrudSuccessToast('lead', 'updated');
 			setReassignOpen(false);
 		} catch (error) {
 			setDialogError(humanizeFormApiError(error));
