@@ -1,12 +1,12 @@
 const API_ERROR_CODE_MESSAGES: Readonly<Record<string, string>> = {
-	'auth.invalid_credentials': 'Credenciais inválidas. Verifique o e-mail e a senha informados.',
+	'auth.invalid_credentials':
+		'Credenciais inválidas. Verifique o e-mail e a senha informados.',
 	'auth.refresh_invalid':
 		'Sessão expirada. Autentique-se novamente para continuar.',
 	'customer.email_already_exists': 'Já existe um cliente com este e-mail.',
 	'customer.cpf_already_exists': 'Já existe um cliente com este CPF.',
 	'customer.not_found': 'Cliente não encontrado.',
-	'deal.active_already_exists':
-		'Este lead já possui uma negociação aberta.',
+	'deal.active_already_exists': 'Este lead já possui uma negociação aberta.',
 	'deal.already_closed':
 		'Esta negociação já está encerrada e não pode ser alterada.',
 	'deal.not_found': 'Negociação não encontrada.',
@@ -29,8 +29,7 @@ const API_ERROR_CODE_MESSAGES: Readonly<Record<string, string>> = {
 	'team.invalid_store': 'Loja inválida para esta equipe.',
 	'team.not_found': 'Equipe não encontrada.',
 	'user.email_already_exists': 'Já existe um usuário com este e-mail.',
-	'user.password.unchanged':
-		'A nova senha deve ser diferente da senha atual.',
+	'user.password.unchanged': 'A nova senha deve ser diferente da senha atual.',
 	'user.invalid_access_group': 'Grupo de acesso inválido.',
 	'user.not_found': 'Usuário não encontrado.',
 	'vehicle.delete_blocked':

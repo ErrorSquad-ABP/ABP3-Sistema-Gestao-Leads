@@ -151,7 +151,12 @@ describe('CreateTeamUseCase', () => {
 				return { users: [], total: 0 };
 			},
 			async aggregateSummary() {
-				return { total: 0, administrators: 0, withoutGroup: 0, withMultipleGroups: 0 };
+				return {
+					total: 0,
+					administrators: 0,
+					withoutGroup: 0,
+					withMultipleGroups: 0,
+				};
 			},
 		};
 
@@ -252,9 +257,14 @@ describe('CreateTeamUseCase', () => {
 						async listPaged() {
 							return { users: [], total: 0 };
 						},
-			async aggregateSummary() {
-				return { total: 0, administrators: 0, withoutGroup: 0, withMultipleGroups: 0 };
-			},
+						async aggregateSummary() {
+							return {
+								total: 0,
+								administrators: 0,
+								withoutGroup: 0,
+								withMultipleGroups: 0,
+							};
+						},
 					}) as IUserRepository,
 			} as UserRepositoryFactory,
 		);
@@ -347,9 +357,14 @@ describe('CreateTeamUseCase', () => {
 						async listPaged() {
 							return { users: [], total: 0 };
 						},
-			async aggregateSummary() {
-				return { total: 0, administrators: 0, withoutGroup: 0, withMultipleGroups: 0 };
-			},
+						async aggregateSummary() {
+							return {
+								total: 0,
+								administrators: 0,
+								withoutGroup: 0,
+								withMultipleGroups: 0,
+							};
+						},
 					}) as IUserRepository,
 			} as UserRepositoryFactory,
 		);

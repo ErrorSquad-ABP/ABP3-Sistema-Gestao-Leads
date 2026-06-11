@@ -259,8 +259,8 @@ class UserPrismaRepository implements IUserRepository {
 	}
 
 	async aggregateSummary(): Promise<UsersAggregateSummary> {
-		const [total, administrators, withoutGroup, multiGroup] =
-			await Promise.all([
+		const [total, administrators, withoutGroup, multiGroup] = await Promise.all(
+			[
 				this.client.user.count(),
 				this.client.user.count({ where: { role: 'ADMIN' } }),
 				this.client.user.count({ where: { accessGroups: { none: {} } } }),
@@ -269,7 +269,8 @@ class UserPrismaRepository implements IUserRepository {
 					having: { userId: { _count: { gte: 2 } } },
 					_count: { userId: true },
 				}),
-			]);
+			],
+		);
 		return {
 			total,
 			administrators,

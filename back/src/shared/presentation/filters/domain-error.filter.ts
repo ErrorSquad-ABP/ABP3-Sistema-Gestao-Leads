@@ -86,12 +86,16 @@ class DomainErrorFilter implements ExceptionFilter {
 			exception instanceof Error ? exception.stack : String(exception),
 		);
 		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json(
-			this.toErrorEnvelope('Ocorreu um erro inesperado. Tente novamente em instantes.', [
-				{
-					code: 'internal.server_error',
-					message: 'Ocorreu um erro inesperado. Tente novamente em instantes.',
-				},
-			]),
+			this.toErrorEnvelope(
+				'Ocorreu um erro inesperado. Tente novamente em instantes.',
+				[
+					{
+						code: 'internal.server_error',
+						message:
+							'Ocorreu um erro inesperado. Tente novamente em instantes.',
+					},
+				],
+			),
 		);
 	}
 

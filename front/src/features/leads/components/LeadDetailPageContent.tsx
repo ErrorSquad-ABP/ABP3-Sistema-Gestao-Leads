@@ -508,9 +508,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 					role="alert"
 				>
-					<p>
-						{humanizePageApiError(detailQuery.error)}
-					</p>
+					<p>{humanizePageApiError(detailQuery.error)}</p>
 					<Button
 						className="mt-3 rounded-md shadow-none"
 						onClick={() => void detailQuery.refetch()}

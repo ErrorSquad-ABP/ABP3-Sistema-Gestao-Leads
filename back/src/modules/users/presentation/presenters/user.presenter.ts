@@ -20,7 +20,9 @@ function legacyTeamIdForApi(user: User): string | null {
 	return null;
 }
 
-function toAccessGroupDto(group: UserAccessGroupSummary): AccessGroupSummaryDto {
+function toAccessGroupDto(
+	group: UserAccessGroupSummary,
+): AccessGroupSummaryDto {
 	return {
 		id: group.id.value,
 		name: group.name,

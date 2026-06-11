@@ -243,9 +243,7 @@ function LeadDealsDialog({
 								className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 								role="alert"
 							>
-								<p>
-									{humanizePageApiError(listQuery.error)}
-								</p>
+								<p>{humanizePageApiError(listQuery.error)}</p>
 								<Button
 									className="mt-3 rounded-md shadow-none"
 									onClick={() => void listQuery.refetch()}

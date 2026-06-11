@@ -17,7 +17,10 @@ describe('mapInfrastructureException', () => {
 		);
 
 		assert.equal(mapped?.status, 503);
-		assert.equal(mapped?.body.message, 'Serviço temporariamente indisponível. Tente novamente em instantes.');
+		assert.equal(
+			mapped?.body.message,
+			'Serviço temporariamente indisponível. Tente novamente em instantes.',
+		);
 		assert.equal(mapped?.body.errors?.[0]?.code, 'database.schema_outdated');
 	});
 

@@ -40,7 +40,10 @@ import { VehicleCatalogCards } from './VehicleCatalogCards';
 import { VehicleCatalogTable } from './VehicleCatalogTable';
 import { VehicleConfirmDialog } from './VehicleConfirmDialog';
 import { VehicleDetailsDialog } from './VehicleDetailsDialog';
-import { humanizeFormApiError, humanizePageApiError } from '@/lib/http/humanize-api-error';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 
 import { VehicleFormDialog } from './VehicleForm';
 

@@ -723,4 +723,9 @@ function LeadConfirmDialog({
 	);
 }
 
-export { buildOwnerOptions, LeadConfirmDialog, LeadFormDialog, LeadReassignDialog };
+export {
+	buildOwnerOptions,
+	LeadConfirmDialog,
+	LeadFormDialog,
+	LeadReassignDialog,
+};

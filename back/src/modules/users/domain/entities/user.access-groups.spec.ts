@@ -68,10 +68,13 @@ describe('Usuário com múltiplos grupos de acesso', () => {
 		const user = buildUserWithGroups([gestao, relatorios]);
 
 		// Assert
-		assert.deepEqual(
-			[...user.featureKeys].sort(),
-			['dashboardOperational', 'exports', 'leads', 'profile', 'reports'],
-		);
+		assert.deepEqual([...user.featureKeys].sort(), [
+			'dashboardOperational',
+			'exports',
+			'leads',
+			'profile',
+			'reports',
+		]);
 	});
 
 	it('usuário sem grupos não recebe nenhuma feature', () => {

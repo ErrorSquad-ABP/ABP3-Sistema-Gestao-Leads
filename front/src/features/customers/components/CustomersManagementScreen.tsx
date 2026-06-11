@@ -28,7 +28,10 @@ import {
 	mapApiFieldErrors,
 	resolveFormSubmitError,
 } from '@/lib/http/apply-api-form-errors';
-import { humanizeFormApiError, humanizePageApiError } from '@/lib/http/humanize-api-error';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 
 import {

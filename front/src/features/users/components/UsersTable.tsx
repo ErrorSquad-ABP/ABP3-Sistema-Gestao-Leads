@@ -135,7 +135,10 @@ function UsersSummaryCards({ summary }: { summary: UsersSummary }) {
 			{cards.map((card) => {
 				const Icon = card.icon;
 				return (
-					<Card className="rounded-3xl border-[#dfe7f1] bg-white" key={card.label}>
+					<Card
+						className="rounded-3xl border-[#dfe7f1] bg-white"
+						key={card.label}
+					>
 						<CardContent className="flex items-center gap-5 p-6">
 							<div className={card.tone}>
 								<Icon className="size-7" />
@@ -480,9 +483,7 @@ function AccessGroupsSection({
 		<div className="space-y-5">
 			<div className="flex items-start justify-between gap-4">
 				<div className="space-y-1">
-					<h3 className="text-lg font-bold text-[#101828]">
-						Grupos de acesso
-					</h3>
+					<h3 className="text-lg font-bold text-[#101828]">Grupos de acesso</h3>
 					<p className="text-sm leading-6 text-[#667085]">
 						Os grupos governam os toggles de features. Um usuário pode acumular
 						vários grupos — as permissões somam, sem herança.
@@ -512,7 +513,10 @@ function AccessGroupsSection({
 			) : (
 				<div className="grid gap-4 xl:grid-cols-2">
 					{accessGroups.map((group) => (
-						<Card className="rounded-3xl border-[#dfe7f1] bg-white" key={group.id}>
+						<Card
+							className="rounded-3xl border-[#dfe7f1] bg-white"
+							key={group.id}
+						>
 							<CardHeader className="gap-4 border-b border-[#e7edf5] pb-5">
 								<div className="flex items-start justify-between gap-3">
 									<div className="space-y-2">

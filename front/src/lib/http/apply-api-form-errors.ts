@@ -5,10 +5,7 @@ import {
 	API_ERROR_CODE_FIELDS,
 	API_ERROR_CODE_MESSAGES,
 } from './api-error-codes';
-import {
-	humanizeFormApiError,
-	sanitizeApiMessage,
-} from './humanize-api-error';
+import { humanizeFormApiError, sanitizeApiMessage } from './humanize-api-error';
 
 function mapApiFieldErrors(
 	error: unknown,
@@ -23,12 +20,9 @@ function mapApiFieldErrors(
 	for (const item of error.errors) {
 		const detailsField = item.details?.field;
 		const fieldName =
-			typeof detailsField === 'string'
-				? detailsField
-				: fieldMap[item.code];
+			typeof detailsField === 'string' ? detailsField : fieldMap[item.code];
 		const message =
-			API_ERROR_CODE_MESSAGES[item.code] ??
-			sanitizeApiMessage(item.message);
+			API_ERROR_CODE_MESSAGES[item.code] ?? sanitizeApiMessage(item.message);
 
 		if (fieldName && message) {
 			mapped[fieldName] = message;
@@ -38,8 +32,7 @@ function mapApiFieldErrors(
 	if (error.code) {
 		const fieldName = fieldMap[error.code];
 		const message =
-			API_ERROR_CODE_MESSAGES[error.code] ??
-			sanitizeApiMessage(error.message);
+			API_ERROR_CODE_MESSAGES[error.code] ?? sanitizeApiMessage(error.message);
 		if (fieldName && message && mapped[fieldName] === undefined) {
 			mapped[fieldName] = message;
 		}

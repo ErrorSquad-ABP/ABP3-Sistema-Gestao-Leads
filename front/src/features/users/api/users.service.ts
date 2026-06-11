@@ -9,7 +9,9 @@ import type {
 	UserRecord,
 } from '../model/users.model';
 
-async function listUsers(filters: ListUsersFilters): Promise<ListUsersResponse> {
+async function listUsers(
+	filters: ListUsersFilters,
+): Promise<ListUsersResponse> {
 	const search = new URLSearchParams({
 		page: String(filters.page),
 		limit: String(filters.limit),

@@ -24,8 +24,7 @@ const NETWORK_UNREACHABLE =
 const REQUEST_TIMEOUT =
 	'A requisição demorou demais. Verifique a sua ligação e tente novamente.';
 
-const PERMISSION_DENIED =
-	'O seu perfil não tem permissão para esta operação.';
+const PERMISSION_DENIED = 'O seu perfil não tem permissão para esta operação.';
 
 const NOT_FOUND = 'Registo não encontrado.';
 

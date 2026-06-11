@@ -5,7 +5,10 @@ type ModalFormErrorBannerProps = {
 	readonly className?: string;
 };
 
-function ModalFormErrorBanner({ message, className }: ModalFormErrorBannerProps) {
+function ModalFormErrorBanner({
+	message,
+	className,
+}: ModalFormErrorBannerProps) {
 	if (!message) {
 		return null;
 	}

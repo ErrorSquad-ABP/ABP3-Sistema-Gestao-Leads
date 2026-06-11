@@ -22,7 +22,10 @@ import type {
 	UsersSummary,
 } from '../model/users.model';
 import { AccessGroupDialog } from './AccessGroupForm';
-import { humanizeFormApiError, humanizePageApiError } from '@/lib/http/humanize-api-error';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 
 import { ConfirmDialog, UsersFormDialog } from './UserForm';
 import { UsersTabs } from './UsersTable';
