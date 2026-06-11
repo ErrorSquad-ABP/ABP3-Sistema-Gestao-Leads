@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,7 @@ type Props = {
 	item?: AgendaItem | null;
 	mode: AgendaItemFormMode;
 	onCancel: () => void;
+	onDelete?: () => void;
 	onSubmit: (payload: AgendaItemFormValues) => void;
 };
 
@@ -138,6 +140,7 @@ function AgendaItemForm({
 	item = null,
 	mode,
 	onCancel,
+	onDelete,
 	onSubmit,
 }: Props) {
 	const [state, setState] = useState(() =>
@@ -446,18 +449,34 @@ function AgendaItemForm({
 				</p>
 			) : null}
 
-			<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-				<Button
-					disabled={isSubmitting}
-					onClick={onCancel}
-					type="button"
-					variant="outline"
-				>
-					Cancelar
-				</Button>
-				<Button disabled={isSubmitting} type="submit">
-					Salvar
-				</Button>
+			<div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+				{mode === 'edit' && onDelete ? (
+					<Button
+						className="text-destructive hover:text-destructive"
+						disabled={isSubmitting}
+						onClick={onDelete}
+						type="button"
+						variant="outline"
+					>
+						<Trash2 className="size-4" />
+						Excluir
+					</Button>
+				) : (
+					<span className="hidden sm:block" />
+				)}
+				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+					<Button
+						disabled={isSubmitting}
+						onClick={onCancel}
+						type="button"
+						variant="outline"
+					>
+						Cancelar
+					</Button>
+					<Button disabled={isSubmitting} type="submit">
+						Salvar
+					</Button>
+				</div>
 			</div>
 		</form>
 	);

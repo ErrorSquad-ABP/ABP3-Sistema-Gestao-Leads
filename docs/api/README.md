@@ -166,6 +166,7 @@ Rotas publicadas:
 | `PATCH` | `/api/agenda/items/:id` | Atualiza item da agenda do usuario autenticado |
 | `PATCH` | `/api/agenda/items/:id/done` | Marca uma tarefa como concluida |
 | `PATCH` | `/api/agenda/items/:id/cancel` | Cancela tarefa ou compromisso |
+| `DELETE` | `/api/agenda/items/:id` | Exclui item da agenda do usuario autenticado |
 
 Contrato retornado:
 

@@ -343,6 +343,11 @@ function AgendaPageContent() {
 					}
 					handleCreateAgendaItem(payload);
 				}}
+				onDelete={
+					dialogState.mode === 'edit'
+						? () => openDeleteDialog(dialogState.item)
+						: undefined
+				}
 				open={dialogState.mode !== 'closed'}
 			/>
 			<AgendaConfirmDeleteDialog
@@ -451,15 +456,27 @@ function AgendaPageContent() {
 						</div>
 					) : null}
 					{viewMode === 'week' ? (
-						<AgendaWeekView
-							itemsByDate={itemsByDate}
-							onCreateDate={openCreateDialog}
-							onSelectDate={(date) => {
-								setSelectedDate(date);
-								setCurrentMonth(date);
-							}}
-							selectedDate={selectedDate}
-						/>
+						<div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.32fr)]">
+							<AgendaWeekView
+								itemsByDate={itemsByDate}
+								onCreateDate={openCreateDialog}
+								onSelectDate={(date) => {
+									setSelectedDate(date);
+									setCurrentMonth(date);
+								}}
+								selectedDate={selectedDate}
+							/>
+							<AgendaSelectedDayPanel
+								dateLabel={formatAgendaDate(selectedDate.toISOString())}
+								items={selectedDayItems}
+								onCancel={(id) => cancelAgendaItem.mutate(id)}
+								onComplete={(id) => completeAgendaItem.mutate(id)}
+								onDelete={openDeleteDialog}
+								onCreateClick={() => openCreateDialog(selectedDate)}
+								onEdit={openEditDialog}
+								onMove={openMoveDialog}
+							/>
+						</div>
 					) : null}
 					{viewMode === 'day' ? (
 						<AgendaDayView

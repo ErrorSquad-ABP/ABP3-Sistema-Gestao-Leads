@@ -24,6 +24,7 @@ type Props = {
 	mode: AgendaItemFormMode;
 	onOpenChange: (open: boolean) => void;
 	onSubmit: (payload: AgendaItemFormValues) => void;
+	onDelete?: () => void;
 	open: boolean;
 };
 
@@ -36,6 +37,7 @@ function AgendaItemDialog({
 	mode,
 	onOpenChange,
 	onSubmit,
+	onDelete,
 	open,
 }: Props) {
 	const title =
@@ -62,6 +64,7 @@ function AgendaItemDialog({
 						item={item}
 						mode={mode}
 						onCancel={() => onOpenChange(false)}
+						onDelete={onDelete}
 						onSubmit={onSubmit}
 					/>
 					{errorMessage ? (
