@@ -72,8 +72,7 @@ function mapApiFieldErrors(
 			lookupStringRecord(fieldMap, error.code) ??
 			getApiErrorCodeField(error.code);
 		const message =
-			getApiErrorCodeMessage(error.code) ??
-			sanitizeApiMessage(error.message);
+			getApiErrorCodeMessage(error.code) ?? sanitizeApiMessage(error.message);
 		if (fieldName && message && !hasFieldError(mapped, fieldName)) {
 			mapped = upsertFieldError(mapped, fieldName, message);
 		}
