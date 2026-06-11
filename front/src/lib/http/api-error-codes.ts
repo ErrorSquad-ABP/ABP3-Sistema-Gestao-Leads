@@ -44,4 +44,27 @@ const API_ERROR_CODE_FIELDS: Readonly<Record<string, string>> = {
 	'user.email_already_exists': 'email',
 };
 
-export { API_ERROR_CODE_FIELDS, API_ERROR_CODE_MESSAGES };
+function getApiErrorCodeField(code: string): string | undefined {
+	for (const [recordKey, field] of Object.entries(API_ERROR_CODE_FIELDS)) {
+		if (recordKey === code) {
+			return field;
+		}
+	}
+	return undefined;
+}
+
+function getApiErrorCodeMessage(code: string): string | undefined {
+	for (const [recordKey, message] of Object.entries(API_ERROR_CODE_MESSAGES)) {
+		if (recordKey === code) {
+			return message;
+		}
+	}
+	return undefined;
+}
+
+export {
+	API_ERROR_CODE_FIELDS,
+	API_ERROR_CODE_MESSAGES,
+	getApiErrorCodeField,
+	getApiErrorCodeMessage,
+};

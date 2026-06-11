@@ -1,11 +1,46 @@
 import type { FieldPath, FieldValues, UseFormSetError } from 'react-hook-form';
 
-import { ApiError, isApiError } from './api-error';
+import { isApiError } from './api-error';
 import {
 	API_ERROR_CODE_FIELDS,
-	API_ERROR_CODE_MESSAGES,
+	getApiErrorCodeField,
+	getApiErrorCodeMessage,
 } from './api-error-codes';
 import { humanizeFormApiError, sanitizeApiMessage } from './humanize-api-error';
+
+function lookupStringRecord(
+	record: Readonly<Record<string, string>>,
+	key: string,
+): string | undefined {
+	for (const [recordKey, value] of Object.entries(record)) {
+		if (recordKey === key) {
+			return value;
+		}
+	}
+	return undefined;
+}
+
+function upsertFieldError(
+	mapped: Record<string, string>,
+	fieldName: string,
+	message: string,
+): Record<string, string> {
+	if (!fieldName || !message) {
+		return mapped;
+	}
+
+	return Object.fromEntries([
+		...Object.entries(mapped).filter(([key]) => key !== fieldName),
+		[fieldName, message],
+	]);
+}
+
+function hasFieldError(
+	mapped: Record<string, string>,
+	fieldName: string,
+): boolean {
+	return Object.entries(mapped).some(([key]) => key === fieldName);
+}
 
 function mapApiFieldErrors(
 	error: unknown,
@@ -15,26 +50,32 @@ function mapApiFieldErrors(
 		return {};
 	}
 
-	const mapped: Record<string, string> = {};
+	let mapped: Record<string, string> = {};
 
 	for (const item of error.errors) {
 		const detailsField = item.details?.field;
 		const fieldName =
-			typeof detailsField === 'string' ? detailsField : fieldMap[item.code];
+			typeof detailsField === 'string'
+				? detailsField
+				: (lookupStringRecord(fieldMap, item.code) ??
+					getApiErrorCodeField(item.code));
 		const message =
-			API_ERROR_CODE_MESSAGES[item.code] ?? sanitizeApiMessage(item.message);
+			getApiErrorCodeMessage(item.code) ?? sanitizeApiMessage(item.message);
 
 		if (fieldName && message) {
-			mapped[fieldName] = message;
+			mapped = upsertFieldError(mapped, fieldName, message);
 		}
 	}
 
 	if (error.code) {
-		const fieldName = fieldMap[error.code];
+		const fieldName =
+			lookupStringRecord(fieldMap, error.code) ??
+			getApiErrorCodeField(error.code);
 		const message =
-			API_ERROR_CODE_MESSAGES[error.code] ?? sanitizeApiMessage(error.message);
-		if (fieldName && message && mapped[fieldName] === undefined) {
-			mapped[fieldName] = message;
+			getApiErrorCodeMessage(error.code) ??
+			sanitizeApiMessage(error.message);
+		if (fieldName && message && !hasFieldError(mapped, fieldName)) {
+			mapped = upsertFieldError(mapped, fieldName, message);
 		}
 	}
 

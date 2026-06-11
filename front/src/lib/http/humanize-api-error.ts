@@ -1,7 +1,7 @@
 import { ZodError } from 'zod';
 
 import { ApiError, isApiError } from './api-error';
-import { API_ERROR_CODE_MESSAGES } from './api-error-codes';
+import { getApiErrorCodeMessage } from './api-error-codes';
 
 const DEFAULT_FALLBACK =
 	'Não foi possível concluir a operação agora. Tente novamente em instantes.';
@@ -105,7 +105,7 @@ function resolveKnownApiErrorCode(error: ApiError): string | null {
 	);
 
 	for (const code of candidates) {
-		const mapped = API_ERROR_CODE_MESSAGES[code];
+		const mapped = getApiErrorCodeMessage(code);
 		if (mapped) {
 			return mapped;
 		}

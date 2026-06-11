@@ -80,8 +80,6 @@ class DomainErrorFilter implements ExceptionFilter {
 			return;
 		}
 
-		const message =
-			exception instanceof Error ? exception.message : 'Internal server error';
 		this.logger.error(
 			exception instanceof Error ? exception.stack : String(exception),
 		);
