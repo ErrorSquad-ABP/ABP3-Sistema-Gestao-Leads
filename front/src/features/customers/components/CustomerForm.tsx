@@ -292,7 +292,7 @@ function CustomerFieldControl({
 
 function CustomerDetail({ children, icon: Icon, label }: CustomerDetailProps) {
 	return (
-		<div className="rounded-xl border border-[#e7edf5] bg-[#f8fafc] p-4">
+		<div className="rounded-xl border border-[#e7edf5] bg-white p-4">
 			<p className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-[#667085] uppercase">
 				<Icon className="size-3.5" />
 				{label}

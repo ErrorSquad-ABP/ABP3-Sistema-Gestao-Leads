@@ -80,6 +80,22 @@ type VehicleFieldControlProps = {
 	rightIcon?: ComponentType<{ className?: string }>;
 };
 
+const vehicleFormFieldById: Readonly<Record<string, keyof VehicleFormInput>> = {
+	'vehicle-form-brand': 'brand',
+	'vehicle-form-color': 'color',
+	'vehicle-form-fuel': 'supportedFuelType',
+	'vehicle-form-manufacture-year': 'manufactureYear',
+	'vehicle-form-mileage': 'mileage',
+	'vehicle-form-model': 'model',
+	'vehicle-form-model-year': 'modelYear',
+	'vehicle-form-plate': 'plate',
+	'vehicle-form-price': 'price',
+	'vehicle-form-status': 'status',
+	'vehicle-form-store': 'storeId',
+	'vehicle-form-version': 'version',
+	'vehicle-form-vin': 'vin',
+};
+
 function VehicleFieldControl({
 	children,
 	icon: Icon,
@@ -112,6 +128,8 @@ function VehicleFormDialog({
 	const [priceCentsDigits, setPriceCentsDigits] = useState('');
 	const form = useForm<VehicleFormInput>({
 		resolver: zodResolver(vehicleFormSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			storeId: '',
 			brand: '',
@@ -129,12 +147,18 @@ function VehicleFormDialog({
 		},
 	});
 
-	const selectedStoreId = useWatch({ control: form.control, name: 'storeId' });
+	const selectedStoreId = useWatch({
+		control: form.control,
+		name: 'storeId',
+	});
 	const brandValue = useWatch({ control: form.control, name: 'brand' });
 	const modelValue = useWatch({ control: form.control, name: 'model' });
 	const versionValue = useWatch({ control: form.control, name: 'version' });
 	const colorValue = useWatch({ control: form.control, name: 'color' });
-	const modelYearValue = useWatch({ control: form.control, name: 'modelYear' });
+	const modelYearValue = useWatch({
+		control: form.control,
+		name: 'modelYear',
+	});
 	const manufactureYearValue = useWatch({
 		control: form.control,
 		name: 'manufactureYear',
@@ -256,7 +280,16 @@ function VehicleFormDialog({
 
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
-					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
+					onBlurCapture={(event) => {
+						const field =
+							vehicleFormFieldById[
+								(event.target as HTMLElement).id
+							];
+						if (field) void form.trigger(field);
+					}}
+					onSubmit={form.handleSubmit((values) =>
+						handleSubmit(values),
+					)}
 				>
 					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
 						<ModalFormErrorBanner message={submitError} />
@@ -272,12 +305,13 @@ function VehicleFormDialog({
 							<div className="mt-4 space-y-2">
 								{isEditMode ? (
 									<div
-										className="relative flex h-11 w-full items-center rounded-xl border border-[#cfd8e6] bg-[#f7f9fc] px-10 text-sm text-[#1b2430]"
+										className="relative flex h-11 w-full items-center rounded-xl border border-[#cfd8e6] bg-white px-10 text-sm text-[#1b2430]"
 										id="vehicle-form-store-readonly"
 									>
 										<Store className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 										{storeLabelById[
-											targetVehicle?.storeId ?? selectedStoreId
+											targetVehicle?.storeId ??
+												selectedStoreId
 										] ??
 											targetVehicle?.storeId ??
 											selectedStoreId}
@@ -285,18 +319,27 @@ function VehicleFormDialog({
 									</div>
 								) : (
 									<>
-										<Label htmlFor="vehicle-form-store" required>
+										<Label
+											htmlFor="vehicle-form-store"
+											required
+										>
 											Loja do veículo
 										</Label>
 										<VehicleFieldControl icon={Store}>
 											<select
-												className={vehicleFormSelectClass}
+												className={
+													vehicleFormSelectClass
+												}
 												id="vehicle-form-store"
 												onChange={(event) =>
-													form.setValue('storeId', event.target.value, {
-														shouldDirty: true,
-														shouldValidate: true,
-													})
+													form.setValue(
+														'storeId',
+														event.target.value,
+														{
+															shouldDirty: true,
+															shouldValidate: true,
+														},
+													)
 												}
 												value={selectedStoreId}
 												{...requiredFieldProps()}
@@ -305,7 +348,10 @@ function VehicleFormDialog({
 													Selecione uma loja
 												</option>
 												{stores.map((store) => (
-													<option key={store.id} value={store.id}>
+													<option
+														key={store.id}
+														value={store.id}
+													>
 														{store.name}
 													</option>
 												))}
@@ -327,7 +373,10 @@ function VehicleFormDialog({
 						>
 							<div className="grid gap-5 md:grid-cols-2">
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-brand" required>
+									<Label
+										htmlFor="vehicle-form-brand"
+										required
+									>
 										Marca
 									</Label>
 									<VehicleFieldControl icon={Tag}>
@@ -335,10 +384,14 @@ function VehicleFormDialog({
 											className={vehicleFormInputClass}
 											id="vehicle-form-brand"
 											onChange={(event) =>
-												form.setValue('brand', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												form.setValue(
+													'brand',
+													event.target.value,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}
 											value={brandValue ?? ''}
 											{...requiredFieldProps()}
@@ -346,13 +399,19 @@ function VehicleFormDialog({
 									</VehicleFieldControl>
 									{form.formState.errors.brand ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.brand.message}
+											{
+												form.formState.errors.brand
+													.message
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-model" required>
+									<Label
+										htmlFor="vehicle-form-model"
+										required
+									>
 										Modelo
 									</Label>
 									<VehicleFieldControl icon={CarFront}>
@@ -360,10 +419,14 @@ function VehicleFormDialog({
 											className={vehicleFormInputClass}
 											id="vehicle-form-model"
 											onChange={(event) =>
-												form.setValue('model', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												form.setValue(
+													'model',
+													event.target.value,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}
 											value={modelValue ?? ''}
 											{...requiredFieldProps()}
@@ -371,22 +434,31 @@ function VehicleFormDialog({
 									</VehicleFieldControl>
 									{form.formState.errors.model ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.model.message}
+											{
+												form.formState.errors.model
+													.message
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-version">Versão</Label>
+									<Label htmlFor="vehicle-form-version">
+										Versão
+									</Label>
 									<VehicleFieldControl icon={BadgeDollarSign}>
 										<Input
 											className={vehicleFormInputClass}
 											id="vehicle-form-version"
 											onChange={(event) =>
-												form.setValue('version', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												form.setValue(
+													'version',
+													event.target.value,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}
 											placeholder="Opcional"
 											value={versionValue ?? ''}
@@ -394,22 +466,31 @@ function VehicleFormDialog({
 									</VehicleFieldControl>
 									{form.formState.errors.version ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.version.message as string}
+											{
+												form.formState.errors.version
+													.message as string
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-color">Cor</Label>
+									<Label htmlFor="vehicle-form-color">
+										Cor
+									</Label>
 									<VehicleFieldControl icon={Droplet}>
 										<Input
 											className={vehicleFormInputClass}
 											id="vehicle-form-color"
 											onChange={(event) =>
-												form.setValue('color', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												form.setValue(
+													'color',
+													event.target.value,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}
 											placeholder="Opcional"
 											value={colorValue ?? ''}
@@ -417,13 +498,19 @@ function VehicleFormDialog({
 									</VehicleFieldControl>
 									{form.formState.errors.color ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.color.message as string}
+											{
+												form.formState.errors.color
+													.message as string
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-model-year" required>
+									<Label
+										htmlFor="vehicle-form-model-year"
+										required
+									>
 										Ano do modelo
 									</Label>
 									<VehicleFieldControl icon={CalendarDays}>
@@ -433,7 +520,10 @@ function VehicleFormDialog({
 											id="vehicle-form-model-year"
 											inputMode="numeric"
 											onChange={(event) => {
-												const d = digitsOnly(event.target.value, 4);
+												const d = digitsOnly(
+													event.target.value,
+													4,
+												);
 												if (d.length === 0) {
 													return;
 												}
@@ -446,13 +536,18 @@ function VehicleFormDialog({
 													shouldValidate: true,
 												});
 											}}
-											value={formatFiniteIntForInput(modelYearValue)}
+											value={formatFiniteIntForInput(
+												modelYearValue,
+											)}
 											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.modelYear ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.modelYear.message}
+											{
+												form.formState.errors.modelYear
+													.message
+											}
 										</p>
 									) : null}
 								</div>
@@ -468,38 +563,57 @@ function VehicleFormDialog({
 											id="vehicle-form-manufacture-year"
 											inputMode="numeric"
 											onChange={(event) => {
-												const d = digitsOnly(event.target.value, 4);
+												const d = digitsOnly(
+													event.target.value,
+													4,
+												);
 												if (d.length === 0) {
-													form.setValue('manufactureYear', null, {
-														shouldDirty: true,
-														shouldValidate: true,
-													});
+													form.setValue(
+														'manufactureYear',
+														null,
+														{
+															shouldDirty: true,
+															shouldValidate: true,
+														},
+													);
 													return;
 												}
 												const n = parseIntStrict(d);
 												if (n === null) {
 													return;
 												}
-												form.setValue('manufactureYear', n, {
-													shouldDirty: true,
-													shouldValidate: true,
-												});
+												form.setValue(
+													'manufactureYear',
+													n,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												);
 											}}
 											placeholder="Opcional"
 											value={formatFiniteIntForInput(
-												manufactureYearValue ?? undefined,
+												manufactureYearValue ??
+													undefined,
 											)}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.manufactureYear ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.manufactureYear.message as string}
+											{
+												form.formState.errors
+													.manufactureYear
+													.message as string
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-mileage" required>
+									<Label
+										htmlFor="vehicle-form-mileage"
+										required
+									>
 										Quilometragem
 									</Label>
 									<VehicleFieldControl icon={Gauge}>
@@ -509,12 +623,19 @@ function VehicleFormDialog({
 											id="vehicle-form-mileage"
 											inputMode="numeric"
 											onChange={(event) => {
-												const d = digitsOnly(event.target.value, 9);
+												const d = digitsOnly(
+													event.target.value,
+													9,
+												);
 												if (d.length === 0) {
-													form.setValue('mileage', 0, {
-														shouldDirty: true,
-														shouldValidate: true,
-													});
+													form.setValue(
+														'mileage',
+														0,
+														{
+															shouldDirty: true,
+															shouldValidate: true,
+														},
+													);
 													return;
 												}
 												const n = parseIntStrict(d);
@@ -526,13 +647,18 @@ function VehicleFormDialog({
 													shouldValidate: true,
 												});
 											}}
-											value={formatFiniteIntForInput(mileageValue)}
+											value={formatFiniteIntForInput(
+												mileageValue,
+											)}
 											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.mileage ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.mileage.message}
+											{
+												form.formState.errors.mileage
+													.message
+											}
 										</p>
 									) : null}
 								</div>
@@ -559,22 +685,33 @@ function VehicleFormDialog({
 											value={fuelValue}
 											{...requiredFieldProps()}
 										>
-											{supportedFuelTypeOptions.map((fuel) => (
-												<option key={fuel.value} value={fuel.value}>
-													{fuel.label}
-												</option>
-											))}
+											{supportedFuelTypeOptions.map(
+												(fuel) => (
+													<option
+														key={fuel.value}
+														value={fuel.value}
+													>
+														{fuel.label}
+													</option>
+												),
+											)}
 										</select>
 									</VehicleFieldControl>
 									{form.formState.errors.supportedFuelType ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.supportedFuelType.message}
+											{
+												form.formState.errors
+													.supportedFuelType.message
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-price" required>
+									<Label
+										htmlFor="vehicle-form-price"
+										required
+									>
 										Preço
 									</Label>
 									<VehicleFieldControl icon={BadgeDollarSign}>
@@ -584,28 +721,42 @@ function VehicleFormDialog({
 											id="vehicle-form-price"
 											inputMode="numeric"
 											onChange={(event) => {
-												const d = sanitizeMoneyDigitsInput(event.target.value);
+												const d =
+													sanitizeMoneyDigitsInput(
+														event.target.value,
+													);
 												setPriceCentsDigits(d);
-												const api = centsDigitsToApiDecimalString(d) ?? '0.00';
+												const api =
+													centsDigitsToApiDecimalString(
+														d,
+													) ?? '0.00';
 												form.setValue('price', api, {
 													shouldDirty: true,
 													shouldValidate: true,
 												});
 											}}
 											placeholder="R$ 0,00"
-											value={formatCentsDigitsToBrlDisplay(priceCentsDigits)}
+											value={formatCentsDigitsToBrlDisplay(
+												priceCentsDigits,
+											)}
 											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.price ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.price.message}
+											{
+												form.formState.errors.price
+													.message
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-status" required>
+									<Label
+										htmlFor="vehicle-form-status"
+										required
+									>
 										Status
 									</Label>
 									<VehicleFieldControl icon={ShieldCheck}>
@@ -615,7 +766,8 @@ function VehicleFormDialog({
 											onChange={(event) =>
 												form.setValue(
 													'status',
-													event.target.value as VehicleFormInput['status'],
+													event.target
+														.value as VehicleFormInput['status'],
 													{
 														shouldDirty: true,
 														shouldValidate: true,
@@ -625,16 +777,24 @@ function VehicleFormDialog({
 											value={statusValue}
 											{...requiredFieldProps()}
 										>
-											{vehicleStatusOptions.map((status) => (
-												<option key={status.value} value={status.value}>
-													{status.label}
-												</option>
-											))}
+											{vehicleStatusOptions.map(
+												(status) => (
+													<option
+														key={status.value}
+														value={status.value}
+													>
+														{status.label}
+													</option>
+												),
+											)}
 										</select>
 									</VehicleFieldControl>
 									{form.formState.errors.status ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.status.message}
+											{
+												form.formState.errors.status
+													.message
+											}
 										</p>
 									) : null}
 								</div>
@@ -647,16 +807,22 @@ function VehicleFormDialog({
 						>
 							<div className="grid gap-5 md:grid-cols-2">
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-plate">Placa</Label>
+									<Label htmlFor="vehicle-form-plate">
+										Placa
+									</Label>
 									<VehicleFieldControl icon={IdCard}>
 										<Input
 											className={vehicleFormInputClass}
 											id="vehicle-form-plate"
 											onChange={(event) =>
-												form.setValue('plate', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												form.setValue(
+													'plate',
+													event.target.value,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}
 											placeholder="Opcional"
 											value={plateValue ?? ''}
@@ -664,21 +830,30 @@ function VehicleFormDialog({
 									</VehicleFieldControl>
 									{form.formState.errors.plate ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.plate.message as string}
+											{
+												form.formState.errors.plate
+													.message as string
+											}
 										</p>
 									) : null}
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-vin">Chassi (VIN)</Label>
+									<Label htmlFor="vehicle-form-vin">
+										Chassi (VIN)
+									</Label>
 									<VehicleFieldControl icon={Barcode}>
 										<Input
 											className={vehicleFormInputClass}
 											id="vehicle-form-vin"
 											onChange={(event) =>
-												form.setValue('vin', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												form.setValue(
+													'vin',
+													event.target.value,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}
 											placeholder="Opcional"
 											value={vinValue ?? ''}
@@ -686,7 +861,10 @@ function VehicleFormDialog({
 									</VehicleFieldControl>
 									{form.formState.errors.vin ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.vin.message as string}
+											{
+												form.formState.errors.vin
+													.message as string
+											}
 										</p>
 									) : null}
 								</div>
@@ -698,11 +876,18 @@ function VehicleFormDialog({
 
 					<DialogFooter className="shrink-0 justify-between gap-3 border-t-0 px-7 pt-3 pb-6 md:flex-row md:px-8">
 						<div>
-							{isEditMode && targetVehicle && onRequestDeactivate ? (
+							{isEditMode &&
+							targetVehicle &&
+							onRequestDeactivate ? (
 								<Button
 									className="rounded-lg border-red-200 bg-white text-red-600 shadow-none hover:bg-red-50"
-									disabled={isPending || targetVehicle.status === 'INACTIVE'}
-									onClick={() => onRequestDeactivate(targetVehicle)}
+									disabled={
+										isPending ||
+										targetVehicle.status === 'INACTIVE'
+									}
+									onClick={() =>
+										onRequestDeactivate(targetVehicle)
+									}
 									type="button"
 									variant="outline"
 								>

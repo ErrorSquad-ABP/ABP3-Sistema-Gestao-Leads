@@ -78,7 +78,9 @@ function LeadDealsDialog({
 			storeId: leadStoreId ?? undefined,
 		},
 		{
-			enabled: Boolean(leadId && leadStoreId && open && allowLeadMutations),
+			enabled: Boolean(
+				leadId && leadStoreId && open && allowLeadMutations,
+			),
 		},
 	);
 	const availableVehicles = useMemo(
@@ -260,7 +262,7 @@ function LeadDealsDialog({
 						) : null}
 
 						{listQuery.isPending ? (
-							<div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
+							<div className="rounded-2xl border border-border/80 bg-white px-4 py-8 text-sm text-muted-foreground">
 								Carregando negociações...
 							</div>
 						) : null}
@@ -269,12 +271,14 @@ function LeadDealsDialog({
 							<DealsTable
 								deals={deals}
 								onDelete={
-									allowLeadMutations && deals.some((d) => d.canMutate)
+									allowLeadMutations &&
+									deals.some((d) => d.canMutate)
 										? openDelete
 										: undefined
 								}
 								onEdit={
-									allowLeadMutations && deals.some((d) => d.canMutate)
+									allowLeadMutations &&
+									deals.some((d) => d.canMutate)
 										? openEdit
 										: undefined
 								}
@@ -308,101 +312,130 @@ function LeadDealsDialog({
 					<DialogHeader>
 						<DialogTitle>Nova negociação</DialogTitle>
 						<DialogDescription>
-							Informe veículo, título e valor para registrar uma nova
-							oportunidade comercial deste lead.
+							Informe veículo, título e valor para registrar uma
+							nova oportunidade comercial deste lead.
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 px-6 py-5">
-						<ModalFormErrorBanner message={dialogError} />
-						<div className="space-y-2">
-							<Label htmlFor="lead-deal-vehicle" required>
-								Veículo
-							</Label>
-							<select
-								className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45 disabled:cursor-not-allowed disabled:opacity-60"
-								disabled={!leadId || !leadStoreId || vehiclesQuery.isPending}
-								id="lead-deal-vehicle"
-								onChange={(e) => setVehicleId(e.target.value)}
-								value={vehicleId}
-								{...requiredFieldProps()}
-							>
-								<option value="">
-									{vehiclesQuery.isPending
-										? 'Carregando veículos disponíveis...'
-										: !leadStoreId
-											? 'Lead sem loja definida'
-											: 'Selecione um veículo'}
-								</option>
-								{availableVehicles.map((vehicle) => (
-									<option key={vehicle.id} value={vehicle.id}>
-										{formatVehicleDealSelectLabel(vehicle)}
+					<form
+						onSubmit={(event) => {
+							event.preventDefault();
+							void handleCreateSubmit();
+						}}
+					>
+						<div className="space-y-4 px-6 py-5">
+							<ModalFormErrorBanner message={dialogError} />
+							<div className="space-y-2">
+								<Label htmlFor="lead-deal-vehicle" required>
+									Veículo
+								</Label>
+								<select
+									className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45 disabled:cursor-not-allowed disabled:opacity-60"
+									disabled={
+										!leadId ||
+										!leadStoreId ||
+										vehiclesQuery.isPending
+									}
+									id="lead-deal-vehicle"
+									onChange={(e) =>
+										setVehicleId(e.target.value)
+									}
+									value={vehicleId}
+									{...requiredFieldProps()}
+								>
+									<option value="">
+										{vehiclesQuery.isPending
+											? 'Carregando veículos disponíveis...'
+											: !leadStoreId
+												? 'Lead sem loja definida'
+												: 'Selecione um veículo'}
 									</option>
-								))}
-							</select>
-							{!leadStoreId ? (
-								<p className="text-xs text-[#6b7687]">
-									Não foi possível determinar a loja do lead para filtrar os
-									veículos.
-								</p>
-							) : null}
-							{vehiclesQuery.isSuccess && availableVehicles.length === 0 ? (
-								<p className="text-xs text-[#6b7687]">
-									Nenhum veículo disponível para esta loja.
-								</p>
-							) : null}
-							{vehiclesQuery.isError ? (
-								<p className="text-xs text-destructive">
-									{humanizePageApiError(vehiclesQuery.error)}
-								</p>
-							) : null}
+									{availableVehicles.map((vehicle) => (
+										<option
+											key={vehicle.id}
+											value={vehicle.id}
+										>
+											{formatVehicleDealSelectLabel(
+												vehicle,
+											)}
+										</option>
+									))}
+								</select>
+								{!leadStoreId ? (
+									<p className="text-xs text-[#6b7687]">
+										Não foi possível determinar a loja do
+										lead para filtrar os veículos.
+									</p>
+								) : null}
+								{vehiclesQuery.isSuccess &&
+								availableVehicles.length === 0 ? (
+									<p className="text-xs text-[#6b7687]">
+										Nenhum veículo disponível para esta
+										loja.
+									</p>
+								) : null}
+								{vehiclesQuery.isError ? (
+									<p className="text-xs text-destructive">
+										{humanizePageApiError(
+											vehiclesQuery.error,
+										)}
+									</p>
+								) : null}
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="lead-deal-title" required>
+									Título
+								</Label>
+								<Input
+									id="lead-deal-title"
+									value={title}
+									onChange={(e) => setTitle(e.target.value)}
+									{...requiredFieldProps()}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="lead-deal-value">Valor</Label>
+								<Input
+									id="lead-deal-value"
+									inputMode="numeric"
+									autoComplete="off"
+									placeholder="R$ 0,00"
+									value={formatCentsDigitsToBrlDisplay(
+										valueCentsDigits,
+									)}
+									onChange={(e) =>
+										setValueCentsDigits(
+											sanitizeMoneyDigitsInput(
+												e.target.value,
+											),
+										)
+									}
+								/>
+							</div>
 						</div>
-						<div className="space-y-2">
-							<Label htmlFor="lead-deal-title" required>
-								Título
-							</Label>
-							<Input
-								id="lead-deal-title"
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								{...requiredFieldProps()}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="lead-deal-value">Valor</Label>
-							<Input
-								id="lead-deal-value"
-								inputMode="numeric"
-								autoComplete="off"
-								placeholder="R$ 0,00"
-								value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
-								onChange={(e) =>
-									setValueCentsDigits(sanitizeMoneyDigitsInput(e.target.value))
+						<DialogFooter>
+							<Button
+								type="submit"
+								variant="outline"
+								onClick={() => setCreateOpen(false)}
+							>
+								Cancelar
+							</Button>
+							<Button
+								type="button"
+								className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+								disabled={
+									!allowLeadMutations ||
+									createMutation.isPending ||
+									(vehiclesQuery.isSuccess &&
+										availableVehicles.length === 0)
 								}
-							/>
-						</div>
-					</div>
-					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setCreateOpen(false)}
-						>
-							Cancelar
-						</Button>
-						<Button
-							type="button"
-							className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
-							disabled={
-								!allowLeadMutations ||
-								createMutation.isPending ||
-								!vehicleId ||
-								(vehiclesQuery.isSuccess && availableVehicles.length === 0)
-							}
-							onClick={() => void handleCreateSubmit()}
-						>
-							{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
-						</Button>
-					</DialogFooter>
+							>
+								{createMutation.isPending
+									? 'Criando...'
+									: 'Criar negociação'}
+							</Button>
+						</DialogFooter>
+					</form>
 				</DialogContent>
 			</Dialog>
 

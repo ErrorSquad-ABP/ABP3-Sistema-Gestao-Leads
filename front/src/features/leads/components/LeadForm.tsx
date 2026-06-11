@@ -82,6 +82,14 @@ const LEAD_FORM_FIELD_MAP = {
 	'lead.invalid_store': 'storeId',
 } as const;
 
+const leadFormFieldById: Readonly<Record<string, keyof LeadFormValues>> = {
+	'lead-form-customer': 'customerId',
+	'lead-form-owner': 'ownerUserId',
+	'lead-form-source': 'source',
+	'lead-form-status': 'status',
+	'lead-form-store': 'storeId',
+};
+
 function buildOwnerOptions(params: {
 	leadOwners: LeadOwnerRecord[];
 	selectedStoreId: string;
@@ -119,6 +127,8 @@ function LeadFormDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const form = useForm<LeadFormValues>({
 		resolver: zodResolver(leadFormSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			customerId: '',
 			storeId: '',
@@ -159,7 +169,9 @@ function LeadFormDialog({
 				customerId: targetLead.customerId,
 				storeId: targetLead.storeId,
 				ownerUserId:
-					user.role === 'ATTENDANT' ? user.id : (targetLead.ownerUserId ?? ''),
+					user.role === 'ATTENDANT'
+						? user.id
+						: (targetLead.ownerUserId ?? ''),
 				source: targetLead.source as LeadSource,
 				status: targetLead.status as LeadStatus,
 			});
@@ -195,7 +207,9 @@ function LeadFormDialog({
 		if (!currentCustomerId || !customerIds.has(currentCustomerId)) {
 			const nextCustomerId = customers[0]?.id ?? '';
 			if (nextCustomerId) {
-				form.setValue('customerId', nextCustomerId, { shouldValidate: true });
+				form.setValue('customerId', nextCustomerId, {
+					shouldValidate: true,
+				});
 			}
 		}
 
@@ -216,7 +230,8 @@ function LeadFormDialog({
 			}),
 		[owners, selectedStoreId],
 	);
-	const allowOwnerSelect = user.role !== 'ATTENDANT' && ownerOptions.length > 0;
+	const allowOwnerSelect =
+		user.role !== 'ATTENDANT' && ownerOptions.length > 0;
 
 	async function handleSubmit(values: LeadFormValues) {
 		setSubmitError(null);
@@ -243,7 +258,11 @@ function LeadFormDialog({
 			onClose();
 		} catch (error) {
 			setSubmitError(
-				applyFormSubmitErrors(form.setError, error, LEAD_FORM_FIELD_MAP),
+				applyFormSubmitErrors(
+					form.setError,
+					error,
+					LEAD_FORM_FIELD_MAP,
+				),
 			);
 		}
 	}
@@ -270,7 +289,9 @@ function LeadFormDialog({
 								Leads
 							</p>
 							<DialogTitle>
-								{isEditMode ? 'Editar lead operacional' : 'Novo lead'}
+								{isEditMode
+									? 'Editar lead operacional'
+									: 'Novo lead'}
 							</DialogTitle>
 							<DialogDescription className="max-w-2xl">
 								{isEditMode
@@ -283,7 +304,14 @@ function LeadFormDialog({
 
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
-					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
+					onBlurCapture={(event) => {
+						const field =
+							leadFormFieldById[(event.target as HTMLElement).id];
+						if (field) void form.trigger(field);
+					}}
+					onSubmit={form.handleSubmit((values) =>
+						handleSubmit(values),
+					)}
 				>
 					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pt-7 pb-8">
 						<ModalFormErrorBanner
@@ -291,7 +319,7 @@ function LeadFormDialog({
 							message={submitError}
 						/>
 
-						<div className="rounded-3xl border border-[#e5ebf3] bg-[#f9fbfd] p-5">
+						<div className="rounded-3xl border border-[#e5ebf3] bg-white p-5">
 							<div className="space-y-1">
 								<Label
 									className="text-base font-semibold text-[#1b2430]"
@@ -301,7 +329,8 @@ function LeadFormDialog({
 									Cliente
 								</Label>
 								<p className="text-sm leading-6 text-[#6b7687]">
-									Selecione o cliente já cadastrado para associá-lo ao lead.
+									Selecione o cliente já cadastrado para
+									associá-lo ao lead.
 								</p>
 							</div>
 							<div className="mt-4 space-y-2">
@@ -309,10 +338,14 @@ function LeadFormDialog({
 									className={leadFormSelectClass}
 									id="lead-form-customer"
 									onChange={(event) =>
-										form.setValue('customerId', event.target.value, {
-											shouldDirty: true,
-											shouldValidate: true,
-										})
+										form.setValue(
+											'customerId',
+											event.target.value,
+											{
+												shouldDirty: true,
+												shouldValidate: true,
+											},
+										)
 									}
 									value={selectedCustomerId}
 									{...requiredFieldProps()}
@@ -321,14 +354,20 @@ function LeadFormDialog({
 										Selecione um cliente
 									</option>
 									{customers.map((customer) => (
-										<option key={customer.id} value={customer.id}>
+										<option
+											key={customer.id}
+											value={customer.id}
+										>
 											{customer.name}
 										</option>
 									))}
 								</select>
 								{form.formState.errors.customerId ? (
 									<p className="text-xs text-destructive">
-										{form.formState.errors.customerId.message}
+										{
+											form.formState.errors.customerId
+												.message
+										}
 									</p>
 								) : null}
 							</div>
@@ -340,8 +379,8 @@ function LeadFormDialog({
 									Dados operacionais
 								</h3>
 								<p className="text-sm leading-6 text-[#6b7687]">
-									Defina a loja, a origem, o responsável e, quando aplicável, o
-									estado atual do lead.
+									Defina a loja, a origem, o responsável e,
+									quando aplicável, o estado atual do lead.
 								</p>
 							</div>
 
@@ -351,17 +390,21 @@ function LeadFormDialog({
 										Loja
 									</Label>
 									<p className="text-xs leading-5 text-[#6b7687]">
-										A loja define o escopo comercial e a lista de responsáveis
-										elegíveis.
+										A loja define o escopo comercial e a
+										lista de responsáveis elegíveis.
 									</p>
 									<select
 										className={leadFormSelectClass}
 										id="lead-form-store"
 										onChange={(event) =>
-											form.setValue('storeId', event.target.value, {
-												shouldDirty: true,
-												shouldValidate: true,
-											})
+											form.setValue(
+												'storeId',
+												event.target.value,
+												{
+													shouldDirty: true,
+													shouldValidate: true,
+												},
+											)
 										}
 										value={selectedStoreId}
 										{...requiredFieldProps()}
@@ -370,14 +413,20 @@ function LeadFormDialog({
 											Selecione uma loja
 										</option>
 										{stores.map((store) => (
-											<option key={store.id} value={store.id}>
+											<option
+												key={store.id}
+												value={store.id}
+											>
 												{store.name}
 											</option>
 										))}
 									</select>
 									{form.formState.errors.storeId ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.storeId.message}
+											{
+												form.formState.errors.storeId
+													.message
+											}
 										</p>
 									) : null}
 								</div>
@@ -392,7 +441,8 @@ function LeadFormDialog({
 										onChange={(event) =>
 											form.setValue(
 												'source',
-												event.target.value as LeadSource,
+												event.target
+													.value as LeadSource,
 												{
 													shouldDirty: true,
 													shouldValidate: true,
@@ -403,22 +453,30 @@ function LeadFormDialog({
 										{...requiredFieldProps()}
 									>
 										{leadSourceOptions.map((source) => (
-											<option key={source.value} value={source.value}>
+											<option
+												key={source.value}
+												value={source.value}
+											>
 												{source.label}
 											</option>
 										))}
 									</select>
 									{form.formState.errors.source ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.source.message}
+											{
+												form.formState.errors.source
+													.message
+											}
 										</p>
 									) : null}
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="lead-form-owner">Responsável</Label>
+									<Label htmlFor="lead-form-owner">
+										Responsável
+									</Label>
 									{user.role === 'ATTENDANT' ? (
-										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
+										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#6b7687]">
 											{user.name} (você)
 										</div>
 									) : allowOwnerSelect ? (
@@ -426,41 +484,59 @@ function LeadFormDialog({
 											className={leadFormSelectClass}
 											id="lead-form-owner"
 											onChange={(event) =>
-												form.setValue('ownerUserId', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
+												form.setValue(
+													'ownerUserId',
+													event.target.value,
+													{
+														shouldDirty: true,
+														shouldValidate: true,
+													},
+												)
 											}
 											value={ownerUserIdValue}
 										>
-											<option value="">Sem responsável</option>
+											<option value="">
+												Sem responsável
+											</option>
 											{ownerOptions.map((owner) => (
-												<option key={owner.value} value={owner.value}>
+												<option
+													key={owner.value}
+													value={owner.value}
+												>
 													{owner.label}
 												</option>
 											))}
 										</select>
 									) : (
-										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
-											Selecione uma loja com responsáveis disponíveis.
+										<div className="flex h-11 items-center rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#6b7687]">
+											Selecione uma loja com responsáveis
+											disponíveis.
 										</div>
 									)}
-									{user.role !== 'ATTENDANT' && !allowOwnerSelect ? (
+									{user.role !== 'ATTENDANT' &&
+									!allowOwnerSelect ? (
 										<p className="text-xs text-[#6b7687]">
-											Não há responsáveis elegíveis para a loja selecionada
-											dentro do seu escopo atual.
+											Não há responsáveis elegíveis para a
+											loja selecionada dentro do seu
+											escopo atual.
 										</p>
 									) : null}
 									{form.formState.errors.ownerUserId ? (
 										<p className="text-xs text-destructive">
-											{form.formState.errors.ownerUserId.message}
+											{
+												form.formState.errors
+													.ownerUserId.message
+											}
 										</p>
 									) : null}
 								</div>
 
 								{isEditMode ? (
 									<div className="space-y-1.5">
-										<Label htmlFor="lead-form-status" required>
+										<Label
+											htmlFor="lead-form-status"
+											required
+										>
 											Estado
 										</Label>
 										<select
@@ -469,7 +545,8 @@ function LeadFormDialog({
 											onChange={(event) =>
 												form.setValue(
 													'status',
-													event.target.value as LeadStatus,
+													event.target
+														.value as LeadStatus,
 													{
 														shouldDirty: true,
 														shouldValidate: true,
@@ -480,14 +557,20 @@ function LeadFormDialog({
 											{...requiredFieldProps()}
 										>
 											{leadStatusOptions.map((status) => (
-												<option key={status.value} value={status.value}>
+												<option
+													key={status.value}
+													value={status.value}
+												>
 													{status.label}
 												</option>
 											))}
 										</select>
 										{form.formState.errors.status ? (
 											<p className="text-xs text-destructive">
-												{form.formState.errors.status.message}
+												{
+													form.formState.errors.status
+														.message
+												}
 											</p>
 										) : null}
 									</div>
@@ -538,6 +621,8 @@ function LeadReassignDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const form = useForm<ReassignLeadFormValues>({
 		resolver: zodResolver(reassignLeadSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			ownerUserId: '',
 		},
@@ -566,7 +651,11 @@ function LeadReassignDialog({
 			onClose();
 		} catch (error) {
 			setSubmitError(
-				applyFormSubmitErrors(form.setError, error, LEAD_FORM_FIELD_MAP),
+				applyFormSubmitErrors(
+					form.setError,
+					error,
+					LEAD_FORM_FIELD_MAP,
+				),
 			);
 		}
 	}
@@ -594,9 +683,17 @@ function LeadReassignDialog({
 
 				<form
 					className="space-y-5 px-6 py-5"
+					onBlurCapture={(event) => {
+						if (
+							(event.target as HTMLElement).id ===
+							'lead-reassign-owner'
+						) {
+							void form.trigger('ownerUserId');
+						}
+					}}
 					onSubmit={form.handleSubmit(handleSubmit)}
 				>
-					<div className="rounded-xl border border-border/75 bg-[#f8fafc] px-3 py-3 text-sm text-[#6b7687]">
+					<div className="rounded-xl border border-border/75 bg-white px-3 py-3 text-sm text-[#6b7687]">
 						Responsável atual:{' '}
 						<span className="font-medium text-[#1b2430]">
 							{currentOwnerLabel}
@@ -606,28 +703,37 @@ function LeadReassignDialog({
 					<ModalFormErrorBanner message={submitError} />
 
 					<div className="space-y-1.5">
-						<Label htmlFor="lead-reassign-owner">Novo responsável</Label>
+						<Label htmlFor="lead-reassign-owner">
+							Novo responsável
+						</Label>
 						{allowOwnerSelect ? (
 							<select
 								className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 								id="lead-reassign-owner"
 								onChange={(event) =>
-									form.setValue('ownerUserId', event.target.value, {
-										shouldDirty: true,
-										shouldValidate: true,
-									})
+									form.setValue(
+										'ownerUserId',
+										event.target.value,
+										{
+											shouldDirty: true,
+											shouldValidate: true,
+										},
+									)
 								}
 								value={ownerUserIdValue}
 							>
 								<option value="">Sem responsável</option>
 								{ownerOptions.map((owner) => (
-									<option key={owner.value} value={owner.value}>
+									<option
+										key={owner.value}
+										value={owner.value}
+									>
 										{owner.label}
 									</option>
 								))}
 							</select>
 						) : (
-							<div className="flex h-10 items-center rounded-md border border-[#d6dce5] bg-[#f8fafc] px-3 text-sm text-[#6b7687]">
+							<div className="flex h-10 items-center rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#6b7687]">
 								{user.role === 'ATTENDANT'
 									? 'Reatribuição indisponível para este papel'
 									: 'Nenhum responsável elegível dentro do seu escopo.'}
@@ -635,8 +741,8 @@ function LeadReassignDialog({
 						)}
 						{!allowOwnerSelect ? (
 							<p className="text-xs text-[#6b7687]">
-								O catálogo de responsáveis agora é controlado pelo backend
-								conforme o escopo real de RBAC.
+								O catálogo de responsáveis agora é controlado
+								pelo backend conforme o escopo real de RBAC.
 							</p>
 						) : null}
 						{form.formState.errors.ownerUserId ? (
@@ -660,7 +766,9 @@ function LeadReassignDialog({
 							disabled={isPending}
 							type="submit"
 						>
-							{isPending ? 'Aplicando...' : 'Aplicar reatribuição'}
+							{isPending
+								? 'Aplicando...'
+								: 'Aplicar reatribuição'}
 						</Button>
 					</DialogFooter>
 				</form>
@@ -691,7 +799,7 @@ function LeadConfirmDialog({
 					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4 px-6 py-5">
-					<div className="flex items-start gap-3 rounded-xl border border-border/75 bg-[#f8fafc] px-4 py-4 text-sm text-[#6b7687]">
+					<div className="flex items-start gap-3 rounded-xl border border-border/75 bg-white px-4 py-4 text-sm text-[#6b7687]">
 						{icon === 'convert' ? (
 							<CheckCheck className="mt-0.5 size-4 text-[#d96c3f]" />
 						) : (

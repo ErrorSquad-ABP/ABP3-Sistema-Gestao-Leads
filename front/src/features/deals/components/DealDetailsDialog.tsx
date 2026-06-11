@@ -185,7 +185,8 @@ function getHistoryTimelineVisual(field: string) {
 		case 'TITLE':
 			return {
 				Icon: Tag,
-				wrapClassName: 'bg-muted text-muted-foreground ring-4 ring-white',
+				wrapClassName:
+					'border border-[#e5e9f0] bg-white text-muted-foreground ring-4 ring-white',
 			};
 		case 'VALUE':
 			return {
@@ -195,7 +196,8 @@ function getHistoryTimelineVisual(field: string) {
 		default:
 			return {
 				Icon: History,
-				wrapClassName: 'bg-muted text-muted-foreground ring-4 ring-white',
+				wrapClassName:
+					'border border-[#e5e9f0] bg-white text-muted-foreground ring-4 ring-white',
 			};
 	}
 }
@@ -434,7 +436,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 
 								{historyQuery.isSuccess ? (
 									history.length === 0 ? (
-										<div className="rounded-xl border border-border/70 bg-muted/15 px-4 py-10 text-center text-[13px] text-[#7a8494]">
+										<div className="rounded-xl border border-border/70 bg-white px-4 py-10 text-center text-[13px] text-[#7a8494]">
 											Nenhuma alteração registrada.
 										</div>
 									) : (
@@ -474,7 +476,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 															</span>
 															{connector}
 														</div>
-														<div className="min-w-0 flex-1 rounded-xl border border-[#e7ebf0] bg-[#fdfefe] px-4 py-3">
+														<div className="min-w-0 flex-1 rounded-xl border border-[#e7ebf0] bg-white px-4 py-3">
 															<p className="text-[13px] font-semibold text-[#1b2430]">
 																{getHistoryEventTitle(item.field)}
 															</p>

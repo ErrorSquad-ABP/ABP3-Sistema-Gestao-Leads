@@ -50,20 +50,49 @@ function DialogOverlay({
 function DialogContent({
 	children,
 	className,
+	onBlurCapture,
+	onInputCapture,
+	onInvalidCapture,
 	showCloseButton = true,
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
 	showCloseButton?: boolean;
 }) {
+	function syncNativeValidity(target: EventTarget, markInvalid = true) {
+		if (
+			target instanceof HTMLInputElement ||
+			target instanceof HTMLSelectElement ||
+			target instanceof HTMLTextAreaElement
+		) {
+			if (target.validity.valid) {
+				target.removeAttribute('aria-invalid');
+			} else if (markInvalid) {
+				target.setAttribute('aria-invalid', 'true');
+			}
+		}
+	}
+
 	return (
 		<DialogPortal>
 			<DialogOverlay />
 			<DialogPrimitive.Content
 				className={cn(
-					'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white text-foreground shadow-[0_20px_70px_rgba(15,23,42,0.18)] duration-200 [&_input]:rounded-xl [&_select]:rounded-xl [&_textarea]:rounded-xl',
+					'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white text-foreground shadow-[0_20px_70px_rgba(15,23,42,0.18)] duration-200 [&_[aria-invalid=true]]:border-destructive [&_[aria-invalid=true]]:ring-2 [&_[aria-invalid=true]]:ring-destructive/15 [&_input]:rounded-xl [&_select]:rounded-xl [&_textarea]:rounded-xl',
 					className,
 				)}
 				data-slot="dialog-content"
+				onBlurCapture={(event) => {
+					syncNativeValidity(event.target);
+					onBlurCapture?.(event);
+				}}
+				onInputCapture={(event) => {
+					syncNativeValidity(event.target, false);
+					onInputCapture?.(event);
+				}}
+				onInvalidCapture={(event) => {
+					syncNativeValidity(event.target);
+					onInvalidCapture?.(event);
+				}}
 				{...props}
 			>
 				{children}

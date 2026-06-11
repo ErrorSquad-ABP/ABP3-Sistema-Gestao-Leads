@@ -120,121 +120,139 @@ function StoreFormDialog({
 							: 'Nova loja'
 					}
 				/>
-				<AppModalBody className="grid gap-4">
-					<div className="grid gap-2">
-						<Label htmlFor="store-name" required>
-							Nome da loja
-						</Label>
-						<Input
-							id="store-name"
-							onChange={(event) =>
-								onValueChange('name', event.target.value)
-							}
-							value={values.name}
-							{...requiredFieldProps()}
-						/>
-					</div>
-					<div className="grid gap-4 md:grid-cols-2">
+				<form
+					className="flex min-h-0 flex-1 flex-col overflow-hidden"
+					onSubmit={(event) => {
+						event.preventDefault();
+						onSave();
+					}}
+				>
+					<AppModalBody className="grid gap-4">
 						<div className="grid gap-2">
-							<Label htmlFor="store-address">Endereço</Label>
-							<Input
-								id="store-address"
-								onChange={(event) =>
-									onValueChange(
-										'addressLine',
-										event.target.value,
-									)
-								}
-								value={values.addressLine}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="store-city">Cidade</Label>
-							<Input
-								id="store-city"
-								onChange={(event) =>
-									onValueChange('city', event.target.value)
-								}
-								value={values.city}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="store-state">UF</Label>
-							<Input
-								id="store-state"
-								maxLength={2}
-								onChange={(event) =>
-									onValueChange(
-										'state',
-										event.target.value.toUpperCase(),
-									)
-								}
-								value={values.state}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="store-coverage">Cobertura</Label>
-							<Input
-								id="store-coverage"
-								onChange={(event) =>
-									onValueChange(
-										'coverage',
-										event.target.value,
-									)
-								}
-								value={values.coverage}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="store-region">Região</Label>
-							<Input
-								id="store-region"
-								onChange={(event) =>
-									onValueChange('region', event.target.value)
-								}
-								value={values.region}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="store-distribution-region">
-								Região de distribuição
+							<Label htmlFor="store-name" required>
+								Nome da loja
 							</Label>
 							<Input
-								id="store-distribution-region"
+								id="store-name"
 								onChange={(event) =>
-									onValueChange(
-										'distributionRegion',
-										event.target.value,
-									)
+									onValueChange('name', event.target.value)
 								}
-								value={values.distributionRegion}
+								value={values.name}
+								{...requiredFieldProps()}
 							/>
 						</div>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="store-scope">Abrangência</Label>
-						<Input
-							id="store-scope"
-							onChange={(event) =>
-								onValueChange('scope', event.target.value)
-							}
-							value={values.scope}
-						/>
-					</div>
-					<ModalFormErrorBanner message={dialogError} />
-				</AppModalBody>
-				<AppModalFooter>
-					<AppModalCancelButton onClick={onClose}>
-						Cancelar
-					</AppModalCancelButton>
-					<AppModalPrimaryButton
-						disabled={isPending}
-						onClick={onSave}
-					>
-						<Save className="size-4" />
-						{isPending ? 'Salvando...' : 'Salvar loja'}
-					</AppModalPrimaryButton>
-				</AppModalFooter>
+						<div className="grid gap-4 md:grid-cols-2">
+							<div className="grid gap-2">
+								<Label htmlFor="store-address">Endereço</Label>
+								<Input
+									id="store-address"
+									onChange={(event) =>
+										onValueChange(
+											'addressLine',
+											event.target.value,
+										)
+									}
+									value={values.addressLine}
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="store-city">Cidade</Label>
+								<Input
+									id="store-city"
+									onChange={(event) =>
+										onValueChange(
+											'city',
+											event.target.value,
+										)
+									}
+									value={values.city}
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="store-state">UF</Label>
+								<Input
+									id="store-state"
+									maxLength={2}
+									minLength={2}
+									pattern="[A-Za-z]{2}"
+									onChange={(event) =>
+										onValueChange(
+											'state',
+											event.target.value.toUpperCase(),
+										)
+									}
+									value={values.state}
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="store-coverage">
+									Cobertura
+								</Label>
+								<Input
+									id="store-coverage"
+									onChange={(event) =>
+										onValueChange(
+											'coverage',
+											event.target.value,
+										)
+									}
+									value={values.coverage}
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="store-region">Região</Label>
+								<Input
+									id="store-region"
+									onChange={(event) =>
+										onValueChange(
+											'region',
+											event.target.value,
+										)
+									}
+									value={values.region}
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="store-distribution-region">
+									Região de distribuição
+								</Label>
+								<Input
+									id="store-distribution-region"
+									onChange={(event) =>
+										onValueChange(
+											'distributionRegion',
+											event.target.value,
+										)
+									}
+									value={values.distributionRegion}
+								/>
+							</div>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="store-scope">Abrangência</Label>
+							<Input
+								id="store-scope"
+								onChange={(event) =>
+									onValueChange('scope', event.target.value)
+								}
+								value={values.scope}
+							/>
+						</div>
+						<ModalFormErrorBanner message={dialogError} />
+					</AppModalBody>
+					<AppModalFooter>
+						<AppModalCancelButton onClick={onClose} type="button">
+							Cancelar
+						</AppModalCancelButton>
+						<AppModalPrimaryButton
+							disabled={isPending}
+							type="submit"
+						>
+							<Save className="size-4" />
+							{isPending ? 'Salvando...' : 'Salvar loja'}
+						</AppModalPrimaryButton>
+					</AppModalFooter>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);

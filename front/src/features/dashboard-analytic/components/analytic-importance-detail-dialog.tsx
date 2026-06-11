@@ -69,7 +69,7 @@ function AnalyticImportanceDetailDialog({
 						<div className="mb-4 flex flex-wrap gap-2">
 							{distribution.map((item) => (
 								<span
-									className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium text-foreground"
+									className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-foreground"
 									key={item.key}
 								>
 									<span
@@ -92,7 +92,7 @@ function AnalyticImportanceDetailDialog({
 							{leads.map((lead) => (
 								<li key={lead.id}>
 									<Link
-										className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-muted/40"
+										className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-white"
 										href={`${appRoutes.app.leads}/${lead.id}`}
 									>
 										<div className="min-w-0">

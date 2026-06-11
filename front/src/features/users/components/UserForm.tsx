@@ -16,8 +16,6 @@ import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
-	DialogHeader,
-	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
@@ -140,6 +138,8 @@ function UsersFormDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const createForm = useForm<CreateUserFormValues>({
 		resolver: zodResolver(createUserSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			name: '',
 			email: '',
@@ -150,6 +150,8 @@ function UsersFormDialog({
 	});
 	const updateForm = useForm<UpdateUserFormValues>({
 		resolver: zodResolver(updateUserSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			name: '',
 			email: '',
@@ -364,7 +366,7 @@ function UsersFormDialog({
 												}`}
 									</span>
 								</div>
-								<div className="max-h-56 space-y-2 overflow-y-auto rounded-2xl border border-[#e7edf5] bg-[#f8fafc] p-3">
+								<div className="max-h-56 space-y-2 overflow-y-auto rounded-2xl border border-[#e7edf5] bg-white p-3">
 									{accessGroups.length === 0 ? (
 										<p className="px-1 py-2 text-sm text-[#667085]">
 											Nenhum grupo de acesso cadastrado.

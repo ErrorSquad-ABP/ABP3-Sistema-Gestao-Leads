@@ -117,105 +117,115 @@ function TeamFormDialog({
 					}
 					tone="violet"
 				/>
-				<AppModalBody className="grid gap-4">
-					<div className="grid gap-4 sm:grid-cols-2">
-						<div className="grid gap-2">
-							<Label htmlFor="team-name" required>
-								Nome da equipe
-							</Label>
-							<Input
-								id="team-name"
-								onChange={(event) =>
-									onStateChange((current) => ({
-										...current,
-										name: event.target.value,
-									}))
-								}
-								value={formState.name}
-								{...requiredFieldProps()}
-							/>
+				<form
+					className="flex min-h-0 flex-1 flex-col overflow-hidden"
+					onSubmit={(event) => {
+						event.preventDefault();
+						onSave();
+					}}
+				>
+					<AppModalBody className="grid gap-4">
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div className="grid gap-2">
+								<Label htmlFor="team-name" required>
+									Nome da equipe
+								</Label>
+								<Input
+									id="team-name"
+									onChange={(event) =>
+										onStateChange((current) => ({
+											...current,
+											name: event.target.value,
+										}))
+									}
+									value={formState.name}
+									{...requiredFieldProps()}
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="team-store" required>
+									Loja
+								</Label>
+								<select
+									className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
+									id="team-store"
+									onChange={(event) =>
+										onStateChange((current) => ({
+											...current,
+											storeId: event.target.value,
+											memberUserIds:
+												event.target.value ===
+												current.storeId
+													? current.memberUserIds
+													: [],
+										}))
+									}
+									value={formState.storeId}
+									{...requiredFieldProps()}
+								>
+									<option value="">Selecione uma loja</option>
+									{stores.map((store) => (
+										<option key={store.id} value={store.id}>
+											{store.name}
+										</option>
+									))}
+								</select>
+							</div>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="team-store" required>
-								Loja
+							<Label htmlFor="team-manager">
+								Gerente da equipe
 							</Label>
 							<select
 								className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
-								id="team-store"
+								id="team-manager"
 								onChange={(event) =>
 									onStateChange((current) => ({
 										...current,
-										storeId: event.target.value,
-										memberUserIds:
-											event.target.value ===
-											current.storeId
-												? current.memberUserIds
-												: [],
+										managerId: event.target.value,
 									}))
 								}
-								value={formState.storeId}
-								{...requiredFieldProps()}
+								value={formState.managerId}
 							>
-								<option value="">Selecione uma loja</option>
-								{stores.map((store) => (
-									<option key={store.id} value={store.id}>
-										{store.name}
+								<option value="">Sem gerente</option>
+								{owners.map((owner) => (
+									<option key={owner.id} value={owner.id}>
+										{owner.name} · {owner.email}
 									</option>
 								))}
 							</select>
 						</div>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="team-manager">Gerente da equipe</Label>
-						<select
-							className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
-							id="team-manager"
-							onChange={(event) =>
-								onStateChange((current) => ({
-									...current,
-									managerId: event.target.value,
-								}))
-							}
-							value={formState.managerId}
+						<div className="grid gap-2">
+							<Label>Membros</Label>
+							<TeamMemberSelector
+								candidates={memberCandidates}
+								disabled={!formState.storeId || isPending}
+								emptyLabel="Nenhum membro selecionado para esta equipe."
+								isLoading={membersLoading}
+								onChange={(memberUserIds) =>
+									onStateChange((current) => ({
+										...current,
+										memberUserIds,
+									}))
+								}
+								selectedUserIds={formState.memberUserIds}
+							/>
+						</div>
+						<ModalFormErrorBanner message={dialogError} />
+					</AppModalBody>
+					<AppModalFooter>
+						<AppModalCancelButton onClick={onClose} type="button">
+							Cancelar
+						</AppModalCancelButton>
+						<AppModalPrimaryButton
+							disabled={isPending}
+							type="submit"
 						>
-							<option value="">Sem gerente</option>
-							{owners.map((owner) => (
-								<option key={owner.id} value={owner.id}>
-									{owner.name} · {owner.email}
-								</option>
-							))}
-						</select>
-					</div>
-					<div className="grid gap-2">
-						<Label>Membros</Label>
-						<TeamMemberSelector
-							candidates={memberCandidates}
-							disabled={!formState.storeId || isPending}
-							emptyLabel="Nenhum membro selecionado para esta equipe."
-							isLoading={membersLoading}
-							onChange={(memberUserIds) =>
-								onStateChange((current) => ({
-									...current,
-									memberUserIds,
-								}))
-							}
-							selectedUserIds={formState.memberUserIds}
-						/>
-					</div>
-					<ModalFormErrorBanner message={dialogError} />
-				</AppModalBody>
-				<AppModalFooter>
-					<AppModalCancelButton onClick={onClose}>
-						Cancelar
-					</AppModalCancelButton>
-					<AppModalPrimaryButton
-						disabled={isPending}
-						onClick={onSave}
-					>
-						<Save className="size-4" />
-						{isPending ? 'Salvando...' : 'Salvar equipe'}
-					</AppModalPrimaryButton>
-				</AppModalFooter>
+							<Save className="size-4" />
+							{isPending ? 'Salvando...' : 'Salvar equipe'}
+						</AppModalPrimaryButton>
+					</AppModalFooter>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);

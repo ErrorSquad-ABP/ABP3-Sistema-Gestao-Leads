@@ -72,7 +72,7 @@ function AnalyticConversionDetailDialog({
 				<AppModalBody className="py-4">
 					{summary ? (
 						<div className="mb-4 grid gap-3 sm:grid-cols-3">
-							<div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+							<div className="rounded-2xl border border-border bg-white px-4 py-3">
 								<p className="text-xs font-medium text-muted-foreground">
 									Convertidos
 								</p>
@@ -85,7 +85,7 @@ function AnalyticConversionDetailDialog({
 									{formatCount(summary.convertedLeads)}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+							<div className="rounded-2xl border border-border bg-white px-4 py-3">
 								<p className="text-xs font-medium text-muted-foreground">
 									Perdidos
 								</p>
@@ -96,7 +96,7 @@ function AnalyticConversionDetailDialog({
 									{formatCount(summary.lostLeads ?? 0)}
 								</p>
 							</div>
-							<div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+							<div className="rounded-2xl border border-border bg-white px-4 py-3">
 								<p className="text-xs font-medium text-muted-foreground">
 									Em andamento
 								</p>
@@ -119,7 +119,7 @@ function AnalyticConversionDetailDialog({
 								return (
 									<li key={lead.id}>
 										<Link
-											className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-muted/40"
+											className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-white"
 											href={`${appRoutes.app.leads}/${lead.id}`}
 										>
 											<div className="min-w-0">

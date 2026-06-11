@@ -137,6 +137,8 @@ function AccessGroupDialog({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const form = useForm<AccessGroupFormValues>({
 		resolver: zodResolver(accessGroupSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			name: '',
 			description: '',
@@ -309,7 +311,7 @@ function AccessGroupDialog({
 						</div>
 
 						<div className="space-y-4">
-							<div className="rounded-2xl border border-border/80 bg-[#f8fafc] p-4">
+							<div className="rounded-2xl border border-border/80 bg-white p-4">
 								<Label
 									className="text-sm font-medium text-[#1b2430]"
 									required

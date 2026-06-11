@@ -61,6 +61,8 @@ function CustomerCatalogFormDialog({
 	const updateMutation = useUpdateCustomerMutation();
 	const form = useForm<CustomerCatalogFormValues>({
 		resolver: zodResolver(customerCatalogFormSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			name: '',
 			email: '',
@@ -265,6 +267,8 @@ function StoreCatalogFormDialog({
 	const updateMutation = useUpdateStoreMutation();
 	const form = useForm<StoreCatalogFormValues>({
 		resolver: zodResolver(storeCatalogFormSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: { name: '' },
 	});
 
