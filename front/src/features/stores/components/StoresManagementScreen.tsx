@@ -1,9 +1,7 @@
 'use client';
 
-import { useQueries } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
 import { useLeadOwnersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import {
@@ -11,25 +9,31 @@ import {
 	useDeleteStoreMutation,
 	useUpdateStoreMutation,
 } from '@/features/stores/hooks/stores.mutations';
-import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
+import {
+	useStoreMetricsQuery,
+	useStoresQuery,
+} from '@/features/stores/hooks/stores.queries';
 import type { StoreRecord } from '@/features/stores/model/stores.model';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 
 import {
 	getPersonInitials,
 	getStoreInitials,
 	getStoresErrorMessage,
+	getStoresPageErrorMessage,
 	normalizeSearch,
 	resolveStoreProfile,
 	stateLabels,
-	STORES_PAGE_SIZE,
+	DEFAULT_STORE_PAGE_SIZE,
 	type StoreTableRow,
-} from '../lib/store-catalog-view';
+} from '../lib/store-view';
 import {
-	emptyStoreName,
 	StoreDeleteDialog,
 	StoreFormDialog,
+	emptyStoreFormValues,
 	toStorePayload,
 	type StoreDialogState,
+	type StoreFormValues,
 } from './StoreForm';
 import { StoresCatalogCard } from './StoresCatalogCard';
 import { StoresMetricsGrid, StoresPageHeader } from './StoresHeaderMetrics';
@@ -39,13 +43,9 @@ type StoresManagementScreenProps = {
 	user: AuthenticatedUser;
 };
 
-function parseCatalogMoney(value: string): number {
-	const parsed = Number(value);
-	return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 	const storesQuery = useStoresQuery();
+	const storeMetricsQuery = useStoreMetricsQuery();
 	const ownersQuery = useLeadOwnersQuery();
 	const createStoreMutation = useCreateStoreMutation();
 	const updateStoreMutation = useUpdateStoreMutation();
@@ -54,37 +54,18 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 	const [storeDialogState, setStoreDialogState] =
 		useState<StoreDialogState | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<StoreRecord | null>(null);
-	const [storeName, setStoreName] = useState(emptyStoreName);
+	const [storeFormValues, setStoreFormValues] =
+		useState<StoreFormValues>(emptyStoreFormValues);
 	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 	const [search, setSearch] = useState('');
 	const [regionFilter, setRegionFilter] = useState('ALL');
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_STORE_PAGE_SIZE);
 
 	const canManageStores =
 		user.role === 'ADMINISTRATOR' || user.role === 'GENERAL_MANAGER';
 	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
-
-	const leadCountQueries = useQueries({
-		queries: stores.map((store) => ({
-			enabled: stores.length > 0,
-			queryFn: async ({ signal }: { signal: AbortSignal }) => {
-				const catalog = await fetchLeadCatalog(
-					{ limit: 1, page: 1, sort: 'recent', storeId: store.id },
-					signal,
-				);
-				return {
-					converted: catalog.summary.converted,
-					conversionRate: catalog.summary.conversionRate,
-					openDeals: catalog.funnel.openDeals,
-					storeId: store.id,
-					total: catalog.total,
-					wonValue: parseCatalogMoney(catalog.summary.wonValue),
-				};
-			},
-			queryKey: ['stores', 'lead-count', store.id],
-		})),
-	});
 
 	const leadMetricsByStoreId = useMemo(() => {
 		const metrics = new Map<
@@ -97,19 +78,17 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				wonValue: number;
 			}
 		>();
-		for (const query of leadCountQueries) {
-			if (query.data) {
-				metrics.set(query.data.storeId, {
-					converted: query.data.converted,
-					conversionRate: query.data.conversionRate,
-					openDeals: query.data.openDeals,
-					total: query.data.total,
-					wonValue: query.data.wonValue,
-				});
-			}
+		for (const item of storeMetricsQuery.data ?? []) {
+			metrics.set(item.storeId, {
+				converted: item.converted,
+				conversionRate: item.conversionRate,
+				openDeals: item.openDeals,
+				total: item.total,
+				wonValue: item.wonValue,
+			});
 		}
 		return metrics;
-	}, [leadCountQueries]);
+	}, [storeMetricsQuery.data]);
 
 	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data]);
 	const ownersByStoreId = useMemo(() => {
@@ -171,14 +150,11 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		});
 	}, [regionFilter, rows, search]);
 
-	const totalPages = Math.max(
-		1,
-		Math.ceil(filteredRows.length / STORES_PAGE_SIZE),
-	);
+	const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
 	const safePage = Math.min(page, totalPages);
 	const paginatedRows = filteredRows.slice(
-		(safePage - 1) * STORES_PAGE_SIZE,
-		safePage * STORES_PAGE_SIZE,
+		(safePage - 1) * pageSize,
+		safePage * pageSize,
 	);
 	const uniqueStates = useMemo(
 		() => [...new Set(rows.map((row) => row.state))],
@@ -201,56 +177,31 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 			? Math.round((totalConvertedLeads / totalLeadCount) * 100)
 			: 0;
 
-	function handleExport() {
-		const headers = [
-			'Loja',
-			'Cidade/Estado',
-			'Responsavel',
-			'Leads',
-			'Negociacoes abertas',
-			'Conversao',
-			'Status',
-		];
-		const csvRows = filteredRows.map((row) =>
-			[
-				row.store.name,
-				row.cityState,
-				row.ownerName,
-				String(row.leadCount),
-				String(row.openDealsCount),
-				`${row.conversionRate}%`,
-				'Ativa',
-			]
-				.map((value) => `"${value.replaceAll('"', '""')}"`)
-				.join(','),
-		);
-		const blob = new Blob([[headers.join(','), ...csvRows].join('\n')], {
-			type: 'text/csv;charset=utf-8',
-		});
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = 'lojas.csv';
-		link.click();
-		URL.revokeObjectURL(url);
-	}
-
 	function openCreateStoreDialog() {
 		setDialogError(null);
-		setStoreName(emptyStoreName);
+		setStoreFormValues(emptyStoreFormValues);
 		setStoreDialogState({ mode: 'create', store: null });
 	}
 
 	function openEditStoreDialog(store: StoreRecord) {
 		setDialogError(null);
-		setStoreName(store.name);
+		setStoreFormValues({
+			addressLine: store.addressLine ?? '',
+			city: store.city ?? '',
+			coverage: store.coverage ?? '',
+			distributionRegion: store.distributionRegion ?? '',
+			name: store.name,
+			region: store.region ?? '',
+			scope: store.scope ?? '',
+			state: store.state ?? '',
+		});
 		setStoreDialogState({ mode: 'edit', store });
 	}
 
 	async function handleStoreSubmit() {
-		const payload = toStorePayload(storeName);
+		const payload = toStorePayload(storeFormValues);
 		if (!payload) {
-			setDialogError('Informe o nome da loja.');
+			setDialogError('Informe o nome da loja e uma UF válida com 2 letras.');
 			return;
 		}
 
@@ -261,12 +212,14 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 					id: storeDialogState.store.id,
 					body: payload,
 				});
+				showCrudSuccessToast('store', 'updated');
 			} else {
 				await createStoreMutation.mutateAsync(payload);
+				showCrudSuccessToast('store', 'created');
 			}
 
 			setStoreDialogState(null);
-			setStoreName(emptyStoreName);
+			setStoreFormValues(emptyStoreFormValues);
 		} catch (error) {
 			setDialogError(getStoresErrorMessage(error));
 		}
@@ -280,6 +233,7 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		setDeleteError(null);
 		try {
 			await deleteStoreMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('store', 'deleted');
 			setDeleteTarget(null);
 		} catch (error) {
 			setDeleteError(getStoresErrorMessage(error));
@@ -291,7 +245,6 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 			<StoresPageHeader
 				canManageStores={canManageStores}
 				onCreate={openCreateStoreDialog}
-				onExport={handleExport}
 				onRegionFilterChange={(value) => {
 					setRegionFilter(value);
 					setPage(1);
@@ -303,6 +256,32 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				regionFilter={regionFilter}
 				regionOptions={regionOptions}
 				search={search}
+			/>
+
+			<StoresCatalogCard
+				canManageStores={canManageStores}
+				errorMessage={
+					storesQuery.isError
+						? getStoresPageErrorMessage(storesQuery.error)
+						: null
+				}
+				filteredCount={filteredRows.length}
+				isError={storesQuery.isError}
+				isLoading={storesQuery.isLoading}
+				onDelete={(store) => {
+					setDeleteError(null);
+					setDeleteTarget(store);
+				}}
+				onEdit={openEditStoreDialog}
+				onPageChange={setPage}
+				onPageSizeChange={(nextPageSize) => {
+					setPageSize(nextPageSize);
+					setPage(1);
+				}}
+				page={safePage}
+				pageSize={pageSize}
+				rows={paginatedRows}
+				totalPages={totalPages}
 			/>
 
 			<StoresMetricsGrid
@@ -317,25 +296,6 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 
 			<StoresInsightsAside rows={rows} storesCount={stores.length} />
 
-			<StoresCatalogCard
-				canManageStores={canManageStores}
-				errorMessage={
-					storesQuery.isError ? getStoresErrorMessage(storesQuery.error) : null
-				}
-				filteredCount={filteredRows.length}
-				isError={storesQuery.isError}
-				isLoading={storesQuery.isLoading}
-				onDelete={(store) => {
-					setDeleteError(null);
-					setDeleteTarget(store);
-				}}
-				onEdit={openEditStoreDialog}
-				onPageChange={setPage}
-				page={safePage}
-				rows={paginatedRows}
-				totalPages={totalPages}
-			/>
-
 			<StoreFormDialog
 				dialogError={dialogError}
 				dialogState={storeDialogState}
@@ -349,8 +309,13 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				onSave={() => {
 					void handleStoreSubmit();
 				}}
-				onValueChange={setStoreName}
-				value={storeName}
+				onValueChange={(field, value) =>
+					setStoreFormValues((current: StoreFormValues) => ({
+						...current,
+						[field]: value,
+					}))
+				}
+				values={storeFormValues}
 			/>
 
 			<StoreDeleteDialog

@@ -24,6 +24,8 @@ import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { useDeleteStoreMutation } from '@/features/stores/hooks/stores.mutations';
 
 import { useDeleteCustomerMutation } from '../hooks/leads.catalog.mutations';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { getCatalogCrudErrorMessage } from '../lib/catalog-crud-errors';
 import type { LeadCustomer, LeadStore } from '../model/leads.model';
 import {
@@ -106,6 +108,7 @@ function CustomerManagerDialog({
 		setDeleteError(null);
 		try {
 			await deleteCustomerMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('customer', 'deleted');
 			setSelectedCustomerId((current) =>
 				current === deleteTarget.id ? null : current,
 			);
@@ -354,6 +357,7 @@ function StoreManagerDialog({
 		setDeleteError(null);
 		try {
 			await deleteStoreMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('store', 'deleted');
 			setSelectedStoreId((current) =>
 				current === deleteTarget.id ? null : current,
 			);

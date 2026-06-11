@@ -6,6 +6,7 @@ type TeamMutationInput = {
 	name: string;
 	storeId: string;
 	managerId?: string | null;
+	initialMemberUserIds?: string[];
 };
 
 type TeamUpdateInput = {
@@ -13,6 +14,18 @@ type TeamUpdateInput = {
 	storeId?: string;
 };
 
+type TeamMemberCandidate = {
+	id: string;
+	name: string;
+	email: string;
+};
+
 type TeamDialogMode = 'create' | 'edit';
 
-export type { TeamDialogMode, TeamMutationInput, TeamRecord, TeamUpdateInput };
+export type {
+	TeamDialogMode,
+	TeamMemberCandidate,
+	TeamMutationInput,
+	TeamRecord,
+	TeamUpdateInput,
+};

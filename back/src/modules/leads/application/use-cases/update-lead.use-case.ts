@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { parseLeadStatus } from '../../../../shared/domain/enums/lead-status.enum.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { LeadSource } from '../../../../shared/domain/value-objects/lead-source.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { CustomerRepositoryFactory } from '../../../customers/infrastructure/persistence/factories/customer-repository.factory.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
@@ -88,6 +90,7 @@ class UpdateLeadUseCase {
 	async execute(actor: LeadActor, leadId: string, dto: UpdateLeadDto) {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const users = this.userRepositoryFactory.create(transactionContext);
 			const customers =
 				this.customerRepositoryFactory.create(transactionContext);
@@ -145,6 +148,18 @@ class UpdateLeadUseCase {
 					title: 'Lead atualizado',
 					description: 'Dados operacionais do lead foram atualizados.',
 					payload: { changes },
+				});
+				await createAuditLogEntry(tx, {
+					actorUserId: actor.userId,
+					action:
+						changes.length === 1 && changes[0]?.field === 'status'
+							? 'STATUS_CHANGE'
+							: 'UPDATE',
+					entityName: 'Lead',
+					entityId: updated.id.value,
+					metadata: {
+						changedFields: changes.map((change) => change.field),
+					},
 				});
 			}
 			return updated;

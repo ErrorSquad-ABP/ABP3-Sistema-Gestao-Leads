@@ -5,6 +5,7 @@ import {
 	parseLeadTeamsResponse,
 } from '@/features/leads/schemas/lead-support.schema';
 import type {
+	TeamMemberCandidate,
 	TeamMutationInput,
 	TeamRecord,
 	TeamUpdateInput,
@@ -15,6 +16,43 @@ async function listTeams(signal?: AbortSignal): Promise<TeamRecord[]> {
 	return parseLeadTeamsResponse(raw);
 }
 
+function parseTeamMemberCandidates(data: unknown): TeamMemberCandidate[] {
+	if (!Array.isArray(data)) {
+		throw new Error('Resposta de candidatos de equipe em formato inesperado.');
+	}
+	return data.map((item) => {
+		if (
+			typeof item !== 'object' ||
+			item === null ||
+			typeof (item as { id?: unknown }).id !== 'string' ||
+			typeof (item as { name?: unknown }).name !== 'string' ||
+			typeof (item as { email?: unknown }).email !== 'string'
+		) {
+			throw new Error('Resposta de candidato de equipe em formato inesperado.');
+		}
+		return {
+			id: (item as { id: string }).id,
+			name: (item as { name: string }).name,
+			email: (item as { email: string }).email,
+		};
+	});
+}
+
+async function listTeamMemberCandidates(
+	storeId?: string,
+	signal?: AbortSignal,
+): Promise<TeamMemberCandidate[]> {
+	const params = new URLSearchParams();
+	if (storeId) {
+		params.set('storeId', storeId);
+	}
+	const suffix = params.toString() ? `?${params.toString()}` : '';
+	const raw = await apiFetch<unknown>(`/api/teams/member-candidates${suffix}`, {
+		signal,
+	});
+	return parseTeamMemberCandidates(raw);
+}
+
 async function createTeam(input: TeamMutationInput): Promise<TeamRecord> {
 	const raw = await apiFetch<unknown>('/api/teams', {
 		method: 'POST',
@@ -22,6 +60,7 @@ async function createTeam(input: TeamMutationInput): Promise<TeamRecord> {
 			name: input.name,
 			storeId: input.storeId,
 			managerId: input.managerId ?? null,
+			initialMemberUserIds: input.initialMemberUserIds ?? [],
 		},
 	});
 	return parseLeadTeamResponse(raw);
@@ -57,4 +96,37 @@ async function deleteTeam(teamId: string): Promise<void> {
 	});
 }
 
-export { assignTeamManager, createTeam, deleteTeam, listTeams, updateTeam };
+async function addTeamMember(
+	teamId: string,
+	userId: string,
+): Promise<TeamRecord> {
+	const raw = await apiFetch<unknown>(`/api/teams/${teamId}/members`, {
+		method: 'POST',
+		body: { userId },
+	});
+	return parseLeadTeamResponse(raw);
+}
+
+async function removeTeamMember(
+	teamId: string,
+	userId: string,
+): Promise<TeamRecord> {
+	const raw = await apiFetch<unknown>(
+		`/api/teams/${teamId}/members/${userId}`,
+		{
+			method: 'DELETE',
+		},
+	);
+	return parseLeadTeamResponse(raw);
+}
+
+export {
+	addTeamMember,
+	assignTeamManager,
+	createTeam,
+	deleteTeam,
+	listTeamMemberCandidates,
+	listTeams,
+	removeTeamMember,
+	updateTeam,
+};

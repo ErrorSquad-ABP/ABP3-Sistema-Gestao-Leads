@@ -4,9 +4,45 @@ const queryKeys = {
 	},
 	users: {
 		all: ['users'] as const,
-		list: (page: number, limit: number) =>
-			['users', 'list', page, limit] as const,
+		list: (params: {
+			page: number;
+			limit: number;
+			search?: string;
+			role?: string;
+			accessGroupId?: string;
+		}) =>
+			[
+				'users',
+				'list',
+				params.search?.trim() ?? '',
+				params.role ?? 'all-roles',
+				params.accessGroupId ?? 'all-groups',
+				params.page,
+				params.limit,
+			] as const,
 		accessGroups: ['users', 'access-groups'] as const,
+	},
+	auditLogs: {
+		list: (params: {
+			category?: string;
+			action?: string;
+			user?: string;
+			startDate?: string;
+			endDate?: string;
+			page: number;
+			limit: number;
+		}) =>
+			[
+				'audit-logs',
+				'list',
+				params.category ?? 'all-categories',
+				params.action ?? 'all-actions',
+				params.user ?? 'all-users',
+				params.startDate ?? 'no-start',
+				params.endDate ?? 'no-end',
+				params.page,
+				params.limit,
+			] as const,
 	},
 	/**
 	 * Listagem de leads. Para invalidar após criar/editar (ex.: S1-FRONT-12):
@@ -62,6 +98,9 @@ const queryKeys = {
 		stores: ['leads', 'catalog', 'stores'] as const,
 		teams: ['leads', 'catalog', 'teams'] as const,
 		owners: ['leads', 'catalog', 'owners'] as const,
+	},
+	stores: {
+		metrics: ['stores', 'metrics'] as const,
 	},
 	vehicles: {
 		listRoot: ['vehicles', 'list'] as const,
@@ -121,6 +160,7 @@ const queryKeys = {
 	},
 	deals: {
 		listRoot: ['deals', 'list'] as const,
+		metrics: ['deals', 'metrics'] as const,
 		pipelineRoot: ['deals', 'pipeline'] as const,
 		/**
 		 * Lista de negociações por lead (`useDealsByLeadQuery`). Após mutação,
@@ -180,6 +220,32 @@ const queryKeys = {
 				params.page,
 				params.pageSize,
 				params.valueSort ?? 'recent',
+			] as const,
+	},
+	agenda: {
+		itemsRoot: ['agenda', 'items'] as const,
+		leadItemsRoot: ['agenda', 'lead-items'] as const,
+		metrics: ['agenda', 'metrics'] as const,
+		leadItems: (leadId: string) => ['agenda', 'lead-items', leadId] as const,
+		items: (
+			params: {
+				from?: string;
+				limit?: number;
+				search?: string;
+				status?: string;
+				to?: string;
+				type?: string;
+			} = {},
+		) =>
+			[
+				'agenda',
+				'items',
+				params.from ?? 'default-from',
+				params.to ?? 'default-to',
+				params.limit ?? 'default-limit',
+				params.search?.trim() ?? 'default-search',
+				params.status ?? 'default-status',
+				params.type ?? 'default-type',
 			] as const,
 	},
 	dashboards: {

@@ -8,12 +8,28 @@ import { Email } from '../../../../../shared/domain/value-objects/email.value-ob
 import { Name } from '../../../../../shared/domain/value-objects/name.value-object.js';
 import { PasswordHash } from '../../../../../shared/domain/value-objects/password-hash.value-object.js';
 import type { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service.js';
-import { User } from '../../../domain/entities/user.entity.js';
+import {
+	User,
+	type UserAccessGroupSummary,
+} from '../../../domain/entities/user.entity.js';
 import { UserEmailAlreadyExistsError } from '../../../domain/errors/user-email-already-exists.error.js';
 import { UserInvalidAccessGroupError } from '../../../domain/errors/user-invalid-access-group.error.js';
-import type { IUserRepository } from '../../../domain/repositories/user.repository.js';
+import type {
+	IUserRepository,
+	ListUsersPagedQuery,
+	UsersAggregateSummary,
+} from '../../../domain/repositories/user.repository.js';
 
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
+
+type AccessGroupRecord = {
+	readonly id: string;
+	readonly name: string;
+	readonly description: string;
+	readonly baseRole: PrismaUserRole | null;
+	readonly featureKeys: Prisma.JsonValue;
+	readonly isSystemGroup: boolean;
+};
 
 type UserRecord = {
 	readonly id: string;
@@ -23,15 +39,9 @@ type UserRecord = {
 	readonly role: PrismaUserRole;
 	readonly memberTeams: readonly { readonly id: string }[];
 	readonly managedTeams: readonly { readonly id: string }[];
-	readonly accessGroupId: string | null;
-	readonly accessGroup?: {
-		readonly id: string;
-		readonly name: string;
-		readonly description: string;
-		readonly baseRole: PrismaUserRole | null;
-		readonly featureKeys: Prisma.JsonValue;
-		readonly isSystemGroup: boolean;
-	} | null;
+	readonly accessGroups: readonly {
+		readonly accessGroup: AccessGroupRecord;
+	}[];
 };
 
 const USER_ROLE_TO_PRISMA: Record<string, PrismaUserRole> = {
@@ -51,7 +61,10 @@ const PRISMA_ROLE_TO_USER: Record<PrismaUserRole, string> = {
 const userRelationsInclude = {
 	memberTeams: { select: { id: true } },
 	managedTeams: { select: { id: true } },
-	accessGroup: true,
+	accessGroups: {
+		include: { accessGroup: true },
+		orderBy: { accessGroup: { name: 'asc' } },
+	},
 } as const;
 
 function isPrismaKnownRequest(
@@ -74,6 +87,32 @@ function isTransientPrismaError(error: unknown): boolean {
 
 function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function buildListUsersWhere(
+	query: ListUsersPagedQuery,
+): Prisma.UserWhereInput {
+	const conditions: Prisma.UserWhereInput[] = [];
+
+	if (query.search !== undefined && query.search.trim() !== '') {
+		const term = query.search.trim();
+		conditions.push({
+			OR: [
+				{ name: { contains: term, mode: 'insensitive' } },
+				{ email: { contains: term, mode: 'insensitive' } },
+			],
+		});
+	}
+	if (query.role !== undefined) {
+		conditions.push({ role: USER_ROLE_TO_PRISMA[query.role] ?? 'ATTENDANT' });
+	}
+	if (query.accessGroupId !== undefined) {
+		conditions.push({
+			accessGroups: { some: { accessGroupId: query.accessGroupId } },
+		});
+	}
+
+	return conditions.length === 0 ? {} : { AND: conditions };
 }
 
 class UserPrismaRepository implements IUserRepository {
@@ -104,11 +143,15 @@ class UserPrismaRepository implements IUserRepository {
 		try {
 			const created = await this.client.user.create({
 				data: {
-					accessGroupId: user.accessGroupId?.value ?? null,
 					email: user.email.value,
 					name: user.name.value,
 					password: user.passwordHash.value,
 					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
+					accessGroups: {
+						create: user.accessGroupIds.map((id) => ({
+							accessGroupId: id.value,
+						})),
+					},
 				},
 				include: userRelationsInclude,
 			});
@@ -117,7 +160,7 @@ class UserPrismaRepository implements IUserRepository {
 			this.rethrowPrismaUserErrors(
 				error,
 				user.email.value,
-				user.accessGroupId?.value,
+				user.accessGroupIds.map((id) => id.value),
 			);
 			throw error;
 		}
@@ -127,11 +170,16 @@ class UserPrismaRepository implements IUserRepository {
 		try {
 			const updated = await this.client.user.update({
 				data: {
-					accessGroupId: user.accessGroupId?.value ?? null,
 					email: user.email.value,
 					name: user.name.value,
 					password: user.passwordHash.value,
 					role: USER_ROLE_TO_PRISMA[user.role] ?? 'ATTENDANT',
+					accessGroups: {
+						deleteMany: {},
+						create: user.accessGroupIds.map((id) => ({
+							accessGroupId: id.value,
+						})),
+					},
 				},
 				where: { id: user.id.value },
 				include: userRelationsInclude,
@@ -141,7 +189,7 @@ class UserPrismaRepository implements IUserRepository {
 			this.rethrowPrismaUserErrors(
 				error,
 				user.email.value,
-				user.accessGroupId?.value,
+				user.accessGroupIds.map((id) => id.value),
 			);
 			throw error;
 		}
@@ -174,6 +222,34 @@ class UserPrismaRepository implements IUserRepository {
 		return user ? this.toDomain(user) : null;
 	}
 
+	async list(): Promise<readonly User[]> {
+		const rows = await this.client.user.findMany({
+			orderBy: { name: 'asc' },
+			include: userRelationsInclude,
+		});
+		return rows.map((row) => this.toDomain(row));
+	}
+
+	async listTeamMemberCandidatesByStoreId(
+		storeId: UUID,
+	): Promise<readonly User[]> {
+		const rows = await this.client.user.findMany({
+			where: {
+				OR: [
+					{
+						memberTeams: { none: {} },
+						managedTeams: { none: {} },
+					},
+					{ memberTeams: { some: { storeId: storeId.value } } },
+					{ managedTeams: { some: { storeId: storeId.value } } },
+				],
+			},
+			orderBy: { name: 'asc' },
+			include: userRelationsInclude,
+		});
+		return rows.map((row) => this.toDomain(row));
+	}
+
 	async listByIds(ids: readonly UUID[]): Promise<readonly User[]> {
 		if (ids.length === 0) {
 			return [];
@@ -188,19 +264,21 @@ class UserPrismaRepository implements IUserRepository {
 		return rows.map((row) => this.toDomain(row));
 	}
 
-	async listPaged(query: {
-		readonly page: number;
-		readonly limit: number;
-	}): Promise<{ readonly users: readonly User[]; readonly total: number }> {
+	async listPaged(query: ListUsersPagedQuery): Promise<{
+		readonly users: readonly User[];
+		readonly total: number;
+	}> {
 		const skip = (query.page - 1) * query.limit;
+		const where = buildListUsersWhere(query);
 		const [rows, total] = await Promise.all([
 			this.client.user.findMany({
+				where,
 				orderBy: { createdAt: 'desc' },
 				skip,
 				take: query.limit,
 				include: userRelationsInclude,
 			}),
-			this.client.user.count(),
+			this.client.user.count({ where }),
 		]);
 		return {
 			users: rows.map((row) => this.toDomain(row)),
@@ -208,7 +286,46 @@ class UserPrismaRepository implements IUserRepository {
 		};
 	}
 
+	async aggregateSummary(): Promise<UsersAggregateSummary> {
+		const [total, administrators, withoutGroup, multiGroup] = await Promise.all(
+			[
+				this.client.user.count(),
+				this.client.user.count({ where: { role: 'ADMIN' } }),
+				this.client.user.count({ where: { accessGroups: { none: {} } } }),
+				this.client.userAccessGroup.groupBy({
+					by: ['userId'],
+					having: { userId: { _count: { gte: 2 } } },
+					_count: { userId: true },
+				}),
+			],
+		);
+		return {
+			total,
+			administrators,
+			withoutGroup,
+			withMultipleGroups: multiGroup.length,
+		};
+	}
+
 	private toDomain(record: UserRecord): User {
+		const accessGroups: UserAccessGroupSummary[] = record.accessGroups.map(
+			(link) => ({
+				id: Uuid.parse(link.accessGroup.id),
+				name: link.accessGroup.name,
+				description: link.accessGroup.description,
+				baseRole:
+					link.accessGroup.baseRole === null
+						? null
+						: parseUserRole(PRISMA_ROLE_TO_USER[link.accessGroup.baseRole]),
+				featureKeys: Array.isArray(link.accessGroup.featureKeys)
+					? link.accessGroup.featureKeys.filter(
+							(value): value is string => typeof value === 'string',
+						)
+					: [],
+				isSystemGroup: link.accessGroup.isSystemGroup,
+			}),
+		);
+
 		return new User(
 			Uuid.parse(record.id),
 			Name.create(record.name),
@@ -217,26 +334,8 @@ class UserPrismaRepository implements IUserRepository {
 			parseUserRole(PRISMA_ROLE_TO_USER[record.role]),
 			record.memberTeams.map((team) => Uuid.parse(team.id)),
 			record.managedTeams.map((team) => Uuid.parse(team.id)),
-			record.accessGroupId === null ? null : Uuid.parse(record.accessGroupId),
-			record.accessGroup === null || record.accessGroup === undefined
-				? null
-				: {
-						id: Uuid.parse(record.accessGroup.id),
-						name: record.accessGroup.name,
-						description: record.accessGroup.description,
-						baseRole:
-							record.accessGroup.baseRole === null
-								? null
-								: parseUserRole(
-										PRISMA_ROLE_TO_USER[record.accessGroup.baseRole],
-									),
-						featureKeys: Array.isArray(record.accessGroup.featureKeys)
-							? record.accessGroup.featureKeys.filter(
-									(value): value is string => typeof value === 'string',
-								)
-							: [],
-						isSystemGroup: record.accessGroup.isSystemGroup,
-					},
+			accessGroups.map((group) => group.id),
+			accessGroups,
 		);
 	}
 
@@ -250,7 +349,7 @@ class UserPrismaRepository implements IUserRepository {
 	private rethrowPrismaUserErrors(
 		error: unknown,
 		email: string,
-		accessGroupId: string | undefined,
+		accessGroupIds: readonly string[],
 	): void {
 		if (!isPrismaKnownRequest(error)) {
 			return;
@@ -276,11 +375,10 @@ class UserPrismaRepository implements IUserRepository {
 						? error.meta.target.join(',')
 						: '';
 			if (
-				accessGroupId !== undefined &&
-				accessGroupId !== '' &&
+				accessGroupIds.length > 0 &&
 				fieldName.toLowerCase().includes('accessgroup')
 			) {
-				throw new UserInvalidAccessGroupError(accessGroupId);
+				throw new UserInvalidAccessGroupError(accessGroupIds.join(', '));
 			}
 		}
 	}

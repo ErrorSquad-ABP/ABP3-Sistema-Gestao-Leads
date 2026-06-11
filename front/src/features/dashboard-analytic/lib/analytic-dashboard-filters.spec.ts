@@ -14,6 +14,9 @@ const baseUser = {
 	teamId: null,
 	memberTeamIds: [],
 	managedTeamIds: [],
+	accessGroupIds: [],
+	accessGroups: [],
+	featureKeys: [],
 	accessGroupId: null,
 	accessGroup: null,
 } satisfies Omit<AuthenticatedUser, 'role'>;

@@ -10,6 +10,7 @@ const leadListItemSchema = z.object({
 	ownerUserId: z.string().uuid().nullable(),
 	source: z.string(),
 	status: z.string(),
+	vehicleInterestText: z.string().nullable(),
 });
 
 const leadListPagedDataSchema = z.object({
@@ -96,8 +97,8 @@ function parseLeadCatalogResponse(data: unknown) {
 }
 
 export {
-	leadCatalogSchema,
 	leadCatalogItemSchema,
+	leadCatalogSchema,
 	leadListItemSchema,
 	leadListPagedDataSchema,
 	parseLeadCatalogResponse,

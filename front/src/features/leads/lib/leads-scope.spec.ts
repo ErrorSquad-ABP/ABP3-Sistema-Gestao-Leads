@@ -14,6 +14,9 @@ const baseUser = {
 	name: 'Test',
 	email: 't@example.com',
 	teamId: null,
+	accessGroupIds: [],
+	accessGroups: [],
+	featureKeys: [],
 	accessGroupId: null,
 	accessGroup: null,
 } satisfies Omit<
@@ -124,6 +127,7 @@ describe('mergeLeadListsById', () => {
 			ownerUserId: null,
 			source: 'x',
 			status: 'NEW',
+			vehicleInterestText: null,
 		};
 		const out = mergeLeadListsById([
 			[a],

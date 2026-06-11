@@ -82,6 +82,10 @@ Ainda fica para refinamento da Sprint 3:
 - `/app/dashboard/operational`
 - `/app/dashboard/analytic`
 
+## Scripts de desenvolvimento
+
+- `npm run dev` — desenvolvimento local com Turbopack.
+
 ## Observações
 
 - `/app/operations` é só alias de compatibilidade para `/app/stores`;

@@ -55,7 +55,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			email: 'admin@crm.com',
 			password: passwordHash,
 			role: UserRole.ADMIN,
-			accessGroupId: deterministicUuid('access-group:administrator'),
+			accessGroupIds: [deterministicUuid('access-group:administrator')],
 		},
 		{
 			id: generalManagerId,
@@ -63,7 +63,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			email: 'geral@crm.com',
 			password: passwordHash,
 			role: UserRole.GENERAL_MANAGER,
-			accessGroupId: deterministicUuid('access-group:general-manager'),
+			accessGroupIds: [deterministicUuid('access-group:general-manager')],
 		},
 		{
 			id: managerId,
@@ -71,7 +71,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			email: 'gerente@crm.com',
 			password: passwordHash,
 			role: UserRole.MANAGER,
-			accessGroupId: deterministicUuid('access-group:manager'),
+			accessGroupIds: [deterministicUuid('access-group:manager')],
 		},
 		{
 			id: attendantId,
@@ -79,7 +79,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			email: 'atendente@crm.com',
 			password: passwordHash,
 			role: UserRole.ATTENDANT,
-			accessGroupId: deterministicUuid('access-group:attendant'),
+			accessGroupIds: [deterministicUuid('access-group:attendant')],
 		},
 		{
 			id: betaAttendantId,
@@ -87,7 +87,7 @@ export async function buildMinimalSeed(): Promise<MinimalSeedDataset> {
 			email: 'atendente2@crm.com',
 			password: passwordHash,
 			role: UserRole.ATTENDANT,
-			accessGroupId: deterministicUuid('access-group:attendant'),
+			accessGroupIds: [deterministicUuid('access-group:attendant')],
 		},
 	];
 

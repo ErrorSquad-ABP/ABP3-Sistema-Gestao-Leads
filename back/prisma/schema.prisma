@@ -99,26 +99,55 @@ enum SupportedFuelType {
   CNG
 }
 
+enum AgendaItemType {
+  TASK
+  EVENT
+}
+
+enum AgendaItemStatus {
+  SCHEDULED
+  DONE
+  CANCELLED
+}
+
+enum AgendaRecurrence {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 model AccessGroup {
-  id            String    @id @default(uuid()) @db.Uuid
-  name          String    @unique
+  id            String            @id @default(uuid()) @db.Uuid
+  name          String            @unique
   description   String
   baseRole      UserRole?
   featureKeys   Json
-  isSystemGroup Boolean   @default(false)
-  users         User[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isSystemGroup Boolean           @default(false)
+  userLinks     UserAccessGroup[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+/// Junção explícita usuário ↔ grupo de acesso (ADR-001: multi-grupo sem herança).
+model UserAccessGroup {
+  userId        String      @db.Uuid
+  accessGroupId String      @db.Uuid
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessGroup   AccessGroup @relation(fields: [accessGroupId], references: [id], onDelete: Cascade)
+  assignedAt    DateTime    @default(now())
+
+  @@id([userId, accessGroupId])
+  @@index([accessGroupId])
 }
 
 model User {
-  id            String       @id @default(uuid()) @db.Uuid
-  name          String
-  email         String       @unique
-  password      String
-  role          UserRole
-  accessGroupId String?      @db.Uuid
-  accessGroup   AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
+  id           String            @id @default(uuid()) @db.Uuid
+  name         String
+  email        String            @unique
+  password     String
+  role         UserRole
+  accessGroups UserAccessGroup[]
 
   memberTeams  Team[] @relation("TeamMembers")
   managedTeams Team[] @relation("TeamManager")
@@ -127,6 +156,7 @@ model User {
   leadEvents   LeadEvent[]   @relation("LeadEventActor")
   auditLogs    AuditLog[]
   authSessions AuthSession[]
+  agendaItems  AgendaItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -165,13 +195,20 @@ model Team {
 }
 
 model Store {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String
-  teams     Team[]
-  leads     Lead[]
-  vehicles  Vehicle[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                 String    @id @default(uuid()) @db.Uuid
+  name               String
+  addressLine        String?
+  city               String?
+  state              String?   @db.VarChar(2)
+  region             String?
+  distributionRegion String?
+  coverage           String?
+  scope              String?
+  teams              Team[]
+  leads              Lead[]
+  vehicles           Vehicle[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }
 
 model Customer {
@@ -198,6 +235,7 @@ model Lead {
   owner               User?       @relation("LeadOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
   deals               Deal[]
   events              LeadEvent[]
+  agendaItems         AgendaItem[]
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
@@ -297,4 +335,32 @@ model AuditLog {
   metadata    Json?
   actorUser   User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
+}
+
+model AgendaItem {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @db.Uuid
+  leadId      String?          @db.Uuid
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead        Lead?            @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  type        AgendaItemType
+  status      AgendaItemStatus @default(SCHEDULED)
+  recurrence  AgendaRecurrence @default(NONE)
+  title       String
+  description String?
+  location    String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  dueAt       DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([leadId])
+  @@index([userId, leadId])
+  @@index([userId, status, startsAt])
+  @@index([userId, status, dueAt])
+  @@index([userId, startsAt])
+  @@index([userId, dueAt])
+  @@index([userId, status])
+  @@map("agenda_items")
 }

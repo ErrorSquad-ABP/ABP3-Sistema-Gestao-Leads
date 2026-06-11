@@ -172,26 +172,27 @@ P0
 
 ---
 
-## `S3-EPIC-06` - Negociações — KPIs coloridos + Google Calendar (read)
+## `S3-EPIC-06` - Negociações — KPIs + Agenda interna
 
 ### Objetivo
 
-Colorir KPIs com tokens, remover fallbacks mock de métricas e integrar Google Calendar na seção “Atividades importantes”.
+Colorir KPIs com tokens, remover fallbacks mock de métricas e adicionar agenda interna do CRM por usuário, sem dependência de API externa.
 
 ### Requisitos relacionados
 
 - `RF03`
 - `RNF04`
-- integração externa (OAuth2)
+- agenda interna por usuário autenticado
 
 ### Saída esperada
 
 - KPIs via `KpiCard`;
 - remoção de valores hardcoded em `negotiations-metrics.ts`;
-- módulo `integrations/google-calendar`: OAuth2 + tokens por usuário;
-- endpoint `GET /integrations/google-calendar/events`;
-- UI substituindo `IMPORTANT_ACTIVITIES_MOCK`;
-- estados conectar/desconectar/erro/vazio.
+- módulo backend `agenda` com persistência por usuário;
+- endpoint `GET /agenda/items`;
+- rota `/app/agenda` com calendário mensal;
+- UI substituindo `IMPORTANT_ACTIVITIES_MOCK` por dados reais da agenda;
+- estados loading/erro/vazio/criação/conclusão/cancelamento.
 
 ### Prioridade
 

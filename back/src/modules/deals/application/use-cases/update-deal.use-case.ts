@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Prisma } from '../../../../generated/prisma/client.js';
+import { DealHistoryField } from '../../../../generated/prisma/enums.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { assertCanonicalDealImportance } from '../../../../shared/domain/enums/deal-importance.enum.js';
@@ -154,7 +155,13 @@ class UpdateDealUseCase {
 			if (lines.length > 0) {
 				await createAuditLogEntry(tx, {
 					actorUserId: actor.userId,
-					action: 'UPDATE',
+					action:
+						lines.length === 1 && lines[0]?.field === DealHistoryField.STAGE
+							? 'STAGE_CHANGE'
+							: lines.length === 1 &&
+									lines[0]?.field === DealHistoryField.STATUS
+								? 'STATUS_CHANGE'
+								: 'UPDATE',
 					entityName: 'Deal',
 					entityId: updated.id.value,
 					metadata: {

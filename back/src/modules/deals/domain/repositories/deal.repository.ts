@@ -44,6 +44,7 @@ interface IDealRepository {
 		filters: DealListScopedFilters & { readonly stage: DealStage },
 		pagination: DealListPagination,
 	): Promise<DealPipelineStagePage>;
+	metricsScoped(filters: DealListScopedFilters): Promise<DealMetrics>;
 }
 
 type DealEnrichedRow = {
@@ -91,10 +92,20 @@ type DealPipelineStagePage = {
 	readonly totalValue: string | null;
 };
 
+type DealMetrics = {
+	readonly openDealsCount: number;
+	readonly wonDealsCount: number;
+	readonly lostDealsCount: number;
+	readonly totalPipelineValue: number;
+	readonly averageTicket: number;
+	readonly conversionRate: number;
+};
+
 export type {
 	DealEnrichedListPage,
 	DealEnrichedRow,
 	DealListScopedFilters,
+	DealMetrics,
 	DealPipelineStagePage,
 	IDealRepository,
 };

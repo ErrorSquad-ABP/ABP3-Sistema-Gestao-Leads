@@ -8,6 +8,7 @@ import { AssignTeamManagerUseCase } from './application/use-cases/assign-team-ma
 import { CreateTeamUseCase } from './application/use-cases/create-team.use-case.js';
 import { DeleteTeamUseCase } from './application/use-cases/delete-team.use-case.js';
 import { FindTeamUseCase } from './application/use-cases/find-team.use-case.js';
+import { ListTeamMemberCandidatesUseCase } from './application/use-cases/list-team-member-candidates.use-case.js';
 import { ListTeamsUseCase } from './application/use-cases/list-teams.use-case.js';
 import { RemoveTeamMemberUseCase } from './application/use-cases/remove-team-member.use-case.js';
 import { UpdateTeamUseCase } from './application/use-cases/update-team.use-case.js';
@@ -31,6 +32,7 @@ import { TeamController } from './presentation/controllers/team.controller.js';
 		AddTeamMemberUseCase,
 		RemoveTeamMemberUseCase,
 		FindTeamUseCase,
+		ListTeamMemberCandidatesUseCase,
 		ListTeamsUseCase,
 		DeleteTeamUseCase,
 	],

@@ -2,29 +2,21 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-	AlertCircle,
-	CheckCircle2,
-	KeyRound,
-	LoaderCircle,
-	Mail,
-	ShieldCheck,
-	UserRound,
-} from 'lucide-react';
+import { KeyRound, LoaderCircle, Mail, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import type {
-	AuthenticatedUser,
-	UserRole,
-} from '@/features/login/types/login.types';
+import { Label, requiredFieldProps } from '@/components/ui/label';
+import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { getRoleLabel } from '@/features/users/components/UserForm';
 import { queryKeys } from '@/lib/constants/query-keys';
-import { isApiError } from '@/lib/http/api-error';
+import { appToastStyle } from '@/lib/feedback/app-toast-style';
+import { humanizeFormApiError } from '@/lib/http/humanize-api-error';
 import { cn } from '@/lib/utils';
 
 import {
@@ -40,108 +32,109 @@ import type {
 	UpdateOwnPasswordInput,
 } from '../types/profile.types';
 
-function resolveRoleLabel(role: UserRole) {
-	switch (role) {
-		case 'ATTENDANT':
-			return 'Atendente';
-		case 'MANAGER':
-			return 'Gerente';
-		case 'GENERAL_MANAGER':
-			return 'Gerente geral';
-		case 'ADMINISTRATOR':
-			return 'Administrador';
+type SettingsTab = 'email' | 'password';
+
+const inputClass =
+	'h-11 rounded-xl border-border bg-card shadow-none focus-visible:border-[color:var(--brand-accent)]/45';
+
+function formatUserInitials(name: string) {
+	const words = name.trim().split(/\s+/).filter(Boolean);
+	if (words.length === 0) {
+		return 'US';
 	}
+
+	const [first = '', second = ''] = words;
+	return `${first[0] ?? ''}${second[0] ?? first[1] ?? ''}`.toUpperCase();
 }
 
-function resolveCredentialErrorMessage(
-	error: unknown,
-	context: 'email' | 'password',
+function buildSuccessToast(
+	context: SettingsTab,
+	refreshSessionsRevoked: boolean,
+	email?: string,
 ) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a atualização agora. Tente novamente em instantes.';
+	if (context === 'email') {
+		return {
+			title: 'E-mail atualizado',
+			description: refreshSessionsRevoked
+				? `Na próxima sessão, use ${email}.`
+				: 'Seu e-mail de acesso foi atualizado.',
+		};
 	}
 
-	if (error.status === 401) {
-		return 'A senha atual informada não confere ou sua sessão já não é mais válida.';
-	}
-
-	if (error.status === 409 && context === 'email') {
-		return 'O e-mail informado já está em uso por outro utilizador.';
-	}
-
-	if (error.status === 429) {
-		return 'Muitas tentativas de alteração em sequência. Aguarde um momento antes de tentar novamente.';
-	}
-
-	if (error.status === 400 && error.code === 'user.password.unchanged') {
-		return 'A nova senha deve ser diferente da senha atual.';
-	}
-
-	return error.message;
+	return {
+		title: 'Senha atualizada',
+		description: 'Use a nova senha no próximo login.',
+	};
 }
-
-type SuccessFeedback = {
-	title: string;
-	description: string;
-};
 
 type PasswordFormValues = UpdateOwnPasswordInput & {
 	confirmPassword: string;
 };
 
-function buildSuccessFeedback(
-	context: 'email' | 'password',
-	refreshSessionsRevoked: boolean,
-	email?: string,
-): SuccessFeedback {
-	if (context === 'email') {
-		return {
-			title: 'E-mail atualizado',
-			description: refreshSessionsRevoked
-				? `Alterações guardadas. Da próxima vez que iniciar sessão nesta aplicação, utilize o endereço ${email}.`
-				: 'Alterações guardadas. O e-mail que utiliza para entrar mantém-se o mesmo.',
-		};
-	}
-
-	return {
-		title: 'Palavra-passe atualizada',
-		description:
-			'Alterações guardadas. Na próxima vez que iniciar sessão, utilize a nova palavra-passe.',
-	};
-}
-
-function FieldError({ message }: { message?: string }) {
-	if (!message) {
-		return null;
-	}
-
-	return (
-		<p className="inline-flex items-center gap-2 text-sm text-destructive">
-			<AlertCircle className="size-4 shrink-0" />
-			{message}
-		</p>
-	);
-}
-
-const inputClass =
-	'h-10 rounded-md border-[#d6dce5] bg-[#f8fafc] shadow-none focus-visible:border-[#2d3648]/45';
-
 type ProfilePageContentProps = {
 	currentUser: AuthenticatedUser;
 };
+
+function SettingsTabButton({
+	active,
+	icon: Icon,
+	label,
+	onClick,
+}: {
+	active: boolean;
+	icon: typeof Mail;
+	label: string;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			className={cn(
+				'inline-flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-medium transition-colors',
+				active
+					? 'border-[color:var(--brand-accent)] text-[color:var(--brand-accent)]'
+					: 'border-transparent text-muted-foreground hover:text-foreground',
+			)}
+			onClick={onClick}
+			type="button"
+		>
+			<Icon className="size-4" />
+			{label}
+		</button>
+	);
+}
+
+function FormSectionHeader({
+	description,
+	icon: Icon,
+	title,
+}: {
+	description: string;
+	icon: typeof Mail;
+	title: string;
+}) {
+	return (
+		<div className="flex items-start gap-4">
+			<div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[color:var(--brand-accent-soft)] text-[color:var(--brand-accent)]">
+				<Icon className="size-6" />
+			</div>
+			<div>
+				<h2 className="text-lg font-semibold text-foreground">{title}</h2>
+				<p className="mt-1 text-sm leading-6 text-muted-foreground">
+					{description}
+				</p>
+			</div>
+		</div>
+	);
+}
 
 function ProfilePageContent({
 	currentUser: initialCurrentUser,
 }: ProfilePageContentProps) {
 	const queryClient = useQueryClient();
 	const [currentUser, setCurrentUser] = useState(initialCurrentUser);
+	const [activeTab, setActiveTab] = useState<SettingsTab>('email');
 	const updateOwnEmailMutation = useUpdateOwnEmailMutation();
 	const updateOwnPasswordMutation = useUpdateOwnPasswordMutation();
-	const [emailSuccess, setEmailSuccess] = useState<SuccessFeedback | null>(
-		null,
-	);
-	const [passwordSuccess, setPasswordSuccess] =
-		useState<SuccessFeedback | null>(null);
 
 	const emailForm = useForm<UpdateOwnEmailInput>({
 		resolver: zodResolver(updateOwnEmailSchema),
@@ -161,6 +154,12 @@ function ProfilePageContent({
 	});
 
 	useEffect(() => {
+		if (globalThis.location.hash === '#credentials') {
+			setActiveTab('password');
+		}
+	}, []);
+
+	useEffect(() => {
 		emailForm.reset({
 			currentPassword: '',
 			email: currentUser.email,
@@ -177,365 +176,334 @@ function ProfilePageContent({
 	};
 
 	const handleEmailSubmit = emailForm.handleSubmit(async (values) => {
-		setEmailSuccess(null);
-		const result = await updateOwnEmailMutation.mutateAsync(values);
-		syncCurrentUserCache(result);
-		setEmailSuccess(
-			buildSuccessFeedback(
+		updateOwnEmailMutation.reset();
+		try {
+			const result = await updateOwnEmailMutation.mutateAsync(values);
+			syncCurrentUserCache(result);
+			const feedback = buildSuccessToast(
 				'email',
 				result.refreshSessionsRevoked,
 				result.email,
-			),
-		);
-		emailForm.reset({
-			currentPassword: '',
-			email: result.email,
-		});
+			);
+			toast.success(feedback.title, {
+				description: feedback.description,
+				...appToastStyle,
+			});
+			emailForm.reset({
+				currentPassword: '',
+				email: result.email,
+			});
+		} catch {
+			// mutation error rendered below
+		}
 	});
 
 	const handlePasswordSubmit = passwordForm.handleSubmit(async (values) => {
-		setPasswordSuccess(null);
-		const result = await updateOwnPasswordMutation.mutateAsync({
-			currentPassword: values.currentPassword,
-			newPassword: values.newPassword,
-		});
-		syncCurrentUserCache(result);
-		setPasswordSuccess(
-			buildSuccessFeedback('password', result.refreshSessionsRevoked),
-		);
-		passwordForm.reset({
-			currentPassword: '',
-			newPassword: '',
-			confirmPassword: '',
-		});
+		updateOwnPasswordMutation.reset();
+		try {
+			const result = await updateOwnPasswordMutation.mutateAsync({
+				currentPassword: values.currentPassword,
+				newPassword: values.newPassword,
+			});
+			syncCurrentUserCache(result);
+			const feedback = buildSuccessToast(
+				'password',
+				result.refreshSessionsRevoked,
+			);
+			toast.success(feedback.title, {
+				description: feedback.description,
+				...appToastStyle,
+			});
+			passwordForm.reset({
+				currentPassword: '',
+				newPassword: '',
+				confirmPassword: '',
+			});
+		} catch {
+			// mutation error rendered below
+		}
 	});
 
 	const emailErrorMessage = updateOwnEmailMutation.error
-		? resolveCredentialErrorMessage(updateOwnEmailMutation.error, 'email')
+		? humanizeFormApiError(updateOwnEmailMutation.error)
 		: null;
 	const passwordErrorMessage = updateOwnPasswordMutation.error
-		? resolveCredentialErrorMessage(updateOwnPasswordMutation.error, 'password')
+		? humanizeFormApiError(updateOwnPasswordMutation.error)
 		: null;
-
-	const summaryItems = currentUser
-		? [
-				{
-					label: 'Nome',
-					value: currentUser.name,
-					icon: UserRound,
-				},
-				{
-					label: 'Papel',
-					value: resolveRoleLabel(currentUser.role),
-					icon: ShieldCheck,
-				},
-				{
-					label: 'E-mail atual',
-					value: currentUser.email,
-					icon: Mail,
-				},
-			]
-		: [];
 
 	return (
 		<div className="space-y-6">
-			<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
-				<CardHeader className="gap-5 border-none pb-4 sm:pb-6">
-					<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-						<div className="min-w-0 flex-1 space-y-3">
-							<div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
-								<ShieldCheck className="size-5" />
+			<div>
+				<h1 className="text-3xl font-bold tracking-tight text-foreground">
+					Minha conta
+				</h1>
+				<p className="mt-2 text-sm text-muted-foreground">
+					Gerencie o e-mail e a senha usados para entrar no sistema.
+				</p>
+			</div>
+
+			<div className="grid gap-5 xl:grid-cols-[minmax(0,18rem)_1fr]">
+				<Card className="h-fit overflow-hidden rounded-3xl border-border bg-card shadow-sm">
+					<CardContent className="space-y-5 p-6">
+						<div className="flex flex-col items-center gap-3 text-center">
+							<div className="flex size-20 items-center justify-center rounded-full bg-[color:var(--brand-accent-soft)] text-2xl font-semibold text-[color:var(--brand-accent)]">
+								{formatUserInitials(currentUser.name)}
 							</div>
 							<div className="space-y-2">
-								<p className="text-sm font-medium tracking-[0.18em] text-[#d96c3f] uppercase">
-									Conta e segurança
+								<p className="text-lg font-semibold text-foreground">
+									{currentUser.name}
 								</p>
-								<CardTitle className="text-[1.65rem] font-semibold tracking-tight sm:text-[1.9rem]">
-									Perfil e credenciais
-								</CardTitle>
-								<p className="max-w-2xl text-[0.95rem] leading-7 text-muted-foreground">
-									Atualize aqui as credenciais da sua conta no Sistema de Gestão
-									de Leads: o e-mail com que entra na aplicação e a
-									palavra-passe. Em ambos os casos pedimos a palavra-passe atual
-									antes de guardar, para confirmar que é mesmo você.
-								</p>
+								<span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--brand-accent)]/20 bg-[color:var(--brand-accent-soft)] px-3 py-1 text-xs font-medium text-[color:var(--brand-accent)]">
+									<ShieldCheck className="size-3.5" />
+									{getRoleLabel(currentUser.role)}
+								</span>
 							</div>
 						</div>
-					</div>
-				</CardHeader>
-				<CardContent className="border-t border-border/70 pt-6">
-					<ul className="grid gap-4 sm:grid-cols-3">
-						{summaryItems.map(({ label, value, icon: Icon }) => (
-							<li
-								className="flex min-h-22 flex-col rounded-xl border border-border/80 bg-[#f8fafc]/80 px-4 py-3"
-								key={label}
-							>
-								<div className="mb-2 flex items-center gap-2 text-[0.72rem] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
-									<Icon
-										aria-hidden
-										className="size-4 shrink-0 text-[#2d3648]/80"
-									/>
-									{label}
+
+						<div className="space-y-4 border-t border-border pt-5">
+							<div className="flex items-start gap-3">
+								<Mail className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+								<div className="min-w-0">
+									<p className="text-xs font-medium text-muted-foreground">
+										E-mail de acesso
+									</p>
+									<p className="mt-1 text-sm font-medium break-all text-foreground">
+										{currentUser.email}
+									</p>
 								</div>
-								<p
-									className="min-w-0 flex-1 text-sm leading-snug font-medium wrap-break-word text-[#1b2430]"
-									title={value}
-								>
-									{value}
-								</p>
-							</li>
-						))}
-					</ul>
-				</CardContent>
-			</Card>
-
-			<div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-				<Card
-					className="h-full overflow-hidden rounded-[1.75rem] border-border/90 bg-white"
-					id="profile"
-				>
-					<CardHeader className="gap-4 border-none pb-2">
-						<div className="flex items-start gap-3">
-							<div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
-								<Mail className="size-5" />
 							</div>
-							<div className="min-w-0 space-y-1">
-								<p className="text-xs font-medium tracking-[0.14em] text-[#d96c3f] uppercase">
-									E-mail
-								</p>
-								<CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
-									Atualizar e-mail de acesso
-								</CardTitle>
-								<p className="text-sm leading-6 text-muted-foreground">
-									Indique o novo e-mail e a palavra-passe atual para validar a
-									alteração.
-								</p>
+
+							<div className="rounded-2xl bg-[color:var(--brand-accent-soft)] p-4">
+								<div className="flex items-start gap-3">
+									<ShieldCheck className="mt-0.5 size-4 shrink-0 text-[color:var(--brand-accent)]" />
+									<div>
+										<p className="text-sm font-semibold text-[color:var(--brand-accent)]">
+											Segurança
+										</p>
+										<p className="mt-1 text-sm leading-6 text-[color:var(--brand-accent-hover)]">
+											Alterações exigem a senha atual para confirmação.
+										</p>
+									</div>
+								</div>
 							</div>
 						</div>
-					</CardHeader>
-					<CardContent className="space-y-4 pt-2">
-						{emailSuccess ? (
-							<Alert variant="success">
-								<AlertTitle className="flex items-center gap-2">
-									<CheckCircle2 className="size-4 shrink-0" />
-									{emailSuccess.title}
-								</AlertTitle>
-								<AlertDescription>{emailSuccess.description}</AlertDescription>
-							</Alert>
-						) : null}
-
-						{emailErrorMessage ? (
-							<Alert
-								className="border-[#f1c7c4] bg-[#fff7f7]"
-								variant="destructive"
-							>
-								<AlertTitle className="flex items-center gap-2 text-[#7a2f2a]">
-									<AlertCircle className="size-4 shrink-0" />
-									Falha ao atualizar e-mail
-								</AlertTitle>
-								<AlertDescription className="text-[#7a2f2a]">
-									{emailErrorMessage}
-								</AlertDescription>
-							</Alert>
-						) : null}
-
-						<form className="space-y-4" noValidate onSubmit={handleEmailSubmit}>
-							<div className="space-y-1.5">
-								<Label htmlFor="profile-email">Novo e-mail</Label>
-								<Input
-									autoComplete="email"
-									className={cn(
-										inputClass,
-										emailForm.formState.errors.email
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
-									)}
-									id="profile-email"
-									inputMode="email"
-									placeholder="exemplo@empresa.com"
-									type="email"
-									{...emailForm.register('email')}
-								/>
-								<FieldError
-									message={emailForm.formState.errors.email?.message}
-								/>
-							</div>
-
-							<div className="space-y-1.5">
-								<Label htmlFor="profile-email-current-password">
-									Senha atual
-								</Label>
-								<Input
-									autoComplete="current-password"
-									className={cn(
-										inputClass,
-										emailForm.formState.errors.currentPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
-									)}
-									id="profile-email-current-password"
-									placeholder="Senha atual"
-									type="password"
-									{...emailForm.register('currentPassword')}
-								/>
-								<FieldError
-									message={emailForm.formState.errors.currentPassword?.message}
-								/>
-							</div>
-
-							<Button
-								className="h-10 w-full rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
-								disabled={updateOwnEmailMutation.isPending}
-								type="submit"
-							>
-								{updateOwnEmailMutation.isPending ? (
-									<span className="inline-flex items-center justify-center gap-2">
-										<LoaderCircle className="size-4 animate-spin" />A guardar…
-									</span>
-								) : (
-									'Guardar e-mail'
-								)}
-							</Button>
-						</form>
 					</CardContent>
 				</Card>
 
-				<Card
-					className="h-full overflow-hidden rounded-[1.75rem] border-border/90 bg-white"
-					id="credentials"
-				>
-					<CardHeader className="gap-4 border-none pb-2">
-						<div className="flex items-start gap-3">
-							<div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#2d3648]/12 bg-[#edf2f8] text-[#2d3648]">
-								<KeyRound className="size-5" />
-							</div>
-							<div className="min-w-0 space-y-1">
-								<p className="text-xs font-medium tracking-[0.14em] text-[#6b7687] uppercase">
-									Senha
-								</p>
-								<CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
-									Atualizar senha
-								</CardTitle>
-								<p className="text-sm leading-6 text-muted-foreground">
-									Escolha a nova palavra-passe, confirme-a e indique a atual
-									para validar.
-								</p>
-							</div>
+				<Card className="overflow-hidden rounded-3xl border-border bg-card shadow-sm">
+					<CardContent className="p-0">
+						<div className="flex gap-6 border-b border-border px-6 pt-5">
+							<SettingsTabButton
+								active={activeTab === 'email'}
+								icon={Mail}
+								label="E-mail"
+								onClick={() => setActiveTab('email')}
+							/>
+							<SettingsTabButton
+								active={activeTab === 'password'}
+								icon={KeyRound}
+								label="Senha"
+								onClick={() => setActiveTab('password')}
+							/>
 						</div>
-					</CardHeader>
-					<CardContent className="space-y-4 pt-2">
-						{passwordSuccess ? (
-							<Alert variant="success">
-								<AlertTitle className="flex items-center gap-2">
-									<CheckCircle2 className="size-4 shrink-0" />
-									{passwordSuccess.title}
-								</AlertTitle>
-								<AlertDescription>
-									{passwordSuccess.description}
-								</AlertDescription>
-							</Alert>
-						) : null}
 
-						{passwordErrorMessage ? (
-							<Alert
-								className="border-[#f1c7c4] bg-[#fff7f7]"
-								variant="destructive"
-							>
-								<AlertTitle className="flex items-center gap-2 text-[#7a2f2a]">
-									<AlertCircle className="size-4 shrink-0" />
-									Falha ao atualizar senha
-								</AlertTitle>
-								<AlertDescription className="text-[#7a2f2a]">
-									{passwordErrorMessage}
-								</AlertDescription>
-							</Alert>
-						) : null}
+						<div className="p-6">
+							{activeTab === 'email' ? (
+								<div className="mx-auto max-w-xl space-y-6">
+									<FormSectionHeader
+										description="Informe o novo endereço e confirme com sua senha atual."
+										icon={Mail}
+										title="Atualizar e-mail"
+									/>
 
-						<form
-							className="space-y-4"
-							noValidate
-							onSubmit={handlePasswordSubmit}
-						>
-							<div className="space-y-1.5">
-								<Label htmlFor="profile-current-password">Senha atual</Label>
-								<Input
-									autoComplete="current-password"
-									className={cn(
-										inputClass,
-										passwordForm.formState.errors.currentPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
-									)}
-									id="profile-current-password"
-									placeholder="Senha atual"
-									type="password"
-									{...passwordForm.register('currentPassword')}
-								/>
-								<FieldError
-									message={
-										passwordForm.formState.errors.currentPassword?.message
-									}
-								/>
-							</div>
+									<ModalFormErrorBanner message={emailErrorMessage} />
 
-							<div className="space-y-1.5">
-								<Label htmlFor="profile-new-password">Nova senha</Label>
-								<Input
-									autoComplete="new-password"
-									className={cn(
-										inputClass,
-										passwordForm.formState.errors.newPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
-									)}
-									id="profile-new-password"
-									placeholder="Mínimo de 8 caracteres"
-									type="password"
-									{...passwordForm.register('newPassword')}
-								/>
-								<FieldError
-									message={passwordForm.formState.errors.newPassword?.message}
-								/>
-							</div>
+									<form
+										className="space-y-4"
+										noValidate
+										onSubmit={handleEmailSubmit}
+									>
+										<div className="space-y-1.5">
+											<Label htmlFor="profile-email" required>
+												Novo e-mail
+											</Label>
+											<Input
+												autoComplete="email"
+												className={cn(
+													inputClass,
+													emailForm.formState.errors.email
+														? 'border-destructive focus-visible:border-destructive'
+														: null,
+												)}
+												id="profile-email"
+												inputMode="email"
+												placeholder="exemplo@empresa.com"
+												type="email"
+												{...emailForm.register('email')}
+												{...requiredFieldProps()}
+											/>
+											{emailForm.formState.errors.email ? (
+												<p className="text-xs text-destructive">
+													{emailForm.formState.errors.email.message}
+												</p>
+											) : null}
+										</div>
 
-							<div className="space-y-1.5">
-								<Label htmlFor="profile-confirm-password">
-									Confirmar nova senha
-								</Label>
-								<Input
-									autoComplete="new-password"
-									className={cn(
-										inputClass,
-										passwordForm.formState.errors.confirmPassword
-											? 'border-destructive focus-visible:border-destructive'
-											: null,
-									)}
-									id="profile-confirm-password"
-									placeholder="Repita a nova senha"
-									type="password"
-									{...passwordForm.register('confirmPassword')}
-								/>
-								<FieldError
-									message={
-										passwordForm.formState.errors.confirmPassword?.message
-									}
-								/>
-							</div>
+										<div className="space-y-1.5">
+											<Label htmlFor="profile-email-current-password" required>
+												Senha atual
+											</Label>
+											<Input
+												autoComplete="current-password"
+												className={cn(
+													inputClass,
+													emailForm.formState.errors.currentPassword
+														? 'border-destructive focus-visible:border-destructive'
+														: null,
+												)}
+												id="profile-email-current-password"
+												placeholder="Senha atual"
+												type="password"
+												{...emailForm.register('currentPassword')}
+												{...requiredFieldProps()}
+											/>
+											{emailForm.formState.errors.currentPassword ? (
+												<p className="text-xs text-destructive">
+													{emailForm.formState.errors.currentPassword.message}
+												</p>
+											) : null}
+										</div>
 
-							<Button
-								className="h-10 w-full rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
-								disabled={updateOwnPasswordMutation.isPending}
-								type="submit"
-							>
-								{updateOwnPasswordMutation.isPending ? (
-									<span className="inline-flex items-center justify-center gap-2">
-										<LoaderCircle className="size-4 animate-spin" />A guardar…
-									</span>
-								) : (
-									'Guardar nova senha'
-								)}
-							</Button>
-						</form>
+										<Button
+											className="h-11 w-full rounded-xl bg-[color:var(--brand-accent)] text-white shadow-none hover:bg-[color:var(--brand-accent-hover)]"
+											disabled={updateOwnEmailMutation.isPending}
+											type="submit"
+										>
+											{updateOwnEmailMutation.isPending ? (
+												<span className="inline-flex items-center gap-2">
+													<LoaderCircle className="size-4 animate-spin" />
+													Salvando...
+												</span>
+											) : (
+												'Salvar alterações'
+											)}
+										</Button>
+									</form>
+								</div>
+							) : (
+								<div className="mx-auto max-w-xl space-y-6">
+									<FormSectionHeader
+										description="Escolha uma nova senha e confirme com a senha atual."
+										icon={KeyRound}
+										title="Atualizar senha"
+									/>
+
+									<ModalFormErrorBanner message={passwordErrorMessage} />
+
+									<form
+										className="space-y-4"
+										noValidate
+										onSubmit={handlePasswordSubmit}
+									>
+										<div className="space-y-1.5">
+											<Label htmlFor="profile-current-password" required>
+												Senha atual
+											</Label>
+											<Input
+												autoComplete="current-password"
+												className={cn(
+													inputClass,
+													passwordForm.formState.errors.currentPassword
+														? 'border-destructive focus-visible:border-destructive'
+														: null,
+												)}
+												id="profile-current-password"
+												placeholder="Senha atual"
+												type="password"
+												{...passwordForm.register('currentPassword')}
+												{...requiredFieldProps()}
+											/>
+											{passwordForm.formState.errors.currentPassword ? (
+												<p className="text-xs text-destructive">
+													{
+														passwordForm.formState.errors.currentPassword
+															.message
+													}
+												</p>
+											) : null}
+										</div>
+
+										<div className="space-y-1.5">
+											<Label htmlFor="profile-new-password" required>
+												Nova senha
+											</Label>
+											<Input
+												autoComplete="new-password"
+												className={cn(
+													inputClass,
+													passwordForm.formState.errors.newPassword
+														? 'border-destructive focus-visible:border-destructive'
+														: null,
+												)}
+												id="profile-new-password"
+												placeholder="Mínimo de 8 caracteres"
+												type="password"
+												{...passwordForm.register('newPassword')}
+												{...requiredFieldProps()}
+											/>
+											{passwordForm.formState.errors.newPassword ? (
+												<p className="text-xs text-destructive">
+													{passwordForm.formState.errors.newPassword.message}
+												</p>
+											) : null}
+										</div>
+
+										<div className="space-y-1.5">
+											<Label htmlFor="profile-confirm-password" required>
+												Confirmar nova senha
+											</Label>
+											<Input
+												autoComplete="new-password"
+												className={cn(
+													inputClass,
+													passwordForm.formState.errors.confirmPassword
+														? 'border-destructive focus-visible:border-destructive'
+														: null,
+												)}
+												id="profile-confirm-password"
+												placeholder="Repita a nova senha"
+												type="password"
+												{...passwordForm.register('confirmPassword')}
+												{...requiredFieldProps()}
+											/>
+											{passwordForm.formState.errors.confirmPassword ? (
+												<p className="text-xs text-destructive">
+													{
+														passwordForm.formState.errors.confirmPassword
+															.message
+													}
+												</p>
+											) : null}
+										</div>
+
+										<Button
+											className="h-11 w-full rounded-xl bg-[color:var(--brand-accent)] text-white shadow-none hover:bg-[color:var(--brand-accent-hover)]"
+											disabled={updateOwnPasswordMutation.isPending}
+											type="submit"
+										>
+											{updateOwnPasswordMutation.isPending ? (
+												<span className="inline-flex items-center gap-2">
+													<LoaderCircle className="size-4 animate-spin" />
+													Salvando...
+												</span>
+											) : (
+												'Salvar alterações'
+											)}
+										</Button>
+									</form>
+								</div>
+							)}
+						</div>
 					</CardContent>
 				</Card>
 			</div>

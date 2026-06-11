@@ -156,6 +156,28 @@ class AnalyticDashboardTrendDto {
 	points!: AnalyticDashboardTrendPointDto[];
 }
 
+class AnalyticDashboardDrillDownLeadDto {
+	@ApiProperty()
+	id!: string;
+
+	@ApiProperty()
+	label!: string;
+
+	@ApiProperty({ required: false })
+	importance?: string;
+
+	@ApiProperty({ required: false, enum: ['converted', 'lost', 'open'] })
+	outcome?: 'converted' | 'lost' | 'open';
+}
+
+class AnalyticDashboardDrillDownDto {
+	@ApiProperty({ type: () => [AnalyticDashboardDrillDownLeadDto] })
+	importanceLeads!: AnalyticDashboardDrillDownLeadDto[];
+
+	@ApiProperty({ type: () => [AnalyticDashboardDrillDownLeadDto] })
+	conversionLeads!: AnalyticDashboardDrillDownLeadDto[];
+}
+
 class AnalyticDashboardResponseDto {
 	@ApiProperty({ type: () => AnalyticDashboardFilterDto })
 	filter!: AnalyticDashboardFilterDto;
@@ -183,10 +205,15 @@ class AnalyticDashboardResponseDto {
 
 	@ApiProperty({ type: () => AverageTimeToFirstInteractionDto })
 	averageTimeToFirstInteraction!: AverageTimeToFirstInteractionDto;
+
+	@ApiProperty({ type: () => AnalyticDashboardDrillDownDto })
+	drillDown!: AnalyticDashboardDrillDownDto;
 }
 
 export {
 	AnalyticDashboardDistributionItemDto,
+	AnalyticDashboardDrillDownDto,
+	AnalyticDashboardDrillDownLeadDto,
 	AnalyticDashboardFilterDto,
 	AnalyticDashboardKpiDto,
 	AnalyticDashboardKpisDto,

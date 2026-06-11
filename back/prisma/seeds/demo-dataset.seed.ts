@@ -5,6 +5,7 @@ import {
 	DealStatus,
 	type Prisma,
 	type PrismaClient,
+	LeadEventType,
 	LeadSource,
 	LeadStatus,
 	SupportedFuelType,
@@ -13,8 +14,10 @@ import {
 import { buildDemoOrg } from './demo-org.seed.js';
 import { deterministicUuid } from './seed-utils.js';
 
-/** Dataset enxuto para demo: 20 clientes/leads/veículos/negociações. */
-export const DEFAULT_DEMO_RECORD_COUNT = 20;
+/** Dataset demo: 100 clientes/leads/veículos/negociações para KPIs e dashboards. */
+export const DEFAULT_DEMO_RECORD_COUNT = 100;
+
+const INVENTORY_VEHICLES_PER_STORE = 4;
 
 const SEED_TRANSACTION_OPTIONS = {
 	timeout: 120_000,
@@ -39,52 +42,17 @@ const VEHICLE_CATALOG = [
 	{ brand: 'Jeep', model: 'Renegade', version: 'Sport 1.3T' },
 ] as const;
 
-/** 5 negociações por estágio do funil (20 no total). */
-const DEAL_STAGES_BY_INDEX = [
-	DealStage.INITIAL_CONTACT,
-	DealStage.INITIAL_CONTACT,
-	DealStage.INITIAL_CONTACT,
-	DealStage.INITIAL_CONTACT,
+const DEAL_STAGES = [
 	DealStage.INITIAL_CONTACT,
 	DealStage.NEGOTIATION,
-	DealStage.NEGOTIATION,
-	DealStage.NEGOTIATION,
-	DealStage.NEGOTIATION,
-	DealStage.NEGOTIATION,
 	DealStage.PROPOSAL,
-	DealStage.PROPOSAL,
-	DealStage.PROPOSAL,
-	DealStage.PROPOSAL,
-	DealStage.PROPOSAL,
-	DealStage.CLOSING,
-	DealStage.CLOSING,
-	DealStage.CLOSING,
-	DealStage.CLOSING,
 	DealStage.CLOSING,
 ] as const;
 
-/** 5 quentes, 5 mornas e 5 frias (repete no índice 15–19 para completar 20). */
-const DEAL_IMPORTANCES_BY_INDEX = [
-	DealImportance.HOT,
-	DealImportance.HOT,
-	DealImportance.HOT,
-	DealImportance.HOT,
-	DealImportance.HOT,
-	DealImportance.WARM,
-	DealImportance.WARM,
-	DealImportance.WARM,
-	DealImportance.WARM,
-	DealImportance.WARM,
+const DEAL_IMPORTANCES = [
 	DealImportance.COLD,
-	DealImportance.COLD,
-	DealImportance.COLD,
-	DealImportance.COLD,
-	DealImportance.COLD,
-	DealImportance.HOT,
 	DealImportance.WARM,
-	DealImportance.COLD,
 	DealImportance.HOT,
-	DealImportance.WARM,
 ] as const;
 
 const FIRST_NAMES = [
@@ -211,12 +179,26 @@ function buildVin(seed: string): string {
 }
 
 const LEAD_SOURCES = [
+	LeadSource.WEBSITE,
 	LeadSource.WHATSAPP,
 	LeadSource.PHONE,
 	LeadSource.WALK_IN,
-	LeadSource.INSTAGRAM,
-	LeadSource.WEBSITE,
 	LeadSource.INDICATION,
+	LeadSource.OTHER,
+	LeadSource.INSTAGRAM,
+	LeadSource.FACEBOOK,
+	LeadSource.MERCADO_LIVRE,
+] as const;
+
+const SUPPORTED_FUEL_TYPES = [
+	SupportedFuelType.GASOLINE,
+	SupportedFuelType.ETHANOL,
+	SupportedFuelType.FLEX,
+	SupportedFuelType.DIESEL,
+	SupportedFuelType.ELECTRIC,
+	SupportedFuelType.HYBRID,
+	SupportedFuelType.PLUG_IN_HYBRID,
+	SupportedFuelType.CNG,
 ] as const;
 
 const DEAL_LOSS_REASONS = [
@@ -229,32 +211,29 @@ const DEAL_LOSS_REASONS = [
 ] as const;
 
 function buildDealStage(index: number): DealStage {
-	return (
-		DEAL_STAGES_BY_INDEX[index] ??
-		DEAL_STAGES_BY_INDEX[index % DEAL_STAGES_BY_INDEX.length] ??
-		DealStage.NEGOTIATION
-	);
+	return DEAL_STAGES[index % DEAL_STAGES.length] ?? DealStage.NEGOTIATION;
 }
 
 function buildDealImportance(index: number): DealImportance {
 	return (
-		DEAL_IMPORTANCES_BY_INDEX[index] ??
-		DEAL_IMPORTANCES_BY_INDEX[index % DEAL_IMPORTANCES_BY_INDEX.length] ??
-		DealImportance.WARM
+		DEAL_IMPORTANCES[index % DEAL_IMPORTANCES.length] ?? DealImportance.WARM
 	);
 }
 
+/** ~70% abertas, ~15% ganhas e ~15% perdidas por ciclo de 20 registos. */
 function buildDealStatus(index: number): DealStatus {
-	if (index === 18) {
+	const outcome = index % 20;
+	if (outcome >= 17) {
 		return DealStatus.WON;
 	}
-	if (index === 19) {
+	if (outcome >= 14) {
 		return DealStatus.LOST;
 	}
 	return DealStatus.OPEN;
 }
 
 function buildLeadStatusForDeal(
+	index: number,
 	dealStatus: DealStatus,
 	stage: DealStage,
 ): LeadStatus {
@@ -263,6 +242,9 @@ function buildLeadStatusForDeal(
 	}
 	if (dealStatus === DealStatus.LOST) {
 		return LeadStatus.LOST;
+	}
+	if (stage === DealStage.INITIAL_CONTACT && index % 7 === 0) {
+		return LeadStatus.NEW;
 	}
 	switch (stage) {
 		case DealStage.INITIAL_CONTACT:
@@ -332,11 +314,111 @@ function buildLeadSource(index: number): LeadSource {
 
 function buildLeadDate(index: number) {
 	const now = new Date();
-	const daysAgo = (index * 2) % 45;
+	const daysAgo = (index * 3) % 180;
 	const createdAt = new Date(now);
 	createdAt.setDate(now.getDate() - daysAgo);
-	createdAt.setHours(9 + (index % 8), (index * 7) % 60, 0, 0);
+	createdAt.setHours(8 + (index % 10), (index * 11) % 60, 0, 0);
 	return createdAt;
+}
+
+function buildLeadEvents(
+	leads: ReadonlyArray<{
+		readonly id: string;
+		readonly ownerUserId: string | null;
+		readonly source: LeadSource;
+		readonly createdAt: Date;
+	}>,
+	dealPlans: ReadonlyArray<{
+		readonly status: DealStatus;
+		readonly closedAt: Date | null;
+		readonly updatedAt: Date;
+	}>,
+) {
+	const events: Array<{
+		id: string;
+		leadId: string;
+		actorUserId: string | null;
+		type: LeadEventType;
+		title: string;
+		description: string;
+		createdAt: Date;
+	}> = [];
+
+	for (const [index, lead] of leads.entries()) {
+		const plan = dealPlans[index];
+		events.push({
+			id: deterministicUuid(`demo-lead-event:created:${index + 1}`),
+			leadId: lead.id,
+			actorUserId: lead.ownerUserId,
+			type: LeadEventType.CREATED,
+			title: 'Lead registado',
+			description: `Lead criado via ${lead.source}.`,
+			createdAt: lead.createdAt,
+		});
+
+		const firstContactAt = new Date(lead.createdAt);
+		firstContactAt.setHours(firstContactAt.getHours() + 1 + (index % 72));
+		events.push({
+			id: deterministicUuid(`demo-lead-event:updated:${index + 1}`),
+			leadId: lead.id,
+			actorUserId: lead.ownerUserId,
+			type: LeadEventType.UPDATED,
+			title: 'Primeiro contacto',
+			description: 'Atendimento iniciado pela equipa comercial.',
+			createdAt: firstContactAt,
+		});
+
+		if (plan?.status === DealStatus.WON) {
+			events.push({
+				id: deterministicUuid(`demo-lead-event:converted:${index + 1}`),
+				leadId: lead.id,
+				actorUserId: lead.ownerUserId,
+				type: LeadEventType.CONVERTED,
+				title: 'Lead convertido',
+				description: 'Negociação encerrada com sucesso.',
+				createdAt: plan.closedAt ?? plan.updatedAt,
+			});
+		}
+	}
+
+	return events;
+}
+
+function buildInventoryVehicles(
+	stores: ReadonlyArray<{ readonly id: string }>,
+	recordCount: number,
+) {
+	return stores.flatMap((store, storeIndex) =>
+		Array.from({ length: INVENTORY_VEHICLES_PER_STORE }, (_, slot) => {
+			const index =
+				recordCount + storeIndex * INVENTORY_VEHICLES_PER_STORE + slot;
+			const catalog = VEHICLE_CATALOG[
+				index % VEHICLE_CATALOG.length
+			] as (typeof VEHICLE_CATALOG)[number];
+			const seed = `inventory:${store.id}:${index}`;
+			const createdAt = buildLeadDate(index);
+			const modelYear = randomInt(2016, 2024, `${seed}:modelYear`);
+
+			return {
+				id: deterministicUuid(`demo-vehicle:inventory:${index + 1}`),
+				storeId: store.id,
+				brand: catalog.brand,
+				model: catalog.model,
+				version: catalog.version,
+				modelYear,
+				manufactureYear: Math.max(2015, modelYear - 1),
+				color: pickFrom(VEHICLE_COLORS, `${seed}:color`),
+				mileage: randomInt(8000, 95000, `${seed}:mileage`),
+				supportedFuelType: pickFrom(SUPPORTED_FUEL_TYPES, `${seed}:fuel`),
+				price: String(randomInt(38000, 165000, `${seed}:price`)),
+				status: VehicleStatus.AVAILABLE,
+				plate: buildPlate(seed),
+				vin: buildVin(seed),
+				createdAt,
+				updatedAt: createdAt,
+			};
+		}),
+	);
 }
 
 function resolveRecordCount(explicitCount?: number) {
@@ -403,7 +485,7 @@ export async function runDemoSeed(
 		status: plan.status,
 		lossReason:
 			plan.status === DealStatus.LOST
-				? pickFrom(DEAL_LOSS_REASONS, `demo-loss-reason:${plan.index}`)
+				? (DEAL_LOSS_REASONS[plan.index % DEAL_LOSS_REASONS.length] ?? null)
 				: null,
 		closedAt: plan.closedAt,
 		createdAt: plan.createdAt,
@@ -427,14 +509,14 @@ export async function runDemoSeed(
 			storeId: store?.id ?? stores[0]?.id ?? '',
 			ownerUserId: owner?.id ?? null,
 			source: buildLeadSource(plan.index),
-			status: buildLeadStatusForDeal(plan.status, plan.stage),
+			status: buildLeadStatusForDeal(plan.index, plan.status, plan.stage),
 			vehicleInterestText: `${catalog.brand} ${catalog.model} ${catalog.version}`,
 			createdAt,
 			updatedAt: plan.updatedAt,
 		};
 	});
 
-	const vehicles = leads.map((lead, index) => {
+	const dealVehicles = leads.map((lead, index) => {
 		const deal = deals[index];
 		const createdAt = deal?.createdAt ?? new Date();
 		const updatedAt = deal?.updatedAt ?? createdAt;
@@ -469,15 +551,7 @@ export async function runDemoSeed(
 			manufactureYear,
 			color: pickFrom(VEHICLE_COLORS, `${seed}:color`),
 			mileage,
-			supportedFuelType: pickFrom(
-				[
-					SupportedFuelType.FLEX,
-					SupportedFuelType.GASOLINE,
-					SupportedFuelType.DIESEL,
-					SupportedFuelType.HYBRID,
-				],
-				`${seed}:fuel`,
-			),
+			supportedFuelType: pickFrom(SUPPORTED_FUEL_TYPES, `${seed}:fuel`),
 			price: deal?.value ?? String(randomInt(42000, 180000, `${seed}:price`)),
 			status,
 			plate: buildPlate(seed),
@@ -486,6 +560,10 @@ export async function runDemoSeed(
 			updatedAt,
 		};
 	});
+
+	const inventoryVehicles = buildInventoryVehicles(stores, count);
+	const vehicles = [...dealVehicles, ...inventoryVehicles];
+	const leadEvents = buildLeadEvents(leads, dealPlans);
 
 	await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 		await tx.$executeRawUnsafe(`
@@ -507,7 +585,17 @@ export async function runDemoSeed(
 		await tx.accessGroup.deleteMany();
 
 		await tx.accessGroup.createMany({ data: accessGroups });
-		await tx.user.createMany({ data: users });
+		await tx.user.createMany({
+			data: users.map(({ accessGroupIds: _accessGroupIds, ...user }) => user),
+		});
+		await tx.userAccessGroup.createMany({
+			data: users.flatMap((user) =>
+				user.accessGroupIds.map((accessGroupId) => ({
+					userId: user.id,
+					accessGroupId,
+				})),
+			),
+		});
 		await tx.store.createMany({ data: stores });
 		for (const team of teams) {
 			await tx.team.create({
@@ -526,6 +614,7 @@ export async function runDemoSeed(
 		await tx.lead.createMany({ data: leads });
 		await tx.vehicle.createMany({ data: vehicles });
 		await tx.deal.createMany({ data: deals });
+		await tx.leadEvent.createMany({ data: leadEvents });
 	}, SEED_TRANSACTION_OPTIONS);
 
 	if (!logSummary) {
@@ -537,20 +626,31 @@ export async function runDemoSeed(
 			customers: customers.length,
 			leads: leads.length,
 			vehicles: vehicles.length,
+			inventoryVehicles: inventoryVehicles.length,
 			deals: deals.length,
+			leadEvents: leadEvents.length,
 		};
 	}
 
-	const [dealDistribution, leadOwners] = await Promise.all([
-		prisma.deal.groupBy({
-			by: ['importance', 'stage'],
-			_count: { _all: true },
-		}),
-		prisma.lead.groupBy({
-			by: ['ownerUserId'],
-			_count: { _all: true },
-		}),
-	]);
+	const [dealDistribution, leadOwners, leadSources, dealOutcomes] =
+		await Promise.all([
+			prisma.deal.groupBy({
+				by: ['importance', 'stage'],
+				_count: { _all: true },
+			}),
+			prisma.lead.groupBy({
+				by: ['ownerUserId'],
+				_count: { _all: true },
+			}),
+			prisma.lead.groupBy({
+				by: ['source'],
+				_count: { _all: true },
+			}),
+			prisma.deal.groupBy({
+				by: ['status'],
+				_count: { _all: true },
+			}),
+		]);
 
 	const ownerLabels = new Map(
 		demoOrg.leadOwners.map((owner) => [owner.id, owner.email]),
@@ -565,7 +665,9 @@ export async function runDemoSeed(
 			customers: customers.length,
 			leads: leads.length,
 			vehicles: vehicles.length,
+			inventoryVehicles: inventoryVehicles.length,
 			deals: deals.length,
+			leadEvents: leadEvents.length,
 		},
 		accounts,
 		teams: teams.map((team) => ({
@@ -580,6 +682,14 @@ export async function runDemoSeed(
 		dealDistribution: dealDistribution.map((row) => ({
 			importance: row.importance,
 			stage: row.stage,
+			count: row._count._all,
+		})),
+		dealOutcomes: dealOutcomes.map((row) => ({
+			status: row.status,
+			count: row._count._all,
+		})),
+		leadSourceDistribution: leadSources.map((row) => ({
+			source: row.source,
 			count: row._count._all,
 		})),
 		stores: storePools.map((store) => ({

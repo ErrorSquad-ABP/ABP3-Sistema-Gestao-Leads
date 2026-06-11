@@ -12,7 +12,7 @@ A Sprint 3 acontece de `22/05/2026` a `11/06/2026`. O produto já possui núcleo
 - UX operacional (filtros padrão, modais, remoção de ruído);
 - KPIs com valor de negócio;
 - audit log completo (`RF07`);
-- integrações pontuais (Google Calendar leitura);
+- agenda interna por usuário;
 - evolução de cadastros administrativos (lojas, equipes, usuários).
 
 A retrospective da Sprint 2 registrou que a auditoria ficou com base técnica encaminhada, mas sem cobertura ampla nem experiência administrativa final.
@@ -38,7 +38,7 @@ Consolidar padronização UX, KPIs úteis, simplicidade visual, audit log comple
 - `S3-EPIC-03` Dashboard analítico — UX, modais, filtros
 - `S3-EPIC-04` Clientes — KPIs, tabela, paginação, gráficos
 - `S3-EPIC-05` Gestão de leads — KPIs, filtros, modais, remoção de gráficos
-- `S3-EPIC-06` Negociações — KPIs coloridos + Google Calendar (read)
+- `S3-EPIC-06` Negociações — KPIs + Agenda interna
 - `S3-EPIC-07` Veículos — paginação padronizada
 - `S3-EPIC-08` Lojas — layout, CRUD estendido persistido, paginação
 - `S3-EPIC-09` Equipes — modal membros, atribuição, cores neutras
@@ -56,7 +56,7 @@ Consolidar padronização UX, KPIs úteis, simplicidade visual, audit log comple
 - recuperação de senha por e-mail;
 - cadastro público de conta;
 - polimento final de apresentação de banca;
-- Google Calendar com criação/edição de eventos;
+- integrações externas de calendário;
 - gestão completa de estoque;
 - expansões não pedidas pelo parceiro ou pelo edital fora do recorte acima.
 
@@ -98,14 +98,14 @@ Cada épico deve considerar, no mínimo:
 3. `S3-EPIC-08` (lojas) exige migration de schema — coordenar com ambiente compartilhado.
 4. `S3-EPIC-10` (multi-grupo) impacta autorização — exige ADR e testes de permissão.
 5. `S3-EPIC-11` (audit log) é transversal e deve ser planejado por evento/módulo.
-6. `S3-EPIC-06` (Google Calendar) depende de credenciais OAuth em ambiente de dev/produção.
+6. `S3-EPIC-06` depende de migration de agenda interna em ambiente de dev/produção.
 
 ## Riscos e atenção
 
 - amplitude de 11 épicos em ~3 semanas exige priorização rigorosa (`S3-EPIC-07` como P2);
 - multi-grupo pode quebrar suposições atuais de `accessGroupId` único no `User`;
 - migration de `Store` em base compartilhada deve ser backward-compatible;
-- Google OAuth exige configuração de redirect URIs por ambiente;
+- agenda interna exige validação de escopo por usuário e migration aplicada;
 - remover KPIs exige validação com PO antes de cortar indicadores.
 
 ## Ordem sugerida de execução

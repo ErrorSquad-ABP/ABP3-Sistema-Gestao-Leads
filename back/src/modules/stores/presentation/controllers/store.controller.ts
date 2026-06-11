@@ -24,13 +24,20 @@ import {
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import { Roles } from '../../../../shared/presentation/decorators/roles.decorator.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
+import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import {
 	ApiCreatedResponseEnvelope,
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { StoreResponseDto } from '../../application/dto/store-response.dto.js';
+import { StoreMetricsResponseDto } from '../../application/dto/store-metrics-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { CreateStoreUseCase } from '../../application/use-cases/create-store.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
@@ -38,14 +45,24 @@ import { DeleteStoreUseCase } from '../../application/use-cases/delete-store.use
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { FindStoreUseCase } from '../../application/use-cases/find-store.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
+import { ListStoreMetricsUseCase } from '../../application/use-cases/list-store-metrics.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { ListStoresUseCase } from '../../application/use-cases/list-stores.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { UpdateStoreUseCase } from '../../application/use-cases/update-store.use-case.js';
+import { StoreMetricsPresenter } from '../presenters/store-metrics.presenter.js';
 import { StorePresenter } from '../presenters/store.presenter.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateStoreValidator } from '../validators/create-store.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { UpdateStoreValidator } from '../validators/update-store.validator.js';
+
+function toLeadActor(user: JwtUser): LeadActor {
+	return {
+		userId: user.userId,
+		role: user.role as UserRole,
+	};
+}
 
 const BAD_REQUEST = {
 	description:
@@ -84,6 +101,7 @@ class StoreController {
 		private readonly findStoreUseCase: FindStoreUseCase,
 		private readonly listStoresUseCase: ListStoresUseCase,
 		private readonly deleteStoreUseCase: DeleteStoreUseCase,
+		private readonly listStoreMetricsUseCase: ListStoreMetricsUseCase,
 	) {}
 
 	@Post()
@@ -99,8 +117,11 @@ class StoreController {
 			'Conflito de negocio relacionado ao contrato da loja, quando aplicavel.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body() body: CreateStoreValidator) {
-		const store = await this.createStoreUseCase.execute(body);
+	async create(
+		@CurrentUser() actor: JwtUser,
+		@Body() body: CreateStoreValidator,
+	) {
+		const store = await this.createStoreUseCase.execute(actor.userId, body);
 		return StorePresenter.toResponse(store);
 	}
 
@@ -116,6 +137,20 @@ class StoreController {
 		return this.listStoresUseCase
 			.execute()
 			.then((stores) => StorePresenter.toResponseList(stores));
+	}
+
+	@Get('metrics')
+	@ApiOperation({
+		summary: 'Listar metricas agregadas de stores',
+		description:
+			'Retorna totais de leads e negociacoes por loja em uma unica chamada para evitar N+1 requests na tela de stores.',
+	})
+	@ApiOkResponseEnvelopeArray(StoreMetricsResponseDto)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listMetrics(@CurrentUser() user: JwtUser) {
+		return this.listStoreMetricsUseCase
+			.execute(toLeadActor(user))
+			.then((metrics) => StoreMetricsPresenter.toResponseList(metrics));
 	}
 
 	@Get(':id')
@@ -144,10 +179,11 @@ class StoreController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() actor: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateStoreValidator,
 	) {
-		const store = await this.updateStoreUseCase.execute(id, body);
+		const store = await this.updateStoreUseCase.execute(actor.userId, id, body);
 		return StorePresenter.toResponse(store);
 	}
 
@@ -170,8 +206,11 @@ class StoreController {
 			'Loja vinculada a leads existentes; exclusao bloqueada por regra de negocio.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-		await this.deleteStoreUseCase.execute(id);
+	async delete(
+		@CurrentUser() actor: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteStoreUseCase.execute(actor.userId, id);
 	}
 }
 
