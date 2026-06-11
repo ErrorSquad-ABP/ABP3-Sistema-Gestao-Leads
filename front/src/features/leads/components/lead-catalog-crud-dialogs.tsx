@@ -140,9 +140,7 @@ function CustomerCatalogFormDialog({
 							: 'Atualize os dados do cliente selecionado.'
 					}
 					icon={mode === 'create' ? UserPlus : PencilLine}
-					title={
-						mode === 'create' ? 'Novo cliente' : 'Editar cliente'
-					}
+					title={mode === 'create' ? 'Novo cliente' : 'Editar cliente'}
 				/>
 				<form
 					className="space-y-4 px-1 py-2"
@@ -231,8 +229,7 @@ function CustomerCatalogFormDialog({
 						>
 							{isPending ? (
 								<span className="inline-flex items-center gap-2">
-									<LoaderCircle className="size-4 animate-spin" />
-									A guardar…
+									<LoaderCircle className="size-4 animate-spin" />A guardar…
 								</span>
 							) : mode === 'create' ? (
 								'Criar cliente'
@@ -370,8 +367,7 @@ function StoreCatalogFormDialog({
 						>
 							{isPending ? (
 								<span className="inline-flex items-center gap-2">
-									<LoaderCircle className="size-4 animate-spin" />
-									A guardar…
+									<LoaderCircle className="size-4 animate-spin" />A guardar…
 								</span>
 							) : mode === 'create' ? (
 								'Criar loja'
@@ -441,8 +437,7 @@ function CatalogDeleteConfirmDialog({
 					>
 						{isPending ? (
 							<span className="inline-flex items-center gap-2">
-								<LoaderCircle className="size-4 animate-spin" />
-								A remover…
+								<LoaderCircle className="size-4 animate-spin" />A remover…
 							</span>
 						) : (
 							confirmLabel

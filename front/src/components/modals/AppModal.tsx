@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 type ModalTone = 'brand' | 'danger' | 'info' | 'success' | 'violet' | 'warning';
 
 const toneClasses: Record<ModalTone, string> = {
-	brand: 'border-[color:var(--brand-accent)]/10 bg-[color:var(--brand-accent-soft)]/55 text-[color:var(--brand-accent)]',
+	brand:
+		'border-[color:var(--brand-accent)]/10 bg-[color:var(--brand-accent-soft)]/55 text-[color:var(--brand-accent)]',
 	danger: 'border-red-100 bg-red-50 text-red-600',
 	info: 'border-blue-100 bg-blue-50 text-blue-600',
 	success: 'border-emerald-100 bg-emerald-50 text-emerald-600',
@@ -140,13 +141,9 @@ function AppModalSection({
 						</span>
 					) : null}
 					<div className="space-y-0.5">
-						<h3 className="text-sm font-bold text-[#1b2537]">
-							{title}
-						</h3>
+						<h3 className="text-sm font-bold text-[#1b2537]">{title}</h3>
 						{description ? (
-							<p className="text-xs leading-5 text-[#6d7890]">
-								{description}
-							</p>
+							<p className="text-xs leading-5 text-[#6d7890]">{description}</p>
 						) : null}
 					</div>
 				</div>
@@ -228,10 +225,7 @@ function AppModalPrimaryButton({
 	...props
 }: ComponentProps<typeof Button>) {
 	return (
-		<Button
-			className={cn(appModalPrimaryButtonClass, className)}
-			{...props}
-		/>
+		<Button className={cn(appModalPrimaryButtonClass, className)} {...props} />
 	);
 }
 

@@ -28,9 +28,7 @@ function AppPageHeader({
 				<h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
 					{title}
 				</h1>
-				<p className="max-w-4xl text-sm text-[#667085]">
-					{description}
-				</p>
+				<p className="max-w-4xl text-sm text-[#667085]">{description}</p>
 			</div>
 			{controls || action ? (
 				<div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end xl:w-auto">

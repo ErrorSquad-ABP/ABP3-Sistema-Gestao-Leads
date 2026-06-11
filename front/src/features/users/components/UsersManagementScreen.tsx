@@ -65,8 +65,7 @@ function UsersManagementScreen() {
 	>('create');
 	const [selectedAccessGroup, setSelectedAccessGroup] =
 		useState<AccessGroup | null>(null);
-	const [isAccessGroupDialogOpen, setIsAccessGroupDialogOpen] =
-		useState(false);
+	const [isAccessGroupDialogOpen, setIsAccessGroupDialogOpen] = useState(false);
 	const [isDeleteAccessGroupDialogOpen, setIsDeleteAccessGroupDialogOpen] =
 		useState(false);
 	const [deleteAccessGroupError, setDeleteAccessGroupError] = useState<
@@ -165,9 +164,7 @@ function UsersManagementScreen() {
 				email: payload.email,
 				name: payload.name,
 				password:
-					payload.password.trim().length > 0
-						? payload.password
-						: undefined,
+					payload.password.trim().length > 0 ? payload.password : undefined,
 				role: payload.role,
 				teamId: selectedUser.teamId,
 			},
@@ -228,10 +225,7 @@ function UsersManagementScreen() {
 		<div className="space-y-5">
 			<AppPageHeader
 				action={
-					<Button
-						className={appPageActionClass}
-						onClick={openCreateDialog}
-					>
+					<Button className={appPageActionClass} onClick={openCreateDialog}>
 						<Plus className="size-4" />
 						Novo usuário
 					</Button>
@@ -293,9 +287,7 @@ function UsersManagementScreen() {
 
 			<UsersFormDialog
 				accessGroups={accessGroups}
-				isPending={
-					createUserMutation.isPending || updateUserMutation.isPending
-				}
+				isPending={createUserMutation.isPending || updateUserMutation.isPending}
 				mode={dialogMode}
 				onClose={() => setIsFormDialogOpen(false)}
 				onSubmit={handleSubmitForm}

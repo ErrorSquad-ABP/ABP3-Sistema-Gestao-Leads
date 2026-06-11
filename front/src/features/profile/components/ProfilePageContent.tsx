@@ -119,9 +119,7 @@ function FormSectionHeader({
 				<Icon className="size-6" />
 			</div>
 			<div>
-				<h2 className="text-lg font-semibold text-foreground">
-					{title}
-				</h2>
+				<h2 className="text-lg font-semibold text-foreground">{title}</h2>
 				<p className="mt-1 text-sm leading-6 text-muted-foreground">
 					{description}
 				</p>
@@ -280,8 +278,7 @@ function ProfilePageContent({
 											Segurança
 										</p>
 										<p className="mt-1 text-sm leading-6 text-[color:var(--brand-accent-hover)]">
-											Alterações exigem a senha atual para
-											confirmação.
+											Alterações exigem a senha atual para confirmação.
 										</p>
 									</div>
 								</div>
@@ -316,9 +313,7 @@ function ProfilePageContent({
 										title="Atualizar e-mail"
 									/>
 
-									<ModalFormErrorBanner
-										message={emailErrorMessage}
-									/>
+									<ModalFormErrorBanner message={emailErrorMessage} />
 
 									<form
 										className="space-y-4"
@@ -326,18 +321,14 @@ function ProfilePageContent({
 										onSubmit={handleEmailSubmit}
 									>
 										<div className="space-y-1.5">
-											<Label
-												htmlFor="profile-email"
-												required
-											>
+											<Label htmlFor="profile-email" required>
 												Novo e-mail
 											</Label>
 											<Input
 												autoComplete="email"
 												className={cn(
 													inputClass,
-													emailForm.formState.errors
-														.email
+													emailForm.formState.errors.email
 														? 'border-destructive focus-visible:border-destructive'
 														: null,
 												)}
@@ -348,60 +339,41 @@ function ProfilePageContent({
 												{...emailForm.register('email')}
 												{...requiredFieldProps()}
 											/>
-											{emailForm.formState.errors
-												.email ? (
+											{emailForm.formState.errors.email ? (
 												<p className="text-xs text-destructive">
-													{
-														emailForm.formState
-															.errors.email
-															.message
-													}
+													{emailForm.formState.errors.email.message}
 												</p>
 											) : null}
 										</div>
 
 										<div className="space-y-1.5">
-											<Label
-												htmlFor="profile-email-current-password"
-												required
-											>
+											<Label htmlFor="profile-email-current-password" required>
 												Senha atual
 											</Label>
 											<Input
 												autoComplete="current-password"
 												className={cn(
 													inputClass,
-													emailForm.formState.errors
-														.currentPassword
+													emailForm.formState.errors.currentPassword
 														? 'border-destructive focus-visible:border-destructive'
 														: null,
 												)}
 												id="profile-email-current-password"
 												placeholder="Senha atual"
 												type="password"
-												{...emailForm.register(
-													'currentPassword',
-												)}
+												{...emailForm.register('currentPassword')}
 												{...requiredFieldProps()}
 											/>
-											{emailForm.formState.errors
-												.currentPassword ? (
+											{emailForm.formState.errors.currentPassword ? (
 												<p className="text-xs text-destructive">
-													{
-														emailForm.formState
-															.errors
-															.currentPassword
-															.message
-													}
+													{emailForm.formState.errors.currentPassword.message}
 												</p>
 											) : null}
 										</div>
 
 										<Button
 											className="h-11 w-full rounded-xl bg-[color:var(--brand-accent)] text-white shadow-none hover:bg-[color:var(--brand-accent-hover)]"
-											disabled={
-												updateOwnEmailMutation.isPending
-											}
+											disabled={updateOwnEmailMutation.isPending}
 											type="submit"
 										>
 											{updateOwnEmailMutation.isPending ? (
@@ -423,9 +395,7 @@ function ProfilePageContent({
 										title="Atualizar senha"
 									/>
 
-									<ModalFormErrorBanner
-										message={passwordErrorMessage}
-									/>
+									<ModalFormErrorBanner message={passwordErrorMessage} />
 
 									<form
 										className="space-y-4"
@@ -433,36 +403,27 @@ function ProfilePageContent({
 										onSubmit={handlePasswordSubmit}
 									>
 										<div className="space-y-1.5">
-											<Label
-												htmlFor="profile-current-password"
-												required
-											>
+											<Label htmlFor="profile-current-password" required>
 												Senha atual
 											</Label>
 											<Input
 												autoComplete="current-password"
 												className={cn(
 													inputClass,
-													passwordForm.formState
-														.errors.currentPassword
+													passwordForm.formState.errors.currentPassword
 														? 'border-destructive focus-visible:border-destructive'
 														: null,
 												)}
 												id="profile-current-password"
 												placeholder="Senha atual"
 												type="password"
-												{...passwordForm.register(
-													'currentPassword',
-												)}
+												{...passwordForm.register('currentPassword')}
 												{...requiredFieldProps()}
 											/>
-											{passwordForm.formState.errors
-												.currentPassword ? (
+											{passwordForm.formState.errors.currentPassword ? (
 												<p className="text-xs text-destructive">
 													{
-														passwordForm.formState
-															.errors
-															.currentPassword
+														passwordForm.formState.errors.currentPassword
 															.message
 													}
 												</p>
@@ -470,72 +431,52 @@ function ProfilePageContent({
 										</div>
 
 										<div className="space-y-1.5">
-											<Label
-												htmlFor="profile-new-password"
-												required
-											>
+											<Label htmlFor="profile-new-password" required>
 												Nova senha
 											</Label>
 											<Input
 												autoComplete="new-password"
 												className={cn(
 													inputClass,
-													passwordForm.formState
-														.errors.newPassword
+													passwordForm.formState.errors.newPassword
 														? 'border-destructive focus-visible:border-destructive'
 														: null,
 												)}
 												id="profile-new-password"
 												placeholder="Mínimo de 8 caracteres"
 												type="password"
-												{...passwordForm.register(
-													'newPassword',
-												)}
+												{...passwordForm.register('newPassword')}
 												{...requiredFieldProps()}
 											/>
-											{passwordForm.formState.errors
-												.newPassword ? (
+											{passwordForm.formState.errors.newPassword ? (
 												<p className="text-xs text-destructive">
-													{
-														passwordForm.formState
-															.errors.newPassword
-															.message
-													}
+													{passwordForm.formState.errors.newPassword.message}
 												</p>
 											) : null}
 										</div>
 
 										<div className="space-y-1.5">
-											<Label
-												htmlFor="profile-confirm-password"
-												required
-											>
+											<Label htmlFor="profile-confirm-password" required>
 												Confirmar nova senha
 											</Label>
 											<Input
 												autoComplete="new-password"
 												className={cn(
 													inputClass,
-													passwordForm.formState
-														.errors.confirmPassword
+													passwordForm.formState.errors.confirmPassword
 														? 'border-destructive focus-visible:border-destructive'
 														: null,
 												)}
 												id="profile-confirm-password"
 												placeholder="Repita a nova senha"
 												type="password"
-												{...passwordForm.register(
-													'confirmPassword',
-												)}
+												{...passwordForm.register('confirmPassword')}
 												{...requiredFieldProps()}
 											/>
-											{passwordForm.formState.errors
-												.confirmPassword ? (
+											{passwordForm.formState.errors.confirmPassword ? (
 												<p className="text-xs text-destructive">
 													{
-														passwordForm.formState
-															.errors
-															.confirmPassword
+														passwordForm.formState.errors.confirmPassword
 															.message
 													}
 												</p>
@@ -544,9 +485,7 @@ function ProfilePageContent({
 
 										<Button
 											className="h-11 w-full rounded-xl bg-[color:var(--brand-accent)] text-white shadow-none hover:bg-[color:var(--brand-accent-hover)]"
-											disabled={
-												updateOwnPasswordMutation.isPending
-											}
+											disabled={updateOwnPasswordMutation.isPending}
 											type="submit"
 										>
 											{updateOwnPasswordMutation.isPending ? (

@@ -200,11 +200,7 @@ function AccessGroupDialog({
 					category="Grupos de acesso"
 					description="Defina o papel-base e as features que esse grupo libera na aplicação."
 					icon={isEditMode ? PencilLine : ShieldPlus}
-					title={
-						isEditMode
-							? 'Editar grupo de acesso'
-							: 'Novo grupo de acesso'
-					}
+					title={isEditMode ? 'Editar grupo de acesso' : 'Novo grupo de acesso'}
 					tone="violet"
 				/>
 
@@ -221,9 +217,7 @@ function AccessGroupDialog({
 							);
 							onClose();
 						} catch (error) {
-							setSubmitError(
-								applyFormSubmitErrors(form.setError, error),
-							);
+							setSubmitError(applyFormSubmitErrors(form.setError, error));
 						}
 					})}
 				>
@@ -250,10 +244,7 @@ function AccessGroupDialog({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label
-									htmlFor="access-group-description"
-									required
-								>
+								<Label htmlFor="access-group-description" required>
 									Descrição
 								</Label>
 								<textarea
@@ -265,18 +256,13 @@ function AccessGroupDialog({
 								/>
 								{form.formState.errors.description ? (
 									<p className="text-xs text-destructive">
-										{
-											form.formState.errors.description
-												.message
-										}
+										{form.formState.errors.description.message}
 									</p>
 								) : null}
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="access-group-role">
-									Papel canônico
-								</Label>
+								<Label htmlFor="access-group-role">Papel canônico</Label>
 								<select
 									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="access-group-role"
@@ -295,14 +281,9 @@ function AccessGroupDialog({
 									}
 									value={selectedBaseRole ?? 'NONE'}
 								>
-									<option value="NONE">
-										Sem vínculo canônico
-									</option>
+									<option value="NONE">Sem vínculo canônico</option>
 									{roleOptions.map((option) => (
-										<option
-											key={option.value}
-											value={option.value}
-										>
+										<option key={option.value} value={option.value}>
 											{option.label}
 										</option>
 									))}
@@ -312,23 +293,18 @@ function AccessGroupDialog({
 
 						<div className="space-y-4">
 							<div className="rounded-2xl border border-border/80 bg-white p-4">
-								<Label
-									className="text-sm font-medium text-[#1b2430]"
-									required
-								>
+								<Label className="text-sm font-medium text-[#1b2430]" required>
 									Permissões do grupo
 								</Label>
 								<p className="mt-2 text-sm leading-6 text-[#6b7687]">
-									O grupo é salvo na API e já governa
-									navegação e gates do front.
+									O grupo é salvo na API e já governa navegação e gates do
+									front.
 								</p>
 							</div>
 
 							<div className="grid gap-3">
 								{accessFeatureCatalog.map((feature) => {
-									const checked = selectedFeatures.includes(
-										feature.key,
-									);
+									const checked = selectedFeatures.includes(feature.key);
 
 									return (
 										<label
@@ -344,10 +320,7 @@ function AccessGroupDialog({
 												checked={checked}
 												className="mt-0.5 rounded-[4px] border-[#cbd5e1] data-checked:border-[#f05a28] data-checked:bg-[#f05a28]"
 												onCheckedChange={(value) =>
-													toggleFeature(
-														feature.key,
-														value === true,
-													)
+													toggleFeature(feature.key, value === true)
 												}
 											/>
 											<div className="space-y-1">

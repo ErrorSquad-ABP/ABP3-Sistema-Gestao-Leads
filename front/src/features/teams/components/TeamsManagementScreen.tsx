@@ -145,10 +145,7 @@ async function fetchTeamMetrics(
 	signal: AbortSignal,
 ) {
 	const [catalog, negotiatingCatalog] = await Promise.all([
-		fetchLeadCatalog(
-			{ limit: 1, page: 1, sort: 'recent', storeId },
-			signal,
-		),
+		fetchLeadCatalog({ limit: 1, page: 1, sort: 'recent', storeId }, signal),
 		fetchLeadCatalog(
 			{
 				limit: 1,
@@ -260,9 +257,7 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 						<h2 className="text-base font-bold text-[#101828]">
 							Distribuição por loja
 						</h2>
-						<p className="text-xs text-[#667085]">
-							Top 5 por membros ativos
-						</p>
+						<p className="text-xs text-[#667085]">Top 5 por membros ativos</p>
 					</div>
 					<div className="text-right">
 						<p className="text-lg font-bold text-[#101828]">
@@ -289,11 +284,8 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 											{row.storeName}
 										</p>
 										<p className="text-xs text-[#667085]">
-											{formatCount(row.memberCount)}{' '}
-											membros · {row.teamCount}{' '}
-											{row.teamCount === 1
-												? 'equipe'
-												: 'equipes'}
+											{formatCount(row.memberCount)} membros · {row.teamCount}{' '}
+											{row.teamCount === 1 ? 'equipe' : 'equipes'}
 										</p>
 									</div>
 									<p className="text-sm font-bold text-[#101828]">
@@ -305,10 +297,7 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 										className="h-full rounded-full"
 										style={{
 											backgroundColor:
-												DISTRIBUTION_COLORS[
-													index %
-														DISTRIBUTION_COLORS.length
-												],
+												DISTRIBUTION_COLORS[index % DISTRIBUTION_COLORS.length],
 											width: `${width}%`,
 										}}
 									/>
@@ -340,9 +329,7 @@ function LeadershipHighlightsCard({ rows }: { rows: TeamTableRow[] }) {
 					<h2 className="text-base font-bold text-[#101828]">
 						Lideranças em destaque
 					</h2>
-					<p className="text-xs text-[#667085]">
-						Ranking por performance
-					</p>
+					<p className="text-xs text-[#667085]">Ranking por performance</p>
 				</div>
 				<div className="flex flex-1 flex-col justify-between gap-4">
 					{rankedRows.map((row, index) => (
@@ -463,14 +450,10 @@ function TeamsManagementScreen() {
 	const rows = useMemo<TeamTableRow[]>(
 		() =>
 			teams.map((team) => {
-				const manager = team.managerId
-					? ownerById.get(team.managerId)
-					: null;
+				const manager = team.managerId ? ownerById.get(team.managerId) : null;
 				const store = storeById.get(team.storeId);
 				const metrics = metricsByTeamId.get(team.id);
-				const teamIndex = teams.findIndex(
-					(item) => item.id === team.id,
-				);
+				const teamIndex = teams.findIndex((item) => item.id === team.id);
 				return {
 					colorClass: TEAM_COLORS[teamIndex % TEAM_COLORS.length],
 					conversionRate: metrics?.conversionRate ?? 0,
@@ -512,10 +495,7 @@ function TeamsManagementScreen() {
 		(safePage - 1) * TEAMS_PAGE_SIZE,
 		safePage * TEAMS_PAGE_SIZE,
 	);
-	const totalMembers = rows.reduce(
-		(total, row) => total + row.memberCount,
-		0,
-	);
+	const totalMembers = rows.reduce((total, row) => total + row.memberCount, 0);
 	const totalAssignedLeads = rows.reduce(
 		(total, row) => total + (row.leadCount ?? 0),
 		0,
@@ -607,9 +587,7 @@ function TeamsManagementScreen() {
 					},
 				});
 				const nextManagerId = payload.managerId;
-				if (
-					nextManagerId !== (teamDialogState.team.managerId ?? null)
-				) {
+				if (nextManagerId !== (teamDialogState.team.managerId ?? null)) {
 					await assignTeamManagerMutation.mutateAsync({
 						id: teamDialogState.team.id,
 						managerId: nextManagerId,
@@ -668,9 +646,7 @@ function TeamsManagementScreen() {
 				current
 					? {
 							...current,
-							memberUserIds: [
-								...new Set([...current.memberUserIds, userId]),
-							],
+							memberUserIds: [...new Set([...current.memberUserIds, userId])],
 						}
 					: current,
 			);
@@ -821,22 +797,14 @@ function TeamsManagementScreen() {
 								{paginatedRows.length === 0
 									? 0
 									: (safePage - 1) * TEAMS_PAGE_SIZE + 1}{' '}
-								a{' '}
-								{Math.min(
-									safePage * TEAMS_PAGE_SIZE,
-									filteredRows.length,
-								)}{' '}
-								de {filteredRows.length} equipes
+								a {Math.min(safePage * TEAMS_PAGE_SIZE, filteredRows.length)} de{' '}
+								{filteredRows.length} equipes
 							</span>
 							<div className="flex items-center justify-center gap-2">
 								<Button
 									className="size-8 rounded-xl border-[#d8e0ea]"
 									disabled={!isHydrated || safePage <= 1}
-									onClick={() =>
-										setPage((current) =>
-											Math.max(1, current - 1),
-										)
-									}
+									onClick={() => setPage((current) => Math.max(1, current - 1))}
 									size="icon"
 									variant="outline"
 								>
@@ -860,11 +828,7 @@ function TeamsManagementScreen() {
 											key={item}
 											onClick={() => setPage(item)}
 											size="icon"
-											variant={
-												item === safePage
-													? 'outline'
-													: 'ghost'
-											}
+											variant={item === safePage ? 'outline' : 'ghost'}
 										>
 											{item}
 										</Button>
@@ -872,13 +836,9 @@ function TeamsManagementScreen() {
 								)}
 								<Button
 									className="size-8 rounded-xl border-[#d8e0ea]"
-									disabled={
-										!isHydrated || safePage >= totalPages
-									}
+									disabled={!isHydrated || safePage >= totalPages}
 									onClick={() =>
-										setPage((current) =>
-											Math.min(totalPages, current + 1),
-										)
+										setPage((current) => Math.min(totalPages, current + 1))
 									}
 									size="icon"
 									variant="outline"
@@ -929,15 +889,12 @@ function TeamsManagementScreen() {
 				error={
 					membersDialogError ??
 					(dialogMemberCandidatesQuery.isError
-						? humanizePageApiError(
-								dialogMemberCandidatesQuery.error,
-							)
+						? humanizePageApiError(dialogMemberCandidatesQuery.error)
 						: null)
 				}
 				isLoading={dialogMemberCandidatesQuery.isLoading}
 				isPending={
-					addTeamMemberMutation.isPending ||
-					removeTeamMemberMutation.isPending
+					addTeamMemberMutation.isPending || removeTeamMemberMutation.isPending
 				}
 				onAdd={(userId) => {
 					void handleMembersAdd(userId);

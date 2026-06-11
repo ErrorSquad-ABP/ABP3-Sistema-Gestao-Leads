@@ -107,14 +107,8 @@ function TeamFormDialog({
 				<AppModalHeader
 					category="Equipes"
 					description="Vincule a equipe a uma loja e, se desejar, a um gerente de referência."
-					icon={
-						dialogState?.mode === 'edit' ? PencilLine : UsersRound
-					}
-					title={
-						dialogState?.mode === 'edit'
-							? 'Editar equipe'
-							: 'Nova equipe'
-					}
+					icon={dialogState?.mode === 'edit' ? PencilLine : UsersRound}
+					title={dialogState?.mode === 'edit' ? 'Editar equipe' : 'Nova equipe'}
 					tone="violet"
 				/>
 				<form
@@ -154,8 +148,7 @@ function TeamFormDialog({
 											...current,
 											storeId: event.target.value,
 											memberUserIds:
-												event.target.value ===
-												current.storeId
+												event.target.value === current.storeId
 													? current.memberUserIds
 													: [],
 										}))
@@ -173,9 +166,7 @@ function TeamFormDialog({
 							</div>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="team-manager">
-								Gerente da equipe
-							</Label>
+							<Label htmlFor="team-manager">Gerente da equipe</Label>
 							<select
 								className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
 								id="team-manager"
@@ -217,10 +208,7 @@ function TeamFormDialog({
 						<AppModalCancelButton onClick={onClose} type="button">
 							Cancelar
 						</AppModalCancelButton>
-						<AppModalPrimaryButton
-							disabled={isPending}
-							type="submit"
-						>
+						<AppModalPrimaryButton disabled={isPending} type="submit">
 							<Save className="size-4" />
 							{isPending ? 'Salvando...' : 'Salvar equipe'}
 						</AppModalPrimaryButton>
@@ -239,10 +227,7 @@ function TeamDeleteDialog({
 	target,
 }: TeamDeleteDialogProps) {
 	return (
-		<Dialog
-			onOpenChange={(open) => !open && onClose()}
-			open={target !== null}
-		>
+		<Dialog onOpenChange={(open) => !open && onClose()} open={target !== null}>
 			<DialogContent className={`${appModalContentClass} max-w-lg`}>
 				<AppModalHeader
 					category="Equipes"
@@ -257,8 +242,7 @@ function TeamDeleteDialog({
 						Equipe
 					</div>
 					<AppModalConfirmPanel icon={Trash2}>
-						Equipe:{' '}
-						<span className="font-medium">{target?.name}</span>
+						Equipe: <span className="font-medium">{target?.name}</span>
 					</AppModalConfirmPanel>
 					<ModalFormErrorBanner message={deleteError} />
 				</AppModalBody>

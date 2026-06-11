@@ -143,9 +143,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 			return availableVehicles;
 		}
 		return availableVehicles.filter((vehicle) =>
-			normalizeSearch(formatVehicleDealSelectLabel(vehicle)).includes(
-				search,
-			),
+			normalizeSearch(formatVehicleDealSelectLabel(vehicle)).includes(search),
 		);
 	}, [availableVehicles, vehicleSearch]);
 
@@ -229,12 +227,10 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						</DialogTitle>
 						<DialogDescription className="space-y-0 text-[12.5px] leading-[18px] text-[#7a8494]">
 							<span className="block">
-								Selecione o lead e informe veículo, título e
-								valor.
+								Selecione o lead e informe veículo, título e valor.
 							</span>
 							<span className="block">
-								A negociação será criada na etapa de Contato
-								inicial.
+								A negociação será criada na etapa de Contato inicial.
 							</span>
 						</DialogDescription>
 					</div>
@@ -269,10 +265,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								<input
 									autoComplete="off"
 									className={searchableInputClass}
-									disabled={
-										leadsQuery.isPending ||
-										leads.length === 0
-									}
+									disabled={leadsQuery.isPending || leads.length === 0}
 									id="deal-create-lead"
 									onChange={(e) => {
 										setLeadSearch(e.target.value);
@@ -283,10 +276,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 										setLeadDropdownOpen(true);
 									}}
 									onBlur={() => {
-										window.setTimeout(
-											() => setLeadDropdownOpen(false),
-											120,
-										);
+										window.setTimeout(() => setLeadDropdownOpen(false), 120);
 									}}
 									onFocus={() => setLeadDropdownOpen(true)}
 									placeholder={
@@ -308,20 +298,14 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 											filteredLeads.map((lead) => (
 												<button
 													key={lead.id}
-													className={
-														dropdownItemClass
-													}
+													className={dropdownItemClass}
 													onMouseDown={(event) => {
 														event.preventDefault();
 														handleSelectLead(lead);
 													}}
 													type="button"
 												>
-													{getLeadOptionLabel(
-														lead,
-														customersQuery.data ??
-															[],
-													)}
+													{getLeadOptionLabel(lead, customersQuery.data ?? [])}
 												</button>
 											))
 										) : (
@@ -349,9 +333,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								<input
 									autoComplete="off"
 									className={searchableInputClass}
-									disabled={
-										!leadId || vehiclesQuery.isPending
-									}
+									disabled={!leadId || vehiclesQuery.isPending}
 									id="deal-create-vehicle"
 									onChange={(e) => {
 										setVehicleSearch(e.target.value);
@@ -360,10 +342,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 										setVehicleDropdownOpen(true);
 									}}
 									onBlur={() => {
-										window.setTimeout(
-											() => setVehicleDropdownOpen(false),
-											120,
-										);
+										window.setTimeout(() => setVehicleDropdownOpen(false), 120);
 									}}
 									onFocus={() => setVehicleDropdownOpen(true)}
 									placeholder={
@@ -386,20 +365,14 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 											filteredVehicles.map((vehicle) => (
 												<button
 													key={vehicle.id}
-													className={
-														dropdownItemClass
-													}
+													className={dropdownItemClass}
 													onMouseDown={(event) => {
 														event.preventDefault();
-														handleSelectVehicle(
-															vehicle,
-														);
+														handleSelectVehicle(vehicle);
 													}}
 													type="button"
 												>
-													{formatVehicleDealSelectLabel(
-														vehicle,
-													)}
+													{formatVehicleDealSelectLabel(vehicle)}
 												</button>
 											))
 										) : (
@@ -415,16 +388,14 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 									{humanizePageApiError(vehiclesQuery.error)}
 								</p>
 							) : vehiclesQuery.isSuccess &&
-							  leadId &&
-							  availableVehicles.length === 0 ? (
+								leadId &&
+								availableVehicles.length === 0 ? (
 								<p className="text-[11.5px] leading-4 text-[#6b7687]">
-									Nenhum veículo livre para negociação na loja
-									deste lead.
+									Nenhum veículo livre para negociação na loja deste lead.
 								</p>
 							) : (
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
-									Apenas veículos disponíveis podem ser
-									selecionados.
+									Apenas veículos disponíveis podem ser selecionados.
 								</p>
 							)}
 						</div>
@@ -433,8 +404,8 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								<Info className="size-4" />
 							</span>
 							<p className="text-[11.5px] leading-4">
-								O veículo selecionado precisa estar disponível
-								no momento da criação da negociação.
+								O veículo selecionado precisa estar disponível no momento da
+								criação da negociação.
 							</p>
 						</div>
 						<div className="grid gap-3 sm:grid-cols-2">
@@ -451,9 +422,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 									<Input
 										className={`${inputClass} pl-10`}
 										id="deal-create-title"
-										onChange={(e) =>
-											setTitle(e.target.value)
-										}
+										onChange={(e) => setTitle(e.target.value)}
 										placeholder="Ex.: Proposta de Jeep Compass Limited"
 										value={title}
 										{...requiredFieldProps()}
@@ -481,15 +450,11 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 										inputMode="numeric"
 										onChange={(e) =>
 											setValueCentsDigits(
-												sanitizeMoneyDigitsInput(
-													e.target.value,
-												),
+												sanitizeMoneyDigitsInput(e.target.value),
 											)
 										}
 										placeholder="R$ 0,00"
-										value={formatCentsDigitsToBrlDisplay(
-											valueCentsDigits,
-										)}
+										value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
 									/>
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
@@ -507,8 +472,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 										Resumo da negociação
 									</p>
 									<p className="text-[11.5px] text-[#7a8494]">
-										Confira as informações antes de criar a
-										negociação.
+										Confira as informações antes de criar a negociação.
 									</p>
 								</div>
 							</div>
@@ -557,14 +521,11 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 							className="h-10 rounded-xl bg-[#101a33] px-5 font-semibold text-white shadow-none hover:bg-[#17223d]"
 							disabled={
 								createMutation.isPending ||
-								(vehiclesQuery.isSuccess &&
-									availableVehicles.length === 0)
+								(vehiclesQuery.isSuccess && availableVehicles.length === 0)
 							}
 						>
 							<Rocket className="size-4" />
-							{createMutation.isPending
-								? 'Criando...'
-								: 'Criar negociação'}
+							{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
 						</Button>
 					</DialogFooter>
 				</form>

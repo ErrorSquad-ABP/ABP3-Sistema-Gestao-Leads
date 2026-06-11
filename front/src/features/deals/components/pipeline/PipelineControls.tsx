@@ -131,12 +131,10 @@ function PipelineControls({
 			? 'mais recentes'
 			: getSortTriggerDisplay(pipelineSortMode);
 
-	const statusAccent =
-		getPipelineStatusFilterTriggerAccentClass(statusFilter);
+	const statusAccent = getPipelineStatusFilterTriggerAccentClass(statusFilter);
 	const importanceAccent =
 		getPipelineImportanceFilterTriggerAccentClass(importanceFilter);
-	const sortAccent =
-		getPipelineSortFilterTriggerAccentClass(pipelineSortMode);
+	const sortAccent = getPipelineSortFilterTriggerAccentClass(pipelineSortMode);
 
 	const neutralTriggerBase =
 		'inline-flex h-9 w-40 max-w-full items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30';
@@ -268,9 +266,7 @@ function PipelineControls({
 					<DropdownMenuRadioGroup
 						value={pipelineSortMode}
 						onValueChange={(value) =>
-							onPipelineSortModeChange(
-								value as DealPipelineSortMode,
-							)
+							onPipelineSortModeChange(value as DealPipelineSortMode)
 						}
 					>
 						{SORT_OPTIONS.map((option) => (
@@ -302,9 +298,7 @@ function PipelineControls({
 					aria-hidden="true"
 					className={cn(
 						'relative ml-[3px] inline-flex h-[18px] w-[32px] shrink-0 items-center rounded-full transition-colors',
-						showValues
-							? 'bg-[color:var(--brand-accent)]'
-							: 'bg-muted/40',
+						showValues ? 'bg-[color:var(--brand-accent)]' : 'bg-muted/40',
 					)}
 				>
 					<span

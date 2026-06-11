@@ -114,11 +114,7 @@ function StoreFormDialog({
 					category="Lojas"
 					description="Mantenha os dados das lojas disponíveis para o pipeline."
 					icon={dialogState?.mode === 'edit' ? PencilLine : Building2}
-					title={
-						dialogState?.mode === 'edit'
-							? 'Editar loja'
-							: 'Nova loja'
-					}
+					title={dialogState?.mode === 'edit' ? 'Editar loja' : 'Nova loja'}
 				/>
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -134,9 +130,7 @@ function StoreFormDialog({
 							</Label>
 							<Input
 								id="store-name"
-								onChange={(event) =>
-									onValueChange('name', event.target.value)
-								}
+								onChange={(event) => onValueChange('name', event.target.value)}
 								value={values.name}
 								{...requiredFieldProps()}
 							/>
@@ -147,10 +141,7 @@ function StoreFormDialog({
 								<Input
 									id="store-address"
 									onChange={(event) =>
-										onValueChange(
-											'addressLine',
-											event.target.value,
-										)
+										onValueChange('addressLine', event.target.value)
 									}
 									value={values.addressLine}
 								/>
@@ -160,10 +151,7 @@ function StoreFormDialog({
 								<Input
 									id="store-city"
 									onChange={(event) =>
-										onValueChange(
-											'city',
-											event.target.value,
-										)
+										onValueChange('city', event.target.value)
 									}
 									value={values.city}
 								/>
@@ -176,25 +164,17 @@ function StoreFormDialog({
 									minLength={2}
 									pattern="[A-Za-z]{2}"
 									onChange={(event) =>
-										onValueChange(
-											'state',
-											event.target.value.toUpperCase(),
-										)
+										onValueChange('state', event.target.value.toUpperCase())
 									}
 									value={values.state}
 								/>
 							</div>
 							<div className="grid gap-2">
-								<Label htmlFor="store-coverage">
-									Cobertura
-								</Label>
+								<Label htmlFor="store-coverage">Cobertura</Label>
 								<Input
 									id="store-coverage"
 									onChange={(event) =>
-										onValueChange(
-											'coverage',
-											event.target.value,
-										)
+										onValueChange('coverage', event.target.value)
 									}
 									value={values.coverage}
 								/>
@@ -204,10 +184,7 @@ function StoreFormDialog({
 								<Input
 									id="store-region"
 									onChange={(event) =>
-										onValueChange(
-											'region',
-											event.target.value,
-										)
+										onValueChange('region', event.target.value)
 									}
 									value={values.region}
 								/>
@@ -219,10 +196,7 @@ function StoreFormDialog({
 								<Input
 									id="store-distribution-region"
 									onChange={(event) =>
-										onValueChange(
-											'distributionRegion',
-											event.target.value,
-										)
+										onValueChange('distributionRegion', event.target.value)
 									}
 									value={values.distributionRegion}
 								/>
@@ -232,9 +206,7 @@ function StoreFormDialog({
 							<Label htmlFor="store-scope">Abrangência</Label>
 							<Input
 								id="store-scope"
-								onChange={(event) =>
-									onValueChange('scope', event.target.value)
-								}
+								onChange={(event) => onValueChange('scope', event.target.value)}
 								value={values.scope}
 							/>
 						</div>
@@ -244,10 +216,7 @@ function StoreFormDialog({
 						<AppModalCancelButton onClick={onClose} type="button">
 							Cancelar
 						</AppModalCancelButton>
-						<AppModalPrimaryButton
-							disabled={isPending}
-							type="submit"
-						>
+						<AppModalPrimaryButton disabled={isPending} type="submit">
 							<Save className="size-4" />
 							{isPending ? 'Salvando...' : 'Salvar loja'}
 						</AppModalPrimaryButton>
@@ -266,10 +235,7 @@ function StoreDeleteDialog({
 	target,
 }: StoreDeleteDialogProps) {
 	return (
-		<Dialog
-			onOpenChange={(open) => !open && onClose()}
-			open={target !== null}
-		>
+		<Dialog onOpenChange={(open) => !open && onClose()} open={target !== null}>
 			<DialogContent className={`${appModalContentClass} max-w-lg`}>
 				<AppModalHeader
 					category="Lojas"
@@ -280,8 +246,7 @@ function StoreDeleteDialog({
 				/>
 				<AppModalBody>
 					<AppModalConfirmPanel icon={Trash2}>
-						Loja:{' '}
-						<span className="font-medium">{target?.name}</span>
+						Loja: <span className="font-medium">{target?.name}</span>
 					</AppModalConfirmPanel>
 					<ModalFormErrorBanner message={deleteError} />
 				</AppModalBody>

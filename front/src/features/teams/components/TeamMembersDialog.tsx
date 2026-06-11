@@ -132,11 +132,7 @@ function TeamMembersDialog({
 										<Button
 											className="rounded-lg"
 											disabled={isPending}
-											onClick={() =>
-												setMemberPendingRemovalId(
-													member.id,
-												)
-											}
+											onClick={() => setMemberPendingRemovalId(member.id)}
 											size="sm"
 											type="button"
 											variant="outline"
@@ -184,9 +180,7 @@ function TeamMembersDialog({
 				</DialogFooter>
 			</DialogContent>
 			<Dialog
-				onOpenChange={(open) =>
-					!open && setMemberPendingRemovalId(null)
-				}
+				onOpenChange={(open) => !open && setMemberPendingRemovalId(null)}
 				open={memberPendingRemoval !== null}
 			>
 				<DialogContent className={`${appModalContentClass} max-w-md`}>
@@ -203,8 +197,7 @@ function TeamMembersDialog({
 					/>
 					<div className="px-6 py-4 text-sm text-muted-foreground">
 						<AppModalConfirmPanel icon={UserMinus}>
-							Essa ação remove o vínculo do membro com a equipe
-							atual.
+							Essa ação remove o vínculo do membro com a equipe atual.
 						</AppModalConfirmPanel>
 					</div>
 					<DialogFooter>

@@ -40,8 +40,7 @@ function AppTableFilterDropdown({
 	const selectedLabel =
 		value === defaultValue
 			? label
-			: (options.find((option) => option.value === value)?.label ??
-				label);
+			: (options.find((option) => option.value === value)?.label ?? label);
 	const Icon = kind === 'sort' ? ArrowDownUp : SlidersHorizontal;
 
 	return (
@@ -66,10 +65,7 @@ function AppTableFilterDropdown({
 				align="start"
 				className="w-[min(96vw,15rem)] rounded-lg border border-border bg-white p-1 text-foreground shadow-lg"
 			>
-				<DropdownMenuRadioGroup
-					onValueChange={onValueChange}
-					value={value}
-				>
+				<DropdownMenuRadioGroup onValueChange={onValueChange} value={value}>
 					{options.map((option) => (
 						<DropdownMenuRadioItem
 							className="rounded-md text-[13px]"

@@ -76,9 +76,7 @@ function AnalyticImportanceDetailDialog({
 										aria-hidden="true"
 										className="size-2 rounded-full"
 										style={{
-											backgroundColor: importanceColor(
-												item.key,
-											),
+											backgroundColor: importanceColor(item.key),
 										}}
 									/>
 									{item.label}: {item.count}
@@ -100,10 +98,7 @@ function AnalyticImportanceDetailDialog({
 												{lead.label}
 											</p>
 											<p className="mt-0.5 text-xs text-muted-foreground">
-												Classificação:{' '}
-												{importanceLabel(
-													lead.importance,
-												)}
+												Classificação: {importanceLabel(lead.importance)}
 											</p>
 										</div>
 										<span
@@ -112,9 +107,7 @@ function AnalyticImportanceDetailDialog({
 											)}
 											style={{
 												backgroundColor: `${importanceColor(lead.importance)}22`,
-												color: importanceColor(
-													lead.importance,
-												),
+												color: importanceColor(lead.importance),
 											}}
 										>
 											{importanceLabel(lead.importance)}
@@ -126,8 +119,7 @@ function AnalyticImportanceDetailDialog({
 						</ul>
 					) : (
 						<p className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-							Nenhum lead com negociação classificada no período
-							selecionado.
+							Nenhum lead com negociação classificada no período selecionado.
 						</p>
 					)}
 				</AppModalBody>

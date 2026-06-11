@@ -81,14 +81,11 @@ function CustomersManagementScreen() {
 	>('');
 	const [selectedStoreId, setSelectedStoreId] = useState('');
 	const [sort, setSort] = useState<CustomerCatalogSort>('recent');
-	const [pageSize, setPageSize] =
-		useState<(typeof pageSizeOptions)[number]>(5);
+	const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(5);
 	const [dialogState, setDialogState] = useState<CustomerDialogState | null>(
 		null,
 	);
-	const [deleteTarget, setDeleteTarget] = useState<CustomerRecord | null>(
-		null,
-	);
+	const [deleteTarget, setDeleteTarget] = useState<CustomerRecord | null>(null);
 	const [detailsTarget, setDetailsTarget] =
 		useState<CustomerCatalogItem | null>(null);
 	const [formState, setFormState] =
@@ -205,10 +202,7 @@ function CustomersManagementScreen() {
 		<div className="space-y-5">
 			<AppPageHeader
 				action={
-					<Button
-						className={appPageActionClass}
-						onClick={openCreateDialog}
-					>
+					<Button className={appPageActionClass} onClick={openCreateDialog}>
 						<Plus className="size-4" />
 						Novo cliente
 					</Button>
@@ -252,9 +246,7 @@ function CustomersManagementScreen() {
 								defaultValue=""
 								label="Status"
 								onValueChange={(value) => {
-									setSelectedStatus(
-										value as CustomerCatalogStatus | '',
-									);
+									setSelectedStatus(value as CustomerCatalogStatus | '');
 									setPage(1);
 								}}
 								options={[
@@ -316,9 +308,7 @@ function CustomersManagementScreen() {
 								itemLabel="clientes"
 								onPageChange={setPage}
 								onPageSizeChange={(value) => {
-									setPageSize(
-										value as (typeof pageSizeOptions)[number],
-									);
+									setPageSize(value as (typeof pageSizeOptions)[number]);
 									setPage(1);
 								}}
 								page={catalog?.page ?? page}

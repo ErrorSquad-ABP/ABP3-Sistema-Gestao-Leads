@@ -269,17 +269,13 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 						'Valor';
 
 					return (
-						<div
-							key={`${item.dataKey}-${itemName}`}
-							className="flex gap-2"
-						>
+						<div key={`${item.dataKey}-${itemName}`} className="flex gap-2">
 							<span
 								className="mt-1 size-2 rounded-full"
 								style={{ backgroundColor: item.color }}
 							/>
 							<span>
-								{String(itemName)}:{' '}
-								{formatCount(Number(item.value ?? 0))}
+								{String(itemName)}: {formatCount(Number(item.value ?? 0))}
 							</span>
 						</div>
 					);
@@ -470,8 +466,7 @@ function AnalyticDashboardPageContent({
 						Dashboard Analítico
 					</h1>
 					<p className="mt-1.5 text-sm text-muted-foreground">
-						Visão estratégica da performance comercial no período
-						selecionado.
+						Visão estratégica da performance comercial no período selecionado.
 					</p>
 				</div>
 
@@ -498,18 +493,14 @@ function AnalyticDashboardPageContent({
 						<div className="flex flex-wrap items-center gap-2 rounded-[13px] border border-border bg-card p-1.5">
 							<Input
 								className="h-8 w-36 rounded-xl border-border text-[11px] font-semibold shadow-none"
-								onChange={(event) =>
-									setStartDate(event.target.value)
-								}
+								onChange={(event) => setStartDate(event.target.value)}
 								type="date"
 								value={startDate}
 							/>
 							<span className="text-muted-foreground">-</span>
 							<Input
 								className="h-8 w-36 rounded-xl border-border text-[11px] font-semibold shadow-none"
-								onChange={(event) =>
-									setEndDate(event.target.value)
-								}
+								onChange={(event) => setEndDate(event.target.value)}
 								type="date"
 								value={endDate}
 							/>
@@ -585,8 +576,8 @@ function AnalyticDashboardPageContent({
 								Sem dados no período
 							</h2>
 							<p className="mt-1 text-sm text-muted-foreground">
-								Altere o filtro temporal para visualizar os
-								indicadores analíticos.
+								Altere o filtro temporal para visualizar os indicadores
+								analíticos.
 							</p>
 						</div>
 					</CardContent>
@@ -604,10 +595,7 @@ function AnalyticDashboardPageContent({
 
 								<div className="grid flex-1 items-center gap-4 md:grid-cols-[minmax(15rem,1fr)_auto]">
 									<div className="relative mx-auto h-64 w-full max-w-[18rem]">
-										<ResponsiveContainer
-											width="100%"
-											height="100%"
-										>
+										<ResponsiveContainer width="100%" height="100%">
 											<PieChart>
 												<Pie
 													data={teamDistribution}
@@ -618,33 +606,23 @@ function AnalyticDashboardPageContent({
 													paddingAngle={2}
 													stroke="none"
 												>
-													{teamDistribution.map(
-														(item, index) => (
-															<Cell
-																fill={chartSeriesColor(
-																	index,
-																)}
-																key={item.id}
-															/>
-														),
-													)}
+													{teamDistribution.map((item, index) => (
+														<Cell
+															fill={chartSeriesColor(index)}
+															key={item.id}
+														/>
+													))}
 												</Pie>
-												<Tooltip
-													content={<ChartTooltip />}
-												/>
+												<Tooltip content={<ChartTooltip />} />
 											</PieChart>
 										</ResponsiveContainer>
-										<DonutCenter
-											total={dashboard.summary.totalLeads}
-										/>
+										<DonutCenter total={dashboard.summary.totalLeads} />
 									</div>
 									<div className="w-full space-y-4 md:w-48">
 										{teamDistribution.map((item, index) => {
 											const percentage =
 												dashboard.summary.totalLeads > 0
-													? (item.totalLeads /
-															dashboard.summary
-																.totalLeads) *
+													? (item.totalLeads / dashboard.summary.totalLeads) *
 														100
 													: 0;
 											return (
@@ -655,10 +633,7 @@ function AnalyticDashboardPageContent({
 													<span
 														className="size-3 rounded-full"
 														style={{
-															backgroundColor:
-																chartSeriesColor(
-																	index,
-																),
+															backgroundColor: chartSeriesColor(index),
 														}}
 													/>
 													<div className="min-w-0">
@@ -667,23 +642,15 @@ function AnalyticDashboardPageContent({
 														</p>
 													</div>
 													<span className="text-sm font-semibold text-foreground/80">
-														{formatCount(
-															item.totalLeads,
-														)}{' '}
-														(
-														{formatPercent(
-															percentage,
-														)}
-														)
+														{formatCount(item.totalLeads)} (
+														{formatPercent(percentage)})
 													</span>
 												</div>
 											);
 										})}
 									</div>
 								</div>
-								<CardAction>
-									Ver desempenho das equipes
-								</CardAction>
+								<CardAction>Ver desempenho das equipes</CardAction>
 							</CardContent>
 						</Card>
 
@@ -711,9 +678,7 @@ function AnalyticDashboardPageContent({
 														{item.name}
 													</p>
 													<span className="text-xs font-bold text-foreground">
-														{formatCount(
-															item.totalLeads,
-														)}
+														{formatCount(item.totalLeads)}
 													</span>
 												</div>
 												<div className="h-1.5 rounded-full bg-muted">
@@ -724,24 +689,18 @@ function AnalyticDashboardPageContent({
 																item.totalLeads,
 																Math.max(
 																	...attendantDistribution.map(
-																		(
-																			attendant,
-																		) =>
-																			attendant.totalLeads,
+																		(attendant) => attendant.totalLeads,
 																	),
 																	0,
 																),
 															)}%`,
-															backgroundColor:
-																CHART_COLORS.barDefault,
+															backgroundColor: CHART_COLORS.barDefault,
 														}}
 													/>
 												</div>
 											</div>
 											<span className="text-[11px] text-muted-foreground">
-												{formatPercent(
-													item.conversionRate,
-												)}
+												{formatPercent(item.conversionRate)}
 											</span>
 										</div>
 									))}
@@ -758,10 +717,7 @@ function AnalyticDashboardPageContent({
 
 								<div className="grid flex-1 items-center gap-4 md:grid-cols-[minmax(15rem,1fr)_auto]">
 									<div className="relative mx-auto h-64 w-full max-w-[18rem]">
-										<ResponsiveContainer
-											width="100%"
-											height="100%"
-										>
+										<ResponsiveContainer width="100%" height="100%">
 											<PieChart>
 												<Pie
 													data={importanceData}
@@ -772,34 +728,20 @@ function AnalyticDashboardPageContent({
 													paddingAngle={2}
 													stroke="none"
 												>
-													{importanceData.map(
-														(item) => (
-															<Cell
-																fill={
-																	item.color
-																}
-																key={item.key}
-															/>
-														),
-													)}
+													{importanceData.map((item) => (
+														<Cell fill={item.color} key={item.key} />
+													))}
 												</Pie>
-												<Tooltip
-													content={<ChartTooltip />}
-												/>
+												<Tooltip content={<ChartTooltip />} />
 											</PieChart>
 										</ResponsiveContainer>
-										<DonutCenter
-											total={dashboard.summary.totalLeads}
-										/>
+										<DonutCenter total={dashboard.summary.totalLeads} />
 									</div>
 									<div className="w-full space-y-4 md:w-48">
 										{importanceData.map((item) => {
 											const percentage =
 												dashboard.summary.totalLeads > 0
-													? (item.count /
-															dashboard.summary
-																.totalLeads) *
-														100
+													? (item.count / dashboard.summary.totalLeads) * 100
 													: 0;
 											return (
 												<div
@@ -809,33 +751,22 @@ function AnalyticDashboardPageContent({
 													<span
 														className="size-3 rounded-full"
 														style={{
-															backgroundColor:
-																item.color,
+															backgroundColor: item.color,
 														}}
 													/>
 													<span className="text-sm font-semibold text-foreground">
 														{item.label}
 													</span>
 													<span className="text-sm font-semibold text-foreground/80">
-														{formatCount(
-															item.count,
-														)}{' '}
-														(
-														{formatPercent(
-															percentage,
-														)}
-														)
+														{formatCount(item.count)} (
+														{formatPercent(percentage)})
 													</span>
 												</div>
 											);
 										})}
 									</div>
 								</div>
-								<CardAction
-									onClick={() =>
-										setImportanceDialogOpen(true)
-									}
-								>
+								<CardAction onClick={() => setImportanceDialogOpen(true)}>
 									Ver detalhes da importância
 								</CardAction>
 							</CardContent>
@@ -851,10 +782,7 @@ function AnalyticDashboardPageContent({
 
 								{finalizationData.length > 0 ? (
 									<div className="h-72">
-										<ResponsiveContainer
-											width="100%"
-											height="100%"
-										>
+										<ResponsiveContainer width="100%" height="100%">
 											<BarChart
 												data={finalizationData}
 												margin={{
@@ -882,14 +810,10 @@ function AnalyticDashboardPageContent({
 													fontSize={11}
 													tickLine={false}
 												/>
-												<Tooltip
-													content={<ChartTooltip />}
-												/>
+												<Tooltip content={<ChartTooltip />} />
 												<Bar
 													dataKey="count"
-													fill={
-														CHART_COLORS.barDefault
-													}
+													fill={CHART_COLORS.barDefault}
 													maxBarSize={86}
 													name="Leads"
 													radius={[10, 10, 0, 0]}
@@ -905,8 +829,7 @@ function AnalyticDashboardPageContent({
 									</div>
 								) : (
 									<div className="grid min-h-64 place-items-center rounded-2xl bg-muted/40 text-center text-sm text-muted-foreground">
-										Nenhuma perda com motivo registrado no
-										período.
+										Nenhuma perda com motivo registrado no período.
 									</div>
 								)}
 								<CardAction>Ver todos os motivos</CardAction>
@@ -920,10 +843,7 @@ function AnalyticDashboardPageContent({
 								</div>
 								<div className="grid flex-1 items-center gap-4">
 									<div className="relative mx-auto h-60 w-full max-w-68">
-										<ResponsiveContainer
-											width="100%"
-											height="100%"
-										>
+										<ResponsiveContainer width="100%" height="100%">
 											<PieChart>
 												<Pie
 													data={conversionSplit}
@@ -934,25 +854,14 @@ function AnalyticDashboardPageContent({
 													paddingAngle={2}
 													stroke="none"
 												>
-													{conversionSplit.map(
-														(item) => (
-															<Cell
-																fill={
-																	item.color
-																}
-																key={item.key}
-															/>
-														),
-													)}
+													{conversionSplit.map((item) => (
+														<Cell fill={item.color} key={item.key} />
+													))}
 												</Pie>
-												<Tooltip
-													content={<ChartTooltip />}
-												/>
+												<Tooltip content={<ChartTooltip />} />
 											</PieChart>
 										</ResponsiveContainer>
-										<DonutCenter
-											total={dashboard.summary.totalLeads}
-										/>
+										<DonutCenter total={dashboard.summary.totalLeads} />
 									</div>
 									<div className="space-y-3">
 										{conversionSplit.map((item) => (
@@ -964,8 +873,7 @@ function AnalyticDashboardPageContent({
 													<span
 														className="size-3 rounded-full"
 														style={{
-															backgroundColor:
-																item.color,
+															backgroundColor: item.color,
 														}}
 													/>
 													<span className="text-sm font-semibold text-foreground">
@@ -979,11 +887,7 @@ function AnalyticDashboardPageContent({
 										))}
 									</div>
 								</div>
-								<CardAction
-									onClick={() =>
-										setConversionDialogOpen(true)
-									}
-								>
+								<CardAction onClick={() => setConversionDialogOpen(true)}>
 									Ver detalhes da conversão
 								</CardAction>
 							</CardContent>
@@ -995,10 +899,7 @@ function AnalyticDashboardPageContent({
 									<SectionTitle title="Evolução de leads no período" />
 								</div>
 								<div className="h-72">
-									<ResponsiveContainer
-										width="100%"
-										height="100%"
-									>
+									<ResponsiveContainer width="100%" height="100%">
 										<AreaChart
 											data={trendData}
 											margin={{
@@ -1018,38 +919,25 @@ function AnalyticDashboardPageContent({
 												>
 													<stop
 														offset="0%"
-														stopColor={
-															CHART_COLORS.barDefault
-														}
+														stopColor={CHART_COLORS.barDefault}
 														stopOpacity={0.22}
 													/>
 													<stop
 														offset="100%"
-														stopColor={
-															CHART_COLORS.barDefault
-														}
+														stopColor={CHART_COLORS.barDefault}
 														stopOpacity={0}
 													/>
 												</linearGradient>
 											</defs>
-											<CartesianGrid
-												stroke="var(--border)"
-												vertical={false}
-											/>
+											<CartesianGrid stroke="var(--border)" vertical={false} />
 											<XAxis
 												axisLine={false}
 												dataKey="label"
 												fontSize={11}
 												tickLine={false}
 											/>
-											<YAxis
-												axisLine={false}
-												fontSize={11}
-												tickLine={false}
-											/>
-											<Tooltip
-												content={<ChartTooltip />}
-											/>
+											<YAxis axisLine={false} fontSize={11} tickLine={false} />
+											<Tooltip content={<ChartTooltip />} />
 											<Area
 												dataKey="totalLeads"
 												dot={{

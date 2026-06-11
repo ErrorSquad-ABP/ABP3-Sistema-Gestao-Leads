@@ -227,9 +227,7 @@ function getOptionLabel<T extends string>(
 	options: { value: T; label: string }[],
 	value: T | undefined,
 ) {
-	return (
-		options.find((option) => option.value === value)?.label ?? 'Selecione'
-	);
+	return options.find((option) => option.value === value)?.label ?? 'Selecione';
 }
 
 function DealFormDialog({
@@ -286,8 +284,7 @@ function DealFormDialog({
 		() =>
 			(vehiclesQuery.data ?? []).filter(
 				(vehicle) =>
-					vehicle.storeId === leadStoreId &&
-					vehicle.status === 'AVAILABLE',
+					vehicle.storeId === leadStoreId && vehicle.status === 'AVAILABLE',
 			),
 		[leadStoreId, vehiclesQuery.data],
 	);
@@ -350,9 +347,7 @@ function DealFormDialog({
 					status: targetDeal.status,
 					lossReason: targetDeal.lossReason,
 				});
-				setValueCentsDigits(
-					apiDecimalStringToCentsDigits(targetDeal.value),
-				);
+				setValueCentsDigits(apiDecimalStringToCentsDigits(targetDeal.value));
 				setVehicleSearch(resolvedCurrentVehicle.displayLabel);
 				setVehicleDropdownOpen(false);
 				setStageDropdownOpen(false);
@@ -383,14 +378,10 @@ function DealFormDialog({
 	}, [form, lossReasonValue, statusValue]);
 
 	function handleSelectVehicle(option: { id: string; label: string }) {
-		form.setValue(
-			'vehicleId',
-			option.id as DealUpdateFormInput['vehicleId'],
-			{
-				shouldDirty: true,
-				shouldValidate: true,
-			},
-		);
+		form.setValue('vehicleId', option.id as DealUpdateFormInput['vehicleId'], {
+			shouldDirty: true,
+			shouldValidate: true,
+		});
 		setVehicleSearch(option.label);
 		setVehicleDropdownOpen(false);
 
@@ -402,8 +393,7 @@ function DealFormDialog({
 
 	async function handleSubmit() {
 		if (isReadOnly) {
-			const message =
-				'Negociação finalizada. Não é possível editar os campos.';
+			const message = 'Negociação finalizada. Não é possível editar os campos.';
 			setSubmitError(message);
 			toast.warning(message, {
 				id: 'deal-edit-readonly',
@@ -453,9 +443,8 @@ function DealFormDialog({
 							Editar negociação
 						</DialogTitle>
 						<DialogDescription className="max-w-2xl text-[13px] leading-5 text-[#7a8494]">
-							Atualize os dados da negociação. O backend valida
-							transições de etapa, disponibilidade do veículo e
-							regras de negócio.
+							Atualize os dados da negociação. O backend valida transições de
+							etapa, disponibilidade do veículo e regras de negócio.
 						</DialogDescription>
 					</div>
 				</DialogHeader>
@@ -463,8 +452,7 @@ function DealFormDialog({
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
 					onBlurCapture={(event) => {
-						const field =
-							dealFormFieldById[(event.target as HTMLElement).id];
+						const field = dealFormFieldById[(event.target as HTMLElement).id];
 						if (field) void form.trigger(field);
 					}}
 					onSubmit={form.handleSubmit(handleSubmit)}
@@ -472,8 +460,8 @@ function DealFormDialog({
 					<div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-8 py-5">
 						{isReadOnly ? (
 							<div className="rounded-xl border border-border/80 bg-white px-4 py-3 text-sm text-[#6b7687]">
-								Negociação finalizada. Os dados abaixo estão
-								disponíveis apenas para consulta.
+								Negociação finalizada. Os dados abaixo estão disponíveis apenas
+								para consulta.
 							</div>
 						) : null}
 						<ModalFormErrorBanner message={submitError} />
@@ -484,10 +472,9 @@ function DealFormDialog({
 									<Info className="size-5" />
 								</span>
 								<p className="text-[12.5px] leading-5">
-									Ao alterar o veículo, as validações de
-									disponibilidade serão aplicadas. O veículo
-									atual será liberado automaticamente caso a
-									troca seja realizada.
+									Ao alterar o veículo, as validações de disponibilidade serão
+									aplicadas. O veículo atual será liberado automaticamente caso
+									a troca seja realizada.
 								</p>
 							</div>
 							<Button
@@ -521,14 +508,10 @@ function DealFormDialog({
 										disabled={isPending || isReadOnly}
 										id="deal-form-title"
 										onChange={(event) =>
-											form.setValue(
-												'title',
-												event.target.value,
-												{
-													shouldDirty: true,
-													shouldValidate: true,
-												},
-											)
+											form.setValue('title', event.target.value, {
+												shouldDirty: true,
+												shouldValidate: true,
+											})
 										}
 										value={titleValue ?? ''}
 										{...requiredFieldProps()}
@@ -558,15 +541,11 @@ function DealFormDialog({
 										autoComplete="off"
 										onChange={(event) =>
 											setValueCentsDigits(
-												sanitizeMoneyDigitsInput(
-													event.target.value,
-												),
+												sanitizeMoneyDigitsInput(event.target.value),
 											)
 										}
 										placeholder="R$ 0,00"
-										value={formatCentsDigitsToBrlDisplay(
-											valueCentsDigits,
-										)}
+										value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
 									/>
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
@@ -596,17 +575,12 @@ function DealFormDialog({
 										id="deal-form-vehicle"
 										onBlur={() => {
 											window.setTimeout(
-												() =>
-													setVehicleDropdownOpen(
-														false,
-													),
+												() => setVehicleDropdownOpen(false),
 												120,
 											);
 										}}
 										onChange={(event) => {
-											setVehicleSearch(
-												event.target.value,
-											);
+											setVehicleSearch(event.target.value);
 											form.setValue(
 												'vehicleId',
 												'' as DealUpdateFormInput['vehicleId'],
@@ -617,9 +591,7 @@ function DealFormDialog({
 											);
 											setVehicleDropdownOpen(true);
 										}}
-										onFocus={() =>
-											setVehicleDropdownOpen(true)
-										}
+										onFocus={() => setVehicleDropdownOpen(true)}
 										placeholder={
 											vehiclesQuery.isPending
 												? 'Carregando veículos disponíveis...'
@@ -633,29 +605,20 @@ function DealFormDialog({
 									!vehiclesQuery.isPending &&
 									vehicleOptions.length > 0 ? (
 										<div className={dropdownPanelClass}>
-											{filteredVehicleOptions.length >
-											0 ? (
-												filteredVehicleOptions.map(
-													(vehicle) => (
-														<button
-															key={vehicle.id}
-															className={
-																dropdownItemClass
-															}
-															onMouseDown={(
-																event,
-															) => {
-																event.preventDefault();
-																handleSelectVehicle(
-																	vehicle,
-																);
-															}}
-															type="button"
-														>
-															{vehicle.label}
-														</button>
-													),
-												)
+											{filteredVehicleOptions.length > 0 ? (
+												filteredVehicleOptions.map((vehicle) => (
+													<button
+														key={vehicle.id}
+														className={dropdownItemClass}
+														onMouseDown={(event) => {
+															event.preventDefault();
+															handleSelectVehicle(vehicle);
+														}}
+														type="button"
+													>
+														{vehicle.label}
+													</button>
+												))
 											) : (
 												<p className="px-3 py-2 text-sm text-[#7a8494]">
 													Nenhum veículo encontrado.
@@ -666,30 +629,24 @@ function DealFormDialog({
 								</div>
 								{!leadStoreId ? (
 									<p className="text-[11.5px] leading-4 text-[#6b7687]">
-										Não foi possível determinar a loja do
-										lead.
+										Não foi possível determinar a loja do lead.
 									</p>
 								) : vehiclesQuery.isPending ? (
 									<p className="text-[11.5px] leading-4 text-[#6b7687]">
 										Carregando veículos disponíveis...
 									</p>
-								) : vehiclesQuery.isSuccess &&
-								  vehicleOptions.length <= 1 ? (
+								) : vehiclesQuery.isSuccess && vehicleOptions.length <= 1 ? (
 									<p className="text-[11.5px] leading-4 text-[#6b7687]">
-										Nenhum outro veículo livre para
-										negociação na loja deste lead.
+										Nenhum outro veículo livre para negociação na loja deste
+										lead.
 									</p>
 								) : form.formState.errors.vehicleId ? (
 									<p className="text-[11.5px] leading-4 text-destructive">
-										{String(
-											form.formState.errors.vehicleId
-												.message,
-										)}
+										{String(form.formState.errors.vehicleId.message)}
 									</p>
 								) : (
 									<p className="text-[11.5px] leading-4 text-[#7a8494]">
-										Apenas veículos disponíveis podem ser
-										selecionados.
+										Apenas veículos disponíveis podem ser selecionados.
 									</p>
 								)}
 							</div>
@@ -713,24 +670,13 @@ function DealFormDialog({
 										disabled={isPending || isReadOnly}
 										id="deal-form-stage"
 										onBlur={() => {
-											window.setTimeout(
-												() =>
-													setStageDropdownOpen(false),
-												120,
-											);
+											window.setTimeout(() => setStageDropdownOpen(false), 120);
 										}}
-										onClick={() =>
-											setStageDropdownOpen(
-												(current) => !current,
-											)
-										}
+										onClick={() => setStageDropdownOpen((current) => !current)}
 										type="button"
 									>
 										<span className="truncate">
-											{getOptionLabel(
-												dealStageOptions,
-												stageValue,
-											)}
+											{getOptionLabel(dealStageOptions, stageValue)}
 										</span>
 									</button>
 									<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
@@ -739,22 +685,14 @@ function DealFormDialog({
 											{dealStageOptions.map((opt) => (
 												<button
 													key={opt.value}
-													className={
-														dropdownItemClass
-													}
+													className={dropdownItemClass}
 													onMouseDown={(event) => {
 														event.preventDefault();
-														form.setValue(
-															'stage',
-															opt.value,
-															{
-																shouldDirty: true,
-																shouldValidate: true,
-															},
-														);
-														setStageDropdownOpen(
-															false,
-														);
+														form.setValue('stage', opt.value, {
+															shouldDirty: true,
+															shouldValidate: true,
+														});
+														setStageDropdownOpen(false);
 													}}
 													type="button"
 												>
@@ -765,8 +703,7 @@ function DealFormDialog({
 									) : null}
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
-									A etapa define o momento atual da
-									negociação.
+									A etapa define o momento atual da negociação.
 								</p>
 							</div>
 
@@ -790,65 +727,44 @@ function DealFormDialog({
 										id="deal-form-importance"
 										onBlur={() => {
 											window.setTimeout(
-												() =>
-													setImportanceDropdownOpen(
-														false,
-													),
+												() => setImportanceDropdownOpen(false),
 												120,
 											);
 										}}
 										onClick={() =>
-											setImportanceDropdownOpen(
-												(current) => !current,
-											)
+											setImportanceDropdownOpen((current) => !current)
 										}
 										type="button"
 									>
 										<span className="truncate">
-											{getOptionLabel(
-												dealImportanceOptions,
-												importanceValue,
-											)}
+											{getOptionLabel(dealImportanceOptions, importanceValue)}
 										</span>
 									</button>
 									<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
 									{importanceDropdownOpen ? (
 										<div className={dropdownPanelClass}>
-											{dealImportanceOptions.map(
-												(opt) => (
-													<button
-														key={opt.value}
-														className={
-															dropdownItemClass
-														}
-														onMouseDown={(
-															event,
-														) => {
-															event.preventDefault();
-															form.setValue(
-																'importance',
-																opt.value,
-																{
-																	shouldDirty: true,
-																	shouldValidate: true,
-																},
-															);
-															setImportanceDropdownOpen(
-																false,
-															);
-														}}
-														type="button"
-													>
-														{opt.label}
-													</button>
-												),
-											)}
+											{dealImportanceOptions.map((opt) => (
+												<button
+													key={opt.value}
+													className={dropdownItemClass}
+													onMouseDown={(event) => {
+														event.preventDefault();
+														form.setValue('importance', opt.value, {
+															shouldDirty: true,
+															shouldValidate: true,
+														});
+														setImportanceDropdownOpen(false);
+													}}
+													type="button"
+												>
+													{opt.label}
+												</button>
+											))}
 										</div>
 									) : null}
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
-									A importância ajuda a priorizar seus
-									esforços.
+									A importância ajuda a priorizar seus esforços.
 								</p>
 							</div>
 
@@ -872,25 +788,15 @@ function DealFormDialog({
 										id="deal-form-status"
 										onBlur={() => {
 											window.setTimeout(
-												() =>
-													setStatusDropdownOpen(
-														false,
-													),
+												() => setStatusDropdownOpen(false),
 												120,
 											);
 										}}
-										onClick={() =>
-											setStatusDropdownOpen(
-												(current) => !current,
-											)
-										}
+										onClick={() => setStatusDropdownOpen((current) => !current)}
 										type="button"
 									>
 										<span className="truncate">
-											{getOptionLabel(
-												dealStatusOptions,
-												statusValue,
-											)}
+											{getOptionLabel(dealStatusOptions, statusValue)}
 										</span>
 									</button>
 									<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
@@ -899,22 +805,14 @@ function DealFormDialog({
 											{dealStatusOptions.map((opt) => (
 												<button
 													key={opt.value}
-													className={
-														dropdownItemClass
-													}
+													className={dropdownItemClass}
 													onMouseDown={(event) => {
 														event.preventDefault();
-														form.setValue(
-															'status',
-															opt.value,
-															{
-																shouldDirty: true,
-																shouldValidate: true,
-															},
-														);
-														setStatusDropdownOpen(
-															false,
-														);
+														form.setValue('status', opt.value, {
+															shouldDirty: true,
+															shouldValidate: true,
+														});
+														setStatusDropdownOpen(false);
 													}}
 													type="button"
 												>
@@ -925,8 +823,7 @@ function DealFormDialog({
 									) : null}
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
-									A negociação só pode ser editada quando está
-									em aberto.
+									A negociação só pode ser editada quando está em aberto.
 								</p>
 							</div>
 							{statusValue === 'LOST' ? (
@@ -948,25 +845,19 @@ function DealFormDialog({
 											id="deal-form-loss-reason"
 											onBlur={() => {
 												window.setTimeout(
-													() =>
-														setLossReasonDropdownOpen(
-															false,
-														),
+													() => setLossReasonDropdownOpen(false),
 													120,
 												);
 											}}
 											onClick={() =>
-												setLossReasonDropdownOpen(
-													(current) => !current,
-												)
+												setLossReasonDropdownOpen((current) => !current)
 											}
 											type="button"
 										>
 											<span className="truncate">
 												{getOptionLabel(
 													dealLossReasonOptions,
-													(lossReasonValue ??
-														undefined) as
+													(lossReasonValue ?? undefined) as
 														| DealLossReason
 														| undefined,
 												)}
@@ -975,41 +866,29 @@ function DealFormDialog({
 										<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
 										{lossReasonDropdownOpen ? (
 											<div className={dropdownPanelClass}>
-												{dealLossReasonOptions.map(
-													(opt) => (
-														<button
-															key={opt.value}
-															className={
-																dropdownItemClass
-															}
-															onMouseDown={(
-																event,
-															) => {
-																event.preventDefault();
-																form.setValue(
-																	'lossReason',
-																	opt.value,
-																	{
-																		shouldDirty: true,
-																		shouldValidate: true,
-																	},
-																);
-																setLossReasonDropdownOpen(
-																	false,
-																);
-															}}
-															type="button"
-														>
-															{opt.label}
-														</button>
-													),
-												)}
+												{dealLossReasonOptions.map((opt) => (
+													<button
+														key={opt.value}
+														className={dropdownItemClass}
+														onMouseDown={(event) => {
+															event.preventDefault();
+															form.setValue('lossReason', opt.value, {
+																shouldDirty: true,
+																shouldValidate: true,
+															});
+															setLossReasonDropdownOpen(false);
+														}}
+														type="button"
+													>
+														{opt.label}
+													</button>
+												))}
 											</div>
 										) : null}
 									</div>
 									<p className="text-[11.5px] leading-4 text-[#7a8494]">
-										Esse dado alimenta os motivos de
-										finalização do dashboard analítico.
+										Esse dado alimenta os motivos de finalização do dashboard
+										analítico.
 									</p>
 								</div>
 							) : null}
@@ -1024,8 +903,7 @@ function DealFormDialog({
 										Resumo da negociação
 									</p>
 									<p className="text-[12px] text-[#7a8494]">
-										Confira os dados atuais antes de salvar
-										as alterações.
+										Confira os dados atuais antes de salvar as alterações.
 									</p>
 								</div>
 							</div>
@@ -1065,16 +943,10 @@ function DealFormDialog({
 								</div>
 								<span className="h-px w-5 bg-[#e5e9f0]" />
 								<div
-									className={getSummaryStageTextClass(
-										stageValue,
-										'PROPOSAL',
-									)}
+									className={getSummaryStageTextClass(stageValue, 'PROPOSAL')}
 								>
 									<span
-										className={getSummaryStageIconClass(
-											stageValue,
-											'PROPOSAL',
-										)}
+										className={getSummaryStageIconClass(stageValue, 'PROPOSAL')}
 									>
 										<FileText className="size-3.5" />
 									</span>
@@ -1082,16 +954,10 @@ function DealFormDialog({
 								</div>
 								<span className="h-px w-5 bg-[#e5e9f0]" />
 								<div
-									className={getSummaryStageTextClass(
-										stageValue,
-										'CLOSING',
-									)}
+									className={getSummaryStageTextClass(stageValue, 'CLOSING')}
 								>
 									<span
-										className={getSummaryStageIconClass(
-											stageValue,
-											'CLOSING',
-										)}
+										className={getSummaryStageIconClass(stageValue, 'CLOSING')}
 									>
 										<Trophy className="size-3.5" />
 									</span>

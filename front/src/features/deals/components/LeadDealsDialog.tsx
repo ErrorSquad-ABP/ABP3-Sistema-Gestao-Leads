@@ -78,9 +78,7 @@ function LeadDealsDialog({
 			storeId: leadStoreId ?? undefined,
 		},
 		{
-			enabled: Boolean(
-				leadId && leadStoreId && open && allowLeadMutations,
-			),
+			enabled: Boolean(leadId && leadStoreId && open && allowLeadMutations),
 		},
 	);
 	const availableVehicles = useMemo(
@@ -271,14 +269,12 @@ function LeadDealsDialog({
 							<DealsTable
 								deals={deals}
 								onDelete={
-									allowLeadMutations &&
-									deals.some((d) => d.canMutate)
+									allowLeadMutations && deals.some((d) => d.canMutate)
 										? openDelete
 										: undefined
 								}
 								onEdit={
-									allowLeadMutations &&
-									deals.some((d) => d.canMutate)
+									allowLeadMutations && deals.some((d) => d.canMutate)
 										? openEdit
 										: undefined
 								}
@@ -312,8 +308,8 @@ function LeadDealsDialog({
 					<DialogHeader>
 						<DialogTitle>Nova negociação</DialogTitle>
 						<DialogDescription>
-							Informe veículo, título e valor para registrar uma
-							nova oportunidade comercial deste lead.
+							Informe veículo, título e valor para registrar uma nova
+							oportunidade comercial deste lead.
 						</DialogDescription>
 					</DialogHeader>
 					<form
@@ -330,15 +326,9 @@ function LeadDealsDialog({
 								</Label>
 								<select
 									className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45 disabled:cursor-not-allowed disabled:opacity-60"
-									disabled={
-										!leadId ||
-										!leadStoreId ||
-										vehiclesQuery.isPending
-									}
+									disabled={!leadId || !leadStoreId || vehiclesQuery.isPending}
 									id="lead-deal-vehicle"
-									onChange={(e) =>
-										setVehicleId(e.target.value)
-									}
+									onChange={(e) => setVehicleId(e.target.value)}
 									value={vehicleId}
 									{...requiredFieldProps()}
 								>
@@ -350,34 +340,25 @@ function LeadDealsDialog({
 												: 'Selecione um veículo'}
 									</option>
 									{availableVehicles.map((vehicle) => (
-										<option
-											key={vehicle.id}
-											value={vehicle.id}
-										>
-											{formatVehicleDealSelectLabel(
-												vehicle,
-											)}
+										<option key={vehicle.id} value={vehicle.id}>
+											{formatVehicleDealSelectLabel(vehicle)}
 										</option>
 									))}
 								</select>
 								{!leadStoreId ? (
 									<p className="text-xs text-[#6b7687]">
-										Não foi possível determinar a loja do
-										lead para filtrar os veículos.
+										Não foi possível determinar a loja do lead para filtrar os
+										veículos.
 									</p>
 								) : null}
-								{vehiclesQuery.isSuccess &&
-								availableVehicles.length === 0 ? (
+								{vehiclesQuery.isSuccess && availableVehicles.length === 0 ? (
 									<p className="text-xs text-[#6b7687]">
-										Nenhum veículo disponível para esta
-										loja.
+										Nenhum veículo disponível para esta loja.
 									</p>
 								) : null}
 								{vehiclesQuery.isError ? (
 									<p className="text-xs text-destructive">
-										{humanizePageApiError(
-											vehiclesQuery.error,
-										)}
+										{humanizePageApiError(vehiclesQuery.error)}
 									</p>
 								) : null}
 							</div>
@@ -399,14 +380,10 @@ function LeadDealsDialog({
 									inputMode="numeric"
 									autoComplete="off"
 									placeholder="R$ 0,00"
-									value={formatCentsDigitsToBrlDisplay(
-										valueCentsDigits,
-									)}
+									value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
 									onChange={(e) =>
 										setValueCentsDigits(
-											sanitizeMoneyDigitsInput(
-												e.target.value,
-											),
+											sanitizeMoneyDigitsInput(e.target.value),
 										)
 									}
 								/>
@@ -426,13 +403,10 @@ function LeadDealsDialog({
 								disabled={
 									!allowLeadMutations ||
 									createMutation.isPending ||
-									(vehiclesQuery.isSuccess &&
-										availableVehicles.length === 0)
+									(vehiclesQuery.isSuccess && availableVehicles.length === 0)
 								}
 							>
-								{createMutation.isPending
-									? 'Criando...'
-									: 'Criar negociação'}
+								{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
 							</Button>
 						</DialogFooter>
 					</form>

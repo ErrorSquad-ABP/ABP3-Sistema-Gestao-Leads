@@ -12,11 +12,7 @@ import {
 	appModalContentClass,
 } from '@/components/modals/AppModal';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
@@ -299,8 +295,7 @@ function UsersFormDialog({
 									onChange={(event) =>
 										form.setValue(
 											'role',
-											event.target
-												.value as UserRecord['role'],
+											event.target.value as UserRecord['role'],
 											{
 												shouldDirty: true,
 												shouldValidate: true,
@@ -311,10 +306,7 @@ function UsersFormDialog({
 									{...requiredFieldProps()}
 								>
 									{roleOptions.map((option) => (
-										<option
-											key={option.value}
-											value={option.value}
-										>
+										<option key={option.value} value={option.value}>
 											{option.label}
 										</option>
 									))}
@@ -325,13 +317,8 @@ function UsersFormDialog({
 							</div>
 
 							<div className="space-y-1.5 md:col-span-2">
-								<Label
-									htmlFor="users-form-password"
-									required={!isEditMode}
-								>
-									{isEditMode
-										? 'Nova senha (opcional)'
-										: 'Senha inicial'}
+								<Label htmlFor="users-form-password" required={!isEditMode}>
+									{isEditMode ? 'Nova senha (opcional)' : 'Senha inicial'}
 								</Label>
 								<Input
 									className="h-11 rounded-xl border-[#d8e0ea] shadow-none focus-visible:border-[#f05a28]/45"
@@ -359,8 +346,7 @@ function UsersFormDialog({
 										{selectedAccessGroupIds.length === 0
 											? 'Nenhum grupo — acesso regido só pelo papel'
 											: `${selectedAccessGroupIds.length} ${
-													selectedAccessGroupIds.length ===
-													1
+													selectedAccessGroupIds.length === 1
 														? 'grupo selecionado'
 														: 'grupos selecionados'
 												}`}
@@ -373,10 +359,9 @@ function UsersFormDialog({
 										</p>
 									) : (
 										accessGroups.map((group) => {
-											const isChecked =
-												selectedAccessGroupIds.includes(
-													group.id,
-												);
+											const isChecked = selectedAccessGroupIds.includes(
+												group.id,
+											);
 											return (
 												<label
 													className={cn(
@@ -390,11 +375,7 @@ function UsersFormDialog({
 													<Checkbox
 														checked={isChecked}
 														className="mt-0.5"
-														onCheckedChange={() =>
-															handleToggleGroup(
-																group.id,
-															)
-														}
+														onCheckedChange={() => handleToggleGroup(group.id)}
 													/>
 													<span className="min-w-0 flex-1">
 														<span className="flex items-center gap-2">
@@ -403,15 +384,8 @@ function UsersFormDialog({
 															</span>
 															<span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[0.68rem] font-medium text-[#c2410c]">
 																<ShieldCheck className="size-3" />
-																{
-																	group
-																		.featureKeys
-																		.length
-																}{' '}
-																{group
-																	.featureKeys
-																	.length ===
-																1
+																{group.featureKeys.length}{' '}
+																{group.featureKeys.length === 1
 																	? 'feature'
 																	: 'features'}
 															</span>
@@ -426,16 +400,12 @@ function UsersFormDialog({
 									)}
 								</div>
 								<p className="text-xs leading-5 text-[#667085]">
-									As permissões efetivas são a união das
-									features de todos os grupos vinculados — sem
-									herança entre grupos.
+									As permissões efetivas são a união das features de todos os
+									grupos vinculados — sem herança entre grupos.
 								</p>
 								{form.formState.errors.accessGroupIds ? (
 									<p className="text-xs text-destructive">
-										{
-											form.formState.errors.accessGroupIds
-												.message
-										}
+										{form.formState.errors.accessGroupIds.message}
 									</p>
 								) : null}
 							</div>
@@ -493,19 +463,15 @@ function ConfirmDialog({
 
 				<div className="space-y-4 px-6 py-6">
 					<AppModalConfirmPanel icon={Trash2}>
-						A ação será aplicada imediatamente e não pode ser
-						revertida pela interface.
+						A ação será aplicada imediatamente e não pode ser revertida pela
+						interface.
 					</AppModalConfirmPanel>
 
 					<ModalFormErrorBanner message={error} />
 				</div>
 
 				<DialogFooter>
-					<Button
-						className="rounded-xl"
-						onClick={onClose}
-						variant="outline"
-					>
+					<Button className="rounded-xl" onClick={onClose} variant="outline">
 						Cancelar
 					</Button>
 					<Button

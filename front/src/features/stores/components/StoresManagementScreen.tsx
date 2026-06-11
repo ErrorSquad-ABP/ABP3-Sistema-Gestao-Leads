@@ -160,10 +160,7 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		() => [...new Set(rows.map((row) => row.state))],
 		[rows],
 	);
-	const totalLeadCount = rows.reduce(
-		(total, row) => total + row.leadCount,
-		0,
-	);
+	const totalLeadCount = rows.reduce((total, row) => total + row.leadCount, 0);
 	const totalOpenDeals = rows.reduce(
 		(total, row) => total + row.openDealsCount,
 		0,
@@ -204,9 +201,7 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 	async function handleStoreSubmit() {
 		const payload = toStorePayload(storeFormValues);
 		if (!payload) {
-			setDialogError(
-				'Informe o nome da loja e uma UF válida com 2 letras.',
-			);
+			setDialogError('Informe o nome da loja e uma UF válida com 2 letras.');
 			return;
 		}
 
@@ -305,8 +300,7 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				dialogError={dialogError}
 				dialogState={storeDialogState}
 				isPending={
-					createStoreMutation.isPending ||
-					updateStoreMutation.isPending
+					createStoreMutation.isPending || updateStoreMutation.isPending
 				}
 				onClose={() => {
 					setStoreDialogState(null);

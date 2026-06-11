@@ -65,10 +65,7 @@ function AgendaItemDialog({
 						onSubmit={onSubmit}
 					/>
 					{errorMessage ? (
-						<p
-							className="mt-3 text-sm text-destructive"
-							role="alert"
-						>
+						<p className="mt-3 text-sm text-destructive" role="alert">
 							{errorMessage}
 						</p>
 					) : null}

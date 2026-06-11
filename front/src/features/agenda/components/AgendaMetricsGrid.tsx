@@ -34,9 +34,7 @@ function AgendaMetricsGrid({ items, metrics = null }: AgendaMetricsGridProps) {
 				description="Precisam de atenção"
 				icon={<AlertTriangle className="size-5" />}
 				title="Atrasadas"
-				value={String(
-					metrics?.overdueCount ?? overview.overdueItems.length,
-				)}
+				value={String(metrics?.overdueCount ?? overview.overdueItems.length)}
 				variant={
 					(metrics?.overdueCount ?? overview.overdueItems.length) > 0
 						? 'danger-soft'

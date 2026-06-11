@@ -82,9 +82,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const [ownerFilter, setOwnerFilter] = useState('');
 	const [sort, setSort] =
 		useState<(typeof sortOptions)[number]['value']>('recent');
-	const [leadFormMode, setLeadFormMode] = useState<'create' | 'edit'>(
-		'create',
-	);
+	const [leadFormMode, setLeadFormMode] = useState<'create' | 'edit'>('create');
 	const [leadFormOpen, setLeadFormOpen] = useState(false);
 	const [customerManagerOpen, setCustomerManagerOpen] = useState(false);
 	const [storeManagerOpen, setStoreManagerOpen] = useState(false);
@@ -94,8 +92,9 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const [dealsOpen, setDealsOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [targetLead, setTargetLead] = useState<LeadListItem | null>(null);
-	const [detailLeadItem, setDetailLeadItem] =
-		useState<LeadCatalogItem | null>(null);
+	const [detailLeadItem, setDetailLeadItem] = useState<LeadCatalogItem | null>(
+		null,
+	);
 	const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
 	const catalogQuery = useLeadCatalogQuery(user, {
@@ -328,8 +327,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 
 			{scope?.kind === 'none' ? (
 				<div className="rounded-2xl border border-border/80 bg-muted/30 px-4 py-8 text-sm text-muted-foreground">
-					Sem equipes com visibilidade para listagem ou criação de
-					leads.
+					Sem equipes com visibilidade para listagem ou criação de leads.
 				</div>
 			) : null}
 
@@ -458,9 +456,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 							onConvert={openConvertDialog}
 							onDeals={openDealsDialog}
 							onDelete={
-								user.role === 'ADMINISTRATOR'
-									? openDeleteDialog
-									: undefined
+								user.role === 'ADMINISTRATOR' ? openDeleteDialog : undefined
 							}
 							onDetail={openLeadDetail}
 							onEdit={openEditDialog}
@@ -472,9 +468,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 							}}
 							onPreviousPage={() => setPage((value) => value - 1)}
 							onReassign={
-								user.role === 'ATTENDANT'
-									? undefined
-									: openReassignDialog
+								user.role === 'ATTENDANT' ? undefined : openReassignDialog
 							}
 							pageSize={pageSize}
 							totalItems={catalog.total}

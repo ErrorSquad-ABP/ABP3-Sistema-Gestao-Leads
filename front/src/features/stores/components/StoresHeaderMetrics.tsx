@@ -108,9 +108,7 @@ function StoresPageHeader({
 						<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
 						<Input
 							className={appPageSearchClass}
-							onChange={(event) =>
-								onSearchChange(event.target.value)
-							}
+							onChange={(event) => onSearchChange(event.target.value)}
 							placeholder="Buscar por nome, cidade ou responsável..."
 							value={search}
 						/>

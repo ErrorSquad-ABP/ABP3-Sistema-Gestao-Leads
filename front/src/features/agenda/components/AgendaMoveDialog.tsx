@@ -65,25 +65,16 @@ function AgendaMoveDialog({
 					title="Mover atividade"
 					tone="info"
 				/>
-				<form
-					className="flex min-h-0 flex-1 flex-col"
-					onSubmit={handleSubmit}
-				>
+				<form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
 					<AppModalBody>
-						<AppModalSection
-							icon={MoveRight}
-							title="Nova data"
-							tone="info"
-						>
+						<AppModalSection icon={MoveRight} title="Nova data" tone="info">
 							<div className="space-y-2">
 								<Label htmlFor="agenda-move-date" required>
 									Nova data
 								</Label>
 								<Input
 									id="agenda-move-date"
-									onChange={(event) =>
-										setDate(event.target.value)
-									}
+									onChange={(event) => setDate(event.target.value)}
 									required
 									type="date"
 									value={date}

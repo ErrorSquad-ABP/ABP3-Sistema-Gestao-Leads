@@ -124,8 +124,7 @@ function VehiclesPageContent() {
 	const [sort, setSort] = useState<VehicleCatalogSort>('recent');
 	const [viewMode, setViewMode] = useState<ViewMode>('cards');
 	const [page, setPage] = useState(1);
-	const [pageSize, setPageSize] =
-		useState<(typeof pageSizeOptions)[number]>(6);
+	const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(6);
 	const filtersRef = useRef<HTMLDivElement>(null);
 
 	const catalogQuery = useVehicleCatalogQuery({
@@ -323,10 +322,7 @@ function VehiclesPageContent() {
 		<div className="space-y-6" aria-busy={isPending ? 'true' : 'false'}>
 			<AppPageHeader
 				action={
-					<Button
-						className={appPageActionClass}
-						onClick={openCreateDialog}
-					>
+					<Button className={appPageActionClass} onClick={openCreateDialog}>
 						<Plus className="size-4" />
 						Novo veículo
 					</Button>
@@ -389,10 +385,7 @@ function VehiclesPageContent() {
 
 			<Card className="rounded-xl border-[#dde4ed] bg-white shadow-sm">
 				<CardContent className="space-y-5 p-4">
-					<div
-						className="flex flex-wrap items-center gap-2"
-						ref={filtersRef}
-					>
+					<div className="flex flex-wrap items-center gap-2" ref={filtersRef}>
 						<div className="flex flex-1 flex-wrap items-center gap-2">
 							<AppTableFilterDropdown
 								defaultValue="ALL"
@@ -414,9 +407,7 @@ function VehiclesPageContent() {
 								defaultValue="ALL"
 								label="Status"
 								onValueChange={(value) => {
-									setStatusFilter(
-										value as 'ALL' | VehicleStatus,
-									);
+									setStatusFilter(value as 'ALL' | VehicleStatus);
 									setPage(1);
 								}}
 								options={[
@@ -509,9 +500,7 @@ function VehiclesPageContent() {
 						itemLabel="veículos"
 						onPageChange={setPage}
 						onPageSizeChange={(value) => {
-							setPageSize(
-								value as (typeof pageSizeOptions)[number],
-							);
+							setPageSize(value as (typeof pageSizeOptions)[number]);
 							setPage(1);
 						}}
 						page={catalog?.page ?? page}

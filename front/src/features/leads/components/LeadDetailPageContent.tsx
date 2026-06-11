@@ -211,9 +211,7 @@ function getTimelineFieldKeys(event: TimelineEvent) {
 function formatTimelineDescription(event: TimelineEvent) {
 	if (event.type === 'DEAL_UPDATED' && event.metadata) {
 		const field =
-			typeof event.metadata.field === 'string'
-				? event.metadata.field
-				: '';
+			typeof event.metadata.field === 'string' ? event.metadata.field : '';
 		const fromValue =
 			typeof event.metadata.fromValue === 'string'
 				? event.metadata.fromValue
@@ -317,8 +315,7 @@ function getTimelineDetails(event: TimelineEvent) {
 			{
 				label: 'Novo valor',
 				value:
-					toLabel ??
-					formatLeadChangeValue(field, onlyString(change.toValue)),
+					toLabel ?? formatLeadChangeValue(field, onlyString(change.toValue)),
 			},
 		);
 	}
@@ -559,9 +556,8 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 									{detail.customer.name}
 								</CardTitle>
 								<p className="max-w-3xl text-[0.95rem] leading-7 text-muted-foreground">
-									Acompanhe o atendimento, o responsável, as
-									negociações e os próximos passos deste lead
-									em um só lugar.
+									Acompanhe o atendimento, o responsável, as negociações e os
+									próximos passos deste lead em um só lugar.
 								</p>
 							</div>
 						</div>
@@ -636,8 +632,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 						<div className="grid gap-3">
 							<div className="flex items-center gap-3 rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3 text-sm text-[#1b2430]">
 								<Mail className="size-4 text-[#6b7687]" />
-								{detail.customer.email ??
-									'E-mail não informado'}
+								{detail.customer.email ?? 'E-mail não informado'}
 							</div>
 							<div className="flex items-center gap-3 rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3 text-sm text-[#1b2430]">
 								<Phone className="size-4 text-[#6b7687]" />
@@ -692,9 +687,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					<CardContent className="space-y-3">
 						<div className="grid gap-3 rounded-2xl border border-border/80 bg-white p-3 sm:grid-cols-2">
 							<div className="space-y-2">
-								<Label htmlFor="timeline-search">
-									Buscar no histórico
-								</Label>
+								<Label htmlFor="timeline-search">Buscar no histórico</Label>
 								<Input
 									id="timeline-search"
 									onChange={(event) => {
@@ -706,9 +699,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="timeline-field">
-									Tipo de alteração
-								</Label>
+								<Label htmlFor="timeline-field">Tipo de alteração</Label>
 								<select
 									className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="timeline-field"
@@ -719,25 +710,18 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 									value={timelineField}
 								>
 									{timelineFieldOptions.map((option) => (
-										<option
-											key={option.value}
-											value={option.value}
-										>
+										<option key={option.value} value={option.value}>
 											{option.label}
 										</option>
 									))}
 								</select>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="timeline-start-date">
-									Data inicial
-								</Label>
+								<Label htmlFor="timeline-start-date">Data inicial</Label>
 								<Input
 									id="timeline-start-date"
 									onChange={(event) => {
-										setTimelineStartDate(
-											event.target.value,
-										);
+										setTimelineStartDate(event.target.value);
 										resetTimelinePage();
 									}}
 									type="date"
@@ -745,9 +729,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="timeline-end-date">
-									Data final
-								</Label>
+								<Label htmlFor="timeline-end-date">Data final</Label>
 								<Input
 									id="timeline-end-date"
 									onChange={(event) => {
@@ -761,8 +743,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 							<div className="flex items-center justify-between gap-3 sm:col-span-2">
 								<p className="text-xs text-[#6b7687]">
 									Mostrando {visibleTimeline.length} de{' '}
-									{filteredTimeline.length} registros
-									encontrados.
+									{filteredTimeline.length} registros encontrados.
 								</p>
 								<Button
 									className="rounded-md shadow-none"
@@ -779,11 +760,9 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								Nenhum registro encontrado para este lead.
 							</div>
 						) : null}
-						{detail.timeline.length > 0 &&
-						filteredTimeline.length === 0 ? (
+						{detail.timeline.length > 0 && filteredTimeline.length === 0 ? (
 							<div className="rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-6 text-sm text-[#6b7687]">
-								Nenhum registro encontrado com os filtros
-								aplicados.
+								Nenhum registro encontrado com os filtros aplicados.
 							</div>
 						) : null}
 						{visibleTimeline.map((event) => (
@@ -801,8 +780,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 										</p>
 										{event.actor ? (
 											<p className="text-xs text-[#6b7687]">
-												Por {event.actor.name} ·{' '}
-												{event.actor.email}
+												Por {event.actor.name} · {event.actor.email}
 											</p>
 										) : null}
 									</div>
@@ -814,9 +792,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								<div className="mt-3 flex justify-end">
 									<Button
 										className="rounded-md shadow-none"
-										onClick={() =>
-											setSelectedTimelineEvent(event)
-										}
+										onClick={() => setSelectedTimelineEvent(event)}
 										type="button"
 										variant="outline"
 									>
@@ -828,17 +804,14 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 						{filteredTimeline.length > TIMELINE_PAGE_SIZE ? (
 							<div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
 								<p className="text-xs text-[#6b7687]">
-									Página {safeTimelinePage} de{' '}
-									{timelineTotalPages}
+									Página {safeTimelinePage} de {timelineTotalPages}
 								</p>
 								<div className="flex gap-2">
 									<Button
 										className="rounded-md shadow-none"
 										disabled={safeTimelinePage <= 1}
 										onClick={() =>
-											setTimelinePage((current) =>
-												Math.max(1, current - 1),
-											)
+											setTimelinePage((current) => Math.max(1, current - 1))
 										}
 										type="button"
 										variant="outline"
@@ -847,16 +820,10 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 									</Button>
 									<Button
 										className="rounded-md shadow-none"
-										disabled={
-											safeTimelinePage >=
-											timelineTotalPages
-										}
+										disabled={safeTimelinePage >= timelineTotalPages}
 										onClick={() =>
 											setTimelinePage((current) =>
-												Math.min(
-													timelineTotalPages,
-													current + 1,
-												),
+												Math.min(timelineTotalPages, current + 1),
 											)
 										}
 										type="button"
@@ -893,9 +860,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 								<p className="text-sm font-medium text-[#1b2430]">
 									{deal.title}
 								</p>
-								<p className="text-sm text-[#6b7687]">
-									{deal.vehicleLabel}
-								</p>
+								<p className="text-sm text-[#6b7687]">{deal.vehicleLabel}</p>
 							</div>
 							<div className="flex flex-wrap gap-2">
 								<Badge variant="outline">
@@ -927,12 +892,11 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 				<DialogContent className="max-w-2xl">
 					<DialogHeader>
 						<DialogTitle>
-							{selectedTimelineEvent?.title ??
-								'Detalhes do histórico'}
+							{selectedTimelineEvent?.title ?? 'Detalhes do histórico'}
 						</DialogTitle>
 						<DialogDescription>
-							Informações completas do registro selecionado no
-							histórico do atendimento.
+							Informações completas do registro selecionado no histórico do
+							atendimento.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-3 px-6 py-5">
