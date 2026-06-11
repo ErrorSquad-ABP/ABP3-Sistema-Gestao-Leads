@@ -15,10 +15,7 @@ class GetAgendaMetricsUseCase {
 		private readonly agendaAccessPolicy: AgendaAccessPolicy,
 	) {}
 
-	async execute(
-		actor: LeadActor,
-		now = new Date(),
-	): Promise<AgendaMetricsDto> {
+	async execute(actor: LeadActor, now = new Date()): Promise<AgendaMetricsDto> {
 		const userId = this.agendaAccessPolicy.resolveMetricsUserId(actor);
 		return this.agendaItems.getMetrics({ userId, now });
 	}

@@ -97,8 +97,7 @@ function AgendaPageContent({ user }: { user: AuthenticatedUser }) {
 		[currentMonth],
 	);
 	const query = useMemo(() => {
-		const ownerFilter =
-			isAdmin && ownerUserId ? { ownerUserId } : undefined;
+		const ownerFilter = isAdmin && ownerUserId ? { ownerUserId } : undefined;
 		if (submittedSearch.trim()) {
 			return {
 				limit: MAX_MONTH_ITEMS,

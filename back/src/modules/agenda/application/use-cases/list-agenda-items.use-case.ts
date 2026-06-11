@@ -37,7 +37,9 @@ class ListAgendaItemsUseCase {
 			input.actor,
 			input.ownerUserId,
 		);
-		const includeOwner = this.agendaAccessPolicy.shouldIncludeOwner(input.actor);
+		const includeOwner = this.agendaAccessPolicy.shouldIncludeOwner(
+			input.actor,
+		);
 		const items = await this.agendaItems.list({
 			from: input.from,
 			leadId: input.leadId,

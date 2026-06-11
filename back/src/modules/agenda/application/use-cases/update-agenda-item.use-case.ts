@@ -10,6 +10,7 @@ import {
 	validateAgendaItemDates,
 } from './agenda-item-validation.js';
 import { AGENDA_ITEM_REPOSITORY } from './list-agenda-items.use-case.js';
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import type {
 	AgendaItemRepository,
 	AgendaItemStatus,

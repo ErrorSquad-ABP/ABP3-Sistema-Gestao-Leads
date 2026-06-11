@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	ForbiddenException,
+	NotFoundException,
+} from '@nestjs/common';
 
 import { AgendaAccessPolicy } from '../services/agenda-access-policy.service.js';
 
@@ -504,7 +508,7 @@ describe('agenda item use cases', () => {
 				})),
 				completeTaskForUser: mock.fn(async (id, userId) => {
 					calls.push([id, userId]);
-					return { ...BASE_ITEM, status: 'DONE' };
+					return { ...BASE_ITEM, status: 'DONE' as const };
 				}),
 			}),
 			accessPolicy(),

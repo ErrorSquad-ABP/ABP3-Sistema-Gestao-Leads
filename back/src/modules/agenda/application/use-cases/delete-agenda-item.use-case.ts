@@ -1,8 +1,4 @@
-import {
-	Inject,
-	Injectable,
-	NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
 import type { AgendaItemRepository } from '../../domain/agenda-item.types.js';
