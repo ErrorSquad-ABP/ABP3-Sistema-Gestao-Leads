@@ -53,7 +53,7 @@ function formatDateTime(value: Date) {
 
 function VehicleDetail({ children, icon: Icon, label }: VehicleDetailProps) {
 	return (
-		<div className="min-w-0 rounded-xl border border-[#e8edf4] bg-[#f9fbfd] px-3 py-2.5">
+		<div className="min-w-0 rounded-xl border border-[#e8edf4] bg-white px-3 py-2.5">
 			<p className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-[#6b7687] uppercase">
 				<Icon className="size-3.5 shrink-0" />
 				{label}

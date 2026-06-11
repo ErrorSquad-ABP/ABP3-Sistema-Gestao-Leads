@@ -235,291 +235,300 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						</DialogDescription>
 					</div>
 				</DialogHeader>
-				<div className="min-h-0 space-y-3 overflow-y-auto px-6 py-4 sm:px-7">
-					<ModalFormErrorBanner message={dialogError} />
-					{leadsQuery.isError ? (
-						<div
-							className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-							role="alert"
-						>
-							{humanizePageApiError(leadsQuery.error)}
-						</div>
-					) : null}
-					<div className="space-y-1">
-						<Label
-							className="text-[12.5px] font-semibold text-[#1b2430]"
-							htmlFor="deal-create-lead"
-							required
-						>
-							Lead
-						</Label>
-						<div className={fieldShellClass}>
-							<User className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
-							<input
-								autoComplete="off"
-								className={searchableInputClass}
-								disabled={leadsQuery.isPending || leads.length === 0}
-								id="deal-create-lead"
-								onChange={(e) => {
-									setLeadSearch(e.target.value);
-									setLeadId('');
-									setVehicleId('');
-									setVehicleSearch('');
-									setValueCentsDigits('');
-									setLeadDropdownOpen(true);
-								}}
-								onBlur={() => {
-									window.setTimeout(() => setLeadDropdownOpen(false), 120);
-								}}
-								onFocus={() => setLeadDropdownOpen(true)}
-								placeholder={
-									leadsQuery.isPending
-										? 'Carregando leads...'
-										: leads.length === 0
-											? 'Nenhum lead disponível'
-											: 'Selecione um lead'
-								}
-								value={leadSearch}
-							/>
-							<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
-							{leadDropdownOpen && !leadsQuery.isPending && leads.length > 0 ? (
-								<div className={dropdownPanelClass}>
-									{filteredLeads.length > 0 ? (
-										filteredLeads.map((lead) => (
-											<button
-												key={lead.id}
-												className={dropdownItemClass}
-												onMouseDown={(event) => {
-													event.preventDefault();
-													handleSelectLead(lead);
-												}}
-												type="button"
-											>
-												{getLeadOptionLabel(lead, customersQuery.data ?? [])}
-											</button>
-										))
-									) : (
-										<p className="px-3 py-2 text-sm text-[#7a8494]">
-											Nenhum lead encontrado.
-										</p>
-									)}
-								</div>
-							) : null}
-						</div>
-						<p className="text-[11.5px] leading-4 text-[#7a8494]">
-							Apenas leads sem negociação aberta são exibidos.
-						</p>
-					</div>
-					<div className="space-y-1">
-						<Label
-							className="text-[12.5px] font-semibold text-[#1b2430]"
-							htmlFor="deal-create-vehicle"
-							required
-						>
-							Veículo
-						</Label>
-						<div className={fieldShellClass}>
-							<Search className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
-							<input
-								autoComplete="off"
-								className={searchableInputClass}
-								disabled={!leadId || vehiclesQuery.isPending}
-								id="deal-create-vehicle"
-								onChange={(e) => {
-									setVehicleSearch(e.target.value);
-									setVehicleId('');
-									setValueCentsDigits('');
-									setVehicleDropdownOpen(true);
-								}}
-								onBlur={() => {
-									window.setTimeout(() => setVehicleDropdownOpen(false), 120);
-								}}
-								onFocus={() => setVehicleDropdownOpen(true)}
-								placeholder={
-									vehiclesQuery.isPending
-										? 'Carregando veículos disponíveis...'
-										: !leadId
-											? 'Buscar veículo disponível...'
-											: 'Buscar veículo disponível...'
-								}
-								value={vehicleSearch}
-							/>
-							<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
-							{vehicleDropdownOpen &&
-							leadId &&
-							!vehiclesQuery.isPending &&
-							availableVehicles.length > 0 ? (
-								<div className={dropdownPanelClass}>
-									{filteredVehicles.length > 0 ? (
-										filteredVehicles.map((vehicle) => (
-											<button
-												key={vehicle.id}
-												className={dropdownItemClass}
-												onMouseDown={(event) => {
-													event.preventDefault();
-													handleSelectVehicle(vehicle);
-												}}
-												type="button"
-											>
-												{formatVehicleDealSelectLabel(vehicle)}
-											</button>
-										))
-									) : (
-										<p className="px-3 py-2 text-sm text-[#7a8494]">
-											Nenhum veículo encontrado.
-										</p>
-									)}
-								</div>
-							) : null}
-						</div>
-						{vehiclesQuery.isError ? (
-							<p className="text-[11.5px] leading-4 text-destructive">
-								{humanizePageApiError(vehiclesQuery.error)}
-							</p>
-						) : vehiclesQuery.isSuccess &&
-							leadId &&
-							availableVehicles.length === 0 ? (
-							<p className="text-[11.5px] leading-4 text-[#6b7687]">
-								Nenhum veículo livre para negociação na loja deste lead.
-							</p>
-						) : (
-							<p className="text-[11.5px] leading-4 text-[#7a8494]">
-								Apenas veículos disponíveis podem ser selecionados.
-							</p>
-						)}
-					</div>
-					<div className="flex items-center gap-3 rounded-xl border border-[#edf1f6] bg-[#f8fafc] px-3 py-2 text-[#667085]">
-						<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#eef6ff] text-[#2f80c9]">
-							<Info className="size-4" />
-						</span>
-						<p className="text-[11.5px] leading-4">
-							O veículo selecionado precisa estar disponível no momento da
-							criação da negociação.
-						</p>
-					</div>
-					<div className="grid gap-3 sm:grid-cols-2">
+				<form
+					className="contents"
+					onSubmit={(event) => {
+						event.preventDefault();
+						void handleCreateSubmit();
+					}}
+				>
+					<div className="min-h-0 space-y-3 overflow-y-auto px-6 py-4 sm:px-7">
+						<ModalFormErrorBanner message={dialogError} />
+						{leadsQuery.isError ? (
+							<div
+								className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+								role="alert"
+							>
+								{humanizePageApiError(leadsQuery.error)}
+							</div>
+						) : null}
 						<div className="space-y-1">
 							<Label
 								className="text-[12.5px] font-semibold text-[#1b2430]"
-								htmlFor="deal-create-title"
+								htmlFor="deal-create-lead"
 								required
 							>
-								Título
+								Lead
 							</Label>
 							<div className={fieldShellClass}>
-								<Tag className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
-								<Input
-									className={`${inputClass} pl-10`}
-									id="deal-create-title"
-									onChange={(e) => setTitle(e.target.value)}
-									placeholder="Ex.: Proposta de Jeep Compass Limited"
-									value={title}
+								<User className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
+								<input
+									autoComplete="off"
+									className={searchableInputClass}
+									disabled={leadsQuery.isPending || leads.length === 0}
+									id="deal-create-lead"
+									onChange={(e) => {
+										setLeadSearch(e.target.value);
+										setLeadId('');
+										setVehicleId('');
+										setVehicleSearch('');
+										setValueCentsDigits('');
+										setLeadDropdownOpen(true);
+									}}
+									onBlur={() => {
+										window.setTimeout(() => setLeadDropdownOpen(false), 120);
+									}}
+									onFocus={() => setLeadDropdownOpen(true)}
+									placeholder={
+										leadsQuery.isPending
+											? 'Carregando leads...'
+											: leads.length === 0
+												? 'Nenhum lead disponível'
+												: 'Selecione um lead'
+									}
+									value={leadSearch}
 									{...requiredFieldProps()}
 								/>
+								<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
+								{leadDropdownOpen &&
+								!leadsQuery.isPending &&
+								leads.length > 0 ? (
+									<div className={dropdownPanelClass}>
+										{filteredLeads.length > 0 ? (
+											filteredLeads.map((lead) => (
+												<button
+													key={lead.id}
+													className={dropdownItemClass}
+													onMouseDown={(event) => {
+														event.preventDefault();
+														handleSelectLead(lead);
+													}}
+													type="button"
+												>
+													{getLeadOptionLabel(lead, customersQuery.data ?? [])}
+												</button>
+											))
+										) : (
+											<p className="px-3 py-2 text-sm text-[#7a8494]">
+												Nenhum lead encontrado.
+											</p>
+										)}
+									</div>
+								) : null}
 							</div>
 							<p className="text-[11.5px] leading-4 text-[#7a8494]">
-								Dê um título claro para esta negociação.
+								Apenas leads sem negociação aberta são exibidos.
 							</p>
 						</div>
 						<div className="space-y-1">
 							<Label
 								className="text-[12.5px] font-semibold text-[#1b2430]"
-								htmlFor="deal-create-value"
+								htmlFor="deal-create-vehicle"
+								required
 							>
-								Valor
+								Veículo
 							</Label>
 							<div className={fieldShellClass}>
-								<span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-[#e5e9f0] text-[13px] font-medium text-[#4b5565]">
-									R$
-								</span>
-								<Input
+								<Search className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
+								<input
 									autoComplete="off"
-									className={inputClass}
-									id="deal-create-value"
-									inputMode="numeric"
-									onChange={(e) =>
-										setValueCentsDigits(
-											sanitizeMoneyDigitsInput(e.target.value),
-										)
+									className={searchableInputClass}
+									disabled={!leadId || vehiclesQuery.isPending}
+									id="deal-create-vehicle"
+									onChange={(e) => {
+										setVehicleSearch(e.target.value);
+										setVehicleId('');
+										setValueCentsDigits('');
+										setVehicleDropdownOpen(true);
+									}}
+									onBlur={() => {
+										window.setTimeout(() => setVehicleDropdownOpen(false), 120);
+									}}
+									onFocus={() => setVehicleDropdownOpen(true)}
+									placeholder={
+										vehiclesQuery.isPending
+											? 'Carregando veículos disponíveis...'
+											: !leadId
+												? 'Buscar veículo disponível...'
+												: 'Buscar veículo disponível...'
 									}
-									placeholder="R$ 0,00"
-									value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
+									value={vehicleSearch}
+									{...requiredFieldProps()}
 								/>
+								<ChevronDown className="pointer-events-none absolute right-3.5 size-4 text-[#4b5565]" />
+								{vehicleDropdownOpen &&
+								leadId &&
+								!vehiclesQuery.isPending &&
+								availableVehicles.length > 0 ? (
+									<div className={dropdownPanelClass}>
+										{filteredVehicles.length > 0 ? (
+											filteredVehicles.map((vehicle) => (
+												<button
+													key={vehicle.id}
+													className={dropdownItemClass}
+													onMouseDown={(event) => {
+														event.preventDefault();
+														handleSelectVehicle(vehicle);
+													}}
+													type="button"
+												>
+													{formatVehicleDealSelectLabel(vehicle)}
+												</button>
+											))
+										) : (
+											<p className="px-3 py-2 text-sm text-[#7a8494]">
+												Nenhum veículo encontrado.
+											</p>
+										)}
+									</div>
+								) : null}
 							</div>
-							<p className="text-[11.5px] leading-4 text-[#7a8494]">
-								Informe o valor estimado da negociação.
+							{vehiclesQuery.isError ? (
+								<p className="text-[11.5px] leading-4 text-destructive">
+									{humanizePageApiError(vehiclesQuery.error)}
+								</p>
+							) : vehiclesQuery.isSuccess &&
+								leadId &&
+								availableVehicles.length === 0 ? (
+								<p className="text-[11.5px] leading-4 text-[#6b7687]">
+									Nenhum veículo livre para negociação na loja deste lead.
+								</p>
+							) : (
+								<p className="text-[11.5px] leading-4 text-[#7a8494]">
+									Apenas veículos disponíveis podem ser selecionados.
+								</p>
+							)}
+						</div>
+						<div className="flex items-center gap-3 rounded-xl border border-[#edf1f6] bg-white px-3 py-2 text-[#667085]">
+							<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#eef6ff] text-[#2f80c9]">
+								<Info className="size-4" />
+							</span>
+							<p className="text-[11.5px] leading-4">
+								O veículo selecionado precisa estar disponível no momento da
+								criação da negociação.
 							</p>
 						</div>
-					</div>
-					<div className="flex items-center justify-between gap-4 rounded-xl border border-[#e7ebf0] bg-white px-3 py-3">
-						<div className="flex min-w-0 items-center gap-3">
-							<span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)]">
-								<ListChecks className="size-4" />
-							</span>
-							<div className="min-w-0">
-								<p className="text-[13px] font-bold text-[#1b2430]">
-									Resumo da negociação
+						<div className="grid gap-3 sm:grid-cols-2">
+							<div className="space-y-1">
+								<Label
+									className="text-[12.5px] font-semibold text-[#1b2430]"
+									htmlFor="deal-create-title"
+									required
+								>
+									Título
+								</Label>
+								<div className={fieldShellClass}>
+									<Tag className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
+									<Input
+										className={`${inputClass} pl-10`}
+										id="deal-create-title"
+										onChange={(e) => setTitle(e.target.value)}
+										placeholder="Ex.: Proposta de Jeep Compass Limited"
+										value={title}
+										{...requiredFieldProps()}
+									/>
+								</div>
+								<p className="text-[11.5px] leading-4 text-[#7a8494]">
+									Dê um título claro para esta negociação.
 								</p>
-								<p className="text-[11.5px] text-[#7a8494]">
-									Confira as informações antes de criar a negociação.
+							</div>
+							<div className="space-y-1">
+								<Label
+									className="text-[12.5px] font-semibold text-[#1b2430]"
+									htmlFor="deal-create-value"
+								>
+									Valor
+								</Label>
+								<div className={fieldShellClass}>
+									<span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-[#e5e9f0] text-[13px] font-medium text-[#4b5565]">
+										R$
+									</span>
+									<Input
+										autoComplete="off"
+										className={inputClass}
+										id="deal-create-value"
+										inputMode="numeric"
+										onChange={(e) =>
+											setValueCentsDigits(
+												sanitizeMoneyDigitsInput(e.target.value),
+											)
+										}
+										placeholder="R$ 0,00"
+										value={formatCentsDigitsToBrlDisplay(valueCentsDigits)}
+									/>
+								</div>
+								<p className="text-[11.5px] leading-4 text-[#7a8494]">
+									Informe o valor estimado da negociação.
 								</p>
 							</div>
 						</div>
-						<div className="hidden shrink-0 items-center gap-2 text-center sm:flex">
-							<div className="space-y-1 text-[10px] font-medium text-[color:var(--brand-accent)]">
-								<span className="mx-auto flex size-7 items-center justify-center rounded-full bg-[color:var(--brand-accent-soft)]/45">
-									<User className="size-3.5" />
+						<div className="flex items-center justify-between gap-4 rounded-xl border border-[#e7ebf0] bg-white px-3 py-3">
+							<div className="flex min-w-0 items-center gap-3">
+								<span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--brand-accent-soft)]/45 text-[color:var(--brand-accent)]">
+									<ListChecks className="size-4" />
 								</span>
-								<p>Contato inicial</p>
+								<div className="min-w-0">
+									<p className="text-[13px] font-bold text-[#1b2430]">
+										Resumo da negociação
+									</p>
+									<p className="text-[11.5px] text-[#7a8494]">
+										Confira as informações antes de criar a negociação.
+									</p>
+								</div>
 							</div>
-							<span className="h-px w-5 bg-[#e5e9f0]" />
-							<div className="space-y-1 text-[10px] font-medium text-[#7a8494]">
-								<span className="mx-auto flex size-7 items-center justify-center rounded-full bg-[#f4f6f8]">
-									<Handshake className="size-3.5" />
-								</span>
-								<p>Negociação</p>
-							</div>
-							<span className="h-px w-5 bg-[#e5e9f0]" />
-							<div className="space-y-1 text-[10px] font-medium text-[#7a8494]">
-								<span className="mx-auto flex size-7 items-center justify-center rounded-full bg-[#f4f6f8]">
-									<FileText className="size-3.5" />
-								</span>
-								<p>Proposta</p>
-							</div>
-							<span className="h-px w-5 bg-[#e5e9f0]" />
-							<div className="space-y-1 text-[10px] font-medium text-[#7a8494]">
-								<span className="mx-auto flex size-7 items-center justify-center rounded-full bg-[#f4f6f8]">
-									<Trophy className="size-3.5" />
-								</span>
-								<p>Fechamento</p>
+							<div className="hidden shrink-0 items-center gap-2 text-center sm:flex">
+								<div className="space-y-1 text-[10px] font-medium text-[color:var(--brand-accent)]">
+									<span className="mx-auto flex size-7 items-center justify-center rounded-full bg-[color:var(--brand-accent-soft)]/45">
+										<User className="size-3.5" />
+									</span>
+									<p>Contato inicial</p>
+								</div>
+								<span className="h-px w-5 bg-[#e5e9f0]" />
+								<div className="space-y-1 text-[10px] font-medium text-[#7a8494]">
+									<span className="mx-auto flex size-7 items-center justify-center rounded-full border border-[#e5e9f0] bg-white">
+										<Handshake className="size-3.5" />
+									</span>
+									<p>Negociação</p>
+								</div>
+								<span className="h-px w-5 bg-[#e5e9f0]" />
+								<div className="space-y-1 text-[10px] font-medium text-[#7a8494]">
+									<span className="mx-auto flex size-7 items-center justify-center rounded-full border border-[#e5e9f0] bg-white">
+										<FileText className="size-3.5" />
+									</span>
+									<p>Proposta</p>
+								</div>
+								<span className="h-px w-5 bg-[#e5e9f0]" />
+								<div className="space-y-1 text-[10px] font-medium text-[#7a8494]">
+									<span className="mx-auto flex size-7 items-center justify-center rounded-full border border-[#e5e9f0] bg-white">
+										<Trophy className="size-3.5" />
+									</span>
+									<p>Fechamento</p>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-				<DialogFooter className="px-6 py-3 sm:px-7">
-					<Button
-						type="button"
-						variant="outline"
-						onClick={onClose}
-						className="h-10 rounded-xl px-5 font-semibold shadow-none"
-					>
-						Cancelar
-					</Button>
-					<Button
-						type="button"
-						className="h-10 rounded-xl bg-[#101a33] px-5 font-semibold text-white shadow-none hover:bg-[#17223d]"
-						disabled={
-							createMutation.isPending ||
-							!leadId ||
-							!vehicleId ||
-							(vehiclesQuery.isSuccess && availableVehicles.length === 0)
-						}
-						onClick={() => void handleCreateSubmit()}
-					>
-						<Rocket className="size-4" />
-						{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
-					</Button>
-				</DialogFooter>
+					<DialogFooter className="px-6 py-3 sm:px-7">
+						<Button
+							type="submit"
+							variant="outline"
+							onClick={onClose}
+							className="h-10 rounded-xl px-5 font-semibold shadow-none"
+						>
+							Cancelar
+						</Button>
+						<Button
+							type="button"
+							className="h-10 rounded-xl bg-[#101a33] px-5 font-semibold text-white shadow-none hover:bg-[#17223d]"
+							disabled={
+								createMutation.isPending ||
+								(vehiclesQuery.isSuccess && availableVehicles.length === 0)
+							}
+						>
+							<Rocket className="size-4" />
+							{createMutation.isPending ? 'Criando...' : 'Criar negociação'}
+						</Button>
+					</DialogFooter>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);

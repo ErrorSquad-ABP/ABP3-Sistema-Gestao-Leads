@@ -27,14 +27,19 @@ function AgendaDayView({
 }: Props) {
 	return (
 		<Card className="rounded-lg border-border bg-card shadow-none">
-			<CardHeader className="flex flex-row items-start justify-between gap-3">
+			<CardHeader className="flex flex-col items-start justify-between gap-3 sm:flex-row">
 				<div>
 					<CardTitle className="text-base">Visão do dia</CardTitle>
 					<p className="mt-1 text-sm capitalize text-muted-foreground">
 						{dateLabel}
 					</p>
 				</div>
-				<Button onClick={onCreateClick} size="sm" variant="outline">
+				<Button
+					className="w-full sm:w-auto"
+					onClick={onCreateClick}
+					size="sm"
+					variant="outline"
+				>
 					<Plus className="size-4" />
 					Nova atividade
 				</Button>

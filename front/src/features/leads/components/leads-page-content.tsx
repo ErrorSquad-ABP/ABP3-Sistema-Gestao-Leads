@@ -2,6 +2,12 @@
 
 import { CalendarDays, Plus, Search, Target, Trophy, Zap } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { AppTableFilterDropdown } from '@/components/data/AppTableFilterDropdown';
+import {
+	AppPageHeader,
+	appPageActionClass,
+	appPageSearchClass,
+} from '@/components/layout/AppPageHeader';
 import { KpiCard } from '@/components/metrics/KpiCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -269,21 +275,22 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 			className="space-y-5"
 			aria-busy={catalogQuery.isPending ? 'true' : 'false'}
 		>
-			<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
-						Gestão de leads
-					</h1>
-					<p className="mt-2 text-sm text-[#667085]">
-						Centralize, acompanhe e converta leads em oportunidades reais de
-						negócio.
-					</p>
-				</div>
-				<div className="flex flex-wrap gap-3">
-					<div className="relative min-w-88 flex-1">
+			<AppPageHeader
+				action={
+					<Button
+						className={appPageActionClass}
+						onClick={openCreateDialog}
+						type="button"
+					>
+						<Plus className="size-4" />
+						Novo lead
+					</Button>
+				}
+				controls={
+					<div className="relative w-full sm:w-[440px]">
 						<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-[#667085]" />
 						<Input
-							className="h-12 rounded-xl border-[#d8e0ea] bg-white pl-11 shadow-none focus-visible:border-[#f05a28]/45"
+							className={appPageSearchClass}
 							onChange={(event) => {
 								setSearch(event.target.value);
 								setPage(1);
@@ -292,16 +299,10 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 							value={search}
 						/>
 					</div>
-					<Button
-						className="h-12 rounded-xl bg-[#f05a28] px-5 text-white shadow-none hover:bg-[#df4f1f]"
-						onClick={openCreateDialog}
-						type="button"
-					>
-						<Plus className="size-4" />
-						Novo lead
-					</Button>
-				</div>
-			</div>
+				}
+				description="Centralize, acompanhe e converta leads em oportunidades reais de negócio."
+				title="Gestão de leads"
+			/>
 
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 				{metricCards.map((card) => {
@@ -334,90 +335,88 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 				<>
 					<Card className="rounded-3xl border-[#dfe7f1] bg-white">
 						<CardContent
-							className="flex flex-wrap items-center gap-3 p-5 xl:flex-nowrap"
+							className="flex flex-wrap items-center gap-2 p-4"
 							id="lead-filters"
 						>
-							<select
-								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[190px]"
-								onChange={(event) => {
-									setStatusFilter(event.target.value);
+							<AppTableFilterDropdown
+								defaultValue=""
+								label="Status"
+								onValueChange={(value) => {
+									setStatusFilter(value);
 									setPage(1);
 								}}
+								options={[
+									{ value: '', label: 'Todos os status' },
+									{
+										value: 'WORKABLE',
+										label: 'Trabalháveis',
+									},
+									...leadStatusOptions,
+								]}
 								value={statusFilter}
-							>
-								<option value="">Todos os status</option>
-								<option value="WORKABLE">Trabalháveis</option>
-								{leadStatusOptions.map((status) => (
-									<option key={status.value} value={status.value}>
-										{status.label}
-									</option>
-								))}
-							</select>
-							<select
-								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[210px]"
-								onChange={(event) => {
-									setSourceFilter(event.target.value);
+							/>
+							<AppTableFilterDropdown
+								defaultValue=""
+								label="Origem"
+								onValueChange={(value) => {
+									setSourceFilter(value);
 									setPage(1);
 								}}
+								options={[
+									{ value: '', label: 'Todas as origens' },
+									...leadSourceOptions,
+								]}
 								value={sourceFilter}
-							>
-								<option value="">Todas as origens</option>
-								{leadSourceOptions.map((source) => (
-									<option key={source.value} value={source.value}>
-										{source.label}
-									</option>
-								))}
-							</select>
-							<select
-								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[180px]"
-								onChange={(event) => {
-									setStoreFilter(event.target.value);
+							/>
+							<AppTableFilterDropdown
+								defaultValue=""
+								label="Loja"
+								onValueChange={(value) => {
+									setStoreFilter(value);
 									setPage(1);
 								}}
+								options={[
+									{ value: '', label: 'Todas as lojas' },
+									...stores.map((store) => ({
+										value: store.id,
+										label: store.name,
+									})),
+								]}
 								value={storeFilter}
-							>
-								<option value="">Todas as lojas</option>
-								{stores.map((store) => (
-									<option key={store.id} value={store.id}>
-										{store.name}
-									</option>
-								))}
-							</select>
-							<select
-								className="h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none sm:w-[240px]"
-								onChange={(event) => {
-									setOwnerFilter(event.target.value);
+							/>
+							<AppTableFilterDropdown
+								defaultValue=""
+								label="Responsável"
+								onValueChange={(value) => {
+									setOwnerFilter(value);
 									setPage(1);
 								}}
+								options={[
+									{
+										value: '',
+										label: 'Todos os responsáveis',
+									},
+									...owners.map((owner) => ({
+										value: owner.id,
+										label: owner.name,
+									})),
+								]}
 								value={ownerFilter}
-							>
-								<option value="">Todos os responsáveis</option>
-								{owners.map((owner) => (
-									<option key={owner.id} value={owner.id}>
-										{owner.name}
-									</option>
-								))}
-							</select>
-							<div className="ml-auto flex min-w-0 flex-wrap items-center gap-3">
-								<span className="text-sm whitespace-nowrap text-[#667085]">
-									Ordenar por
-								</span>
-								<select
-									className="h-11 w-[190px] rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
-									onChange={(event) => {
-										setSort(event.target.value as typeof sort);
+							/>
+							<div className="flex min-w-0 flex-wrap items-center gap-2 xl:ml-auto">
+								<AppTableFilterDropdown
+									defaultValue="recent"
+									kind="sort"
+									label="Ordem"
+									onValueChange={(value) => {
+										setSort(value as typeof sort);
 										setPage(1);
 									}}
+									options={sortOptions}
 									value={sort}
-								>
-									{sortOptions.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
+								/>
 								<Button
-									className="h-11 px-3 whitespace-nowrap text-[#667085]"
+									className="h-10 px-3 whitespace-nowrap text-[#667085]"
 									onClick={resetFilters}
 									type="button"
 									variant="ghost"

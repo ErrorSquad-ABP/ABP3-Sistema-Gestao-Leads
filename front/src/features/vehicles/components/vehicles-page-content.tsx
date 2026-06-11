@@ -15,6 +15,13 @@ import {
 import { useMemo, useRef, useState } from 'react';
 
 import { TablePagination } from '@/components/data/TablePagination';
+import { AppTableFilterDropdown } from '@/components/data/AppTableFilterDropdown';
+import {
+	AppPageHeader,
+	appPageActionClass,
+	appPageSearchClass,
+} from '@/components/layout/AppPageHeader';
+import { KpiCard, type KpiCardVariant } from '@/components/metrics/KpiCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -161,35 +168,35 @@ function VehiclesPageContent() {
 			value: summary.total,
 			helper: 'Em todas as lojas',
 			icon: Car,
-			className: 'bg-sky-50 text-sky-700',
+			variant: 'neutral' as KpiCardVariant,
 		},
 		{
 			label: 'Disponíveis',
 			value: summary.available,
 			helper: `${summary.total > 0 ? Math.round((summary.available / summary.total) * 100) : 0}% do total`,
 			icon: CheckCircle2,
-			className: 'bg-emerald-50 text-emerald-700',
+			variant: 'success' as KpiCardVariant,
 		},
 		{
 			label: 'Reservados',
 			value: summary.reserved,
 			helper: `${summary.total > 0 ? Math.round((summary.reserved / summary.total) * 100) : 0}% do total`,
 			icon: Timer,
-			className: 'bg-orange-50 text-orange-700',
+			variant: 'warning' as KpiCardVariant,
 		},
 		{
 			label: 'Vendidos',
 			value: summary.sold,
 			helper: `${summary.total > 0 ? Math.round((summary.sold / summary.total) * 100) : 0}% do total`,
 			icon: ShieldCheck,
-			className: 'bg-violet-50 text-violet-700',
+			variant: 'brand' as KpiCardVariant,
 		},
 		{
 			label: 'Inativos',
 			value: summary.inactive,
 			helper: `${summary.total > 0 ? Math.round((summary.inactive / summary.total) * 100) : 0}% do total`,
 			icon: Archive,
-			className: 'bg-slate-100 text-slate-600',
+			variant: 'neutral' as KpiCardVariant,
 		},
 	];
 
@@ -313,18 +320,18 @@ function VehiclesPageContent() {
 
 	return (
 		<div className="space-y-6" aria-busy={isPending ? 'true' : 'false'}>
-			<section className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-				<div>
-					<h1 className="text-3xl font-semibold text-[#101828]">Veículos</h1>
-					<p className="mt-1 text-sm text-[#667085]">
-						Gerencie o catálogo de veículos da sua loja.
-					</p>
-				</div>
-				<div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
-					<div className="relative min-w-0 flex-1 xl:w-md">
+			<AppPageHeader
+				action={
+					<Button className={appPageActionClass} onClick={openCreateDialog}>
+						<Plus className="size-4" />
+						Novo veículo
+					</Button>
+				}
+				controls={
+					<div className="relative w-full sm:w-[440px]">
 						<Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#667085]" />
 						<Input
-							className="h-11 rounded-lg border-[#d6dce5] bg-white pl-9 shadow-none"
+							className={appPageSearchClass}
 							onChange={(event) => {
 								setSearch(event.target.value);
 								setPage(1);
@@ -333,39 +340,23 @@ function VehiclesPageContent() {
 							value={search}
 						/>
 					</div>
-					<Button
-						className="h-11 rounded-lg bg-[#f05a28] px-5 shadow-none hover:bg-[#de4f20]"
-						onClick={openCreateDialog}
-					>
-						<Plus className="size-4" />
-						Novo veículo
-					</Button>
-				</div>
-			</section>
+				}
+				description="Gerencie o catálogo de veículos da sua loja."
+				title="Veículos"
+			/>
 
 			<section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
 				{metrics.map((metric) => {
 					const Icon = metric.icon;
 					return (
-						<Card
+						<KpiCard
+							description={metric.helper}
+							icon={<Icon className="size-5" />}
 							key={metric.label}
-							className="rounded-xl border-[#dde4ed] bg-white shadow-sm"
-						>
-							<CardContent className="flex items-center gap-4 p-5">
-								<div
-									className={`flex size-14 items-center justify-center rounded-full ${metric.className}`}
-								>
-									<Icon className="size-6" />
-								</div>
-								<div>
-									<p className="text-sm text-[#667085]">{metric.label}</p>
-									<p className="mt-1 text-2xl font-semibold text-[#101828]">
-										{formatCount(metric.value)}
-									</p>
-									<p className="mt-1 text-xs text-[#667085]">{metric.helper}</p>
-								</div>
-							</CardContent>
-						</Card>
+							title={metric.label}
+							value={formatCount(metric.value)}
+							variant={metric.variant}
+						/>
 					);
 				})}
 			</section>
@@ -394,44 +385,40 @@ function VehiclesPageContent() {
 
 			<Card className="rounded-xl border-[#dde4ed] bg-white shadow-sm">
 				<CardContent className="space-y-5 p-4">
-					<div
-						className="grid gap-4 xl:grid-cols-[1fr_auto_1fr] xl:items-center"
-						ref={filtersRef}
-					>
-						<div className="flex flex-col gap-3 sm:flex-row xl:justify-self-start">
-							<select
-								className="h-10 rounded-lg border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] outline-none"
-								onChange={(event) => {
-									setStoreFilter(event.target.value);
+					<div className="flex flex-wrap items-center gap-2" ref={filtersRef}>
+						<div className="flex flex-1 flex-wrap items-center gap-2">
+							<AppTableFilterDropdown
+								defaultValue="ALL"
+								label="Loja"
+								onValueChange={(value) => {
+									setStoreFilter(value);
 									setPage(1);
 								}}
+								options={[
+									{ value: 'ALL', label: 'Todas as lojas' },
+									...stores.map((store) => ({
+										value: store.id,
+										label: store.name,
+									})),
+								]}
 								value={storeFilter}
-							>
-								<option value="ALL">Todas as lojas</option>
-								{stores.map((store) => (
-									<option key={store.id} value={store.id}>
-										{store.name}
-									</option>
-								))}
-							</select>
-							<select
-								className="h-10 rounded-lg border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] outline-none"
-								onChange={(event) => {
-									setStatusFilter(event.target.value as 'ALL' | VehicleStatus);
+							/>
+							<AppTableFilterDropdown
+								defaultValue="ALL"
+								label="Status"
+								onValueChange={(value) => {
+									setStatusFilter(value as 'ALL' | VehicleStatus);
 									setPage(1);
 								}}
+								options={[
+									{ value: 'ALL', label: 'Todos os status' },
+									...vehicleStatusOptions,
+								]}
 								value={statusFilter}
-							>
-								<option value="ALL">Todos os status</option>
-								{vehicleStatusOptions.map((status) => (
-									<option key={status.value} value={status.value}>
-										{status.label}
-									</option>
-								))}
-							</select>
+							/>
 						</div>
 
-						<div className="inline-flex justify-self-start rounded-lg border border-[#d6dce5] bg-white p-1 sm:justify-self-center">
+						<div className="inline-flex rounded-lg border border-[#d6dce5] bg-white p-1">
 							<Button
 								className={
 									viewMode === 'cards'
@@ -460,7 +447,7 @@ function VehiclesPageContent() {
 							</Button>
 						</div>
 
-						<div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:justify-self-end">
+						<div className="ml-auto flex flex-wrap items-center gap-2">
 							{viewMode === 'table' ? (
 								<Button
 									className="rounded-lg border-[#d6dce5]"
@@ -471,23 +458,17 @@ function VehiclesPageContent() {
 									Exportar
 								</Button>
 							) : null}
-							<div className="flex items-center gap-2">
-								<span className="text-sm text-[#667085]">Ordenar por</span>
-								<select
-									className="h-10 rounded-lg border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] outline-none"
-									onChange={(event) => {
-										setSort(event.target.value as VehicleCatalogSort);
-										setPage(1);
-									}}
-									value={sort}
-								>
-									{sortOptions.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
-							</div>
+							<AppTableFilterDropdown
+								defaultValue="recent"
+								kind="sort"
+								label="Ordem"
+								onValueChange={(value) => {
+									setSort(value as VehicleCatalogSort);
+									setPage(1);
+								}}
+								options={sortOptions}
+								value={sort}
+							/>
 						</div>
 					</div>
 

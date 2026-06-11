@@ -3,7 +3,6 @@
 import {
 	Building2,
 	CheckCircle2,
-	Filter,
 	Plus,
 	Search,
 	Tag,
@@ -11,9 +10,15 @@ import {
 	UsersRound,
 } from 'lucide-react';
 
+import { AppTableFilterDropdown } from '@/components/data/AppTableFilterDropdown';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+	AppPageHeader,
+	appPageActionClass,
+	appPageSearchClass,
+} from '@/components/layout/AppPageHeader';
+import { KpiCard, type KpiCardVariant } from '@/components/metrics/KpiCard';
 
 type MetricTone = 'amber' | 'blue' | 'green' | 'orange' | 'purple';
 
@@ -37,18 +42,18 @@ type StoresMetricsGridProps = {
 	uniqueStates: string[];
 };
 
-function getMetricToneClass(tone: MetricTone) {
+function getMetricVariant(tone: MetricTone): KpiCardVariant {
 	switch (tone) {
 		case 'amber':
-			return 'bg-[#fff7e6] text-[#f79009]';
+			return 'warning';
 		case 'blue':
-			return 'bg-[#eff6ff] text-[#2563eb]';
+			return 'neutral';
 		case 'green':
-			return 'bg-[#ecfdf3] text-[#079455]';
+			return 'success';
 		case 'orange':
-			return 'bg-[#fff3ee] text-[#f4511e]';
+			return 'brand';
 		case 'purple':
-			return 'bg-[#f4edff] text-[#7f35e8]';
+			return 'neutral';
 	}
 }
 
@@ -65,25 +70,14 @@ function StoreMetricCard({
 	tone: MetricTone;
 	value: string;
 }) {
-	const toneClass = getMetricToneClass(tone);
-
 	return (
-		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
-			<CardContent className="flex min-h-28 items-center gap-4 p-5">
-				<div
-					className={`flex size-12 shrink-0 items-center justify-center rounded-full ${toneClass}`}
-				>
-					<Icon className="size-5" />
-				</div>
-				<div className="space-y-1">
-					<p className="text-xs font-medium text-[#667085]">{label}</p>
-					<p className="text-2xl font-bold tracking-tight text-[#101828]">
-						{value}
-					</p>
-					<p className="text-xs text-[#667085]">{helper}</p>
-				</div>
-			</CardContent>
-		</Card>
+		<KpiCard
+			description={helper}
+			icon={<Icon className="size-5" />}
+			title={label}
+			value={value}
+			variant={getMetricVariant(tone)}
+		/>
 	);
 }
 
@@ -97,51 +91,46 @@ function StoresPageHeader({
 	search,
 }: StoresPageHeaderProps) {
 	return (
-		<header className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
-			<div className="space-y-2">
-				<h1 className="text-3xl font-bold tracking-tight text-[#101828]">
-					Gestão de lojas
-				</h1>
-				<p className="max-w-4xl text-sm text-[#667085]">
-					Centralize todas as unidades do seu negócio e acompanhe seu
-					desempenho.
-				</p>
-			</div>
-			<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-				<div className="relative">
-					<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
-					<Input
-						className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[340px]"
-						onChange={(event) => onSearchChange(event.target.value)}
-						placeholder="Buscar por nome, cidade ou responsável..."
-						value={search}
-					/>
-				</div>
-				<div className="relative">
-					<Filter className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#1f2a44]" />
-					<select
-						className="h-11 appearance-none rounded-xl border border-[#d8e0ea] bg-white pr-8 pl-10 text-xs font-semibold text-[#1f2a44] outline-none"
-						onChange={(event) => onRegionFilterChange(event.target.value)}
-						value={regionFilter}
-					>
-						<option value="ALL">Filtros</option>
-						{regionOptions.map(([state, label]) => (
-							<option key={state} value={state}>
-								{label}
-							</option>
-						))}
-					</select>
-				</div>
+		<AppPageHeader
+			action={
 				<Button
-					className="h-11 rounded-xl bg-[#f4511e] px-5 text-sm text-white shadow-sm hover:bg-[#dc3f13]"
+					className={appPageActionClass}
 					disabled={!canManageStores}
 					onClick={onCreate}
 				>
 					<Plus className="size-4" />
 					Nova loja
 				</Button>
-			</div>
-		</header>
+			}
+			controls={
+				<>
+					<div className="relative w-full sm:w-[360px]">
+						<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
+						<Input
+							className={appPageSearchClass}
+							onChange={(event) => onSearchChange(event.target.value)}
+							placeholder="Buscar por nome, cidade ou responsável..."
+							value={search}
+						/>
+					</div>
+					<AppTableFilterDropdown
+						defaultValue="ALL"
+						label="Região"
+						onValueChange={onRegionFilterChange}
+						options={[
+							{ value: 'ALL', label: 'Todas as regiões' },
+							...regionOptions.map(([state, label]) => ({
+								value: state,
+								label,
+							})),
+						]}
+						value={regionFilter}
+					/>
+				</>
+			}
+			description="Centralize todas as unidades do seu negócio e acompanhe seu desempenho."
+			title="Gestão de lojas"
+		/>
 	);
 }
 

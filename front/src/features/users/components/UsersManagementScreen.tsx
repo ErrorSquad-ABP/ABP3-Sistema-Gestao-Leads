@@ -1,7 +1,15 @@
 'use client';
 
+import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 
+import {
+	AppPageHeader,
+	appPageActionClass,
+	appPageSearchClass,
+} from '@/components/layout/AppPageHeader';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
 	useCreateAccessGroupMutation,
 	useCreateUserMutation,
@@ -30,7 +38,7 @@ import {
 } from '@/lib/http/humanize-api-error';
 
 import { ConfirmDialog, UsersFormDialog } from './UserForm';
-import { UsersTabs } from './UsersTable';
+import { UsersSummaryCards, UsersTabs } from './UsersTable';
 
 const emptySummary: UsersSummary = {
 	administrators: 0,
@@ -215,17 +223,32 @@ function UsersManagementScreen() {
 
 	return (
 		<div className="space-y-5">
-			<div className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
-						Usuários
-					</h1>
-					<p className="mt-2 text-sm text-[#667085]">
-						Gerencie acessos, papéis e grupos. As permissões de cada usuário
-						somam as features de todos os grupos vinculados.
-					</p>
-				</div>
-			</div>
+			<AppPageHeader
+				action={
+					<Button className={appPageActionClass} onClick={openCreateDialog}>
+						<Plus className="size-4" />
+						Novo usuário
+					</Button>
+				}
+				controls={
+					<div className="relative w-full sm:w-[440px]">
+						<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-[#667085]" />
+						<Input
+							className={appPageSearchClass}
+							onChange={(event) => {
+								setSearch(event.target.value);
+								setPage(1);
+							}}
+							placeholder="Buscar por nome ou e-mail"
+							value={search}
+						/>
+					</div>
+				}
+				description="Gerencie acessos, papéis e grupos vinculados aos usuários."
+				title="Usuários"
+			/>
+
+			<UsersSummaryCards summary={summary} />
 
 			<UsersTabs
 				accessGroupFilter={accessGroupFilter}
@@ -238,7 +261,6 @@ function UsersManagementScreen() {
 					setPage(1);
 				}}
 				onCreateAccessGroup={openCreateAccessGroupDialog}
-				onCreateUser={openCreateDialog}
 				onDeleteAccessGroup={openDeleteAccessGroupDialog}
 				onDeleteUser={openDeleteDialog}
 				onEditAccessGroup={openEditAccessGroupDialog}
@@ -253,13 +275,8 @@ function UsersManagementScreen() {
 					setRoleFilter(value);
 					setPage(1);
 				}}
-				onSearchChange={(value) => {
-					setSearch(value);
-					setPage(1);
-				}}
 				page={page}
 				roleFilter={roleFilter}
-				search={search}
 				summary={summary}
 				totalPages={totalPages}
 				totalUsers={totalUsers}

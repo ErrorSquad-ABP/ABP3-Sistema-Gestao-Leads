@@ -43,7 +43,7 @@ function AgendaEventCard({
 	onMove,
 }: Props) {
 	const date = agendaItemDate(item);
-	const canComplete = item.type === 'TASK' && item.status === 'SCHEDULED';
+	const canComplete = item.status === 'SCHEDULED';
 	const canCancel = item.status === 'SCHEDULED';
 	const isOverdue = isAgendaItemOverdue(item);
 	const visual = agendaTypeVisual(item.type);
@@ -56,7 +56,7 @@ function AgendaEventCard({
 				isOverdue && 'border-destructive/25 bg-destructive/5',
 			)}
 		>
-			<CardContent className="flex min-w-0 items-start gap-4 p-4">
+			<CardContent className="flex min-w-0 flex-col items-start gap-4 p-4 sm:flex-row">
 				<div
 					aria-hidden="true"
 					className={cn(
@@ -67,7 +67,7 @@ function AgendaEventCard({
 					<Icon className="size-5" />
 				</div>
 				<div className="min-w-0 flex-1">
-					<div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+					<div className="flex min-w-0 flex-col gap-4">
 						<div className="min-w-0">
 							<div className="mb-2 flex flex-wrap gap-2">
 								<Badge className={visual.badgeClassName} variant="outline">
@@ -97,47 +97,43 @@ function AgendaEventCard({
 									: formatAgendaTime(item.dueAt)}
 							</p>
 						</div>
-						<div className="flex shrink-0 flex-wrap gap-2">
+						<div className="flex w-full flex-wrap gap-2">
 							<Button
 								aria-label={`Editar atividade ${item.title}`}
 								onClick={() => onEdit(item)}
-								size="sm"
+								size="icon-sm"
 								variant="outline"
 							>
 								<Pencil className="size-4" />
-								Editar
 							</Button>
 							{canCancel && onMove ? (
 								<Button
 									aria-label={`Mover atividade ${item.title}`}
 									onClick={() => onMove(item)}
-									size="sm"
+									size="icon-sm"
 									variant="outline"
 								>
 									<MoveRight className="size-4" />
-									Mover
 								</Button>
 							) : null}
 							{canComplete ? (
 								<Button
-									aria-label={`Concluir tarefa ${item.title}`}
+									aria-label={`Concluir atividade ${item.title}`}
 									onClick={() => onComplete(item.id)}
-									size="sm"
+									size="icon-sm"
 									variant="outline"
 								>
 									<CheckCircle2 className="size-4" />
-									Concluir
 								</Button>
 							) : null}
 							{canCancel ? (
 								<Button
 									aria-label={`Cancelar item ${item.title}`}
 									onClick={() => onCancel(item.id)}
-									size="sm"
-									variant="ghost"
+									size="icon-sm"
+									variant="outline"
 								>
 									<XCircle className="size-4" />
-									Cancelar
 								</Button>
 							) : null}
 						</div>

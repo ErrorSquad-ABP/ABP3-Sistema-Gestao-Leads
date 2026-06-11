@@ -258,6 +258,16 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				search={search}
 			/>
 
+			<StoresMetricsGrid
+				activeStores={stores.length}
+				averageLeads={averageLeads}
+				averageConversionRate={averageConversionRate}
+				openDeals={totalOpenDeals}
+				storesCount={stores.length}
+				totalLeads={totalLeadCount}
+				uniqueStates={uniqueStates}
+			/>
+
 			<StoresCatalogCard
 				canManageStores={canManageStores}
 				errorMessage={
@@ -282,16 +292,6 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				pageSize={pageSize}
 				rows={paginatedRows}
 				totalPages={totalPages}
-			/>
-
-			<StoresMetricsGrid
-				activeStores={stores.length}
-				averageLeads={averageLeads}
-				averageConversionRate={averageConversionRate}
-				openDeals={totalOpenDeals}
-				storesCount={stores.length}
-				totalLeads={totalLeadCount}
-				uniqueStates={uniqueStates}
 			/>
 
 			<StoresInsightsAside rows={rows} storesCount={stores.length} />

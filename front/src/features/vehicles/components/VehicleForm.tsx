@@ -80,6 +80,22 @@ type VehicleFieldControlProps = {
 	rightIcon?: ComponentType<{ className?: string }>;
 };
 
+const vehicleFormFieldById: Readonly<Record<string, keyof VehicleFormInput>> = {
+	'vehicle-form-brand': 'brand',
+	'vehicle-form-color': 'color',
+	'vehicle-form-fuel': 'supportedFuelType',
+	'vehicle-form-manufacture-year': 'manufactureYear',
+	'vehicle-form-mileage': 'mileage',
+	'vehicle-form-model': 'model',
+	'vehicle-form-model-year': 'modelYear',
+	'vehicle-form-plate': 'plate',
+	'vehicle-form-price': 'price',
+	'vehicle-form-status': 'status',
+	'vehicle-form-store': 'storeId',
+	'vehicle-form-version': 'version',
+	'vehicle-form-vin': 'vin',
+};
+
 function VehicleFieldControl({
 	children,
 	icon: Icon,
@@ -112,6 +128,8 @@ function VehicleFormDialog({
 	const [priceCentsDigits, setPriceCentsDigits] = useState('');
 	const form = useForm<VehicleFormInput>({
 		resolver: zodResolver(vehicleFormSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {
 			storeId: '',
 			brand: '',
@@ -129,12 +147,18 @@ function VehicleFormDialog({
 		},
 	});
 
-	const selectedStoreId = useWatch({ control: form.control, name: 'storeId' });
+	const selectedStoreId = useWatch({
+		control: form.control,
+		name: 'storeId',
+	});
 	const brandValue = useWatch({ control: form.control, name: 'brand' });
 	const modelValue = useWatch({ control: form.control, name: 'model' });
 	const versionValue = useWatch({ control: form.control, name: 'version' });
 	const colorValue = useWatch({ control: form.control, name: 'color' });
-	const modelYearValue = useWatch({ control: form.control, name: 'modelYear' });
+	const modelYearValue = useWatch({
+		control: form.control,
+		name: 'modelYear',
+	});
 	const manufactureYearValue = useWatch({
 		control: form.control,
 		name: 'manufactureYear',
@@ -256,6 +280,11 @@ function VehicleFormDialog({
 
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
+					onBlurCapture={(event) => {
+						const field =
+							vehicleFormFieldById[(event.target as HTMLElement).id];
+						if (field) void form.trigger(field);
+					}}
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
 					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
@@ -272,7 +301,7 @@ function VehicleFormDialog({
 							<div className="mt-4 space-y-2">
 								{isEditMode ? (
 									<div
-										className="relative flex h-11 w-full items-center rounded-xl border border-[#cfd8e6] bg-[#f7f9fc] px-10 text-sm text-[#1b2430]"
+										className="relative flex h-11 w-full items-center rounded-xl border border-[#cfd8e6] bg-white px-10 text-sm text-[#1b2430]"
 										id="vehicle-form-store-readonly"
 									>
 										<Store className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />

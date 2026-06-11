@@ -96,6 +96,16 @@ const dropdownPanelClass =
 const dropdownItemClass =
 	'w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35';
 
+const dealFormFieldById: Readonly<Record<string, keyof DealUpdateFormInput>> = {
+	'deal-form-importance': 'importance',
+	'deal-form-loss-reason': 'lossReason',
+	'deal-form-stage': 'stage',
+	'deal-form-status': 'status',
+	'deal-form-title': 'title',
+	'deal-form-value': 'value',
+	'deal-form-vehicle': 'vehicleId',
+};
+
 function normalizeSearch(value: string) {
 	return value.trim().toLowerCase();
 }
@@ -126,7 +136,7 @@ function getStageVisual(stage: DealStage | undefined) {
 		default:
 			return {
 				Icon: PhoneCall,
-				wrapClassName: 'bg-slate-100 text-slate-500',
+				wrapClassName: 'bg-white text-slate-500',
 			};
 	}
 }
@@ -152,7 +162,7 @@ function getImportanceVisual(importance: DealImportance | undefined) {
 		default:
 			return {
 				Icon: Flame,
-				wrapClassName: 'bg-slate-100 text-slate-500',
+				wrapClassName: 'bg-white text-slate-500',
 			};
 	}
 }
@@ -177,7 +187,7 @@ function getStatusVisual(status: DealStatus | undefined) {
 		default:
 			return {
 				Icon: Activity,
-				wrapClassName: 'bg-slate-100 text-slate-500',
+				wrapClassName: 'bg-white text-slate-500',
 			};
 	}
 }
@@ -205,9 +215,10 @@ function getSummaryStageIconClass(
 	currentStage: DealStage | undefined,
 	stage: DealStage,
 ) {
-	const base = 'mx-auto flex size-7 items-center justify-center rounded-full';
+	const base =
+		'mx-auto flex size-7 items-center justify-center rounded-full border border-[#e5e9f0]';
 	if (currentStage !== stage) {
-		return `${base} bg-[#f4f6f8]`;
+		return `${base} bg-white`;
 	}
 	return `${base} ${getStageVisual(stage).wrapClassName}`;
 }
@@ -239,6 +250,8 @@ function DealFormDialog({
 
 	const form = useForm<DealUpdateFormInput>({
 		resolver: zodResolver(dealUpdateSchema),
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 		defaultValues: {},
 	});
 
@@ -438,18 +451,22 @@ function DealFormDialog({
 
 				<form
 					className="flex min-h-0 flex-1 flex-col overflow-hidden"
+					onBlurCapture={(event) => {
+						const field = dealFormFieldById[(event.target as HTMLElement).id];
+						if (field) void form.trigger(field);
+					}}
 					onSubmit={form.handleSubmit(handleSubmit)}
 				>
 					<div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-8 py-5">
 						{isReadOnly ? (
-							<div className="rounded-xl border border-border/80 bg-muted/20 px-4 py-3 text-sm text-[#6b7687]">
+							<div className="rounded-xl border border-border/80 bg-white px-4 py-3 text-sm text-[#6b7687]">
 								Negociação finalizada. Os dados abaixo estão disponíveis apenas
 								para consulta.
 							</div>
 						) : null}
 						<ModalFormErrorBanner message={submitError} />
 
-						<div className="flex items-center justify-between gap-4 rounded-xl border border-[#edf1f6] bg-[#f8fafc] px-4 py-3 text-[#667085]">
+						<div className="flex items-center justify-between gap-4 rounded-xl border border-[#edf1f6] bg-white px-4 py-3 text-[#667085]">
 							<div className="flex min-w-0 items-center gap-3">
 								<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#eef6ff] text-[#2f80c9]">
 									<Info className="size-5" />

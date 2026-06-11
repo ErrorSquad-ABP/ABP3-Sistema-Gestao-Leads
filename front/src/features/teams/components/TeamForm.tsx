@@ -1,17 +1,24 @@
 'use client';
 
-import { ShieldCheck } from 'lucide-react';
+import {
+	PencilLine,
+	Save,
+	ShieldCheck,
+	Trash2,
+	UsersRound,
+} from 'lucide-react';
 
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
-import { Button } from '@/components/ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalBody,
+	AppModalCancelButton,
+	AppModalConfirmPanel,
+	AppModalFooter,
+	AppModalHeader,
+	AppModalPrimaryButton,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import type {
@@ -96,114 +103,117 @@ function TeamFormDialog({
 			onOpenChange={(open) => !open && onClose()}
 			open={dialogState !== null}
 		>
-			<DialogContent className="max-w-xl">
-				<DialogHeader>
-					<DialogTitle>
-						{dialogState?.mode === 'edit' ? 'Editar equipe' : 'Nova equipe'}
-					</DialogTitle>
-					<DialogDescription>
-						Vincule a equipe a uma loja e, se desejar, a um gerente de
-						referência.
-					</DialogDescription>
-				</DialogHeader>
-				<div className="grid gap-4 px-6 py-5">
-					<div className="grid gap-4 sm:grid-cols-2">
-						<div className="grid gap-2">
-							<Label htmlFor="team-name" required>
-								Nome da equipe
-							</Label>
-							<Input
-								id="team-name"
-								onChange={(event) =>
-									onStateChange((current) => ({
-										...current,
-										name: event.target.value,
-									}))
-								}
-								value={formState.name}
-								{...requiredFieldProps()}
-							/>
+			<DialogContent className={`${appModalContentClass} max-w-2xl`}>
+				<AppModalHeader
+					category="Equipes"
+					description="Vincule a equipe a uma loja e, se desejar, a um gerente de referência."
+					icon={dialogState?.mode === 'edit' ? PencilLine : UsersRound}
+					title={dialogState?.mode === 'edit' ? 'Editar equipe' : 'Nova equipe'}
+					tone="violet"
+				/>
+				<form
+					className="flex min-h-0 flex-1 flex-col overflow-hidden"
+					onSubmit={(event) => {
+						event.preventDefault();
+						onSave();
+					}}
+				>
+					<AppModalBody className="grid gap-4">
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div className="grid gap-2">
+								<Label htmlFor="team-name" required>
+									Nome da equipe
+								</Label>
+								<Input
+									id="team-name"
+									onChange={(event) =>
+										onStateChange((current) => ({
+											...current,
+											name: event.target.value,
+										}))
+									}
+									value={formState.name}
+									{...requiredFieldProps()}
+								/>
+							</div>
+							<div className="grid gap-2">
+								<Label htmlFor="team-store" required>
+									Loja
+								</Label>
+								<select
+									className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
+									id="team-store"
+									onChange={(event) =>
+										onStateChange((current) => ({
+											...current,
+											storeId: event.target.value,
+											memberUserIds:
+												event.target.value === current.storeId
+													? current.memberUserIds
+													: [],
+										}))
+									}
+									value={formState.storeId}
+									{...requiredFieldProps()}
+								>
+									<option value="">Selecione uma loja</option>
+									{stores.map((store) => (
+										<option key={store.id} value={store.id}>
+											{store.name}
+										</option>
+									))}
+								</select>
+							</div>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="team-store" required>
-								Loja
-							</Label>
+							<Label htmlFor="team-manager">Gerente da equipe</Label>
 							<select
 								className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
-								id="team-store"
+								id="team-manager"
 								onChange={(event) =>
 									onStateChange((current) => ({
 										...current,
-										storeId: event.target.value,
-										memberUserIds:
-											event.target.value === current.storeId
-												? current.memberUserIds
-												: [],
+										managerId: event.target.value,
 									}))
 								}
-								value={formState.storeId}
-								{...requiredFieldProps()}
+								value={formState.managerId}
 							>
-								<option value="">Selecione uma loja</option>
-								{stores.map((store) => (
-									<option key={store.id} value={store.id}>
-										{store.name}
+								<option value="">Sem gerente</option>
+								{owners.map((owner) => (
+									<option key={owner.id} value={owner.id}>
+										{owner.name} · {owner.email}
 									</option>
 								))}
 							</select>
 						</div>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="team-manager">Gerente da equipe</Label>
-						<select
-							className="h-11 rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-ring"
-							id="team-manager"
-							onChange={(event) =>
-								onStateChange((current) => ({
-									...current,
-									managerId: event.target.value,
-								}))
-							}
-							value={formState.managerId}
-						>
-							<option value="">Sem gerente</option>
-							{owners.map((owner) => (
-								<option key={owner.id} value={owner.id}>
-									{owner.name} · {owner.email}
-								</option>
-							))}
-						</select>
-					</div>
-					<div className="grid gap-2">
-						<Label>Membros</Label>
-						<TeamMemberSelector
-							candidates={memberCandidates}
-							disabled={!formState.storeId || isPending}
-							emptyLabel="Nenhum membro selecionado para esta equipe."
-							isLoading={membersLoading}
-							onChange={(memberUserIds) =>
-								onStateChange((current) => ({
-									...current,
-									memberUserIds,
-								}))
-							}
-							selectedUserIds={formState.memberUserIds}
-						/>
-					</div>
-					<ModalFormErrorBanner message={dialogError} />
-				</div>
-				<DialogFooter>
-					<Button className="rounded-md" onClick={onClose} variant="outline">
-						Cancelar
-					</Button>
-					<Button
-						className="rounded-md bg-[#2D3648] shadow-none hover:bg-[#232B3B]"
-						disabled={isPending}
-						onClick={onSave}
-					>
-						{isPending ? 'Salvando...' : 'Salvar equipe'}
-					</Button>
-				</DialogFooter>
+						<div className="grid gap-2">
+							<Label>Membros</Label>
+							<TeamMemberSelector
+								candidates={memberCandidates}
+								disabled={!formState.storeId || isPending}
+								emptyLabel="Nenhum membro selecionado para esta equipe."
+								isLoading={membersLoading}
+								onChange={(memberUserIds) =>
+									onStateChange((current) => ({
+										...current,
+										memberUserIds,
+									}))
+								}
+								selectedUserIds={formState.memberUserIds}
+							/>
+						</div>
+						<ModalFormErrorBanner message={dialogError} />
+					</AppModalBody>
+					<AppModalFooter>
+						<AppModalCancelButton onClick={onClose} type="button">
+							Cancelar
+						</AppModalCancelButton>
+						<AppModalPrimaryButton disabled={isPending} type="submit">
+							<Save className="size-4" />
+							{isPending ? 'Salvando...' : 'Salvar equipe'}
+						</AppModalPrimaryButton>
+					</AppModalFooter>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);
@@ -218,36 +228,37 @@ function TeamDeleteDialog({
 }: TeamDeleteDialogProps) {
 	return (
 		<Dialog onOpenChange={(open) => !open && onClose()} open={target !== null}>
-			<DialogContent className="max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Excluir equipe</DialogTitle>
-					<DialogDescription>
-						Confirme a remoção da equipe selecionada.
-					</DialogDescription>
-				</DialogHeader>
-				<div className="space-y-3 px-6 py-5">
+			<DialogContent className={`${appModalContentClass} max-w-lg`}>
+				<AppModalHeader
+					category="Equipes"
+					description="Confirme a remoção da equipe selecionada."
+					icon={Trash2}
+					title="Excluir equipe"
+					tone="danger"
+				/>
+				<AppModalBody>
 					<div className="inline-flex items-center gap-2 rounded-full bg-[#2d3648]/10 px-3 py-1 text-xs font-medium text-[#2d3648]">
 						<ShieldCheck className="size-3.5" />
 						Equipe
 					</div>
-					<p className="text-sm text-[#1b2430]">
+					<AppModalConfirmPanel icon={Trash2}>
 						Equipe: <span className="font-medium">{target?.name}</span>
-					</p>
+					</AppModalConfirmPanel>
 					<ModalFormErrorBanner message={deleteError} />
-				</div>
-				<DialogFooter>
-					<Button className="rounded-md" onClick={onClose} variant="outline">
+				</AppModalBody>
+				<AppModalFooter>
+					<AppModalCancelButton onClick={onClose}>
 						Cancelar
-					</Button>
-					<Button
-						className="rounded-md shadow-none"
+					</AppModalCancelButton>
+					<AppModalPrimaryButton
+						className="bg-red-600 hover:bg-red-700"
 						disabled={isPending}
 						onClick={onConfirm}
-						variant="destructive"
 					>
+						<Trash2 className="size-4" />
 						{isPending ? 'Excluindo...' : 'Excluir'}
-					</Button>
-				</DialogFooter>
+					</AppModalPrimaryButton>
+				</AppModalFooter>
 			</DialogContent>
 		</Dialog>
 	);

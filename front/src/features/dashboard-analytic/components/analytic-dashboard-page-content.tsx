@@ -287,12 +287,11 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 
 function KpiSkeleton() {
 	return (
-		<Card className="border-border/90 bg-card shadow-sm">
-			<CardContent className="space-y-4 p-5">
-				<Skeleton className="size-12 rounded-2xl" />
+		<Card className="h-28 min-h-28 overflow-hidden border-border/90 bg-card shadow-sm">
+			<CardContent className="space-y-2 overflow-hidden p-4">
+				<Skeleton className="size-10 rounded-xl" />
 				<Skeleton className="h-5 w-32" />
-				<Skeleton className="h-10 w-24" />
-				<Skeleton className="h-4 w-44" />
+				<Skeleton className="h-5 w-24" />
 			</CardContent>
 		</Card>
 	);
@@ -535,22 +534,6 @@ function AnalyticDashboardPageContent({
 				</div>
 			</header>
 
-			{validationMessage ? (
-				<Alert className="border-[color:var(--brand-accent-muted)] bg-[color:var(--brand-accent-soft)] text-[color:var(--brand-accent-hover)]">
-					<AlertTitle>Filtro inválido</AlertTitle>
-					<AlertDescription>{validationMessage}</AlertDescription>
-				</Alert>
-			) : null}
-
-			{dashboardQuery.error ? (
-				<Alert variant="destructive">
-					<AlertTitle>Erro ao carregar indicadores</AlertTitle>
-					<AlertDescription>
-						{getErrorMessage(dashboardQuery.error)}
-					</AlertDescription>
-				</Alert>
-			) : null}
-
 			<section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
 				{dashboardQuery.isPending
 					? KPI_SKELETON_KEYS.map((key) => <KpiSkeleton key={key} />)
@@ -567,6 +550,22 @@ function AnalyticDashboardPageContent({
 							/>
 						))}
 			</section>
+
+			{validationMessage ? (
+				<Alert className="border-[color:var(--brand-accent-muted)] bg-[color:var(--brand-accent-soft)] text-[color:var(--brand-accent-hover)]">
+					<AlertTitle>Filtro inválido</AlertTitle>
+					<AlertDescription>{validationMessage}</AlertDescription>
+				</Alert>
+			) : null}
+
+			{dashboardQuery.error ? (
+				<Alert variant="destructive">
+					<AlertTitle>Erro ao carregar indicadores</AlertTitle>
+					<AlertDescription>
+						{getErrorMessage(dashboardQuery.error)}
+					</AlertDescription>
+				</Alert>
+			) : null}
 
 			{dashboard && !hasData ? (
 				<Card className="rounded-[18px] border-border bg-card shadow-sm">
@@ -751,7 +750,9 @@ function AnalyticDashboardPageContent({
 												>
 													<span
 														className="size-3 rounded-full"
-														style={{ backgroundColor: item.color }}
+														style={{
+															backgroundColor: item.color,
+														}}
 													/>
 													<span className="text-sm font-semibold text-foreground">
 														{item.label}
@@ -784,7 +785,12 @@ function AnalyticDashboardPageContent({
 										<ResponsiveContainer width="100%" height="100%">
 											<BarChart
 												data={finalizationData}
-												margin={{ bottom: 20, left: -18, right: 8, top: 18 }}
+												margin={{
+													bottom: 20,
+													left: -18,
+													right: 8,
+													top: 18,
+												}}
 											>
 												<CartesianGrid
 													stroke="var(--border)"
@@ -866,7 +872,9 @@ function AnalyticDashboardPageContent({
 												<div className="flex items-center gap-2">
 													<span
 														className="size-3 rounded-full"
-														style={{ backgroundColor: item.color }}
+														style={{
+															backgroundColor: item.color,
+														}}
 													/>
 													<span className="text-sm font-semibold text-foreground">
 														{item.label}
@@ -894,7 +902,12 @@ function AnalyticDashboardPageContent({
 									<ResponsiveContainer width="100%" height="100%">
 										<AreaChart
 											data={trendData}
-											margin={{ bottom: 0, left: -18, right: 12, top: 18 }}
+											margin={{
+												bottom: 0,
+												left: -18,
+												right: 12,
+												top: 18,
+											}}
 										>
 											<defs>
 												<linearGradient

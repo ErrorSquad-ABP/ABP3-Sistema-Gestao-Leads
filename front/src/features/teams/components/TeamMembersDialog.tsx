@@ -1,17 +1,15 @@
 'use client';
 
-import { AlertCircle, UserPlus } from 'lucide-react';
+import { AlertCircle, UserMinus, UserPlus, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalConfirmPanel,
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import type {
 	TeamMemberCandidate,
 	TeamRecord,
@@ -78,13 +76,14 @@ function TeamMembersDialog({
 			onOpenChange={(open) => !open && closeMembersDialog()}
 			open={team !== null}
 		>
-			<DialogContent className="max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>Membros da equipe</DialogTitle>
-					<DialogDescription>
-						{team?.name ?? 'Equipe'} · {storeName}
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} max-w-2xl`}>
+				<AppModalHeader
+					category="Equipes"
+					description={`${team?.name ?? 'Equipe'} · ${storeName}`}
+					icon={UsersRound}
+					title="Membros da equipe"
+					tone="violet"
+				/>
 
 				<div className="space-y-5 px-6 py-5">
 					{error ? (
@@ -184,17 +183,22 @@ function TeamMembersDialog({
 				onOpenChange={(open) => !open && setMemberPendingRemovalId(null)}
 				open={memberPendingRemoval !== null}
 			>
-				<DialogContent className="max-w-md">
-					<DialogHeader>
-						<DialogTitle>Confirmar remoção</DialogTitle>
-						<DialogDescription>
-							{memberPendingRemoval
+				<DialogContent className={`${appModalContentClass} max-w-md`}>
+					<AppModalHeader
+						category="Equipes"
+						description={
+							memberPendingRemoval
 								? `Remover ${memberPendingRemoval.name} desta equipe?`
-								: 'Remover membro desta equipe?'}
-						</DialogDescription>
-					</DialogHeader>
+								: 'Remover membro desta equipe?'
+						}
+						icon={UserMinus}
+						title="Confirmar remoção"
+						tone="danger"
+					/>
 					<div className="px-6 py-4 text-sm text-muted-foreground">
-						Essa ação remove o vínculo do membro com a equipe atual.
+						<AppModalConfirmPanel icon={UserMinus}>
+							Essa ação remove o vínculo do membro com a equipe atual.
+						</AppModalConfirmPanel>
 					</div>
 					<DialogFooter>
 						<Button

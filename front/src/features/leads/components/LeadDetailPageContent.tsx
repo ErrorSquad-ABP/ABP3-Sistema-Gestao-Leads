@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -259,7 +260,10 @@ function getTimelineDetails(event: TimelineEvent) {
 		const metadata = asRecord(event.metadata);
 		const field = onlyString(metadata?.field) ?? '';
 		details.push(
-			{ label: 'Campo alterado', value: formatDealHistoryFieldName(field) },
+			{
+				label: 'Campo alterado',
+				value: formatDealHistoryFieldName(field),
+			},
 			{
 				label: 'Valor anterior',
 				value: formatDealHistoryValueDisplay(
@@ -298,7 +302,10 @@ function getTimelineDetails(event: TimelineEvent) {
 		const fromLabel = onlyString(change.fromLabel);
 		const toLabel = onlyString(change.toLabel);
 		details.push(
-			{ label: 'Campo alterado', value: formatLeadChangeFieldName(field) },
+			{
+				label: 'Campo alterado',
+				value: formatLeadChangeFieldName(field),
+			},
 			{
 				label: 'Valor anterior',
 				value:
@@ -518,15 +525,21 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 
 	return (
 		<div className="space-y-6">
-			<Button
-				className="rounded-md shadow-none"
-				onClick={() => router.push(appRoutes.app.leads)}
-				type="button"
-				variant="outline"
-			>
-				<ArrowLeft className="size-4" />
-				Voltar para leads
-			</Button>
+			<AppPageHeader
+				action={
+					<Button
+						className="h-12 rounded-xl px-5 shadow-none"
+						onClick={() => router.push(appRoutes.app.leads)}
+						type="button"
+						variant="outline"
+					>
+						<ArrowLeft className="size-4" />
+						Voltar para leads
+					</Button>
+				}
+				description="Acompanhe o atendimento, as negociações e os próximos passos."
+				title="Detalhes do lead"
+			/>
 
 			<Card className="overflow-hidden rounded-[1.75rem] border-border/90 bg-white">
 				<CardHeader className="gap-5 border-none pb-6">
@@ -889,7 +902,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					<div className="space-y-3 px-6 py-5">
 						{selectedTimelineDetails.map((detailItem) => (
 							<div
-								className="rounded-2xl border border-border/80 bg-[#f8fafc] px-4 py-3"
+								className="rounded-2xl border border-border/80 bg-white px-4 py-3"
 								key={`${detailItem.label}-${detailItem.value}`}
 							>
 								<p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[#6b7687] uppercase">

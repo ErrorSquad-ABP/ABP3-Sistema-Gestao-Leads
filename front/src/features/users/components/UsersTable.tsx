@@ -9,7 +9,6 @@ import {
 	MoreHorizontal,
 	PencilLine,
 	Plus,
-	Search,
 	ShieldCheck,
 	ShieldOff,
 	Trash2,
@@ -18,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { AppTableFilterDropdown } from '@/components/data/AppTableFilterDropdown';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -32,7 +32,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import {
 	Table,
 	TableBody,
@@ -62,17 +61,14 @@ type UsersListSectionProps = {
 	isLoading: boolean;
 	limit: number;
 	onAccessGroupFilterChange: (value: string) => void;
-	onCreate: () => void;
 	onDelete: (user: UserRecord) => void;
 	onEdit: (user: UserRecord) => void;
 	onLimitChange: (value: number) => void;
 	onNextPage: () => void;
 	onPreviousPage: () => void;
 	onRoleFilterChange: (value: 'ALL' | UserRecord['role']) => void;
-	onSearchChange: (value: string) => void;
 	page: number;
 	roleFilter: 'ALL' | UserRecord['role'];
-	search: string;
 	summary: UsersSummary;
 	totalUsers: number;
 	totalPages: number;
@@ -197,17 +193,14 @@ function UsersListSection({
 	isLoading,
 	limit,
 	onAccessGroupFilterChange,
-	onCreate,
 	onDelete,
 	onEdit,
 	onLimitChange,
 	onNextPage,
 	onPreviousPage,
 	onRoleFilterChange,
-	onSearchChange,
 	page,
 	roleFilter,
-	search,
 	summary,
 	totalPages,
 	totalUsers,
@@ -220,60 +213,49 @@ function UsersListSection({
 
 	return (
 		<div className="space-y-5">
-			<UsersSummaryCards summary={summary} />
+			<div className="hidden">
+				<UsersSummaryCards summary={summary} />
+			</div>
 
 			<Card className="overflow-hidden rounded-3xl border-[#dfe7f1] bg-white">
 				<CardContent className="p-0">
-					<div className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center">
-						<div className="relative flex-1">
-							<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-[#667085]" />
-							<Input
-								className="h-12 rounded-xl border-[#d8e0ea] bg-white pl-11 shadow-none focus-visible:border-[#f05a28]/45"
-								onChange={(event) => onSearchChange(event.target.value)}
-								placeholder="Buscar por nome ou e-mail"
-								value={search}
-							/>
-						</div>
-
-						<div className="flex flex-wrap gap-3">
-							<select
-								className="h-12 rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
-								onChange={(event) =>
-									onRoleFilterChange(
-										event.target.value as 'ALL' | UserRecord['role'],
-									)
+					<div className="flex flex-col gap-2 p-4 lg:flex-row lg:items-center">
+						<div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+							<AppTableFilterDropdown
+								defaultValue="ALL"
+								label="Papel"
+								onValueChange={(value) =>
+									onRoleFilterChange(value as 'ALL' | UserRecord['role'])
 								}
+								options={[
+									{ value: 'ALL', label: 'Todos os papéis' },
+									{ value: 'ATTENDANT', label: 'Atendente' },
+									{ value: 'MANAGER', label: 'Gerente' },
+									{
+										value: 'GENERAL_MANAGER',
+										label: 'Gerente geral',
+									},
+									{
+										value: 'ADMINISTRATOR',
+										label: 'Administrador',
+									},
+								]}
 								value={roleFilter}
-							>
-								<option value="ALL">Todos os papéis</option>
-								<option value="ATTENDANT">Atendente</option>
-								<option value="MANAGER">Gerente</option>
-								<option value="GENERAL_MANAGER">Gerente geral</option>
-								<option value="ADMINISTRATOR">Administrador</option>
-							</select>
+							/>
 
-							<select
-								className="h-12 rounded-xl border border-[#d8e0ea] bg-white px-4 text-sm text-[#101828] outline-none"
-								onChange={(event) =>
-									onAccessGroupFilterChange(event.target.value)
-								}
+							<AppTableFilterDropdown
+								defaultValue=""
+								label="Grupo de acesso"
+								onValueChange={(value) => onAccessGroupFilterChange(value)}
+								options={[
+									{ value: '', label: 'Todos os grupos' },
+									...accessGroups.map((group) => ({
+										value: group.id,
+										label: group.name,
+									})),
+								]}
 								value={accessGroupFilter}
-							>
-								<option value="">Todos os grupos</option>
-								{accessGroups.map((group) => (
-									<option key={group.id} value={group.id}>
-										{group.name}
-									</option>
-								))}
-							</select>
-
-							<Button
-								className="h-12 rounded-xl bg-[#f05a28] px-5 text-white shadow-none hover:bg-[#df4f1f]"
-								onClick={onCreate}
-							>
-								<Plus className="size-4" />
-								Novo usuário
-							</Button>
+							/>
 						</div>
 					</div>
 
@@ -630,7 +612,6 @@ function UsersTabs(props: {
 	limit: number;
 	onAccessGroupFilterChange: (value: string) => void;
 	onCreateAccessGroup: () => void;
-	onCreateUser: () => void;
 	onDeleteAccessGroup: (group: AccessGroup) => void;
 	onDeleteUser: (user: UserRecord) => void;
 	onEditAccessGroup: (group: AccessGroup) => void;
@@ -639,10 +620,8 @@ function UsersTabs(props: {
 	onNextPage: () => void;
 	onPreviousPage: () => void;
 	onRoleFilterChange: (value: 'ALL' | UserRecord['role']) => void;
-	onSearchChange: (value: string) => void;
 	page: number;
 	roleFilter: 'ALL' | UserRecord['role'];
-	search: string;
 	summary: UsersSummary;
 	totalPages: number;
 	totalUsers: number;
@@ -670,17 +649,14 @@ function UsersTabs(props: {
 					isLoading={props.usersLoading}
 					limit={props.limit}
 					onAccessGroupFilterChange={props.onAccessGroupFilterChange}
-					onCreate={props.onCreateUser}
 					onDelete={props.onDeleteUser}
 					onEdit={props.onEditUser}
 					onLimitChange={props.onLimitChange}
 					onNextPage={props.onNextPage}
 					onPreviousPage={props.onPreviousPage}
 					onRoleFilterChange={props.onRoleFilterChange}
-					onSearchChange={props.onSearchChange}
 					page={props.page}
 					roleFilter={props.roleFilter}
-					search={props.search}
 					summary={props.summary}
 					totalPages={props.totalPages}
 					totalUsers={props.totalUsers}
@@ -703,4 +679,4 @@ function UsersTabs(props: {
 	);
 }
 
-export { AccessGroupsSection, UsersListSection, UsersTabs };
+export { AccessGroupsSection, UsersListSection, UsersSummaryCards, UsersTabs };

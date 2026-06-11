@@ -6,7 +6,6 @@ import {
 	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
-	Filter,
 	Plus,
 	Search,
 	Target,
@@ -15,9 +14,16 @@ import {
 } from 'lucide-react';
 import { useMemo, useState, useSyncExternalStore } from 'react';
 
+import { AppTableFilterDropdown } from '@/components/data/AppTableFilterDropdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+	AppPageHeader,
+	appPageActionClass,
+	appPageSearchClass,
+} from '@/components/layout/AppPageHeader';
+import { KpiCard, type KpiCardVariant } from '@/components/metrics/KpiCard';
 import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
 import { useLeadOwnersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import type {
@@ -164,16 +170,16 @@ async function fetchTeamMetrics(
 	};
 }
 
-function getMetricToneClass(tone: MetricTone) {
+function getMetricVariant(tone: MetricTone): KpiCardVariant {
 	switch (tone) {
 		case 'blue':
-			return 'bg-[#eff6ff] text-[#2563eb]';
+			return 'neutral';
 		case 'green':
-			return 'bg-[#ecfdf3] text-[#079455]';
+			return 'success';
 		case 'orange':
-			return 'bg-[#fff3ee] text-[#f4511e]';
+			return 'brand';
 		case 'purple':
-			return 'bg-[#f4edff] text-[#7f35e8]';
+			return 'neutral';
 	}
 }
 
@@ -191,22 +197,13 @@ function TeamMetricCard({
 	value: string;
 }) {
 	return (
-		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
-			<CardContent className="flex min-h-28 items-center gap-4 p-5">
-				<div
-					className={`flex size-12 shrink-0 items-center justify-center rounded-full ${getMetricToneClass(tone)}`}
-				>
-					<Icon className="size-5" />
-				</div>
-				<div className="space-y-1">
-					<p className="text-xs font-medium text-[#667085]">{label}</p>
-					<p className="text-2xl font-bold tracking-tight text-[#101828]">
-						{value}
-					</p>
-					<p className="text-xs text-[#667085]">{helper}</p>
-				</div>
-			</CardContent>
-		</Card>
+		<KpiCard
+			description={helper}
+			icon={<Icon className="size-5" />}
+			title={label}
+			value={value}
+			variant={getMetricVariant(tone)}
+		/>
 	);
 }
 
@@ -686,57 +683,52 @@ function TeamsManagementScreen() {
 
 	return (
 		<div className="space-y-5">
-			<header className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
-				<div className="space-y-2">
-					<h1 className="text-3xl font-bold tracking-tight text-[#101828]">
-						Equipes
-					</h1>
-					<p className="max-w-4xl text-sm text-[#667085]">
-						Organize as equipes por loja, gerencie líderes e acompanhe a
-						operação comercial do time.
-					</p>
-				</div>
-				<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-					<div className="relative">
-						<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
-						<Input
-							className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[340px]"
-							onChange={(event) => {
-								setSearch(event.target.value);
-								setPage(1);
-							}}
-							placeholder="Buscar por equipe, loja ou gerente..."
-							value={search}
-						/>
-					</div>
-					<div className="relative">
-						<Filter className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#1f2a44]" />
-						<select
-							className="h-11 appearance-none rounded-xl border border-[#d8e0ea] bg-white pr-8 pl-10 text-xs font-semibold text-[#1f2a44] outline-none"
-							onChange={(event) => {
-								setStoreFilter(event.target.value);
-								setPage(1);
-							}}
-							value={storeFilter}
-						>
-							<option value="ALL">Filtros</option>
-							{stores.map((store) => (
-								<option key={store.id} value={store.id}>
-									{store.name}
-								</option>
-							))}
-						</select>
-					</div>
+			<AppPageHeader
+				action={
 					<Button
-						className="h-11 rounded-xl bg-[#f4511e] px-5 text-sm text-white shadow-sm hover:bg-[#dc3f13]"
+						className={appPageActionClass}
 						disabled={!isHydrated || stores.length === 0}
 						onClick={openCreateTeamDialog}
 					>
 						<Plus className="size-4" />
 						Nova equipe
 					</Button>
-				</div>
-			</header>
+				}
+				controls={
+					<>
+						<div className="relative w-full sm:w-[360px]">
+							<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
+							<Input
+								className={appPageSearchClass}
+								onChange={(event) => {
+									setSearch(event.target.value);
+									setPage(1);
+								}}
+								placeholder="Buscar por equipe, loja ou gerente..."
+								value={search}
+							/>
+						</div>
+						<AppTableFilterDropdown
+							defaultValue="ALL"
+							label="Loja"
+							onValueChange={(value) => {
+								setStoreFilter(value);
+								setPage(1);
+							}}
+							options={[
+								{ value: 'ALL', label: 'Todas as lojas' },
+								...stores.map((store) => ({
+									value: store.id,
+									label: store.name,
+								})),
+							]}
+							value={storeFilter}
+						/>
+					</>
+				}
+				description="Organize as equipes por loja, gerencie líderes e acompanhe a operação comercial do time."
+				title="Equipes"
+			/>
 
 			<div className="grid gap-4 xl:grid-cols-5">
 				<TeamMetricCard

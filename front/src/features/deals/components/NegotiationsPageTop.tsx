@@ -1,8 +1,8 @@
 'use client';
 
 import { NegotiationsActions } from '@/features/deals/components/NegotiationsActions';
-import { NegotiationsHeader } from '@/features/deals/components/NegotiationsHeader';
 import { NegotiationsMetricsGrid } from '@/features/deals/components/NegotiationsMetricsGrid';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 
 type Props = {
 	search: string;
@@ -13,16 +13,17 @@ type Props = {
 function NegotiationsPageTop({ search, onCreateDeal, onSearchChange }: Props) {
 	return (
 		<section className="space-y-6">
-			<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-				<div className="min-w-0 shrink-0">
-					<NegotiationsHeader />
-				</div>
-				<NegotiationsActions
-					search={search}
-					onCreateDeal={onCreateDeal}
-					onSearchChange={onSearchChange}
-				/>
-			</div>
+			<AppPageHeader
+				action={
+					<NegotiationsActions
+						search={search}
+						onCreateDeal={onCreateDeal}
+						onSearchChange={onSearchChange}
+					/>
+				}
+				description="Gerencie seu funil e feche mais negócios."
+				title="Negociações"
+			/>
 
 			<NegotiationsMetricsGrid />
 		</section>

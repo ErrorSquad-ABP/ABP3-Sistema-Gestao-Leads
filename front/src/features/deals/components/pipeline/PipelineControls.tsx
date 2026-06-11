@@ -137,7 +137,7 @@ function PipelineControls({
 	const sortAccent = getPipelineSortFilterTriggerAccentClass(pipelineSortMode);
 
 	const neutralTriggerBase =
-		'inline-flex h-9 items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30';
+		'inline-flex h-9 w-40 max-w-full items-center gap-2 rounded-[9px] border border-border bg-white px-[13px] text-[13px] font-semibold text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.025)] hover:bg-muted/30';
 
 	return (
 		<div className="flex flex-wrap items-center gap-x-[10px] gap-y-2 pt-0.5">
@@ -146,7 +146,7 @@ function PipelineControls({
 					<button
 						type="button"
 						aria-label={`Filtro de status (${statusAria})`}
-						className={cn(neutralTriggerBase, 'min-w-[8.25rem]', statusAccent)}
+						className={cn(neutralTriggerBase, statusAccent)}
 					>
 						<SlidersHorizontal
 							className={cn(
@@ -193,11 +193,7 @@ function PipelineControls({
 					<button
 						type="button"
 						aria-label={`Filtro de importância (${importanceAria})`}
-						className={cn(
-							neutralTriggerBase,
-							'min-w-[8.25rem]',
-							importanceAccent,
-						)}
+						className={cn(neutralTriggerBase, importanceAccent)}
 					>
 						<SlidersHorizontal
 							className={cn(
@@ -244,11 +240,7 @@ function PipelineControls({
 					<button
 						type="button"
 						aria-label={`Ordenação (${sortAria})`}
-						className={cn(
-							neutralTriggerBase,
-							'max-w-[min(100%,220px)] min-w-[9.5rem]',
-							sortAccent,
-						)}
+						className={cn(neutralTriggerBase, sortAccent)}
 					>
 						<ArrowDownUp
 							className={cn(
