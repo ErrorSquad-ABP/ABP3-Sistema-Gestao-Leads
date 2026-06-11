@@ -161,11 +161,13 @@ Rotas publicadas:
 
 | Metodo | Caminho | Uso |
 | --- | --- | --- |
-| `GET` | `/api/agenda/items?from=&to=&limit=&type=&status=` | Lista itens da agenda do usuario autenticado |
+| `GET` | `/api/agenda/items?from=&to=&limit=&type=&status=&ownerUserId=` | Lista itens da agenda (admin ve todos; `ownerUserId` so admin) |
+| `GET` | `/api/agenda/metrics` | Metricas da agenda (admin: global) |
 | `POST` | `/api/agenda/items` | Cria tarefa ou compromisso na agenda do usuario autenticado |
-| `PATCH` | `/api/agenda/items/:id` | Atualiza item da agenda do usuario autenticado |
+| `PATCH` | `/api/agenda/items/:id` | Atualiza item da agenda (admin pode alterar de qualquer usuario) |
 | `PATCH` | `/api/agenda/items/:id/done` | Marca uma tarefa como concluida |
 | `PATCH` | `/api/agenda/items/:id/cancel` | Cancela tarefa ou compromisso |
+| `DELETE` | `/api/agenda/items/:id` | Exclui item da agenda (admin pode excluir de qualquer usuario) |
 
 Contrato retornado:
 

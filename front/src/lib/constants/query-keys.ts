@@ -231,6 +231,7 @@ const queryKeys = {
 			params: {
 				from?: string;
 				limit?: number;
+				ownerUserId?: string;
 				search?: string;
 				status?: string;
 				to?: string;
@@ -243,6 +244,7 @@ const queryKeys = {
 				params.from ?? 'default-from',
 				params.to ?? 'default-to',
 				params.limit ?? 'default-limit',
+				params.ownerUserId ?? 'default-owner',
 				params.search?.trim() ?? 'default-search',
 				params.status ?? 'default-status',
 				params.type ?? 'default-type',

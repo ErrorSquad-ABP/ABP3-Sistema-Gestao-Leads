@@ -19,6 +19,7 @@ import {
 	ApiTags,
 } from '@nestjs/swagger';
 
+import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 import {
 	CurrentUser,
 	type JwtUser,
@@ -40,7 +41,13 @@ import {
 	ListAgendaItemsQueryValidator,
 	UpdateAgendaItemValidator,
 } from '../validators/agenda-item.validators.js';
-import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
+
+function toAgendaActor(user: JwtUser) {
+	return {
+		userId: user.userId,
+		role: user.role as UserRole,
+	};
+}
 
 @ApiBearerAuth()
 @ApiTags('agenda')
@@ -69,27 +76,34 @@ class AgendaController {
 	) {}
 
 	@Get('metrics')
-	@ApiOperation({ summary: 'Obter metricas da agenda do usuario autenticado' })
+	@ApiOperation({
+		summary:
+			'Obter metricas da agenda (usuario autenticado ou global para administrador)',
+	})
 	@ApiOkResponse({ type: AgendaMetricsDto })
 	async metrics(@CurrentUser() user: JwtUser): Promise<AgendaMetricsDto> {
-		return this.getAgendaMetrics.execute(user.userId);
+		return this.getAgendaMetrics.execute(toAgendaActor(user));
 	}
 
 	@Get('items')
-	@ApiOperation({ summary: 'Listar itens da agenda do usuário autenticado' })
+	@ApiOperation({
+		summary:
+			'Listar itens da agenda (proprios ou de todos os usuarios para administrador)',
+	})
 	@ApiOkResponse({ type: AgendaItemsResponseDto })
 	async list(
 		@CurrentUser() user: JwtUser,
 		@Query() query: ListAgendaItemsQueryValidator,
 	): Promise<AgendaItemsResponseDto> {
 		return this.listAgendaItems.execute({
-			userId: user.userId,
+			actor: toAgendaActor(user),
 			from: query.from,
 			to: query.to,
 			type: query.type,
 			status: query.status,
 			search: query.search,
 			limit: query.limit,
+			ownerUserId: query.ownerUserId,
 		});
 	}
 
@@ -116,7 +130,7 @@ class AgendaController {
 	}
 
 	@Patch('items/:id')
-	@ApiOperation({ summary: 'Atualizar item da agenda do usuário autenticado' })
+	@ApiOperation({ summary: 'Atualizar item da agenda' })
 	@ApiOkResponse({ type: AgendaItemDto })
 	async update(
 		@CurrentUser() user: JwtUser,
@@ -125,7 +139,7 @@ class AgendaController {
 	): Promise<AgendaItemDto> {
 		return this.updateAgendaItem.execute({
 			id,
-			userId: user.userId,
+			actor: toAgendaActor(user),
 			type: body.type,
 			status: body.status,
 			title: body.title,
@@ -136,7 +150,6 @@ class AgendaController {
 			startsAt: body.startsAt,
 			endsAt: body.endsAt,
 			dueAt: body.dueAt,
-			userRole: user.role as UserRole,
 		});
 	}
 
@@ -147,7 +160,7 @@ class AgendaController {
 		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 	): Promise<AgendaItemDto> {
-		return this.completeAgendaItem.execute(id, user.userId);
+		return this.completeAgendaItem.execute(id, toAgendaActor(user));
 	}
 
 	@Patch('items/:id/cancel')
@@ -157,7 +170,7 @@ class AgendaController {
 		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 	): Promise<AgendaItemDto> {
-		return this.cancelAgendaItem.execute(id, user.userId);
+		return this.cancelAgendaItem.execute(id, toAgendaActor(user));
 	}
 
 	@Delete('items/:id')
@@ -166,7 +179,7 @@ class AgendaController {
 		@CurrentUser() user: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 	): Promise<void> {
-		await this.deleteAgendaItem.execute(id, user.userId);
+		await this.deleteAgendaItem.execute(id, toAgendaActor(user));
 	}
 }
 

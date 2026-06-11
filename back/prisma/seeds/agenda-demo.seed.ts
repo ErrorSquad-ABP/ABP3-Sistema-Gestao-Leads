@@ -2,8 +2,6 @@ import type {
 	Prisma,
 	PrismaClient,
 } from '../../src/generated/prisma/client.js';
-import type { DemoOrgDataset } from './demo-org.seed.js';
-import { buildDemoOrg } from './demo-org.seed.js';
 import { deterministicUuid } from './seed-utils.js';
 
 type AgendaSeedLead = Readonly<{
@@ -18,6 +16,17 @@ type AgendaSeedUser = Readonly<{
 }>;
 
 type AgendaSeedItem = Prisma.AgendaItemCreateManyInput;
+
+const DEMO_AGENDA_USER_EMAILS = [
+	'admin@crm.com',
+	'atendente@crm.com',
+	'gerente@crm.com',
+	'geral@crm.com',
+] as const;
+
+function isDemoAgendaUserEmail(email: string) {
+	return (DEMO_AGENDA_USER_EMAILS as readonly string[]).includes(email);
+}
 
 const AGENDA_TASK_TITLES = [
 	'Retornar ligação do cliente',
@@ -139,15 +148,11 @@ function buildAgendaItemsForUser(
 }
 
 function buildDemoAgendaItems(
-	demoOrg: DemoOrgDataset,
+	users: readonly AgendaSeedUser[],
 	leads: readonly AgendaSeedLead[],
 	now = new Date(),
 ): AgendaSeedItem[] {
-	const seedUsers = demoOrg.users.filter((user) =>
-		['atendente@crm.com', 'gerente@crm.com', 'geral@crm.com'].includes(
-			user.email,
-		),
-	);
+	const seedUsers = users.filter((user) => isDemoAgendaUserEmail(user.email));
 
 	return seedUsers.flatMap((user) => buildAgendaItemsForUser(user, leads, now));
 }
@@ -164,7 +169,6 @@ async function replaceAgendaItems(
 }
 
 async function runAgendaDemoSeed(prisma: PrismaClient) {
-	const demoOrg = await buildDemoOrg();
 	const leads = await prisma.lead.findMany({
 		select: {
 			id: true,
@@ -181,15 +185,29 @@ async function runAgendaDemoSeed(prisma: PrismaClient) {
 		);
 	}
 
-	const items = buildDemoAgendaItems(demoOrg, leads);
+	const users = await prisma.user.findMany({
+		where: {
+			email: { in: [...DEMO_AGENDA_USER_EMAILS] },
+		},
+		select: {
+			id: true,
+			email: true,
+		},
+		orderBy: { email: 'asc' },
+	});
+
+	if (users.length === 0) {
+		throw new Error(
+			'Nenhum usuário demo encontrado. Execute o seed demo antes de popular a agenda.',
+		);
+	}
+
+	const items = buildDemoAgendaItems(users, leads);
 	await replaceAgendaItems(prisma, items);
 
 	return {
-		users: demoOrg.users.filter((user) =>
-			['atendente@crm.com', 'gerente@crm.com', 'geral@crm.com'].includes(
-				user.email,
-			),
-		).length,
+		emails: users.map((user) => user.email),
+		users: users.length,
 		items: items.length,
 	};
 }

@@ -46,7 +46,7 @@ class ListLeadAgendaItemsUseCase {
 			status: 'SCHEDULED',
 			userId: input.userId,
 		});
-		return { items: items.map(AgendaItemDto.fromEntity) };
+		return { items: items.map((item) => AgendaItemDto.fromEntity(item)) };
 	}
 }
 
