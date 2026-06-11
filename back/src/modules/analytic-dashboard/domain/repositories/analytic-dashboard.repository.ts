@@ -82,6 +82,18 @@ type AnalyticTrendPoint = {
 	readonly averageTimeToFirstInteractionHours: number | null;
 };
 
+type AnalyticDrillDownLead = {
+	readonly id: string;
+	readonly label: string;
+	readonly importance?: string;
+	readonly outcome?: 'converted' | 'lost' | 'open';
+};
+
+type AnalyticDrillDown = {
+	readonly importanceLeads: readonly AnalyticDrillDownLead[];
+	readonly conversionLeads: readonly AnalyticDrillDownLead[];
+};
+
 type AnalyticDashboardResult = {
 	readonly summary: AnalyticSummary;
 	readonly kpis: {
@@ -98,6 +110,7 @@ type AnalyticDashboardResult = {
 	readonly importanceDistribution: readonly AnalyticDistributionItem[];
 	readonly finalizationReasons: readonly AnalyticDistributionItem[];
 	readonly averageTimeToFirstInteraction: AverageTimeToFirstInteraction;
+	readonly drillDown: AnalyticDrillDown;
 };
 
 interface IAnalyticDashboardRepository {
@@ -112,6 +125,8 @@ export type {
 	AnalyticDashboardResult,
 	AnalyticDistributionItem,
 	AnalyticDashboardKpi,
+	AnalyticDrillDown,
+	AnalyticDrillDownLead,
 	AnalyticPerformanceItem,
 	AnalyticTrendPoint,
 	AnalyticsRankingOptions,

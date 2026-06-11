@@ -2,6 +2,21 @@ import type { UUID } from '../../../../shared/domain/types/identifiers.js';
 
 import type { User } from '../entities/user.entity.js';
 
+type ListUsersPagedQuery = {
+	readonly page: number;
+	readonly limit: number;
+	readonly search?: string;
+	readonly role?: string;
+	readonly accessGroupId?: string;
+};
+
+type UsersAggregateSummary = {
+	readonly total: number;
+	readonly administrators: number;
+	readonly withoutGroup: number;
+	readonly withMultipleGroups: number;
+};
+
 /**
  * Persistence port for {@link User} (diagram: IUserRepository).
  */
@@ -14,10 +29,11 @@ interface IUserRepository {
 	list(): Promise<readonly User[]>;
 	listTeamMemberCandidatesByStoreId(storeId: UUID): Promise<readonly User[]>;
 	listByIds(ids: readonly UUID[]): Promise<readonly User[]>;
-	listPaged(query: {
-		readonly page: number;
-		readonly limit: number;
-	}): Promise<{ readonly users: readonly User[]; readonly total: number }>;
+	listPaged(query: ListUsersPagedQuery): Promise<{
+		readonly users: readonly User[];
+		readonly total: number;
+	}>;
+	aggregateSummary(): Promise<UsersAggregateSummary>;
 }
 
-export type { IUserRepository };
+export type { IUserRepository, ListUsersPagedQuery, UsersAggregateSummary };

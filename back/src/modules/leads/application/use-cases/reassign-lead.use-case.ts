@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { UserRepositoryFactory } from '../../../users/infrastructure/persistence/factories/user-repository.factory.js';
 import { LeadInvalidOwnerError } from '../../domain/errors/lead-invalid-owner.error.js';
@@ -30,6 +32,7 @@ class ReassignLeadUseCase {
 	async execute(actor: LeadActor, leadId: string, dto: ReassignLeadDto) {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const users = this.userRepositoryFactory.create(transactionContext);
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 			const leadEvents =
@@ -67,6 +70,17 @@ class ReassignLeadUseCase {
 					title: 'Lead reatribuído',
 					description: 'Responsável operacional do lead foi alterado.',
 					payload: {
+						fromOwnerUserId: previousOwnerUserId,
+						toOwnerUserId: nextOwnerUserId,
+					},
+				});
+				await createAuditLogEntry(tx, {
+					actorUserId: actor.userId,
+					action: 'UPDATE',
+					entityName: 'Lead',
+					entityId: updated.id.value,
+					metadata: {
+						changedFields: ['ownerUserId'],
 						fromOwnerUserId: previousOwnerUserId,
 						toOwnerUserId: nextOwnerUserId,
 					},

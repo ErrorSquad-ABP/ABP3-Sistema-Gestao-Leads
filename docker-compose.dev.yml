@@ -10,6 +10,8 @@ services:
       - /app/back/node_modules
       # Evita dist/ e artefatos de build como root no host ao alternar Docker ↔ native.
       - back-dev-artifacts:/app/back/dist
+      # Client Prisma no volume — evita EACCES quando generated/ no host ficou root.
+      - back-prisma-generated:/app/back/src/generated
 
   front:
     build:
@@ -25,3 +27,4 @@ services:
 volumes:
   front-next-cache:
   back-dev-artifacts:
+  back-prisma-generated:

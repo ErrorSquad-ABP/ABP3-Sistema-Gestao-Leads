@@ -31,6 +31,9 @@ const authenticatedUserSchema = z.object({
 	teamId: z.uuid().nullable(),
 	memberTeamIds: z.array(z.uuid()).default([]),
 	managedTeamIds: z.array(z.uuid()).default([]),
+	accessGroupIds: z.array(z.uuid()).default([]),
+	accessGroups: z.array(accessGroupSummarySchema).default([]),
+	featureKeys: z.array(accessFeatureSchema).default([]),
 	accessGroupId: z.uuid().nullable(),
 	accessGroup: accessGroupSummarySchema.nullable(),
 });

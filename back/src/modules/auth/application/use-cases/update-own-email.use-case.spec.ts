@@ -21,7 +21,9 @@ function buildTestPassword(prefix: string) {
 function uowThatRunsCallback(): IUnitOfWork {
 	return {
 		run: async <T>(fn: () => Promise<T>) => fn(),
-		getTransactionContext: () => ({ client: {} }),
+		getTransactionContext: () => ({
+			client: { auditLog: { create: mock.fn(async () => ({})) } },
+		}),
 		begin: async () => {},
 		commit: async () => {},
 		rollback: async () => {},
@@ -135,8 +137,8 @@ describe('UpdateOwnEmailUseCase', () => {
 			self.role,
 			self.memberTeamIds,
 			self.managedTeamIds,
-			self.accessGroupId,
-			self.accessGroup,
+			self.accessGroupIds,
+			self.accessGroups,
 		);
 		const users = {
 			findById: mock.fn(async () => self),

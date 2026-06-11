@@ -3,7 +3,7 @@ type CreateUserDto = {
 	readonly email: string;
 	readonly password: string;
 	readonly role: string;
-	readonly accessGroupId: string | null;
+	readonly accessGroupIds: readonly string[];
 };
 
 export type { CreateUserDto };

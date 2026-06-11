@@ -187,4 +187,30 @@ describe('DomainErrorFilter', () => {
 			assert.equal(b.errors?.[0]?.code, 'team.invalid_manager');
 		}
 	});
+
+	it('catch() humaniza erro técnico de infraestrutura sem expor stack do Prisma', () => {
+		const filter = new DomainErrorFilter();
+		const { host, getStatus, getBody } = createHttpHost();
+
+		filter.catch(
+			new Error(
+				'Invalid `this.client.user.findUnique()` invocation in /app/back/src/modules/users/infrastructure/persistence/repositories/user-prisma.repository.ts:217:21',
+			),
+			host,
+		);
+
+		assert.equal(getStatus(), 500);
+		const body = getBody() as {
+			success: boolean;
+			message: string;
+			errors?: Array<{ code: string; message: string }>;
+		};
+		assert.equal(body.success, false);
+		assert.equal(
+			body.message,
+			'Ocorreu um erro inesperado. Tente novamente em instantes.',
+		);
+		assert.equal(body.errors?.[0]?.code, 'internal.server_error');
+		assert.doesNotMatch(body.message, /prisma|invocation/i);
+	});
 });

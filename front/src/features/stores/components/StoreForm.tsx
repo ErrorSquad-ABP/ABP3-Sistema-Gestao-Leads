@@ -1,7 +1,6 @@
 'use client';
 
-import { AlertCircle } from 'lucide-react';
-
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -12,7 +11,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 
 import type {
 	StoreDialogMode,
@@ -118,11 +117,14 @@ function StoreFormDialog({
 				</DialogHeader>
 				<div className="grid gap-4 px-6 py-5">
 					<div className="grid gap-2">
-						<Label htmlFor="store-name">Nome da loja</Label>
+						<Label htmlFor="store-name" required>
+							Nome da loja
+						</Label>
 						<Input
 							id="store-name"
 							onChange={(event) => onValueChange('name', event.target.value)}
 							value={values.name}
+							{...requiredFieldProps()}
 						/>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2">
@@ -196,12 +198,7 @@ function StoreFormDialog({
 							value={values.scope}
 						/>
 					</div>
-					{dialogError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{dialogError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={dialogError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">
@@ -240,12 +237,7 @@ function StoreDeleteDialog({
 					<p className="text-sm text-[#1b2430]">
 						Loja: <span className="font-medium">{target?.name}</span>
 					</p>
-					{deleteError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{deleteError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={deleteError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">

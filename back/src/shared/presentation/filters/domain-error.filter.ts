@@ -39,6 +39,7 @@ import { VehicleDeleteBlockedError } from '../../../modules/vehicles/domain/erro
 import { VehicleInactiveError } from '../../../modules/vehicles/domain/errors/vehicle-inactive.error.js';
 import { VehicleNotFoundError } from '../../../modules/vehicles/domain/errors/vehicle-not-found.error.js';
 import { DomainValidationError } from '../../domain/errors/domain-validation.error.js';
+import { mapInfrastructureException } from '../../infrastructure/database/prisma/infrastructure-error.mapper.js';
 import type {
 	ApiErrorEnvelope,
 	ApiErrorItem,
@@ -68,18 +69,32 @@ class DomainErrorFilter implements ExceptionFilter {
 			return;
 		}
 
-		const message =
-			exception instanceof Error ? exception.message : 'Internal server error';
+		const infrastructureMapped = mapInfrastructureException(exception);
+		if (infrastructureMapped) {
+			this.logger.error(
+				exception instanceof Error ? exception.stack : String(exception),
+			);
+			response
+				.status(infrastructureMapped.status)
+				.json(infrastructureMapped.body);
+			return;
+		}
+
 		this.logger.error(
 			exception instanceof Error ? exception.stack : String(exception),
 		);
-		response
-			.status(HttpStatus.INTERNAL_SERVER_ERROR)
-			.json(
-				this.toErrorEnvelope(message, [
-					{ code: 'internal.server_error', message },
-				]),
-			);
+		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json(
+			this.toErrorEnvelope(
+				'Ocorreu um erro inesperado. Tente novamente em instantes.',
+				[
+					{
+						code: 'internal.server_error',
+						message:
+							'Ocorreu um erro inesperado. Tente novamente em instantes.',
+					},
+				],
+			),
+		);
 	}
 
 	private httpExceptionToEnvelope(

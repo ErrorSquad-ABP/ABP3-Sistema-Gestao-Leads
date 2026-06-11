@@ -14,10 +14,9 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
-import { ApiError } from '@/lib/http/api-error';
 import { useDealsByLeadQuery } from '../hooks/deals.queries';
 import {
 	useCreateDealForLeadMutation,
@@ -30,6 +29,8 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
@@ -39,7 +40,11 @@ import type {
 import { dealCreateSchema } from '../schemas/deal-management.schema';
 import { DealConfirmDialog } from './DealConfirmDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
-import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
+
+import { getDealsErrorMessage } from '../lib/deal-api-errors';
+import { DealFormDialog } from './DealFormDialog';
 import { DealsTable } from './DealsTable';
 
 type LeadDealsDialogProps = {
@@ -128,6 +133,7 @@ function LeadDealsDialog({
 				value: valueAsApi,
 			} satisfies DealCreateFormInput) as DealCreateInput;
 			await createMutation.mutateAsync(parsed);
+			showCrudSuccessToast('deal', 'created');
 			setCreateOpen(false);
 			resetCreateForm();
 		} catch (error) {
@@ -170,6 +176,7 @@ function LeadDealsDialog({
 				dealId: targetDeal.id,
 				leadId: targetDeal.leadId,
 			});
+			showCrudSuccessToast('deal', 'deleted');
 			setDeleteOpen(false);
 			setTargetDeal(null);
 		} catch (error) {
@@ -240,11 +247,7 @@ function LeadDealsDialog({
 								className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 								role="alert"
 							>
-								<p>
-									{listQuery.error instanceof ApiError
-										? listQuery.error.message
-										: 'Não foi possível carregar as negociações do lead.'}
-								</p>
+								<p>{humanizePageApiError(listQuery.error)}</p>
 								<Button
 									className="mt-3 rounded-md shadow-none"
 									onClick={() => void listQuery.refetch()}
@@ -310,19 +313,18 @@ function LeadDealsDialog({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6 py-5">
-						{dialogError ? (
-							<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-								{dialogError}
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={dialogError} />
 						<div className="space-y-2">
-							<Label htmlFor="lead-deal-vehicle">Veículo</Label>
+							<Label htmlFor="lead-deal-vehicle" required>
+								Veículo
+							</Label>
 							<select
 								className="h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45 disabled:cursor-not-allowed disabled:opacity-60"
 								disabled={!leadId || !leadStoreId || vehiclesQuery.isPending}
 								id="lead-deal-vehicle"
 								onChange={(e) => setVehicleId(e.target.value)}
 								value={vehicleId}
+								{...requiredFieldProps()}
 							>
 								<option value="">
 									{vehiclesQuery.isPending
@@ -350,18 +352,19 @@ function LeadDealsDialog({
 							) : null}
 							{vehiclesQuery.isError ? (
 								<p className="text-xs text-destructive">
-									{vehiclesQuery.error instanceof ApiError
-										? vehiclesQuery.error.message
-										: 'Não foi possível carregar veículos disponíveis.'}
+									{humanizePageApiError(vehiclesQuery.error)}
 								</p>
 							) : null}
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="lead-deal-title">Título</Label>
+							<Label htmlFor="lead-deal-title" required>
+								Título
+							</Label>
 							<Input
 								id="lead-deal-title"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
+								{...requiredFieldProps()}
 							/>
 						</div>
 						<div className="space-y-2">

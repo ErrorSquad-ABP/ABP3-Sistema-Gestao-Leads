@@ -27,6 +27,10 @@ import {
 	ApiOkResponseEnvelope,
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
 import { CustomerCatalogResponseDto } from '../../application/dto/customer-catalog-response.dto.js';
 import { CustomerResponseDto } from '../../application/dto/customer-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI
@@ -92,8 +96,11 @@ class CustomerController {
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiConflictResponse(CONFLICT)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body(CreateCustomerValidator) body: CreateCustomerValidated) {
-		const customer = await this.createCustomerUseCase.execute({
+	async create(
+		@CurrentUser() actor: JwtUser,
+		@Body(CreateCustomerValidator) body: CreateCustomerValidated,
+	) {
+		const customer = await this.createCustomerUseCase.execute(actor.userId, {
 			name: body.name,
 			email: body.email ?? null,
 			phone: body.phone ?? null,
@@ -180,15 +187,20 @@ class CustomerController {
 	@ApiConflictResponse(CONFLICT)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() actor: JwtUser,
 		@Param('id', new ParseUUIDPipe()) id: string,
 		@Body(UpdateCustomerValidator) body: UpdateCustomerValidated,
 	) {
-		const customer = await this.updateCustomerUseCase.execute(id, {
-			name: body.name,
-			email: body.email,
-			phone: body.phone,
-			cpf: body.cpf,
-		});
+		const customer = await this.updateCustomerUseCase.execute(
+			actor.userId,
+			id,
+			{
+				name: body.name,
+				email: body.email,
+				phone: body.phone,
+				cpf: body.cpf,
+			},
+		);
 
 		return CustomerPresenter.toResponse(customer);
 	}
@@ -211,8 +223,11 @@ class CustomerController {
 	@ApiBadRequestResponse(BAD_REQUEST)
 	@ApiNotFoundResponse(NOT_FOUND)
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async delete(@Param('id', new ParseUUIDPipe()) id: string) {
-		await this.deleteCustomerUseCase.execute(id);
+	async delete(
+		@CurrentUser() actor: JwtUser,
+		@Param('id', new ParseUUIDPipe()) id: string,
+	) {
+		await this.deleteCustomerUseCase.execute(actor.userId, id);
 	}
 }
 

@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 import { LeadNotFoundError } from '../../domain/errors/lead-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest precisa do valor da classe para metadata de injeção
 import { LeadAccessPolicy } from '../services/lead-access-policy.service.js';
@@ -25,6 +27,7 @@ class ConvertLeadUseCase {
 	async execute(actor: LeadActor, leadId: string) {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const leads = this.leadRepositoryFactory.create(transactionContext);
 			const leadEvents =
 				this.leadEventRepositoryFactory.create(transactionContext);
@@ -44,6 +47,13 @@ class ConvertLeadUseCase {
 				title: 'Lead convertido',
 				description: 'Lead marcado como convertido no fluxo comercial.',
 				payload: { status: 'CONVERTED' },
+			});
+			await createAuditLogEntry(tx, {
+				actorUserId: actor.userId,
+				action: 'STATUS_CHANGE',
+				entityName: 'Lead',
+				entityId: updated.id.value,
+				metadata: { status: 'CONVERTED' },
 			});
 			return updated;
 		});

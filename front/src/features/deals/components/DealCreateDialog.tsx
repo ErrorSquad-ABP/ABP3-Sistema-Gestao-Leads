@@ -26,7 +26,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { useLeadCustomersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import { useLeadsListQuery } from '@/features/leads/hooks/leads.queries';
 import type { LeadListItem } from '@/features/leads/model/leads.model';
@@ -34,7 +34,7 @@ import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
 import type { Vehicle } from '@/features/vehicles/model/vehicles.model';
-import { ApiError } from '@/lib/http/api-error';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { useCreateDealForLeadMutation } from '../hooks/deals.mutations';
 import {
 	apiDecimalStringToCentsDigits,
@@ -42,13 +42,17 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	DealCreateFormInput,
 	DealCreateInput,
 } from '../model/deals.model';
 import { dealCreateSchema } from '../schemas/deal-management.schema';
-import { getDealsErrorMessage } from './DealFormDialog';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
+
+import { getDealsErrorMessage } from '../lib/deal-api-errors';
 
 type DealCreateDialogProps = {
 	onClose: () => void;
@@ -191,9 +195,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 				stage: 'INITIAL_CONTACT',
 			} satisfies DealCreateFormInput) as DealCreateInput;
 			await createMutation.mutateAsync(parsed);
-			toast.success('Negociação criada com sucesso.', {
-				...dealDarkSidebarToast,
-			});
+			showCrudSuccessToast('deal', 'created');
 			resetForm();
 			onClose();
 		} catch (error) {
@@ -234,27 +236,22 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 					</div>
 				</DialogHeader>
 				<div className="min-h-0 space-y-3 overflow-y-auto px-6 py-4 sm:px-7">
-					{dialogError ? (
-						<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							{dialogError}
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={dialogError} />
 					{leadsQuery.isError ? (
 						<div
 							className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
 							role="alert"
 						>
-							{leadsQuery.error instanceof ApiError
-								? leadsQuery.error.message
-								: 'Não foi possível carregar os leads.'}
+							{humanizePageApiError(leadsQuery.error)}
 						</div>
 					) : null}
 					<div className="space-y-1">
 						<Label
 							className="text-[12.5px] font-semibold text-[#1b2430]"
 							htmlFor="deal-create-lead"
+							required
 						>
-							Lead <span className="text-[color:var(--brand-accent)]">*</span>
+							Lead
 						</Label>
 						<div className={fieldShellClass}>
 							<User className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -317,9 +314,9 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						<Label
 							className="text-[12.5px] font-semibold text-[#1b2430]"
 							htmlFor="deal-create-vehicle"
+							required
 						>
-							Veículo{' '}
-							<span className="text-[color:var(--brand-accent)]">*</span>
+							Veículo
 						</Label>
 						<div className={fieldShellClass}>
 							<Search className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -377,9 +374,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 						</div>
 						{vehiclesQuery.isError ? (
 							<p className="text-[11.5px] leading-4 text-destructive">
-								{vehiclesQuery.error instanceof ApiError
-									? vehiclesQuery.error.message
-									: 'Não foi possível carregar veículos disponíveis.'}
+								{humanizePageApiError(vehiclesQuery.error)}
 							</p>
 						) : vehiclesQuery.isSuccess &&
 							leadId &&
@@ -407,9 +402,9 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 							<Label
 								className="text-[12.5px] font-semibold text-[#1b2430]"
 								htmlFor="deal-create-title"
+								required
 							>
-								Título{' '}
-								<span className="text-[color:var(--brand-accent)]">*</span>
+								Título
 							</Label>
 							<div className={fieldShellClass}>
 								<Tag className="pointer-events-none absolute left-3.5 size-4 text-[#4b5565]" />
@@ -419,6 +414,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 									onChange={(e) => setTitle(e.target.value)}
 									placeholder="Ex.: Proposta de Jeep Compass Limited"
 									value={title}
+									{...requiredFieldProps()}
 								/>
 							</div>
 							<p className="text-[11.5px] leading-4 text-[#7a8494]">
@@ -430,8 +426,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 								className="text-[12.5px] font-semibold text-[#1b2430]"
 								htmlFor="deal-create-value"
 							>
-								Valor{' '}
-								<span className="text-[color:var(--brand-accent)]">*</span>
+								Valor
 							</Label>
 							<div className={fieldShellClass}>
 								<span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-[#e5e9f0] text-[13px] font-medium text-[#4b5565]">

@@ -75,6 +75,13 @@ const analyticDashboardTrendPointSchema = z.object({
 	averageTimeToFirstInteractionHours: z.number().min(0).nullable(),
 });
 
+const analyticDashboardDrillDownLeadSchema = z.object({
+	id: z.string().min(1),
+	label: z.string().min(1),
+	importance: z.string().optional(),
+	outcome: z.enum(['converted', 'lost', 'open']).optional(),
+});
+
 const analyticDashboardSchema = z.object({
 	filter: analyticDashboardFilterSchema,
 	summary: analyticDashboardSummarySchema,
@@ -92,6 +99,10 @@ const analyticDashboardSchema = z.object({
 	importanceDistribution: z.array(analyticDashboardDistributionItemSchema),
 	finalizationReasons: z.array(analyticDashboardDistributionItemSchema),
 	averageTimeToFirstInteraction: analyticDashboardAverageTimeSchema,
+	drillDown: z.object({
+		importanceLeads: z.array(analyticDashboardDrillDownLeadSchema),
+		conversionLeads: z.array(analyticDashboardDrillDownLeadSchema),
+	}),
 });
 
 function parseAnalyticDashboardResponse(data: unknown) {

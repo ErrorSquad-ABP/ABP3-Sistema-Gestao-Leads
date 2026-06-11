@@ -3,19 +3,32 @@ import { apiFetch } from '@/lib/http/api-client';
 import type {
 	AccessGroup,
 	CreateUserInput,
+	ListUsersFilters,
 	ListUsersResponse,
 	UpdateUserInput,
 	UserRecord,
 } from '../model/users.model';
 
-async function listUsers(options: {
-	page: number;
-	limit: number;
-}): Promise<ListUsersResponse> {
+async function listUsers(
+	filters: ListUsersFilters,
+): Promise<ListUsersResponse> {
 	const search = new URLSearchParams({
-		page: String(options.page),
-		limit: String(options.limit),
+		page: String(filters.page),
+		limit: String(filters.limit),
 	});
+
+	const trimmedSearch = filters.search?.trim();
+	if (trimmedSearch) {
+		search.set('search', trimmedSearch);
+	}
+
+	if (filters.role) {
+		search.set('role', filters.role);
+	}
+
+	if (filters.accessGroupId) {
+		search.set('accessGroupId', filters.accessGroupId);
+	}
 
 	return apiFetch<ListUsersResponse>(`/api/users?${search.toString()}`);
 }
@@ -26,7 +39,7 @@ async function createUser(input: CreateUserInput): Promise<UserRecord> {
 		body: {
 			...input,
 			teamId: input.teamId ?? null,
-			accessGroupId: input.accessGroupId ?? null,
+			accessGroupIds: input.accessGroupIds,
 		},
 	});
 }
@@ -40,7 +53,6 @@ async function updateUser(
 		body: {
 			...input,
 			teamId: input.teamId ?? null,
-			accessGroupId: input.accessGroupId ?? null,
 		},
 	});
 }
