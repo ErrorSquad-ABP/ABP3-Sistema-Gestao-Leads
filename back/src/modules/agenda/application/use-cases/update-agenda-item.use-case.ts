@@ -3,6 +3,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AgendaItemDto } from '../dto/agenda-item.dto.js';
 import { LeadAccessPolicy } from '../../../leads/application/services/lead-access-policy.service.js';
 import type { LeadActor } from '../../../leads/application/types/lead-actor.js';
+import { AgendaAccessPolicy } from '../services/agenda-access-policy.service.js';
 import {
 	normalizeOptionalText,
 	normalizeRequiredTitle,
@@ -15,9 +16,9 @@ import type {
 	AgendaItemType,
 	AgendaRecurrence,
 } from '../../domain/agenda-item.types.js';
-import type { UserRole } from '../../../../shared/domain/enums/user-role.enum.js';
 
 type UpdateAgendaItemUseCaseInput = {
+	actor: LeadActor;
 	description?: string | null;
 	dueAt?: Date | null;
 	endsAt?: Date | null;
@@ -29,8 +30,6 @@ type UpdateAgendaItemUseCaseInput = {
 	status?: AgendaItemStatus;
 	title?: string;
 	type?: AgendaItemType;
-	userId: string;
-	userRole?: UserRole;
 };
 
 @Injectable()
@@ -40,16 +39,16 @@ class UpdateAgendaItemUseCase {
 		private readonly agendaItems: AgendaItemRepository,
 		@Inject(LeadAccessPolicy)
 		private readonly leadAccessPolicy?: LeadAccessPolicy,
+		@Inject(AgendaAccessPolicy)
+		private readonly agendaAccessPolicy?: AgendaAccessPolicy,
 	) {}
 
 	async execute(input: UpdateAgendaItemUseCaseInput): Promise<AgendaItemDto> {
-		const current = await this.agendaItems.findByIdForUser(
-			input.id,
-			input.userId,
-		);
+		const current = await this.agendaItems.findById(input.id);
 		if (!current) {
 			throw new NotFoundException('Item da agenda não encontrado.');
 		}
+		this.agendaAccessPolicy?.assertCanManageItem(input.actor, current.userId);
 
 		const merged = {
 			type: input.type ?? current.type,
@@ -60,12 +59,16 @@ class UpdateAgendaItemUseCase {
 		};
 		validateAgendaItemDates(merged);
 		if (input.leadId !== undefined) {
-			await this.assertCanUseLead(input.leadId, input.userId, input.userRole);
+			await this.assertCanUseLead(
+				input.leadId,
+				input.actor.userId,
+				input.actor.role,
+			);
 		}
 
 		const updated = await this.agendaItems.update({
 			id: input.id,
-			userId: input.userId,
+			userId: current.userId,
 			...(input.leadId !== undefined ? { leadId: input.leadId } : {}),
 			...(input.type !== undefined ? { type: input.type } : {}),
 			...(input.status !== undefined ? { status: input.status } : {}),
@@ -90,7 +93,9 @@ class UpdateAgendaItemUseCase {
 			throw new NotFoundException('Item da agenda não encontrado.');
 		}
 
-		return AgendaItemDto.fromEntity(updated);
+		return AgendaItemDto.fromEntity(updated, {
+			includeOwner: this.agendaAccessPolicy?.shouldIncludeOwner(input.actor),
+		});
 	}
 
 	private async assertCanUseLead(

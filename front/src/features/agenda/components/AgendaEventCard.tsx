@@ -156,6 +156,12 @@ function AgendaEventCard({
 							<span className="min-w-0 break-words">{item.location}</span>
 						</p>
 					) : null}
+					{item.owner ? (
+						<p className="mt-3 text-sm text-muted-foreground">
+							Responsável:{' '}
+							<span className="font-medium">{item.owner.name}</span>
+						</p>
+					) : null}
 					{item.lead ? (
 						<p className="mt-3 text-sm text-muted-foreground">
 							Lead:{' '}

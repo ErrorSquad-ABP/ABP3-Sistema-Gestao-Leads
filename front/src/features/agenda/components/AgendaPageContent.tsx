@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from 'react';
 
+import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { useUsersQuery } from '@/features/users/hooks/users.queries';
+
 import { AgendaConfirmDeleteDialog } from './AgendaConfirmDeleteDialog';
 import { AgendaCalendarMonth, type CalendarDay } from './AgendaCalendarMonth';
 import { AgendaDayView } from './AgendaDayView';
@@ -75,7 +78,8 @@ function AgendaLoadingState() {
 	);
 }
 
-function AgendaPageContent() {
+function AgendaPageContent({ user }: { user: AuthenticatedUser }) {
+	const isAdmin = user.role === 'ADMINISTRATOR';
 	const [currentMonth, setCurrentMonth] = useState(() => new Date());
 	const [selectedDate, setSelectedDate] = useState(() => new Date());
 	const [dialogState, setDialogState] = useState<AgendaDialogState>({
@@ -87,16 +91,27 @@ function AgendaPageContent() {
 	const [submittedSearch, setSubmittedSearch] = useState('');
 	const [viewMode, setViewMode] = useState<AgendaViewMode>('month');
 	const [viewFilter, setViewFilter] = useState<AgendaViewFilter>('all');
+	const [ownerUserId, setOwnerUserId] = useState('');
 	const monthRange = useMemo(
 		() => buildMonthGridRange(currentMonth),
 		[currentMonth],
 	);
 	const query = useMemo(() => {
+		const ownerFilter =
+			isAdmin && ownerUserId ? { ownerUserId } : undefined;
 		if (submittedSearch.trim()) {
-			return { limit: MAX_MONTH_ITEMS, search: submittedSearch.trim() };
+			return {
+				limit: MAX_MONTH_ITEMS,
+				search: submittedSearch.trim(),
+				...ownerFilter,
+			};
 		}
-		return { ...monthRange, limit: MAX_MONTH_ITEMS };
-	}, [monthRange, submittedSearch]);
+		return { ...monthRange, limit: MAX_MONTH_ITEMS, ...ownerFilter };
+	}, [isAdmin, monthRange, ownerUserId, submittedSearch]);
+	const usersQuery = useUsersQuery(
+		{ page: 1, limit: 100 },
+		{ enabled: isAdmin },
+	);
 	const agendaQuery = useAgendaItemsQuery(query);
 	const metricsQuery = useAgendaMetricsQuery();
 	const createAgendaItem = useCreateAgendaItemMutation();
@@ -280,6 +295,7 @@ function AgendaPageContent() {
 	return (
 		<div className="flex w-full min-w-0 flex-col gap-4">
 			<AgendaHeader
+				isAdminView={isAdmin}
 				monthLabel={headerLabel}
 				onCreateClick={() => openCreateDialog(selectedDate)}
 				onNextMonth={navigateNext}
@@ -291,24 +307,49 @@ function AgendaPageContent() {
 				metrics={metricsQuery.data ?? null}
 			/>
 			<div className="grid gap-3 rounded-lg border border-border bg-card p-4 shadow-none lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-				<div className="space-y-2">
-					<label
-						className="text-sm font-medium text-foreground"
-						htmlFor="agenda-search"
-					>
-						Buscar na agenda
-					</label>
-					<Input
-						id="agenda-search"
-						onChange={(event) => setSearchInput(event.target.value)}
-						onKeyDown={(event) => {
-							if (event.key === 'Enter') {
-								submitSearch();
-							}
-						}}
-						placeholder="Título, descrição ou lead"
-						value={searchInput}
-					/>
+				<div className="space-y-4">
+					{isAdmin ? (
+						<div className="space-y-2">
+							<label
+								className="text-sm font-medium text-foreground"
+								htmlFor="agenda-owner-filter"
+							>
+								Usuário
+							</label>
+							<select
+								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+								id="agenda-owner-filter"
+								onChange={(event) => setOwnerUserId(event.target.value)}
+								value={ownerUserId}
+							>
+								<option value="">Todos os usuários</option>
+								{(usersQuery.data?.items ?? []).map((record) => (
+									<option key={record.id} value={record.id}>
+										{record.name}
+									</option>
+								))}
+							</select>
+						</div>
+					) : null}
+					<div className="space-y-2">
+						<label
+							className="text-sm font-medium text-foreground"
+							htmlFor="agenda-search"
+						>
+							Buscar na agenda
+						</label>
+						<Input
+							id="agenda-search"
+							onChange={(event) => setSearchInput(event.target.value)}
+							onKeyDown={(event) => {
+								if (event.key === 'Enter') {
+									submitSearch();
+								}
+							}}
+							placeholder="Título, descrição ou lead"
+							value={searchInput}
+						/>
+					</div>
 				</div>
 				<div className="flex flex-wrap gap-2">
 					<Button onClick={submitSearch} type="button" variant="outline">

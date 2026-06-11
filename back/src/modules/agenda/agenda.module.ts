@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { LeadsModule } from '../leads/leads.module.js';
+import { AgendaAccessPolicy } from './application/services/agenda-access-policy.service.js';
 import { CancelAgendaItemUseCase } from './application/use-cases/cancel-agenda-item.use-case.js';
 import { CompleteAgendaItemUseCase } from './application/use-cases/complete-agenda-item.use-case.js';
 import { CreateAgendaItemUseCase } from './application/use-cases/create-agenda-item.use-case.js';
@@ -20,6 +21,7 @@ import { LeadAgendaController } from './presentation/controllers/lead-agenda.con
 	imports: [LeadsModule],
 	controllers: [AgendaController, LeadAgendaController],
 	providers: [
+		AgendaAccessPolicy,
 		AgendaPrismaRepository,
 		{
 			provide: AGENDA_ITEM_REPOSITORY,

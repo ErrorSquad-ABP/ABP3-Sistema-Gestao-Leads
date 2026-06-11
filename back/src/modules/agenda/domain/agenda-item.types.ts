@@ -8,9 +8,16 @@ type AgendaLeadSummary = {
 	status: string;
 };
 
+type AgendaOwnerSummary = {
+	id: string;
+	name: string;
+	email: string;
+};
+
 type AgendaItem = {
 	id: string;
 	userId: string;
+	owner?: AgendaOwnerSummary | null;
 	leadId: string | null;
 	lead?: AgendaLeadSummary | null;
 	type: AgendaItemType;
@@ -34,7 +41,7 @@ type AgendaItemListFilters = {
 	status?: AgendaItemStatus;
 	to?: Date;
 	type?: AgendaItemType;
-	userId: string;
+	userId?: string;
 };
 
 type AgendaMetrics = {
@@ -82,9 +89,10 @@ interface AgendaItemRepository {
 	deleteForUser(id: string, userId: string): Promise<boolean>;
 	completeTaskForUser(id: string, userId: string): Promise<AgendaItem | null>;
 	create(input: CreateAgendaItemInput): Promise<AgendaItem>;
+	findById(id: string): Promise<AgendaItem | null>;
 	findByIdForUser(id: string, userId: string): Promise<AgendaItem | null>;
 	findLeadAccessSnapshot(leadId: string): Promise<LeadAccessSnapshot | null>;
-	getMetrics(input: { now: Date; userId: string }): Promise<AgendaMetrics>;
+	getMetrics(input: { now: Date; userId?: string }): Promise<AgendaMetrics>;
 	list(filters: AgendaItemListFilters): Promise<AgendaItem[]>;
 	update(input: UpdateAgendaItemInput): Promise<AgendaItem | null>;
 }
@@ -92,6 +100,7 @@ interface AgendaItemRepository {
 export type {
 	AgendaItem,
 	AgendaLeadSummary,
+	AgendaOwnerSummary,
 	AgendaItemListFilters,
 	AgendaMetrics,
 	AgendaItemRepository,

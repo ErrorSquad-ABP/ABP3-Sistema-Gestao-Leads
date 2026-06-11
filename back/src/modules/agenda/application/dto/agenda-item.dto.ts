@@ -13,6 +13,17 @@ class AgendaLeadSummaryDto {
 	status!: string;
 }
 
+class AgendaOwnerSummaryDto {
+	@ApiProperty()
+	id!: string;
+
+	@ApiProperty()
+	name!: string;
+
+	@ApiProperty()
+	email!: string;
+}
+
 class AgendaItemDto {
 	@ApiProperty()
 	id!: string;
@@ -31,6 +42,9 @@ class AgendaItemDto {
 
 	@ApiProperty({ nullable: true, required: false, type: AgendaLeadSummaryDto })
 	lead?: AgendaLeadSummaryDto | null;
+
+	@ApiProperty({ nullable: true, required: false, type: AgendaOwnerSummaryDto })
+	owner?: AgendaOwnerSummaryDto | null;
 
 	@ApiProperty()
 	title!: string;
@@ -56,7 +70,10 @@ class AgendaItemDto {
 	@ApiProperty()
 	updatedAt!: string;
 
-	static fromEntity(item: AgendaItem): AgendaItemDto {
+	static fromEntity(
+		item: AgendaItem,
+		options: { includeOwner?: boolean } = {},
+	): AgendaItemDto {
 		return {
 			id: item.id,
 			type: item.type,
@@ -64,6 +81,7 @@ class AgendaItemDto {
 			recurrence: item.recurrence,
 			leadId: item.leadId,
 			lead: item.lead ?? null,
+			...(options.includeOwner ? { owner: item.owner ?? null } : {}),
 			title: item.title,
 			description: item.description,
 			location: item.location,

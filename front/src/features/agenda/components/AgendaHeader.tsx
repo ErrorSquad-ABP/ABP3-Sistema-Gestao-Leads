@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 
 type Props = {
+	isAdminView?: boolean;
 	monthLabel: string;
 	onCreateClick: () => void;
 	onNextMonth: () => void;
@@ -15,6 +16,7 @@ type Props = {
 };
 
 function AgendaHeader({
+	isAdminView = false,
 	monthLabel,
 	onCreateClick,
 	onNextMonth,
@@ -61,7 +63,11 @@ function AgendaHeader({
 					</Button>
 				</>
 			}
-			description="Meus compromissos e próximas atividades."
+			description={
+				isAdminView
+					? 'Agenda de todos os usuários.'
+					: 'Meus compromissos e próximas atividades.'
+			}
 			title="Agenda"
 		/>
 	);

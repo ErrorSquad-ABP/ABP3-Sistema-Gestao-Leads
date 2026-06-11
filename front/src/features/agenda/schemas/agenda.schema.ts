@@ -6,6 +6,12 @@ const agendaLeadSummarySchema = z.object({
 	status: z.string().min(1),
 });
 
+const agendaOwnerSummarySchema = z.object({
+	id: z.string().uuid(),
+	name: z.string().min(1),
+	email: z.string().email(),
+});
+
 const agendaItemSchema = z.object({
 	id: z.string().min(1),
 	type: z.enum(['TASK', 'EVENT']),
@@ -13,6 +19,7 @@ const agendaItemSchema = z.object({
 	recurrence: z.enum(['NONE', 'DAILY', 'WEEKLY', 'MONTHLY']),
 	leadId: z.string().uuid().nullable().optional(),
 	lead: agendaLeadSummarySchema.nullable().optional(),
+	owner: agendaOwnerSummarySchema.nullable().optional(),
 	title: z.string().min(1),
 	description: z.string().nullable().optional(),
 	location: z.string().nullable().optional(),
@@ -48,6 +55,7 @@ function parseAgendaMetricsResponse(payload: unknown) {
 
 export {
 	agendaLeadSummarySchema,
+	agendaOwnerSummarySchema,
 	agendaItemSchema,
 	agendaItemsResponseSchema,
 	agendaMetricsSchema,

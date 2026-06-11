@@ -18,6 +18,7 @@ type AgendaRecurrence = AgendaItem['recurrence'];
 type AgendaItemsQuery = {
 	from?: string;
 	limit?: number;
+	ownerUserId?: string;
 	search?: string;
 	status?: AgendaItemStatus;
 	to?: string;
