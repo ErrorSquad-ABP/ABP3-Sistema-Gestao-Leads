@@ -189,8 +189,8 @@ function LeadsListCard({
 				</div>
 				<div className="overflow-x-auto">
 					<Table>
-						<TableHeader>
-							<TableRow className="border-[#e7edf5] hover:bg-white">
+						<TableHeader className="bg-[color:var(--table-header-bg)]">
+							<TableRow className="border-border hover:bg-transparent">
 								<TableHead>Lead</TableHead>
 								<TableHead>Status</TableHead>
 								<TableHead>Veículo em interesse</TableHead>
@@ -200,10 +200,10 @@ function LeadsListCard({
 								<TableHead className="text-right">Ações</TableHead>
 							</TableRow>
 						</TableHeader>
-						<TableBody>
+						<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
 							{items.map((item) => (
 								<TableRow
-									className="border-[#e7edf5] hover:bg-[#f8fafc]"
+									className="border-border hover:bg-[color:var(--table-row-hover)]"
 									key={item.lead.id}
 								>
 									<TableCell>

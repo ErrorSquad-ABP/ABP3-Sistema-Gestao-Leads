@@ -48,8 +48,8 @@ function StoresTable({
 	return (
 		<div className="overflow-hidden rounded-2xl border border-[#e6ecf3] bg-white">
 			<Table>
-				<TableHeader className="bg-[#f8fafc]/80">
-					<TableRow className="border-[#e6ecf3]">
+				<TableHeader className="bg-[color:var(--table-header-bg)]">
+					<TableRow className="border-border hover:bg-transparent">
 						<TableHead className="h-10 min-w-[180px] text-xs text-[#1f2a44]">
 							Loja
 						</TableHead>
@@ -79,9 +79,12 @@ function StoresTable({
 						</TableHead>
 					</TableRow>
 				</TableHeader>
-				<TableBody>
+				<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
 					{rows.map((row) => (
-						<TableRow className="border-[#e6ecf3]" key={row.store.id}>
+						<TableRow
+							className="border-border hover:bg-[color:var(--table-row-hover)]"
+							key={row.store.id}
+						>
 							<TableCell className="py-3">
 								<div className="flex items-center gap-3">
 									<div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#f2f4f7] text-[#667085]">

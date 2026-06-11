@@ -279,8 +279,8 @@ function UsersListSection({
 
 					<div className="overflow-hidden border-t border-[#e7edf5]">
 						<Table>
-							<TableHeader className="bg-white">
-								<TableRow className="border-[#e7edf5]">
+							<TableHeader className="bg-[color:var(--table-header-bg)]">
+								<TableRow className="border-border hover:bg-transparent">
 									<TableHead className="w-[26%] pl-7 text-[#1e293b]">
 										Usuário
 									</TableHead>
@@ -301,7 +301,7 @@ function UsersListSection({
 									</TableHead>
 								</TableRow>
 							</TableHeader>
-							<TableBody>
+							<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
 								{isLoading ? (
 									<TableRow className="border-[#e7edf5]">
 										<TableCell
@@ -332,7 +332,7 @@ function UsersListSection({
 								) : (
 									users.map((user) => (
 										<TableRow
-											className="h-[4.35rem] border-[#e7edf5] hover:bg-[#f8fafc]/80"
+											className="h-[4.35rem] border-border hover:bg-[color:var(--table-row-hover)]"
 											key={user.id}
 										>
 											<TableCell className="pl-7">
