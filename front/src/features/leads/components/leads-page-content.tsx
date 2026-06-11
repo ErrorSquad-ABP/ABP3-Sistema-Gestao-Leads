@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { LeadDealsDialog } from '@/features/deals/components/LeadDealsDialog';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { isApiError } from '@/lib/http/api-error';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import {
 	humanizeFormApiError,
 	humanizePageApiError,
@@ -241,6 +242,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 		setDialogError(null);
 		try {
 			await deleteLeadMutation.mutateAsync(targetLead.id);
+			showCrudSuccessToast('lead', 'deleted');
 			setDeleteOpen(false);
 			setTargetLead(null);
 		} catch (nextError) {

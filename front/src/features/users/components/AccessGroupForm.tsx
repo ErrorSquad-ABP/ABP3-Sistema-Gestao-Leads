@@ -30,6 +30,7 @@ import {
 	type UserRecord,
 } from '../model/users.model';
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
 type AccessGroupDialogProps = {
@@ -212,6 +213,10 @@ function AccessGroupDialog({
 						setSubmitError(null);
 						try {
 							await onSubmit(values);
+							showCrudSuccessToast(
+								'accessGroup',
+								isEditMode ? 'updated' : 'created',
+							);
 							onClose();
 						} catch (error) {
 							setSubmitError(applyFormSubmitErrors(form.setError, error));

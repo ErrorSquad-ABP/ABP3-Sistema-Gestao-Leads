@@ -33,6 +33,7 @@ import {
 } from '@/features/teams/hooks/teams.mutations';
 import { useTeamsQuery } from '@/features/teams/hooks/teams.queries';
 import type { TeamRecord } from '@/features/teams/model/teams.model';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import {
 	humanizeFormApiError,
 	humanizePageApiError,
@@ -554,12 +555,14 @@ function TeamsManagementScreen() {
 						managerId: nextManagerId,
 					});
 				}
+				showCrudSuccessToast('team', 'updated');
 			} else {
 				await createTeamMutation.mutateAsync({
 					name: payload.name,
 					storeId: payload.storeId,
 					managerId: payload.managerId,
 				});
+				showCrudSuccessToast('team', 'created');
 			}
 
 			setTeamDialogState(null);
@@ -577,6 +580,7 @@ function TeamsManagementScreen() {
 		setDeleteError(null);
 		try {
 			await deleteTeamMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('team', 'deleted');
 			setDeleteTarget(null);
 		} catch (error) {
 			setDeleteError(humanizeFormApiError(error));

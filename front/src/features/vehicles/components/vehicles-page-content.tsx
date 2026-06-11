@@ -20,6 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
 import { ApiError } from '@/lib/http/api-error';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 
 import { useVehicleCatalogQuery } from '../hooks/vehicles.queries';
 import {
@@ -271,6 +272,9 @@ function VehiclesPageContent() {
 		setDialogError(null);
 		try {
 			await deactivateVehicleMutation.mutateAsync(targetVehicle.id);
+			showCrudSuccessToast('vehicle', 'updated', {
+				message: 'Veículo desativado com sucesso.',
+			});
 			setDeleteOpen(false);
 			setTargetVehicle(null);
 		} catch (error) {
@@ -286,6 +290,7 @@ function VehiclesPageContent() {
 		setDialogError(null);
 		try {
 			await deleteVehicleMutation.mutateAsync(targetVehicle.id);
+			showCrudSuccessToast('vehicle', 'deleted');
 			setHardDeleteOpen(false);
 			setTargetVehicle(null);
 		} catch (error) {

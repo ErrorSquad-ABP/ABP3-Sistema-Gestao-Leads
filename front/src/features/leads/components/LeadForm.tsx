@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
@@ -238,6 +239,7 @@ function LeadFormDialog({
 				});
 			}
 
+			showCrudSuccessToast('lead', isEditMode ? 'updated' : 'created');
 			onClose();
 		} catch (error) {
 			setSubmitError(
@@ -560,6 +562,7 @@ function LeadReassignDialog({
 		setSubmitError(null);
 		try {
 			await onSubmit({ ownerUserId: values.ownerUserId || null });
+			showCrudSuccessToast('lead', 'updated');
 			onClose();
 		} catch (error) {
 			setSubmitError(

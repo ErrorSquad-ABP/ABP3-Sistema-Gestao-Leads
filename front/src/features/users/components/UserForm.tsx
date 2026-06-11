@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 import { cn } from '@/lib/utils';
 
@@ -214,6 +215,7 @@ function UsersFormDialog({
 
 		try {
 			await onSubmit(values);
+			showCrudSuccessToast('user', isEditMode ? 'updated' : 'created');
 			onClose();
 		} catch (error) {
 			setSubmitError(applyFormSubmitErrors(form.setError, error));

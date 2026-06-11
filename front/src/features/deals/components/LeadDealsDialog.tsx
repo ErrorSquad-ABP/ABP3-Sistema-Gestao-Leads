@@ -29,6 +29,8 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
@@ -131,6 +133,7 @@ function LeadDealsDialog({
 				value: valueAsApi,
 			} satisfies DealCreateFormInput) as DealCreateInput;
 			await createMutation.mutateAsync(parsed);
+			showCrudSuccessToast('deal', 'created');
 			setCreateOpen(false);
 			resetCreateForm();
 		} catch (error) {
@@ -173,6 +176,7 @@ function LeadDealsDialog({
 				dealId: targetDeal.id,
 				leadId: targetDeal.leadId,
 			});
+			showCrudSuccessToast('deal', 'deleted');
 			setDeleteOpen(false);
 			setTargetDeal(null);
 		} catch (error) {

@@ -445,30 +445,18 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 
 	async function handleEditSubmit(values: CreateLeadInput | UpdateLeadInput) {
 		if (!targetLead) return;
-		setDialogError(null);
-		try {
-			await updateLeadMutation.mutateAsync({
-				leadId: targetLead.id,
-				payload: values as UpdateLeadInput,
-			});
-			setEditOpen(false);
-		} catch (error) {
-			setDialogError(humanizeFormApiError(error));
-		}
+		await updateLeadMutation.mutateAsync({
+			leadId: targetLead.id,
+			payload: values as UpdateLeadInput,
+		});
 	}
 
 	async function handleReassignSubmit(values: ReassignLeadInput) {
 		if (!targetLead) return;
-		setDialogError(null);
-		try {
-			await reassignLeadMutation.mutateAsync({
-				leadId: targetLead.id,
-				payload: values,
-			});
-			setReassignOpen(false);
-		} catch (error) {
-			setDialogError(humanizeFormApiError(error));
-		}
+		await reassignLeadMutation.mutateAsync({
+			leadId: targetLead.id,
+			payload: values,
+		});
 	}
 
 	async function handleConvertConfirm() {

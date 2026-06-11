@@ -42,6 +42,8 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	DealCreateFormInput,
@@ -193,9 +195,7 @@ function DealCreateDialog({ onClose, open, user }: DealCreateDialogProps) {
 				stage: 'INITIAL_CONTACT',
 			} satisfies DealCreateFormInput) as DealCreateInput;
 			await createMutation.mutateAsync(parsed);
-			toast.success('Negociação criada com sucesso.', {
-				...dealDarkSidebarToast,
-			});
+			showCrudSuccessToast('deal', 'created');
 			resetForm();
 			onClose();
 		} catch (error) {
