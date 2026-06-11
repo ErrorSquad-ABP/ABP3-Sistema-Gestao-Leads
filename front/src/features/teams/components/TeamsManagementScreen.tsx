@@ -26,12 +26,17 @@ import type {
 } from '@/features/leads/model/leads.model';
 import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
 import {
+	useAddTeamMemberMutation,
 	useAssignTeamManagerMutation,
 	useCreateTeamMutation,
 	useDeleteTeamMutation,
+	useRemoveTeamMemberMutation,
 	useUpdateTeamMutation,
 } from '@/features/teams/hooks/teams.mutations';
-import { useTeamsQuery } from '@/features/teams/hooks/teams.queries';
+import {
+	useTeamMemberCandidatesQuery,
+	useTeamsQuery,
+} from '@/features/teams/hooks/teams.queries';
 import type { TeamRecord } from '@/features/teams/model/teams.model';
 import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import {
@@ -47,6 +52,7 @@ import {
 	type TeamDialogState,
 	type TeamFormState,
 } from './TeamForm';
+import { TeamMembersDialog } from './TeamMembersDialog';
 import { TeamsTable, type TeamTableRow } from './TeamsTable';
 
 type MetricTone = 'blue' | 'green' | 'orange' | 'purple';
@@ -61,13 +67,7 @@ const TEAM_COLORS = [
 	'text-[#079455]',
 	'text-[#0ba5ec]',
 ] as const;
-const DISTRIBUTION_COLORS = [
-	'#f4511e',
-	'#ff9b85',
-	'#a855f7',
-	'#5b8def',
-	'#f7b731',
-] as const;
+const DISTRIBUTION_COLORS = ['var(--chart-bar-default)'] as const;
 
 function normalizeSearch(value: string) {
 	return value
@@ -382,13 +382,20 @@ function TeamsManagementScreen() {
 	const assignTeamManagerMutation = useAssignTeamManagerMutation();
 	const updateTeamMutation = useUpdateTeamMutation();
 	const deleteTeamMutation = useDeleteTeamMutation();
+	const addTeamMemberMutation = useAddTeamMemberMutation();
+	const removeTeamMemberMutation = useRemoveTeamMemberMutation();
 
 	const [teamDialogState, setTeamDialogState] =
 		useState<TeamDialogState | null>(null);
+	const [membersDialogTarget, setMembersDialogTarget] =
+		useState<TeamRecord | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<TeamRecord | null>(null);
 	const [teamFormState, setTeamFormState] =
 		useState<TeamFormState>(emptyTeamForm);
 	const [dialogError, setDialogError] = useState<string | null>(null);
+	const [membersDialogError, setMembersDialogError] = useState<string | null>(
+		null,
+	);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 	const [search, setSearch] = useState('');
 	const [storeFilter, setStoreFilter] = useState('ALL');
@@ -402,6 +409,12 @@ function TeamsManagementScreen() {
 	const stores = useMemo(() => storesQuery.data ?? [], [storesQuery.data]);
 	const teams = useMemo(() => teamsQuery.data ?? [], [teamsQuery.data]);
 	const owners = useMemo(() => ownersQuery.data ?? [], [ownersQuery.data]);
+	const formMemberCandidatesQuery = useTeamMemberCandidatesQuery(
+		teamFormState.storeId || undefined,
+	);
+	const dialogMemberCandidatesQuery = useTeamMemberCandidatesQuery(
+		membersDialogTarget?.storeId,
+	);
 	const ownerById = useMemo(() => getOwnerById(owners), [owners]);
 	const storeById = useMemo(() => getStoreById(stores), [stores]);
 
@@ -527,8 +540,36 @@ function TeamsManagementScreen() {
 			name: team.name,
 			storeId: team.storeId,
 			managerId: team.managerId ?? '',
+			memberUserIds: [...team.memberUserIds],
 		});
 		setTeamDialogState({ mode: 'edit', team });
+	}
+
+	function openMembersDialog(team: TeamRecord) {
+		setMembersDialogError(null);
+		setMembersDialogTarget(team);
+	}
+
+	async function syncTeamMembers(
+		teamId: string,
+		currentUserIds: readonly string[],
+		nextUserIds: readonly string[],
+	) {
+		const currentSet = new Set(currentUserIds);
+		const nextSet = new Set(nextUserIds);
+		const addedUserIds = [...nextSet].filter(
+			(userId) => !currentSet.has(userId),
+		);
+		const removedUserIds = [...currentSet].filter(
+			(userId) => !nextSet.has(userId),
+		);
+
+		for (const userId of addedUserIds) {
+			await addTeamMemberMutation.mutateAsync({ id: teamId, userId });
+		}
+		for (const userId of removedUserIds) {
+			await removeTeamMemberMutation.mutateAsync({ id: teamId, userId });
+		}
 	}
 
 	async function handleTeamSubmit() {
@@ -555,12 +596,18 @@ function TeamsManagementScreen() {
 						managerId: nextManagerId,
 					});
 				}
+				await syncTeamMembers(
+					teamDialogState.team.id,
+					teamDialogState.team.memberUserIds,
+					payload.initialMemberUserIds,
+				);
 				showCrudSuccessToast('team', 'updated');
 			} else {
 				await createTeamMutation.mutateAsync({
 					name: payload.name,
 					storeId: payload.storeId,
 					managerId: payload.managerId,
+					initialMemberUserIds: payload.initialMemberUserIds,
 				});
 				showCrudSuccessToast('team', 'created');
 			}
@@ -584,6 +631,56 @@ function TeamsManagementScreen() {
 			setDeleteTarget(null);
 		} catch (error) {
 			setDeleteError(humanizeFormApiError(error));
+		}
+	}
+
+	async function handleMembersAdd(userId: string) {
+		if (!membersDialogTarget) {
+			return;
+		}
+
+		setMembersDialogError(null);
+		try {
+			await addTeamMemberMutation.mutateAsync({
+				id: membersDialogTarget.id,
+				userId,
+			});
+			setMembersDialogTarget((current) =>
+				current
+					? {
+							...current,
+							memberUserIds: [...new Set([...current.memberUserIds, userId])],
+						}
+					: current,
+			);
+		} catch (error) {
+			setMembersDialogError(humanizeFormApiError(error));
+		}
+	}
+
+	async function handleMembersRemove(userId: string) {
+		if (!membersDialogTarget) {
+			return;
+		}
+
+		setMembersDialogError(null);
+		try {
+			await removeTeamMemberMutation.mutateAsync({
+				id: membersDialogTarget.id,
+				userId,
+			});
+			setMembersDialogTarget((current) =>
+				current
+					? {
+							...current,
+							memberUserIds: current.memberUserIds.filter(
+								(id) => id !== userId,
+							),
+						}
+					: current,
+			);
+		} catch (error) {
+			setMembersDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -697,6 +794,7 @@ function TeamsManagementScreen() {
 									setDeleteTarget(team);
 								}}
 								onEdit={openEditTeamDialog}
+								onMembers={openMembersDialog}
 								rows={paginatedRows}
 							/>
 						)}
@@ -776,8 +874,12 @@ function TeamsManagementScreen() {
 				isPending={
 					createTeamMutation.isPending ||
 					updateTeamMutation.isPending ||
-					assignTeamManagerMutation.isPending
+					assignTeamManagerMutation.isPending ||
+					addTeamMemberMutation.isPending ||
+					removeTeamMemberMutation.isPending
 				}
+				memberCandidates={formMemberCandidatesQuery.data ?? []}
+				membersLoading={formMemberCandidatesQuery.isLoading}
 				onClose={() => {
 					setTeamDialogState(null);
 					setDialogError(null);
@@ -788,6 +890,37 @@ function TeamsManagementScreen() {
 				onStateChange={setTeamFormState}
 				owners={owners}
 				stores={stores}
+			/>
+
+			<TeamMembersDialog
+				candidates={dialogMemberCandidatesQuery.data ?? []}
+				error={
+					membersDialogError ??
+					(dialogMemberCandidatesQuery.isError
+						? humanizePageApiError(dialogMemberCandidatesQuery.error)
+						: null)
+				}
+				isLoading={dialogMemberCandidatesQuery.isLoading}
+				isPending={
+					addTeamMemberMutation.isPending || removeTeamMemberMutation.isPending
+				}
+				onAdd={(userId) => {
+					void handleMembersAdd(userId);
+				}}
+				onClose={() => {
+					setMembersDialogTarget(null);
+					setMembersDialogError(null);
+				}}
+				onRemove={(userId) => {
+					void handleMembersRemove(userId);
+				}}
+				storeName={
+					membersDialogTarget
+						? (storeById.get(membersDialogTarget.storeId)?.name ??
+							'Loja vinculada')
+						: 'Loja vinculada'
+				}
+				team={membersDialogTarget}
 			/>
 
 			<TeamDeleteDialog

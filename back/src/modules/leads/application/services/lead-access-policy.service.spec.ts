@@ -81,6 +81,8 @@ function userRepoWithUsers(users: readonly User[]): IUserRepository {
 		},
 		findById: async (id) => byId.get(id.value) ?? null,
 		findByEmail: async () => null,
+		list: async () => users,
+		listTeamMemberCandidatesByStoreId: async () => users,
 		listByIds: async (ids) =>
 			ids
 				.map((id) => byId.get(id.value) ?? null)

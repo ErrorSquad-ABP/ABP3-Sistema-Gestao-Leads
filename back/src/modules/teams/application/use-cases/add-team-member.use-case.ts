@@ -45,6 +45,10 @@ class AddTeamMemberUseCase {
 			if (!user) {
 				throw new UserNotFoundError(dto.userId);
 			}
+			await this.teamAccessPolicy.assertUserCanBelongToStore(
+				user,
+				team.storeId.value,
+			);
 
 			team.addMember(Uuid.parse(dto.userId));
 			const updated = await teams.update(team);
