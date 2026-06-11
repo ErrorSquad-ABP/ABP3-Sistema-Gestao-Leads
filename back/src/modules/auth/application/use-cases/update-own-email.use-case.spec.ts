@@ -137,8 +137,8 @@ describe('UpdateOwnEmailUseCase', () => {
 			self.role,
 			self.memberTeamIds,
 			self.managedTeamIds,
-			self.accessGroupId,
-			self.accessGroup,
+			self.accessGroupIds,
+			self.accessGroups,
 		);
 		const users = {
 			findById: mock.fn(async () => self),

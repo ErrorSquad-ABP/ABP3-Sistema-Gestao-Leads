@@ -17,7 +17,6 @@ import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
-import { ApiError } from '@/lib/http/api-error';
 import { useDealsByLeadQuery } from '../hooks/deals.queries';
 import {
 	useCreateDealForLeadMutation,
@@ -39,7 +38,11 @@ import type {
 import { dealCreateSchema } from '../schemas/deal-management.schema';
 import { DealConfirmDialog } from './DealConfirmDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
-import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
+
+import { getDealsErrorMessage } from '../lib/deal-api-errors';
+import { DealFormDialog } from './DealFormDialog';
 import { DealsTable } from './DealsTable';
 
 type LeadDealsDialogProps = {
@@ -240,11 +243,7 @@ function LeadDealsDialog({
 								className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 								role="alert"
 							>
-								<p>
-									{listQuery.error instanceof ApiError
-										? listQuery.error.message
-										: 'Não foi possível carregar as negociações do lead.'}
-								</p>
+								<p>{humanizePageApiError(listQuery.error)}</p>
 								<Button
 									className="mt-3 rounded-md shadow-none"
 									onClick={() => void listQuery.refetch()}
@@ -310,11 +309,7 @@ function LeadDealsDialog({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6 py-5">
-						{dialogError ? (
-							<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-								{dialogError}
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={dialogError} />
 						<div className="space-y-2">
 							<Label htmlFor="lead-deal-vehicle" required>
 								Veículo
@@ -353,9 +348,7 @@ function LeadDealsDialog({
 							) : null}
 							{vehiclesQuery.isError ? (
 								<p className="text-xs text-destructive">
-									{vehiclesQuery.error instanceof ApiError
-										? vehiclesQuery.error.message
-										: 'Não foi possível carregar veículos disponíveis.'}
+									{humanizePageApiError(vehiclesQuery.error)}
 								</p>
 							) : null}
 						</div>

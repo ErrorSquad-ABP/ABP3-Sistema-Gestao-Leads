@@ -159,8 +159,8 @@ describe('AuthController.session', () => {
 			'MANAGER',
 			[],
 			[],
-			null,
-			null,
+			[],
+			[],
 		);
 		const controller = new AuthController(
 			authConfig as never,
@@ -191,6 +191,9 @@ describe('AuthController.session', () => {
 		assert.deepEqual(out, {
 			accessGroup: null,
 			accessGroupId: null,
+			accessGroupIds: [],
+			accessGroups: [],
+			featureKeys: [],
 			id: uid,
 			name: 'Ana',
 			email: 'ana@example.com',

@@ -5,6 +5,7 @@ import { LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 import { cn } from '@/lib/utils';
 import {
 	useCreateCustomerMutation,
@@ -23,7 +25,6 @@ import {
 	useUpdateCustomerMutation,
 	useUpdateStoreMutation,
 } from '../hooks/leads.catalog.mutations';
-import { getCatalogCrudErrorMessage } from '../lib/catalog-crud-errors';
 import {
 	type CustomerCatalogFormValues,
 	customerCatalogFormSchema,
@@ -107,7 +108,7 @@ function CustomerCatalogFormDialog({
 			}
 			onOpenChange(false);
 		} catch (nextError) {
-			setError(getCatalogCrudErrorMessage(nextError));
+			setError(applyFormSubmitErrors(form.setError, nextError));
 		}
 	}
 
@@ -136,11 +137,7 @@ function CustomerCatalogFormDialog({
 					className="space-y-4 px-1 py-2"
 					onSubmit={form.handleSubmit((v) => void handleSubmit(v))}
 				>
-					{error ? (
-						<div className="rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							{error}
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={error} />
 					<div className="space-y-1.5">
 						<Label htmlFor="catalog-customer-name" required>
 							Nome
@@ -193,10 +190,20 @@ function CustomerCatalogFormDialog({
 					<div className="space-y-1.5">
 						<Label htmlFor="catalog-customer-cpf">CPF</Label>
 						<Input
-							className={fieldInputClass}
+							className={cn(
+								fieldInputClass,
+								form.formState.errors.cpf
+									? 'border-destructive focus-visible:border-destructive'
+									: null,
+							)}
 							id="catalog-customer-cpf"
 							{...form.register('cpf')}
 						/>
+						{form.formState.errors.cpf ? (
+							<p className="text-xs text-destructive">
+								{form.formState.errors.cpf.message}
+							</p>
+						) : null}
 					</div>
 					<DialogFooter className="gap-2 pt-2 sm:gap-0">
 						<Button
@@ -281,7 +288,7 @@ function StoreCatalogFormDialog({
 			}
 			onOpenChange(false);
 		} catch (nextError) {
-			setError(getCatalogCrudErrorMessage(nextError));
+			setError(applyFormSubmitErrors(form.setError, nextError));
 		}
 	}
 
@@ -310,11 +317,7 @@ function StoreCatalogFormDialog({
 					className="space-y-4 px-1 py-2"
 					onSubmit={form.handleSubmit((v) => void handleSubmit(v))}
 				>
-					{error ? (
-						<div className="rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							{error}
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={error} />
 					<div className="space-y-1.5">
 						<Label htmlFor="catalog-store-name" required>
 							Nome da loja
@@ -395,11 +398,7 @@ function CatalogDeleteConfirmDialog({
 					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-3 px-1 py-2">
-					{error ? (
-						<div className="rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							{error}
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={error} />
 				</div>
 				<DialogFooter className="gap-2 sm:gap-0">
 					<Button

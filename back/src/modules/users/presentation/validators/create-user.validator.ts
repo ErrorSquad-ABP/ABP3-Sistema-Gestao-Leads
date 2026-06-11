@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+	IsArray,
 	IsEmail,
 	IsIn,
 	IsNotEmpty,
@@ -41,9 +42,22 @@ class CreateUserValidator {
 	role!: string;
 
 	@ApiPropertyOptional({
+		type: [String],
+		format: 'uuid',
+		description:
+			'Grupos de acesso vinculados ao usuário; lista vazia ou omitida cria sem grupos.',
+	})
+	@IsOptional()
+	@IsArray()
+	@IsUUID(undefined, { each: true })
+	accessGroupIds?: string[];
+
+	@ApiPropertyOptional({
 		format: 'uuid',
 		nullable: true,
-		description: 'Grupo de acesso opcional; null remove o vínculo.',
+		deprecated: true,
+		description:
+			'Legado (compatibilidade): grupo único. Ignorado quando accessGroupIds está presente.',
 	})
 	@IsOptional()
 	@ValidateIf((_, value) => value !== null && value !== undefined)

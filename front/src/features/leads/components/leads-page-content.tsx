@@ -8,7 +8,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { LeadDealsDialog } from '@/features/deals/components/LeadDealsDialog';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError, isApiError } from '@/lib/http/api-error';
+import { isApiError } from '@/lib/http/api-error';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 import {
 	useLeadCustomersQuery,
 	useLeadOwnersQuery,
@@ -36,9 +40,9 @@ import {
 	LeadsTableSkeleton,
 	StoreManagerDialog,
 } from './LeadDetails';
+
 import {
 	buildOwnerOptions,
-	getLeadsErrorMessage,
 	LeadConfirmDialog,
 	LeadFormDialog,
 	LeadReassignDialog,
@@ -240,7 +244,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 			setDeleteOpen(false);
 			setTargetLead(null);
 		} catch (nextError) {
-			setDialogError(getLeadsErrorMessage(nextError));
+			setDialogError(humanizeFormApiError(nextError));
 		}
 	}
 
@@ -254,7 +258,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 			setConvertOpen(false);
 			setTargetLead(null);
 		} catch (nextError) {
-			setDialogError(getLeadsErrorMessage(nextError));
+			setDialogError(humanizeFormApiError(nextError));
 		}
 	}
 
@@ -428,7 +432,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 							role="alert"
 						>
 							{isApiError(catalogError)
-								? catalogError.message
+								? humanizePageApiError(catalogError)
 								: 'Não foi possível carregar os catálogos necessários para a tela de leads.'}
 						</div>
 					) : null}
@@ -438,9 +442,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 							className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 							role="alert"
 						>
-							{catalogQuery.error instanceof ApiError
-								? catalogQuery.error.message
-								: 'Não foi possível carregar os leads.'}
+							{humanizePageApiError(catalogQuery.error)}
 						</div>
 					) : null}
 

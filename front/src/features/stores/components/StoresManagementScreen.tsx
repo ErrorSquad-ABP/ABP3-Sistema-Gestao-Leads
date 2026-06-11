@@ -19,6 +19,7 @@ import {
 	getPersonInitials,
 	getStoreInitials,
 	getStoresErrorMessage,
+	getStoresPageErrorMessage,
 	normalizeSearch,
 	resolveStoreProfile,
 	stateLabels,
@@ -256,7 +257,9 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 			<StoresCatalogCard
 				canManageStores={canManageStores}
 				errorMessage={
-					storesQuery.isError ? getStoresErrorMessage(storesQuery.error) : null
+					storesQuery.isError
+						? getStoresPageErrorMessage(storesQuery.error)
+						: null
 				}
 				filteredCount={filteredRows.length}
 				isError={storesQuery.isError}

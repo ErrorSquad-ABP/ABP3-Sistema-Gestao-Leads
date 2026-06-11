@@ -1,7 +1,6 @@
 'use client';
 
-import { AlertCircle } from 'lucide-react';
-
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -199,12 +198,7 @@ function StoreFormDialog({
 							value={values.scope}
 						/>
 					</div>
-					{dialogError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{dialogError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={dialogError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">
@@ -243,12 +237,7 @@ function StoreDeleteDialog({
 					<p className="text-sm text-[#1b2430]">
 						Loja: <span className="font-medium">{target?.name}</span>
 					</p>
-					{deleteError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{deleteError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={deleteError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">

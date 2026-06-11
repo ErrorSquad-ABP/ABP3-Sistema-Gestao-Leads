@@ -8,11 +8,11 @@ import type { Email } from '../../../../shared/domain/value-objects/email.value-
 import type { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 import type { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
 
-function sortedUuidValues(ids: readonly TeamId[]): string[] {
+function sortedUuidValues(ids: readonly UUID[]): string[] {
 	return [...ids].map((id) => id.value).sort();
 }
 
-function sameUuidIdSets(a: readonly TeamId[], b: readonly TeamId[]): boolean {
+function sameUuidIdSets(a: readonly UUID[], b: readonly UUID[]): boolean {
 	const as = sortedUuidValues(a);
 	const bs = sortedUuidValues(b);
 	if (as.length !== bs.length) {
@@ -30,6 +30,22 @@ type UserAccessGroupSummary = {
 	readonly isSystemGroup: boolean;
 };
 
+/**
+ * ADR-001: o conjunto efetivo de features é a união explícita dos grupos
+ * vinculados — sem herança entre grupos e sem features implícitas por papel.
+ */
+function unionFeatureKeys(
+	groups: readonly UserAccessGroupSummary[],
+): readonly string[] {
+	const union = new Set<string>();
+	for (const group of groups) {
+		for (const featureKey of group.featureKeys) {
+			union.add(featureKey);
+		}
+	}
+	return [...union].sort();
+}
+
 class User extends AggregateRoot {
 	private _id: UUID;
 	private _name: Name;
@@ -38,8 +54,8 @@ class User extends AggregateRoot {
 	private _role: UserRole;
 	private _memberTeamIds: TeamId[];
 	private _managedTeamIds: TeamId[];
-	private _accessGroupId: UUID | null;
-	private _accessGroup: UserAccessGroupSummary | null;
+	private _accessGroupIds: UUID[];
+	private _accessGroups: UserAccessGroupSummary[];
 
 	constructor(
 		id: UUID,
@@ -49,8 +65,8 @@ class User extends AggregateRoot {
 		role: UserRole,
 		memberTeamIds: readonly TeamId[],
 		managedTeamIds: readonly TeamId[],
-		accessGroupId: UUID | null = null,
-		accessGroup: UserAccessGroupSummary | null = null,
+		accessGroupIds: readonly UUID[] = [],
+		accessGroups: readonly UserAccessGroupSummary[] = [],
 	) {
 		super();
 		this._id = id;
@@ -60,8 +76,8 @@ class User extends AggregateRoot {
 		this._role = role;
 		this._memberTeamIds = [...memberTeamIds];
 		this._managedTeamIds = [...managedTeamIds];
-		this._accessGroupId = accessGroupId;
-		this._accessGroup = accessGroup;
+		this._accessGroupIds = [...accessGroupIds];
+		this._accessGroups = [...accessGroups];
 	}
 
 	get id(): UUID {
@@ -84,12 +100,16 @@ class User extends AggregateRoot {
 		return this._role;
 	}
 
-	get accessGroupId(): UUID | null {
-		return this._accessGroupId;
+	get accessGroupIds(): readonly UUID[] {
+		return this._accessGroupIds;
 	}
 
-	get accessGroup(): UserAccessGroupSummary | null {
-		return this._accessGroup;
+	get accessGroups(): readonly UserAccessGroupSummary[] {
+		return this._accessGroups;
+	}
+
+	get featureKeys(): readonly string[] {
+		return unionFeatureKeys(this._accessGroups);
 	}
 
 	get memberTeamIds(): readonly TeamId[] {
@@ -128,22 +148,16 @@ class User extends AggregateRoot {
 		this._role = role;
 	}
 
-	changeAccessGroup(
-		accessGroupId: UUID | null,
-		accessGroup: UserAccessGroupSummary | null,
+	changeAccessGroups(
+		accessGroupIds: readonly UUID[],
+		accessGroups: readonly UserAccessGroupSummary[],
 	): void {
-		const sameAccessGroup =
-			this._accessGroupId === null && accessGroupId === null
-				? true
-				: this._accessGroupId !== null &&
-					accessGroupId !== null &&
-					this._accessGroupId.equals(accessGroupId);
-		if (sameAccessGroup) {
-			this._accessGroup = accessGroup;
-			return;
-		}
-		this._accessGroupId = accessGroupId;
-		this._accessGroup = accessGroup;
+		this._accessGroupIds = [...accessGroupIds];
+		this._accessGroups = [...accessGroups];
+	}
+
+	hasSameAccessGroups(accessGroupIds: readonly UUID[]): boolean {
+		return sameUuidIdSets(this._accessGroupIds, accessGroupIds);
 	}
 
 	static sameState(a: User, b: User): boolean {
@@ -156,14 +170,8 @@ class User extends AggregateRoot {
 		if (!a._passwordHash.equals(b._passwordHash) || a._role !== b._role) {
 			return false;
 		}
-		const sameAccessGroup =
-			a._accessGroupId === null && b._accessGroupId === null
-				? true
-				: a._accessGroupId !== null &&
-					b._accessGroupId !== null &&
-					a._accessGroupId.equals(b._accessGroupId);
 		return (
-			sameAccessGroup &&
+			sameUuidIdSets(a._accessGroupIds, b._accessGroupIds) &&
 			sameUuidIdSets(a._memberTeamIds, b._memberTeamIds) &&
 			sameUuidIdSets(a._managedTeamIds, b._managedTeamIds)
 		);

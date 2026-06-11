@@ -1,15 +1,6 @@
 'use client';
 
-import { Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
-
-import {
-	Card,
-	CardAction,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { useState } from 'react';
 
 import {
 	useCreateAccessGroupMutation,
@@ -25,14 +16,26 @@ import type {
 	CreateUserFormValues,
 	UpdateUserFormValues,
 } from '../schemas/user-management.schema';
-import type { AccessGroup, UserRecord } from '../model/users.model';
+import type {
+	AccessGroup,
+	UserRecord,
+	UsersSummary,
+} from '../model/users.model';
 import { AccessGroupDialog } from './AccessGroupForm';
 import {
-	ConfirmDialog,
-	getUsersErrorMessage,
-	UsersFormDialog,
-} from './UserForm';
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
+
+import { ConfirmDialog, UsersFormDialog } from './UserForm';
 import { UsersTabs } from './UsersTable';
+
+const emptySummary: UsersSummary = {
+	administrators: 0,
+	total: 0,
+	withMultipleGroups: 0,
+	withoutGroup: 0,
+};
 
 function UsersManagementScreen() {
 	const [page, setPage] = useState(1);
@@ -41,6 +44,7 @@ function UsersManagementScreen() {
 	const [roleFilter, setRoleFilter] = useState<'ALL' | UserRecord['role']>(
 		'ALL',
 	);
+	const [accessGroupFilter, setAccessGroupFilter] = useState('');
 	const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
 	const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
 	const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -58,7 +62,13 @@ function UsersManagementScreen() {
 		string | null
 	>(null);
 
-	const usersQuery = useUsersQuery(page, limit);
+	const usersQuery = useUsersQuery({
+		accessGroupId: accessGroupFilter || undefined,
+		limit,
+		page,
+		role: roleFilter === 'ALL' ? undefined : roleFilter,
+		search: search.trim() || undefined,
+	});
 	const accessGroupsQuery = useAccessGroupsQuery();
 	const createUserMutation = useCreateUserMutation();
 	const updateUserMutation = useUpdateUserMutation();
@@ -69,37 +79,16 @@ function UsersManagementScreen() {
 
 	const usersPage = usersQuery.data;
 	const accessGroups = accessGroupsQuery.data ?? [];
-	const users = useMemo(() => usersPage?.items ?? [], [usersPage?.items]);
+	const users = usersPage?.items ?? [];
 	const totalUsers = usersPage?.total ?? 0;
 	const totalPages = usersPage?.totalPages ?? 0;
+	const summary = usersPage?.summary ?? emptySummary;
 	const usersError = usersQuery.isError
-		? getUsersErrorMessage(usersQuery.error)
+		? humanizePageApiError(usersQuery.error)
 		: null;
 	const accessGroupsError = accessGroupsQuery.isError
-		? getUsersErrorMessage(accessGroupsQuery.error)
+		? humanizePageApiError(accessGroupsQuery.error)
 		: null;
-
-	const filteredUsers = useMemo(() => {
-		const normalizedSearch = search.trim().toLowerCase();
-
-		return users.filter((user) => {
-			const matchesRole = roleFilter === 'ALL' || user.role === roleFilter;
-			const matchesSearch =
-				normalizedSearch.length === 0 ||
-				user.name.toLowerCase().includes(normalizedSearch) ||
-				user.email.toLowerCase().includes(normalizedSearch) ||
-				user.accessGroup?.name.toLowerCase().includes(normalizedSearch);
-
-			return matchesRole && matchesSearch;
-		});
-	}, [roleFilter, search, users]);
-
-	const adminCount = users.filter(
-		(user) => user.role === 'ADMINISTRATOR',
-	).length;
-	const withoutGroupCount = users.filter(
-		(user) => user.accessGroupId === null,
-	).length;
 
 	function openCreateDialog() {
 		setDialogMode('create');
@@ -143,12 +132,12 @@ function UsersManagementScreen() {
 		if (dialogMode === 'create') {
 			const payload = values as CreateUserFormValues;
 			await createUserMutation.mutateAsync({
+				accessGroupIds: payload.accessGroupIds,
 				email: payload.email,
 				name: payload.name,
 				password: payload.password,
 				role: payload.role,
 				teamId: null,
-				accessGroupId: payload.accessGroupId,
 			});
 			return;
 		}
@@ -161,13 +150,13 @@ function UsersManagementScreen() {
 		await updateUserMutation.mutateAsync({
 			userId: selectedUser.id,
 			payload: {
+				accessGroupIds: payload.accessGroupIds,
 				email: payload.email,
 				name: payload.name,
 				password:
 					payload.password.trim().length > 0 ? payload.password : undefined,
 				role: payload.role,
 				teamId: selectedUser.teamId,
-				accessGroupId: payload.accessGroupId,
 			},
 		});
 	}
@@ -184,7 +173,7 @@ function UsersManagementScreen() {
 			setIsDeleteDialogOpen(false);
 			setSelectedUser(null);
 		} catch (error) {
-			setDeleteError(getUsersErrorMessage(error));
+			setDeleteError(humanizeFormApiError(error));
 		}
 	}
 
@@ -216,43 +205,34 @@ function UsersManagementScreen() {
 			setIsDeleteAccessGroupDialogOpen(false);
 			setSelectedAccessGroup(null);
 		} catch (error) {
-			setDeleteAccessGroupError(getUsersErrorMessage(error));
+			setDeleteAccessGroupError(humanizeFormApiError(error));
 		}
 	}
 
 	return (
-		<section className="space-y-6">
-			<Card className="border-border/85 bg-white">
-				<CardHeader className="gap-5 pb-6">
-					<div className="flex items-start justify-between gap-4">
-						<div className="space-y-2">
-							<div className="flex size-12 items-center justify-center rounded-2xl border border-[#d96c3f]/16 bg-[#d96c3f]/10 text-[#d96c3f]">
-								<Users className="size-5" />
-							</div>
-							<p className="text-[0.72rem] font-medium tracking-[0.18em] text-[#D96C3F] uppercase">
-								Administração
-							</p>
-							<CardTitle className="text-[1.9rem] font-semibold tracking-tight">
-								Acessos e grupos do sistema
-							</CardTitle>
-							<CardDescription className="max-w-3xl text-[0.95rem] leading-7">
-								Centralize provisionamento, regras de acesso e toggles de
-								features em um único módulo administrativo.
-							</CardDescription>
-						</div>
-
-						<CardAction className="static" />
-					</div>
-				</CardHeader>
-			</Card>
+		<div className="space-y-5">
+			<div className="flex items-start justify-between gap-4">
+				<div>
+					<h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
+						Usuários
+					</h1>
+					<p className="mt-2 text-sm text-[#667085]">
+						Gerencie acessos, papéis e grupos. As permissões de cada usuário
+						somam as features de todos os grupos vinculados.
+					</p>
+				</div>
+			</div>
 
 			<UsersTabs
+				accessGroupFilter={accessGroupFilter}
 				accessGroups={accessGroups}
 				accessGroupsError={accessGroupsError}
 				accessGroupsLoading={accessGroupsQuery.isLoading}
-				adminCount={adminCount}
-				filteredUsers={filteredUsers}
 				limit={limit}
+				onAccessGroupFilterChange={(value) => {
+					setAccessGroupFilter(value);
+					setPage(1);
+				}}
 				onCreateAccessGroup={openCreateAccessGroupDialog}
 				onCreateUser={openCreateDialog}
 				onDeleteAccessGroup={openDeleteAccessGroupDialog}
@@ -265,17 +245,23 @@ function UsersManagementScreen() {
 				}}
 				onNextPage={() => setPage((current) => current + 1)}
 				onPreviousPage={() => setPage((current) => current - 1)}
-				onRoleFilterChange={setRoleFilter}
-				onSearchChange={setSearch}
+				onRoleFilterChange={(value) => {
+					setRoleFilter(value);
+					setPage(1);
+				}}
+				onSearchChange={(value) => {
+					setSearch(value);
+					setPage(1);
+				}}
 				page={page}
 				roleFilter={roleFilter}
 				search={search}
+				summary={summary}
 				totalPages={totalPages}
 				totalUsers={totalUsers}
 				users={users}
 				usersError={usersError}
 				usersLoading={usersQuery.isLoading}
-				withoutGroupCount={withoutGroupCount}
 			/>
 
 			<UsersFormDialog
@@ -314,7 +300,7 @@ function UsersManagementScreen() {
 			/>
 
 			<ConfirmDialog
-				description={`Excluir ${selectedAccessGroup?.name ?? 'este grupo'} removerá seus toggles e desvinculará novos usos administrativos.`}
+				description={`Excluir ${selectedAccessGroup?.name ?? 'este grupo'} removerá seus toggles e desvinculará os usuários associados.`}
 				error={deleteAccessGroupError}
 				isPending={deleteAccessGroupMutation.isPending}
 				onClose={() => {
@@ -325,7 +311,7 @@ function UsersManagementScreen() {
 				open={isDeleteAccessGroupDialogOpen}
 				title="Excluir grupo de acesso"
 			/>
-		</section>
+		</div>
 	);
 }
 

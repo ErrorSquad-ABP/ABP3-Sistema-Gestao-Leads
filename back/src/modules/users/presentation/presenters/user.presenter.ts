@@ -1,5 +1,9 @@
+import type { AccessGroupSummaryDto } from '../../application/dto/access-group-summary.dto.js';
 import type { UserResponseDto } from '../../application/dto/user-response.dto.js';
-import type { User } from '../../domain/entities/user.entity.js';
+import type {
+	User,
+	UserAccessGroupSummary,
+} from '../../domain/entities/user.entity.js';
 
 /** Contrato legado: um único UUID para clientes que ainda leem `teamId` (sessão / telas antigas). */
 function legacyTeamIdForApi(user: User): string | null {
@@ -16,22 +20,39 @@ function legacyTeamIdForApi(user: User): string | null {
 	return null;
 }
 
+function toAccessGroupDto(
+	group: UserAccessGroupSummary,
+): AccessGroupSummaryDto {
+	return {
+		id: group.id.value,
+		name: group.name,
+		description: group.description,
+		baseRole: group.baseRole,
+		featureKeys: [...group.featureKeys],
+		isSystemGroup: group.isSystemGroup,
+	};
+}
+
+function sortedByName(
+	groups: readonly UserAccessGroupSummary[],
+): UserAccessGroupSummary[] {
+	return [...groups].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+}
+
 class UserPresenter {
 	static toResponse(user: User): UserResponseDto {
+		const orderedGroups = sortedByName(user.accessGroups);
+		const legacyGroup = orderedGroups.at(0) ?? null;
+		const accessGroupIds =
+			orderedGroups.length > 0
+				? orderedGroups.map((group) => group.id.value)
+				: user.accessGroupIds.map((id) => id.value);
 		return {
-			accessGroup:
-				user.accessGroup === null
-					? null
-					: {
-							id: user.accessGroup.id.value,
-							name: user.accessGroup.name,
-							description: user.accessGroup.description,
-							baseRole: user.accessGroup.baseRole,
-							featureKeys: [...user.accessGroup.featureKeys],
-							isSystemGroup: user.accessGroup.isSystemGroup,
-						},
-			accessGroupId:
-				user.accessGroupId === null ? null : user.accessGroupId.value,
+			accessGroupIds,
+			accessGroups: orderedGroups.map((group) => toAccessGroupDto(group)),
+			featureKeys: [...user.featureKeys],
+			accessGroup: legacyGroup === null ? null : toAccessGroupDto(legacyGroup),
+			accessGroupId: legacyGroup === null ? null : legacyGroup.id.value,
 			id: user.id.value,
 			name: user.name.value,
 			email: user.email.value,

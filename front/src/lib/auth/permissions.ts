@@ -195,19 +195,46 @@ function canRoleAccessRoute(role: UserRole, key: AppRouteAccessKey) {
 	return getAllowedRolesForRoute(key).includes(role);
 }
 
-function hasFeatureAccess(
-	user: Pick<AuthenticatedUser, 'role' | 'accessGroup'>,
-	key: AppRouteAccessKey,
-) {
+type FeatureAccessSubject = Pick<AuthenticatedUser, 'role'> &
+	Partial<
+		Pick<AuthenticatedUser, 'accessGroup' | 'accessGroups' | 'featureKeys'>
+	>;
+
+/**
+ * União deduplicada das features dos grupos vinculados (ADR-001).
+ * Retorna null quando o usuário não tem nenhum grupo — acesso regido só pelo papel.
+ */
+function resolveEffectiveFeatureKeys(
+	user: FeatureAccessSubject,
+): readonly AccessFeatureKey[] | null {
+	if (user.accessGroups && user.accessGroups.length > 0) {
+		if (user.featureKeys && user.featureKeys.length > 0) {
+			return user.featureKeys;
+		}
+
+		return Array.from(
+			new Set(user.accessGroups.flatMap((group) => group.featureKeys)),
+		);
+	}
+
+	if (user.accessGroup) {
+		return user.accessGroup.featureKeys;
+	}
+
+	return null;
+}
+
+function hasFeatureAccess(user: FeatureAccessSubject, key: AppRouteAccessKey) {
 	if (!canRoleAccessRoute(user.role, key)) {
 		return false;
 	}
 
-	if (!user.accessGroup) {
+	const effectiveFeatureKeys = resolveEffectiveFeatureKeys(user);
+	if (effectiveFeatureKeys === null) {
 		return true;
 	}
 
-	return user.accessGroup.featureKeys.includes(
+	return effectiveFeatureKeys.includes(
 		appNavigationItems.find((item) => item.key === key)?.featureKey ??
 			'profile',
 	);

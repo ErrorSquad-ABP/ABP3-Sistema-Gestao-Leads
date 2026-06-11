@@ -1,11 +1,12 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
 	Dialog,
 	DialogContent,
@@ -16,7 +17,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
-import { isApiError } from '@/lib/http/api-error';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
+import { cn } from '@/lib/utils';
 
 import {
 	createUserSchema,
@@ -53,34 +56,16 @@ type DeleteDialogProps = {
 	open: boolean;
 };
 
-function getUsersErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 409) {
-		return 'Já existe um registro com os dados informados.';
-	}
-
-	if (error.status === 400) {
-		return (
-			error.message || 'Os dados informados não passaram na validação da API.'
-		);
-	}
-
-	return error.message;
-}
-
 function getRoleBadgeClassName(role: UserRecord['role']) {
 	switch (role) {
 		case 'ADMINISTRATOR':
-			return 'border-[#d96c3f]/25 bg-[#d96c3f]/10 text-[#b3542c]';
+			return 'border-orange-100 bg-orange-50 text-[#c2410c]';
 		case 'GENERAL_MANAGER':
-			return 'border-[#2d3648]/15 bg-[#2d3648]/8 text-[#2d3648]';
+			return 'border-violet-100 bg-violet-50 text-violet-700';
 		case 'MANAGER':
-			return 'border-sky-200 bg-sky-50 text-sky-800';
+			return 'border-blue-100 bg-blue-50 text-blue-700';
 		case 'ATTENDANT':
-			return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+			return 'border-emerald-100 bg-emerald-50 text-emerald-700';
 	}
 }
 
@@ -118,15 +103,23 @@ function getRoleLabel(role: UserRecord['role']) {
 	}
 }
 
-function getDefaultAccessGroupId(
+function getDefaultAccessGroupIds(
 	accessGroups: AccessGroup[],
 	role: UserRecord['role'],
 ) {
-	return (
-		accessGroups.find((group) => group.baseRole === role)?.id ??
-		accessGroups.find((group) => group.baseRole === null)?.id ??
-		null
-	);
+	const matched =
+		accessGroups.find((group) => group.baseRole === role) ??
+		accessGroups.find((group) => group.baseRole === null);
+
+	return matched ? [matched.id] : [];
+}
+
+function toggleAccessGroupId(current: string[], groupId: string) {
+	if (current.includes(groupId)) {
+		return current.filter((id) => id !== groupId);
+	}
+
+	return [...current, groupId];
 }
 
 function UsersFormDialog({
@@ -147,7 +140,7 @@ function UsersFormDialog({
 			email: '',
 			password: '',
 			role: 'ATTENDANT',
-			accessGroupId: getDefaultAccessGroupId(accessGroups, 'ATTENDANT'),
+			accessGroupIds: getDefaultAccessGroupIds(accessGroups, 'ATTENDANT'),
 		},
 	});
 	const updateForm = useForm<UpdateUserFormValues>({
@@ -157,7 +150,7 @@ function UsersFormDialog({
 			email: '',
 			password: '',
 			role: 'ATTENDANT',
-			accessGroupId: getDefaultAccessGroupId(accessGroups, 'ATTENDANT'),
+			accessGroupIds: [],
 		},
 	});
 	const form = isEditMode ? updateForm : createForm;
@@ -166,17 +159,11 @@ function UsersFormDialog({
 		name: 'role',
 		defaultValue: 'ATTENDANT',
 	});
-	const selectedAccessGroupId = useWatch({
-		control: form.control,
-		name: 'accessGroupId',
-	});
-	const availableAccessGroups = useMemo(
-		() =>
-			accessGroups.filter(
-				(group) => group.baseRole === null || group.baseRole === selectedRole,
-			),
-		[accessGroups, selectedRole],
-	);
+	const selectedAccessGroupIds =
+		useWatch({
+			control: form.control,
+			name: 'accessGroupIds',
+		}) ?? [];
 
 	useEffect(() => {
 		if (!open) {
@@ -189,9 +176,7 @@ function UsersFormDialog({
 				email: user.email,
 				password: '',
 				role: user.role,
-				accessGroupId:
-					user.accessGroupId ??
-					getDefaultAccessGroupId(accessGroups, user.role),
+				accessGroupIds: [...user.accessGroupIds],
 			});
 			return;
 		}
@@ -201,7 +186,7 @@ function UsersFormDialog({
 			email: '',
 			password: '',
 			role: 'ATTENDANT',
-			accessGroupId: getDefaultAccessGroupId(accessGroups, 'ATTENDANT'),
+			accessGroupIds: getDefaultAccessGroupIds(accessGroups, 'ATTENDANT'),
 		});
 	}, [accessGroups, createForm, isEditMode, open, updateForm, user]);
 
@@ -216,24 +201,13 @@ function UsersFormDialog({
 		onClose();
 	}
 
-	useEffect(() => {
-		if (!open) {
-			return;
-		}
-
-		const currentAccessGroupId = form.getValues('accessGroupId');
-		const currentStillValid = availableAccessGroups.some(
-			(group) => group.id === currentAccessGroupId,
+	function handleToggleGroup(groupId: string) {
+		form.setValue(
+			'accessGroupIds',
+			toggleAccessGroupId(selectedAccessGroupIds, groupId),
+			{ shouldDirty: true, shouldValidate: true },
 		);
-
-		if (!currentStillValid) {
-			form.setValue(
-				'accessGroupId',
-				getDefaultAccessGroupId(accessGroups, selectedRole),
-				{ shouldDirty: true, shouldValidate: true },
-			);
-		}
-	}, [accessGroups, availableAccessGroups, form, open, selectedRole]);
+	}
 
 	const handleSubmit = form.handleSubmit(async (values) => {
 		setSubmitError(null);
@@ -242,7 +216,7 @@ function UsersFormDialog({
 			await onSubmit(values);
 			onClose();
 		} catch (error) {
-			setSubmitError(getUsersErrorMessage(error));
+			setSubmitError(applyFormSubmitErrors(form.setError, error));
 		}
 	});
 
@@ -255,8 +229,8 @@ function UsersFormDialog({
 					</DialogTitle>
 					<DialogDescription>
 						{isEditMode
-							? 'Atualize o papel canônico, o grupo de acesso e as credenciais deste usuário.'
-							: 'Cadastre um novo acesso e vincule o usuário ao grupo que governa seus toggles.'}
+							? 'Atualize papel, credenciais e os grupos de acesso deste usuário.'
+							: 'Cadastre um novo acesso e vincule um ou mais grupos. As permissões somam as features de todos os grupos.'}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -266,12 +240,7 @@ function UsersFormDialog({
 					onSubmit={handleSubmit}
 				>
 					<div className="space-y-5 overflow-y-auto px-6 py-6">
-						{submitError ? (
-							<div className="flex items-start gap-2.5 rounded-md border border-[#f1c7c4] bg-[#fff7f7] px-3 py-2.5 text-[0.82rem] text-[#7a2f2a]">
-								<AlertCircle className="mt-0.5 size-4 shrink-0 text-[#c65a52]" />
-								<p className="leading-5">{submitError}</p>
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={submitError} />
 
 						<div className="grid gap-5 md:grid-cols-2">
 							<div className="space-y-1.5 md:col-span-2">
@@ -279,7 +248,7 @@ function UsersFormDialog({
 									Nome completo
 								</Label>
 								<Input
-									className="h-10 rounded-md border-[#d6dce5] shadow-none focus-visible:border-[#2d3648]/45"
+									className="h-11 rounded-xl border-[#d8e0ea] shadow-none focus-visible:border-[#f05a28]/45"
 									id="users-form-name"
 									placeholder="Maria Silva"
 									{...form.register('name')}
@@ -297,7 +266,7 @@ function UsersFormDialog({
 									E-mail
 								</Label>
 								<Input
-									className="h-10 rounded-md border-[#d6dce5] shadow-none focus-visible:border-[#2d3648]/45"
+									className="h-11 rounded-xl border-[#d8e0ea] shadow-none focus-visible:border-[#f05a28]/45"
 									id="users-form-email"
 									placeholder="maria@leadcrm.com"
 									type="email"
@@ -316,7 +285,7 @@ function UsersFormDialog({
 									Papel canônico
 								</Label>
 								<select
-									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
+									className="flex h-11 w-full rounded-xl border border-[#d8e0ea] bg-white px-3 text-sm text-[#101828] shadow-none transition-colors outline-none focus:border-[#f05a28]/45"
 									id="users-form-role"
 									onChange={(event) =>
 										form.setValue(
@@ -334,39 +303,9 @@ function UsersFormDialog({
 										</option>
 									))}
 								</select>
-								<p className="text-xs leading-5 text-[#6b7687]">
+								<p className="text-xs leading-5 text-[#667085]">
 									{getRoleCardCopy(selectedRole)}
 								</p>
-							</div>
-
-							<div className="space-y-1.5 md:col-span-2">
-								<Label htmlFor="users-form-access-group">Grupo de acesso</Label>
-								<select
-									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
-									id="users-form-access-group"
-									onChange={(event) =>
-										form.setValue(
-											'accessGroupId',
-											event.target.value.length > 0 ? event.target.value : null,
-											{ shouldDirty: true, shouldValidate: true },
-										)
-									}
-									value={selectedAccessGroupId ?? ''}
-								>
-									<option value="" disabled>
-										Selecione um grupo
-									</option>
-									{availableAccessGroups.map((group) => (
-										<option key={group.id} value={group.id}>
-											{group.name}
-										</option>
-									))}
-								</select>
-								{form.formState.errors.accessGroupId ? (
-									<p className="text-xs text-destructive">
-										{form.formState.errors.accessGroupId.message}
-									</p>
-								) : null}
 							</div>
 
 							<div className="space-y-1.5 md:col-span-2">
@@ -374,7 +313,7 @@ function UsersFormDialog({
 									{isEditMode ? 'Nova senha (opcional)' : 'Senha inicial'}
 								</Label>
 								<Input
-									className="h-10 rounded-md border-[#d6dce5] shadow-none focus-visible:border-[#2d3648]/45"
+									className="h-11 rounded-xl border-[#d8e0ea] shadow-none focus-visible:border-[#f05a28]/45"
 									id="users-form-password"
 									placeholder={
 										isEditMode
@@ -391,12 +330,83 @@ function UsersFormDialog({
 									</p>
 								) : null}
 							</div>
+
+							<div className="space-y-2.5 md:col-span-2">
+								<div className="flex items-center justify-between">
+									<Label>Grupos de acesso</Label>
+									<span className="text-xs text-[#667085]">
+										{selectedAccessGroupIds.length === 0
+											? 'Nenhum grupo — acesso regido só pelo papel'
+											: `${selectedAccessGroupIds.length} ${
+													selectedAccessGroupIds.length === 1
+														? 'grupo selecionado'
+														: 'grupos selecionados'
+												}`}
+									</span>
+								</div>
+								<div className="max-h-56 space-y-2 overflow-y-auto rounded-2xl border border-[#e7edf5] bg-[#f8fafc] p-3">
+									{accessGroups.length === 0 ? (
+										<p className="px-1 py-2 text-sm text-[#667085]">
+											Nenhum grupo de acesso cadastrado.
+										</p>
+									) : (
+										accessGroups.map((group) => {
+											const isChecked = selectedAccessGroupIds.includes(
+												group.id,
+											);
+											return (
+												<label
+													className={cn(
+														'flex cursor-pointer items-start gap-3 rounded-xl border bg-white p-3 transition-colors',
+														isChecked
+															? 'border-[#f05a28]/45 ring-1 ring-[#f05a28]/20'
+															: 'border-[#e7edf5] hover:border-[#d8e0ea]',
+													)}
+													key={group.id}
+												>
+													<Checkbox
+														checked={isChecked}
+														className="mt-0.5"
+														onCheckedChange={() => handleToggleGroup(group.id)}
+													/>
+													<span className="min-w-0 flex-1">
+														<span className="flex items-center gap-2">
+															<span className="text-sm font-semibold text-[#101828]">
+																{group.name}
+															</span>
+															<span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[0.68rem] font-medium text-[#c2410c]">
+																<ShieldCheck className="size-3" />
+																{group.featureKeys.length}{' '}
+																{group.featureKeys.length === 1
+																	? 'feature'
+																	: 'features'}
+															</span>
+														</span>
+														<span className="mt-0.5 block truncate text-xs text-[#667085]">
+															{group.description}
+														</span>
+													</span>
+												</label>
+											);
+										})
+									)}
+								</div>
+								<p className="text-xs leading-5 text-[#667085]">
+									As permissões efetivas são a união das features de todos os
+									grupos vinculados — sem herança entre grupos.
+								</p>
+								{form.formState.errors.accessGroupIds ? (
+									<p className="text-xs text-destructive">
+										{form.formState.errors.accessGroupIds.message}
+									</p>
+								) : null}
+							</div>
 						</div>
 					</div>
 
 					<DialogFooter>
 						<Button
-							className="rounded-md"
+							className="rounded-xl"
 							onClick={onClose}
 							type="button"
 							variant="outline"
@@ -404,7 +414,7 @@ function UsersFormDialog({
 							Cancelar
 						</Button>
 						<Button
-							className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+							className="rounded-xl bg-[#f05a28] text-white hover:bg-[#df4f1f]"
 							disabled={isPending}
 							type="submit"
 						>
@@ -446,20 +456,15 @@ function ConfirmDialog({
 						interface.
 					</div>
 
-					{error ? (
-						<div className="flex items-start gap-2.5 rounded-md border border-[#f1c7c4] bg-[#fff7f7] px-3 py-2.5 text-[0.82rem] text-[#7a2f2a]">
-							<AlertCircle className="mt-0.5 size-4 shrink-0 text-[#c65a52]" />
-							<p className="leading-5">{error}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={error} />
 				</div>
 
 				<DialogFooter>
-					<Button className="rounded-md" onClick={onClose} variant="outline">
+					<Button className="rounded-xl" onClick={onClose} variant="outline">
 						Cancelar
 					</Button>
 					<Button
-						className="rounded-md"
+						className="rounded-xl"
 						disabled={isPending}
 						onClick={() => {
 							void onConfirm();
@@ -480,6 +485,5 @@ export {
 	getRoleBadgeClassName,
 	getRoleCardCopy,
 	getRoleLabel,
-	getUsersErrorMessage,
 	UsersFormDialog,
 };

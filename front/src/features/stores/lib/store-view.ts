@@ -1,4 +1,7 @@
-import { isApiError } from '@/lib/http/api-error';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 
 import type { StoreRecord } from '../model/stores.model';
 
@@ -60,10 +63,11 @@ const stateLabels = new Map([
 ]);
 
 function getStoresErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora.';
-	}
-	return error.message;
+	return humanizeFormApiError(error);
+}
+
+function getStoresPageErrorMessage(error: unknown) {
+	return humanizePageApiError(error);
 }
 
 function normalizeSearch(value: string) {
@@ -125,6 +129,7 @@ export {
 	getPersonInitials,
 	getStoreInitials,
 	getStoresErrorMessage,
+	getStoresPageErrorMessage,
 	normalizeSearch,
 	resolveStoreProfile,
 	stateLabels,

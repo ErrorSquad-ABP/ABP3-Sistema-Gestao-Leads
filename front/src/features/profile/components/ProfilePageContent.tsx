@@ -24,7 +24,7 @@ import type {
 	UserRole,
 } from '@/features/login/types/login.types';
 import { queryKeys } from '@/lib/constants/query-keys';
-import { isApiError } from '@/lib/http/api-error';
+import { humanizeFormApiError } from '@/lib/http/humanize-api-error';
 import { cn } from '@/lib/utils';
 
 import {
@@ -53,31 +53,8 @@ function resolveRoleLabel(role: UserRole) {
 	}
 }
 
-function resolveCredentialErrorMessage(
-	error: unknown,
-	context: 'email' | 'password',
-) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a atualização agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 401) {
-		return 'A senha atual informada não confere ou sua sessão já não é mais válida.';
-	}
-
-	if (error.status === 409 && context === 'email') {
-		return 'O e-mail informado já está em uso por outro utilizador.';
-	}
-
-	if (error.status === 429) {
-		return 'Muitas tentativas de alteração em sequência. Aguarde um momento antes de tentar novamente.';
-	}
-
-	if (error.status === 400 && error.code === 'user.password.unchanged') {
-		return 'A nova senha deve ser diferente da senha atual.';
-	}
-
-	return error.message;
+function resolveCredentialErrorMessage(error: unknown) {
+	return humanizeFormApiError(error);
 }
 
 type SuccessFeedback = {
@@ -211,10 +188,10 @@ function ProfilePageContent({
 	});
 
 	const emailErrorMessage = updateOwnEmailMutation.error
-		? resolveCredentialErrorMessage(updateOwnEmailMutation.error, 'email')
+		? resolveCredentialErrorMessage(updateOwnEmailMutation.error)
 		: null;
 	const passwordErrorMessage = updateOwnPasswordMutation.error
-		? resolveCredentialErrorMessage(updateOwnPasswordMutation.error, 'password')
+		? resolveCredentialErrorMessage(updateOwnPasswordMutation.error)
 		: null;
 
 	const summaryItems = currentUser

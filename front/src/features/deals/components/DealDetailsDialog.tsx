@@ -35,7 +35,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 
 import { useDealHistoryQuery } from '../hooks/deals.queries';
 import {
@@ -428,9 +428,7 @@ function DealDetailsDialog({ deal, onClose, open }: DealDetailsDialogProps) {
 										className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 										role="alert"
 									>
-										{historyQuery.error instanceof ApiError
-											? historyQuery.error.message
-											: 'Não foi possível carregar o histórico da negociação.'}
+										{humanizePageApiError(historyQuery.error)}
 									</div>
 								) : null}
 

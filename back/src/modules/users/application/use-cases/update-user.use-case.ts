@@ -20,7 +20,7 @@ import type { UpdateUserDto } from '../dto/update-user.dto.js';
 
 function hasUserUpdatePayload(dto: UpdateUserDto): boolean {
 	return (
-		dto.accessGroupId !== undefined ||
+		dto.accessGroupIds !== undefined ||
 		dto.name !== undefined ||
 		dto.email !== undefined ||
 		dto.password !== undefined ||
@@ -103,23 +103,13 @@ class UpdateUserUseCase {
 					shouldPersist = true;
 				}
 			}
-			if (dto.accessGroupId !== undefined) {
-				const nextAccessGroupId =
-					dto.accessGroupId === null ? null : Uuid.parse(dto.accessGroupId);
-				const sameAccessGroup =
-					existing.accessGroupId === null && nextAccessGroupId === null
-						? true
-						: existing.accessGroupId !== null &&
-							nextAccessGroupId !== null &&
-							existing.accessGroupId.equals(nextAccessGroupId);
-				if (!sameAccessGroup) {
-					const nextAccessGroup =
-						nextAccessGroupId !== null &&
-						(existing.accessGroup?.id.equals(nextAccessGroupId) ?? false)
-							? existing.accessGroup
-							: null;
-					existing.changeAccessGroup(nextAccessGroupId, nextAccessGroup);
-					changedFields.push('accessGroupId');
+			if (dto.accessGroupIds !== undefined) {
+				const nextAccessGroupIds = [...new Set(dto.accessGroupIds)].map((id) =>
+					Uuid.parse(id),
+				);
+				if (!existing.hasSameAccessGroups(nextAccessGroupIds)) {
+					existing.changeAccessGroups(nextAccessGroupIds, []);
+					changedFields.push('accessGroupIds');
 					shouldPersist = true;
 				}
 			}
