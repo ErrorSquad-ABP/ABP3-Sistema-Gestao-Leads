@@ -60,7 +60,7 @@ function DialogContent({
 			<DialogOverlay />
 			<DialogPrimitive.Content
 				className={cn(
-					'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 gap-0 rounded-2xl border border-border/85 bg-white text-foreground shadow-none duration-200',
+					'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white text-foreground shadow-[0_20px_70px_rgba(15,23,42,0.18)] duration-200 [&_input]:rounded-xl [&_select]:rounded-xl [&_textarea]:rounded-xl',
 					className,
 				)}
 				data-slot="dialog-content"
@@ -70,7 +70,7 @@ function DialogContent({
 				{showCloseButton ? (
 					<DialogPrimitive.Close asChild>
 						<Button
-							className="absolute top-4 right-4"
+							className="absolute top-4 right-4 z-10 text-[#1b2430] hover:bg-[#f4f6f8]"
 							size="icon-sm"
 							variant="ghost"
 						>
@@ -88,7 +88,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
 	return (
 		<div
 			className={cn(
-				'flex flex-col gap-2 border-b border-border/75 px-6 py-5',
+				'flex flex-col gap-2 border-b border-[#e8edf4] px-6 py-5',
 				className,
 			)}
 			data-slot="dialog-header"
@@ -101,7 +101,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
 	return (
 		<div
 			className={cn(
-				'flex flex-col-reverse gap-2 border-t border-border/75 bg-white px-6 py-4 sm:flex-row sm:justify-end',
+				'flex flex-col-reverse gap-3 border-t border-[#e8edf4] bg-white px-6 py-4 sm:flex-row sm:justify-end [&_[data-slot=button]]:h-10 [&_[data-slot=button]]:rounded-xl [&_[data-slot=button]]:px-5 [&_[data-slot=button]]:font-semibold [&_[data-slot=button]]:shadow-none',
 				className,
 			)}
 			data-slot="dialog-footer"
@@ -116,7 +116,10 @@ function DialogTitle({
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
 	return (
 		<DialogPrimitive.Title
-			className={cn('text-[1.15rem] font-semibold text-[#1b2430]', className)}
+			className={cn(
+				'text-[1.15rem] font-semibold text-[#1b2430]',
+				className,
+			)}
 			data-slot="dialog-title"
 			{...props}
 		/>

@@ -3,15 +3,16 @@
 import { Trash2 } from 'lucide-react';
 
 import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
-import { Button } from '@/components/ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalBody,
+	AppModalCancelButton,
+	AppModalConfirmPanel,
+	AppModalFooter,
+	AppModalHeader,
+	AppModalPrimaryButton,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 type DealConfirmDialogProps = {
 	confirmLabel: string;
@@ -39,36 +40,34 @@ function DealConfirmDialog({
 			onOpenChange={(nextOpen) => (!nextOpen ? onClose() : null)}
 			open={open}
 		>
-			<DialogContent className="max-w-xl">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
-				</DialogHeader>
-				<div className="space-y-4 px-6 py-5">
-					<div className="flex items-start gap-3 rounded-xl border border-border/75 bg-[#f8fafc] px-4 py-4 text-sm text-[#6b7687]">
-						<Trash2 className="mt-0.5 size-4 text-destructive" />
-						<p>{description}</p>
-					</div>
+			<DialogContent className={`${appModalContentClass} max-w-xl`}>
+				<AppModalHeader
+					category="Negociações"
+					description={description}
+					icon={Trash2}
+					title={title}
+					tone="danger"
+				/>
+				<AppModalBody>
+					<AppModalConfirmPanel icon={Trash2}>
+						{description}
+					</AppModalConfirmPanel>
 					<ModalFormErrorBanner message={error} />
-				</div>
-				<DialogFooter>
-					<Button
-						className="rounded-md"
-						onClick={onClose}
-						type="button"
-						variant="outline"
-					>
+				</AppModalBody>
+				<AppModalFooter>
+					<AppModalCancelButton onClick={onClose} type="button">
 						Cancelar
-					</Button>
-					<Button
-						className="rounded-md bg-[#2D3648] hover:bg-[#232B3B]"
+					</AppModalCancelButton>
+					<AppModalPrimaryButton
+						className="bg-red-600 hover:bg-red-700"
 						disabled={isPending}
 						onClick={() => void onConfirm()}
 						type="button"
 					>
+						<Trash2 className="size-4" />
 						{isPending ? 'Processando...' : confirmLabel}
-					</Button>
-				</DialogFooter>
+					</AppModalPrimaryButton>
+				</AppModalFooter>
 			</DialogContent>
 		</Dialog>
 	);

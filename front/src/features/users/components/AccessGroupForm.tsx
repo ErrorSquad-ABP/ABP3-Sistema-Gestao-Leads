@@ -1,19 +1,17 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PencilLine, ShieldPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -195,16 +193,18 @@ function AccessGroupDialog({
 
 	return (
 		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-			<DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
-				<DialogHeader>
-					<DialogTitle>
-						{isEditMode ? 'Editar grupo de acesso' : 'Novo grupo de acesso'}
-					</DialogTitle>
-					<DialogDescription>
-						Defina o papel-base e as features que esse grupo libera na
-						aplicação.
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} sm:max-w-3xl`}>
+				<AppModalHeader
+					category="Grupos de acesso"
+					description="Defina o papel-base e as features que esse grupo libera na aplicação."
+					icon={isEditMode ? PencilLine : ShieldPlus}
+					title={
+						isEditMode
+							? 'Editar grupo de acesso'
+							: 'Novo grupo de acesso'
+					}
+					tone="violet"
+				/>
 
 				<form
 					className="flex max-h-[calc(100vh-10rem)] flex-col"
@@ -219,7 +219,9 @@ function AccessGroupDialog({
 							);
 							onClose();
 						} catch (error) {
-							setSubmitError(applyFormSubmitErrors(form.setError, error));
+							setSubmitError(
+								applyFormSubmitErrors(form.setError, error),
+							);
 						}
 					})}
 				>
@@ -246,7 +248,10 @@ function AccessGroupDialog({
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="access-group-description" required>
+								<Label
+									htmlFor="access-group-description"
+									required
+								>
 									Descrição
 								</Label>
 								<textarea
@@ -258,13 +263,18 @@ function AccessGroupDialog({
 								/>
 								{form.formState.errors.description ? (
 									<p className="text-xs text-destructive">
-										{form.formState.errors.description.message}
+										{
+											form.formState.errors.description
+												.message
+										}
 									</p>
 								) : null}
 							</div>
 
 							<div className="space-y-1.5">
-								<Label htmlFor="access-group-role">Papel canônico</Label>
+								<Label htmlFor="access-group-role">
+									Papel canônico
+								</Label>
 								<select
 									className="flex h-10 w-full rounded-md border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none transition-colors outline-none focus:border-[#2d3648]/45"
 									id="access-group-role"
@@ -275,14 +285,22 @@ function AccessGroupDialog({
 												? null
 												: (event.target
 														.value as AccessGroupFormValues['baseRole']),
-											{ shouldDirty: true, shouldValidate: true },
+											{
+												shouldDirty: true,
+												shouldValidate: true,
+											},
 										)
 									}
 									value={selectedBaseRole ?? 'NONE'}
 								>
-									<option value="NONE">Sem vínculo canônico</option>
+									<option value="NONE">
+										Sem vínculo canônico
+									</option>
 									{roleOptions.map((option) => (
-										<option key={option.value} value={option.value}>
+										<option
+											key={option.value}
+											value={option.value}
+										>
 											{option.label}
 										</option>
 									))}
@@ -292,18 +310,23 @@ function AccessGroupDialog({
 
 						<div className="space-y-4">
 							<div className="rounded-2xl border border-border/80 bg-[#f8fafc] p-4">
-								<Label className="text-sm font-medium text-[#1b2430]" required>
+								<Label
+									className="text-sm font-medium text-[#1b2430]"
+									required
+								>
 									Permissões do grupo
 								</Label>
 								<p className="mt-2 text-sm leading-6 text-[#6b7687]">
-									O grupo é salvo na API e já governa navegação e gates do
-									front.
+									O grupo é salvo na API e já governa
+									navegação e gates do front.
 								</p>
 							</div>
 
 							<div className="grid gap-3">
 								{accessFeatureCatalog.map((feature) => {
-									const checked = selectedFeatures.includes(feature.key);
+									const checked = selectedFeatures.includes(
+										feature.key,
+									);
 
 									return (
 										<label
@@ -319,7 +342,10 @@ function AccessGroupDialog({
 												checked={checked}
 												className="mt-0.5 rounded-[4px] border-[#cbd5e1] data-checked:border-[#f05a28] data-checked:bg-[#f05a28]"
 												onCheckedChange={(value) =>
-													toggleFeature(feature.key, value === true)
+													toggleFeature(
+														feature.key,
+														value === true,
+													)
 												}
 											/>
 											<div className="space-y-1">
@@ -353,7 +379,7 @@ function AccessGroupDialog({
 							Cancelar
 						</Button>
 						<Button
-							className="rounded-xl bg-[#f05a28] text-white hover:bg-[#df4f1f]"
+							className="rounded-xl bg-[#101a33] text-white hover:bg-[#17223d]"
 							disabled={isPending}
 							type="submit"
 						>

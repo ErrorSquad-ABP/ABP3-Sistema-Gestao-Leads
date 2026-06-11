@@ -1,15 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Snowflake } from 'lucide-react';
 
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalBody,
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CHART_COLORS } from '@/lib/charts/chart-colors';
 import { appRoutes } from '@/lib/routes/app-routes';
 import { cn } from '@/lib/utils';
@@ -56,16 +55,16 @@ function AnalyticImportanceDetailDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="flex max-h-[84vh] max-w-2xl flex-col overflow-hidden rounded-[1.75rem] border border-border bg-card p-0">
-				<DialogHeader className="gap-2 border-b border-border px-6 py-5">
-					<DialogTitle>Detalhes da importância</DialogTitle>
-					<DialogDescription>
-						Leads do período agrupados pela classificação de importância da
-						negociação.
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} max-w-2xl`}>
+				<AppModalHeader
+					category="Dashboard analítico"
+					description="Leads do período agrupados pela classificação de importância da negociação."
+					icon={Snowflake}
+					title="Detalhes da importância"
+					tone="info"
+				/>
 
-				<div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+				<AppModalBody className="py-4">
 					{distribution.length > 0 ? (
 						<div className="mb-4 flex flex-wrap gap-2">
 							{distribution.map((item) => (
@@ -76,7 +75,11 @@ function AnalyticImportanceDetailDialog({
 									<span
 										aria-hidden="true"
 										className="size-2 rounded-full"
-										style={{ backgroundColor: importanceColor(item.key) }}
+										style={{
+											backgroundColor: importanceColor(
+												item.key,
+											),
+										}}
 									/>
 									{item.label}: {item.count}
 								</span>
@@ -97,7 +100,10 @@ function AnalyticImportanceDetailDialog({
 												{lead.label}
 											</p>
 											<p className="mt-0.5 text-xs text-muted-foreground">
-												Classificação: {importanceLabel(lead.importance)}
+												Classificação:{' '}
+												{importanceLabel(
+													lead.importance,
+												)}
 											</p>
 										</div>
 										<span
@@ -106,7 +112,9 @@ function AnalyticImportanceDetailDialog({
 											)}
 											style={{
 												backgroundColor: `${importanceColor(lead.importance)}22`,
-												color: importanceColor(lead.importance),
+												color: importanceColor(
+													lead.importance,
+												),
 											}}
 										>
 											{importanceLabel(lead.importance)}
@@ -118,10 +126,11 @@ function AnalyticImportanceDetailDialog({
 						</ul>
 					) : (
 						<p className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-							Nenhum lead com negociação classificada no período selecionado.
+							Nenhum lead com negociação classificada no período
+							selecionado.
 						</p>
 					)}
-				</div>
+				</AppModalBody>
 			</DialogContent>
 		</Dialog>
 	);

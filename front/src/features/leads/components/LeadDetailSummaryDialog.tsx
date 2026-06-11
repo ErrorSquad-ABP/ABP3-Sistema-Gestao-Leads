@@ -214,7 +214,7 @@ export function LeadDetailSummaryDialog({
 						Fechar
 					</Button>
 					<Button
-						className="bg-[#f05a28] hover:bg-[#df4f1f] text-white rounded-xl shadow-none"
+						className="rounded-xl bg-[#101a33] text-white shadow-none hover:bg-[#17223d]"
 						onClick={handleNavigateToFull}
 						type="button"
 					>

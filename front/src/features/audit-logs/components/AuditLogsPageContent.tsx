@@ -14,6 +14,10 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { TablePagination } from '@/components/data/TablePagination';
+import {
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,13 +27,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
@@ -246,13 +244,14 @@ function AuditLogDetailsDialog({
 }: AuditLogDetailsDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
-			<DialogContent className="max-h-[88vh] max-w-4xl overflow-hidden">
-				<DialogHeader>
-					<DialogTitle>Detalhes do log</DialogTitle>
-					<DialogDescription>
-						Registro completo da ação capturada pela auditoria.
-					</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} max-w-4xl`}>
+				<AppModalHeader
+					category="Auditoria"
+					description="Registro completo da ação capturada pela auditoria."
+					icon={FileClock}
+					title="Detalhes do log"
+					tone="violet"
+				/>
 
 				{log ? (
 					<div className="grid max-h-[calc(88vh-9rem)] gap-5 overflow-y-auto px-6 py-5 lg:grid-cols-[0.82fr_1.18fr]">
@@ -274,7 +273,9 @@ function AuditLogDetailsDialog({
 										className="h-7 rounded-md border-[#d7dee8] bg-white px-3 text-[#314155]"
 										variant="outline"
 									>
-										{formatAuditLogEntityLabel(log.entityName)}
+										{formatAuditLogEntityLabel(
+											log.entityName,
+										)}
 									</Badge>
 								</div>
 							</div>
@@ -379,7 +380,15 @@ function AuditLogsPageContent() {
 			startDate: dateInputToIso(startDate, 'start'),
 			user: debouncedUserSearch || undefined,
 		}),
-		[action, category, debouncedUserSearch, endDate, limit, page, startDate],
+		[
+			action,
+			category,
+			debouncedUserSearch,
+			endDate,
+			limit,
+			page,
+			startDate,
+		],
 	);
 	const query = useAuditLogsQuery(filters);
 	const pageData = query.data;
@@ -421,8 +430,8 @@ function AuditLogsPageContent() {
 							Logs do sistema
 						</h1>
 						<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-							Consulte a trilha administrativa com filtros por domínio e tipo de
-							ação.
+							Consulte a trilha administrativa com filtros por
+							domínio e tipo de ação.
 						</p>
 					</div>
 				</div>
@@ -455,7 +464,9 @@ function AuditLogsPageContent() {
 									<span
 										className={cn(
 											'size-2 rounded-full',
-											isActive ? 'bg-[#f07a2a]' : 'bg-[#c9d2df]',
+											isActive
+												? 'bg-[#f07a2a]'
+												: 'bg-[#c9d2df]',
 										)}
 									/>
 								</button>
@@ -470,12 +481,16 @@ function AuditLogsPageContent() {
 							<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 								<div>
 									<CardTitle className="text-xl">
-										{getAuditLogCategoryLabel(activeCategory)}
+										{getAuditLogCategoryLabel(
+											activeCategory,
+										)}
 									</CardTitle>
 									<CardDescription>
 										{activeAction === 'ALL'
 											? 'Todas as ações registradas nesta seleção.'
-											: getAuditLogActionLabel(activeAction)}
+											: getAuditLogActionLabel(
+													activeAction,
+												)}
 									</CardDescription>
 								</div>
 
@@ -491,11 +506,17 @@ function AuditLogsPageContent() {
 											key={option}
 											onClick={() => changeAction(option)}
 											size="sm"
-											variant={activeAction === option ? 'default' : 'outline'}
+											variant={
+												activeAction === option
+													? 'default'
+													: 'outline'
+											}
 										>
 											{option === 'ALL'
 												? 'Todos'
-												: getAuditLogActionLabel(option)}
+												: getAuditLogActionLabel(
+														option,
+													)}
 										</Button>
 									))}
 								</div>
@@ -551,7 +572,9 @@ function AuditLogsPageContent() {
 								</label>
 								<Button
 									className="h-10 gap-2"
-									disabled={!userSearch && !startDate && !endDate}
+									disabled={
+										!userSearch && !startDate && !endDate
+									}
 									onClick={clearAdvancedFilters}
 									type="button"
 									variant="outline"
@@ -564,7 +587,9 @@ function AuditLogsPageContent() {
 
 						<CardContent className="p-0">
 							<div className="min-h-[30rem] bg-[#fbfcfe] p-4">
-								{query.isLoading ? <AuditLogSkeletonList /> : null}
+								{query.isLoading ? (
+									<AuditLogSkeletonList />
+								) : null}
 
 								{query.isError ? (
 									<div
@@ -583,8 +608,9 @@ function AuditLogsPageContent() {
 												Nenhum log encontrado
 											</p>
 											<p className="text-sm leading-6 text-muted-foreground">
-												Ajuste os filtros ou consulte todas as categorias para
-												ampliar a busca.
+												Ajuste os filtros ou consulte
+												todas as categorias para ampliar
+												a busca.
 											</p>
 										</div>
 									</div>
@@ -603,40 +629,54 @@ function AuditLogsPageContent() {
 															<Badge
 																className={cn(
 																	'h-6 rounded-md border px-2.5',
-																	actionBadgeClass(log.action),
+																	actionBadgeClass(
+																		log.action,
+																	),
 																)}
 															>
-																{getAuditLogActionLabel(log.action)}
+																{getAuditLogActionLabel(
+																	log.action,
+																)}
 															</Badge>
 															<Badge
 																className="h-6 rounded-md border-[#d7dee8] bg-white px-2.5 text-[#314155]"
 																variant="outline"
 															>
-																{formatAuditLogEntityLabel(log.entityName)}
+																{formatAuditLogEntityLabel(
+																	log.entityName,
+																)}
 															</Badge>
 														</div>
 
 														<div>
 															<h2 className="text-base font-semibold text-[#1b2430]">
-																{auditLogSummary(log)}
+																{auditLogSummary(
+																	log,
+																)}
 															</h2>
 														</div>
 
 														<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
 															<span className="inline-flex items-center gap-1.5">
 																<UserRound className="size-3.5" />
-																{log.actor?.name ?? 'Sistema'}
+																{log.actor
+																	?.name ??
+																	'Sistema'}
 															</span>
 															<span className="inline-flex items-center gap-1.5">
 																<Clock3 className="size-3.5" />
-																{formatDateTime(log.createdAt)}
+																{formatDateTime(
+																	log.createdAt,
+																)}
 															</span>
 														</div>
 													</div>
 
 													<Button
 														className="shrink-0"
-														onClick={() => setSelectedLog(log)}
+														onClick={() =>
+															setSelectedLog(log)
+														}
 														size="sm"
 														variant="outline"
 													>

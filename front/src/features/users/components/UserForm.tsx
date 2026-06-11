@@ -1,18 +1,22 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ShieldCheck } from 'lucide-react';
+import { PencilLine, ShieldCheck, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
+import {
+	AppModalConfirmPanel,
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
-	DialogDescription,
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -224,17 +228,18 @@ function UsersFormDialog({
 
 	return (
 		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-			<DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>
-						{isEditMode ? 'Editar usuário' : 'Novo usuário'}
-					</DialogTitle>
-					<DialogDescription>
-						{isEditMode
+			<DialogContent className={`${appModalContentClass} sm:max-w-2xl`}>
+				<AppModalHeader
+					category="Usuários"
+					description={
+						isEditMode
 							? 'Atualize papel, credenciais e os grupos de acesso deste usuário.'
-							: 'Cadastre um novo acesso e vincule um ou mais grupos. As permissões somam as features de todos os grupos.'}
-					</DialogDescription>
-				</DialogHeader>
+							: 'Cadastre um novo acesso e vincule um ou mais grupos. As permissões somam as features de todos os grupos.'
+					}
+					icon={isEditMode ? PencilLine : UserPlus}
+					title={isEditMode ? 'Editar usuário' : 'Novo usuário'}
+					tone="violet"
+				/>
 
 				<form
 					className="flex max-h-[calc(100vh-10rem)] flex-col"
@@ -292,15 +297,22 @@ function UsersFormDialog({
 									onChange={(event) =>
 										form.setValue(
 											'role',
-											event.target.value as UserRecord['role'],
-											{ shouldDirty: true, shouldValidate: true },
+											event.target
+												.value as UserRecord['role'],
+											{
+												shouldDirty: true,
+												shouldValidate: true,
+											},
 										)
 									}
 									value={selectedRole}
 									{...requiredFieldProps()}
 								>
 									{roleOptions.map((option) => (
-										<option key={option.value} value={option.value}>
+										<option
+											key={option.value}
+											value={option.value}
+										>
 											{option.label}
 										</option>
 									))}
@@ -311,8 +323,13 @@ function UsersFormDialog({
 							</div>
 
 							<div className="space-y-1.5 md:col-span-2">
-								<Label htmlFor="users-form-password" required={!isEditMode}>
-									{isEditMode ? 'Nova senha (opcional)' : 'Senha inicial'}
+								<Label
+									htmlFor="users-form-password"
+									required={!isEditMode}
+								>
+									{isEditMode
+										? 'Nova senha (opcional)'
+										: 'Senha inicial'}
 								</Label>
 								<Input
 									className="h-11 rounded-xl border-[#d8e0ea] shadow-none focus-visible:border-[#f05a28]/45"
@@ -340,7 +357,8 @@ function UsersFormDialog({
 										{selectedAccessGroupIds.length === 0
 											? 'Nenhum grupo — acesso regido só pelo papel'
 											: `${selectedAccessGroupIds.length} ${
-													selectedAccessGroupIds.length === 1
+													selectedAccessGroupIds.length ===
+													1
 														? 'grupo selecionado'
 														: 'grupos selecionados'
 												}`}
@@ -353,9 +371,10 @@ function UsersFormDialog({
 										</p>
 									) : (
 										accessGroups.map((group) => {
-											const isChecked = selectedAccessGroupIds.includes(
-												group.id,
-											);
+											const isChecked =
+												selectedAccessGroupIds.includes(
+													group.id,
+												);
 											return (
 												<label
 													className={cn(
@@ -369,7 +388,11 @@ function UsersFormDialog({
 													<Checkbox
 														checked={isChecked}
 														className="mt-0.5"
-														onCheckedChange={() => handleToggleGroup(group.id)}
+														onCheckedChange={() =>
+															handleToggleGroup(
+																group.id,
+															)
+														}
 													/>
 													<span className="min-w-0 flex-1">
 														<span className="flex items-center gap-2">
@@ -378,8 +401,15 @@ function UsersFormDialog({
 															</span>
 															<span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[0.68rem] font-medium text-[#c2410c]">
 																<ShieldCheck className="size-3" />
-																{group.featureKeys.length}{' '}
-																{group.featureKeys.length === 1
+																{
+																	group
+																		.featureKeys
+																		.length
+																}{' '}
+																{group
+																	.featureKeys
+																	.length ===
+																1
 																	? 'feature'
 																	: 'features'}
 															</span>
@@ -394,12 +424,16 @@ function UsersFormDialog({
 									)}
 								</div>
 								<p className="text-xs leading-5 text-[#667085]">
-									As permissões efetivas são a união das features de todos os
-									grupos vinculados — sem herança entre grupos.
+									As permissões efetivas são a união das
+									features de todos os grupos vinculados — sem
+									herança entre grupos.
 								</p>
 								{form.formState.errors.accessGroupIds ? (
 									<p className="text-xs text-destructive">
-										{form.formState.errors.accessGroupIds.message}
+										{
+											form.formState.errors.accessGroupIds
+												.message
+										}
 									</p>
 								) : null}
 							</div>
@@ -416,7 +450,7 @@ function UsersFormDialog({
 							Cancelar
 						</Button>
 						<Button
-							className="rounded-xl bg-[#f05a28] text-white hover:bg-[#df4f1f]"
+							className="rounded-xl bg-[#101a33] text-white hover:bg-[#17223d]"
 							disabled={isPending}
 							type="submit"
 						>
@@ -446,23 +480,30 @@ function ConfirmDialog({
 }: DeleteDialogProps) {
 	return (
 		<Dialog onOpenChange={(nextOpen) => !nextOpen && onClose()} open={open}>
-			<DialogContent className="p-0 sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} sm:max-w-lg`}>
+				<AppModalHeader
+					category="Usuários"
+					description={description}
+					icon={Trash2}
+					title={title}
+					tone="danger"
+				/>
 
 				<div className="space-y-4 px-6 py-6">
-					<div className="rounded-2xl border border-[#f1d6d4] bg-[#fff7f7] p-4 text-sm leading-6 text-[#7a2f2a]">
-						A ação será aplicada imediatamente e não pode ser revertida pela
-						interface.
-					</div>
+					<AppModalConfirmPanel icon={Trash2}>
+						A ação será aplicada imediatamente e não pode ser
+						revertida pela interface.
+					</AppModalConfirmPanel>
 
 					<ModalFormErrorBanner message={error} />
 				</div>
 
 				<DialogFooter>
-					<Button className="rounded-xl" onClick={onClose} variant="outline">
+					<Button
+						className="rounded-xl"
+						onClick={onClose}
+						variant="outline"
+					>
 						Cancelar
 					</Button>
 					<Button

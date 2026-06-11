@@ -1,7 +1,13 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoaderCircle } from 'lucide-react';
+import {
+	Building2,
+	LoaderCircle,
+	PencilLine,
+	Trash2,
+	UserPlus,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -9,13 +15,11 @@ import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner
 import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 import { Button } from '@/components/ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalConfirmPanel,
+	AppModalHeader,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
@@ -125,17 +129,19 @@ function CustomerCatalogFormDialog({
 			}}
 			open={open}
 		>
-			<DialogContent className="max-w-md">
-				<DialogHeader>
-					<DialogTitle>
-						{mode === 'create' ? 'Novo cliente' : 'Editar cliente'}
-					</DialogTitle>
-					<DialogDescription>
-						{mode === 'create'
+			<DialogContent className={`${appModalContentClass} max-w-md`}>
+				<AppModalHeader
+					category="Catálogo de leads"
+					description={
+						mode === 'create'
 							? 'O nome é obrigatório; e-mail, telefone e CPF são opcionais.'
-							: 'Atualize os dados do cliente selecionado.'}
-					</DialogDescription>
-				</DialogHeader>
+							: 'Atualize os dados do cliente selecionado.'
+					}
+					icon={mode === 'create' ? UserPlus : PencilLine}
+					title={
+						mode === 'create' ? 'Novo cliente' : 'Editar cliente'
+					}
+				/>
 				<form
 					className="space-y-4 px-1 py-2"
 					onSubmit={form.handleSubmit((v) => void handleSubmit(v))}
@@ -223,7 +229,8 @@ function CustomerCatalogFormDialog({
 						>
 							{isPending ? (
 								<span className="inline-flex items-center gap-2">
-									<LoaderCircle className="size-4 animate-spin" />A guardar…
+									<LoaderCircle className="size-4 animate-spin" />
+									A guardar…
 								</span>
 							) : mode === 'create' ? (
 								'Criar cliente'
@@ -307,17 +314,17 @@ function StoreCatalogFormDialog({
 			}}
 			open={open}
 		>
-			<DialogContent className="max-w-md">
-				<DialogHeader>
-					<DialogTitle>
-						{mode === 'create' ? 'Nova loja' : 'Editar loja'}
-					</DialogTitle>
-					<DialogDescription>
-						{mode === 'create'
+			<DialogContent className={`${appModalContentClass} max-w-md`}>
+				<AppModalHeader
+					category="Catálogo de leads"
+					description={
+						mode === 'create'
 							? 'Cria uma loja no sistema. Apenas administrador ou gestor geral pode gerir lojas.'
-							: 'Altere o nome da loja.'}
-					</DialogDescription>
-				</DialogHeader>
+							: 'Altere o nome da loja.'
+					}
+					icon={mode === 'create' ? Building2 : PencilLine}
+					title={mode === 'create' ? 'Nova loja' : 'Editar loja'}
+				/>
 				<form
 					className="space-y-4 px-1 py-2"
 					onSubmit={form.handleSubmit((v) => void handleSubmit(v))}
@@ -359,7 +366,8 @@ function StoreCatalogFormDialog({
 						>
 							{isPending ? (
 								<span className="inline-flex items-center gap-2">
-									<LoaderCircle className="size-4 animate-spin" />A guardar…
+									<LoaderCircle className="size-4 animate-spin" />
+									A guardar…
 								</span>
 							) : mode === 'create' ? (
 								'Criar loja'
@@ -397,12 +405,18 @@ function CatalogDeleteConfirmDialog({
 }: CatalogDeleteConfirmDialogProps) {
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="max-w-md">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
-				</DialogHeader>
+			<DialogContent className={`${appModalContentClass} max-w-md`}>
+				<AppModalHeader
+					category="Catálogo de leads"
+					description={description}
+					icon={Trash2}
+					title={title}
+					tone="danger"
+				/>
 				<div className="space-y-3 px-1 py-2">
+					<AppModalConfirmPanel icon={Trash2}>
+						{description}
+					</AppModalConfirmPanel>
 					<ModalFormErrorBanner message={error} />
 				</div>
 				<DialogFooter className="gap-2 sm:gap-0">
@@ -423,7 +437,8 @@ function CatalogDeleteConfirmDialog({
 					>
 						{isPending ? (
 							<span className="inline-flex items-center gap-2">
-								<LoaderCircle className="size-4 animate-spin" />A remover…
+								<LoaderCircle className="size-4 animate-spin" />
+								A remover…
 							</span>
 						) : (
 							confirmLabel
