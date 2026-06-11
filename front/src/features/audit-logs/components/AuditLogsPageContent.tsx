@@ -256,7 +256,7 @@ function AuditLogDetailsDialog({
 				{log ? (
 					<div className="grid max-h-[calc(88vh-9rem)] gap-5 overflow-y-auto px-6 py-5 lg:grid-cols-[0.82fr_1.18fr]">
 						<div className="space-y-4">
-							<div className="rounded-xl border border-border/80 bg-[#fbfcfe] p-4">
+							<div className="rounded-xl border border-border/80 bg-white p-4">
 								<p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
 									Ação
 								</p>
@@ -321,12 +321,12 @@ function AuditLogDetailsDialog({
 							</div>
 						</div>
 
-						<div className="min-w-0">
-							<div className="flex items-center gap-2 border-b border-[#202938] bg-[#111827] px-4 py-3 text-sm font-semibold text-white">
+						<div className="min-w-0 overflow-hidden rounded-xl border border-[#e8edf4]">
+							<div className="flex items-center gap-2 border-b border-[#e8edf4] bg-white px-4 py-3 text-sm font-semibold text-[#1b2430]">
 								<Code2 className="size-4" />
 								Metadata JSON
 							</div>
-							<pre className="max-h-[30rem] overflow-auto rounded-b-xl bg-[#0b1020] p-4 font-mono text-xs leading-6 text-[#d8dee9]">
+							<pre className="max-h-[30rem] overflow-auto bg-white p-4 font-mono text-xs leading-6 text-[#506078]">
 								<code>{stringifyMetadata(log.metadata)}</code>
 							</pre>
 						</div>
@@ -417,16 +417,14 @@ function AuditLogsPageContent() {
 
 	return (
 		<section className="space-y-5">
-			<div className="flex flex-col gap-4 rounded-2xl border border-border/85 bg-white p-5 lg:flex-row lg:items-center lg:justify-between">
+			<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 				<div className="flex items-start gap-4">
-					<div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#d96c3f]/20 bg-[#d96c3f]/10 text-[#d96c3f]">
+					<div className="hidden">
 						<FileClock className="size-5" />
 					</div>
 					<div className="min-w-0 space-y-1">
-						<p className="text-xs font-semibold tracking-[0.18em] text-[#d96c3f] uppercase">
-							Auditoria
-						</p>
-						<h1 className="text-2xl font-semibold tracking-tight text-[#1b2430]">
+						<p className="hidden">Auditoria</p>
+						<h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
 							Logs do sistema
 						</h1>
 						<p className="max-w-3xl text-sm leading-6 text-muted-foreground">

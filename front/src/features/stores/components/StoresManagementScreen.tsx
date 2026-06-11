@@ -160,7 +160,10 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		() => [...new Set(rows.map((row) => row.state))],
 		[rows],
 	);
-	const totalLeadCount = rows.reduce((total, row) => total + row.leadCount, 0);
+	const totalLeadCount = rows.reduce(
+		(total, row) => total + row.leadCount,
+		0,
+	);
 	const totalOpenDeals = rows.reduce(
 		(total, row) => total + row.openDealsCount,
 		0,
@@ -201,7 +204,9 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 	async function handleStoreSubmit() {
 		const payload = toStorePayload(storeFormValues);
 		if (!payload) {
-			setDialogError('Informe o nome da loja e uma UF válida com 2 letras.');
+			setDialogError(
+				'Informe o nome da loja e uma UF válida com 2 letras.',
+			);
 			return;
 		}
 
@@ -258,6 +263,16 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				search={search}
 			/>
 
+			<StoresMetricsGrid
+				activeStores={stores.length}
+				averageLeads={averageLeads}
+				averageConversionRate={averageConversionRate}
+				openDeals={totalOpenDeals}
+				storesCount={stores.length}
+				totalLeads={totalLeadCount}
+				uniqueStates={uniqueStates}
+			/>
+
 			<StoresCatalogCard
 				canManageStores={canManageStores}
 				errorMessage={
@@ -284,23 +299,14 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 				totalPages={totalPages}
 			/>
 
-			<StoresMetricsGrid
-				activeStores={stores.length}
-				averageLeads={averageLeads}
-				averageConversionRate={averageConversionRate}
-				openDeals={totalOpenDeals}
-				storesCount={stores.length}
-				totalLeads={totalLeadCount}
-				uniqueStates={uniqueStates}
-			/>
-
 			<StoresInsightsAside rows={rows} storesCount={stores.length} />
 
 			<StoreFormDialog
 				dialogError={dialogError}
 				dialogState={storeDialogState}
 				isPending={
-					createStoreMutation.isPending || updateStoreMutation.isPending
+					createStoreMutation.isPending ||
+					updateStoreMutation.isPending
 				}
 				onClose={() => {
 					setStoreDialogState(null);

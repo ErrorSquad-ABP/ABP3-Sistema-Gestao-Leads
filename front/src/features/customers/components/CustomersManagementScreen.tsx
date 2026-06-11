@@ -4,6 +4,12 @@ import { Handshake, Plus, Search, Target, UsersRound } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/data/TablePagination';
+import { AppTableFilterDropdown } from '@/components/data/AppTableFilterDropdown';
+import {
+	AppPageHeader,
+	appPageActionClass,
+	appPageSearchClass,
+} from '@/components/layout/AppPageHeader';
 import { KpiCard } from '@/components/metrics/KpiCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -75,11 +81,14 @@ function CustomersManagementScreen() {
 	>('');
 	const [selectedStoreId, setSelectedStoreId] = useState('');
 	const [sort, setSort] = useState<CustomerCatalogSort>('recent');
-	const [pageSize, setPageSize] = useState<(typeof pageSizeOptions)[number]>(5);
+	const [pageSize, setPageSize] =
+		useState<(typeof pageSizeOptions)[number]>(5);
 	const [dialogState, setDialogState] = useState<CustomerDialogState | null>(
 		null,
 	);
-	const [deleteTarget, setDeleteTarget] = useState<CustomerRecord | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<CustomerRecord | null>(
+		null,
+	);
 	const [detailsTarget, setDetailsTarget] =
 		useState<CustomerCatalogItem | null>(null);
 	const [formState, setFormState] =
@@ -194,23 +203,33 @@ function CustomersManagementScreen() {
 
 	return (
 		<div className="space-y-5">
-			<div className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight text-foreground">
-						Clientes
-					</h1>
-					<p className="mt-2 text-sm text-muted-foreground">
-						Gerencie seu cadastro comercial e acompanhe seus relacionamentos.
-					</p>
-				</div>
-				<Button
-					className="h-12 rounded-xl bg-[color:var(--brand-accent)] px-5 text-white shadow-none hover:bg-[color:var(--brand-accent-hover)]"
-					onClick={openCreateDialog}
-				>
-					<Plus className="size-4" />
-					Novo cliente
-				</Button>
-			</div>
+			<AppPageHeader
+				action={
+					<Button
+						className={appPageActionClass}
+						onClick={openCreateDialog}
+					>
+						<Plus className="size-4" />
+						Novo cliente
+					</Button>
+				}
+				controls={
+					<div className="relative w-full sm:w-[440px]">
+						<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+						<Input
+							className={appPageSearchClass}
+							onChange={(event) => {
+								setSearch(event.target.value);
+								setPage(1);
+							}}
+							placeholder="Buscar por nome, e-mail, telefone ou CPF"
+							value={search}
+						/>
+					</div>
+				}
+				description="Gerencie seu cadastro comercial e acompanhe seus relacionamentos."
+				title="Clientes"
+			/>
 
 			<div className="grid gap-4 md:grid-cols-3">
 				{metricCards.map((card) => (
@@ -227,71 +246,50 @@ function CustomersManagementScreen() {
 
 			<Card className="overflow-hidden rounded-3xl border-border bg-card">
 				<CardContent className="p-0">
-					<div className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center">
-						<div className="relative flex-1">
-							<Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
-							<Input
-								className="h-12 rounded-xl border-border bg-card pl-11 shadow-none focus-visible:border-[color:var(--brand-accent)]/45"
-								onChange={(event) => {
-									setSearch(event.target.value);
-									setPage(1);
-								}}
-								placeholder="Buscar por nome, e-mail, telefone ou CPF"
-								value={search}
-							/>
-						</div>
-						<div className="flex flex-wrap gap-3">
-							<select
-								className="h-12 rounded-xl border border-border bg-card px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-								onChange={(event) => {
+					<div className="flex flex-col gap-2 p-4 lg:flex-row lg:items-center lg:justify-end">
+						<div className="flex flex-wrap items-center gap-2">
+							<AppTableFilterDropdown
+								defaultValue=""
+								label="Status"
+								onValueChange={(value) => {
 									setSelectedStatus(
-										event.target.value as CustomerCatalogStatus | '',
+										value as CustomerCatalogStatus | '',
 									);
 									setPage(1);
 								}}
+								options={[
+									{ value: '', label: 'Todos os status' },
+									...statusOptions,
+								]}
 								value={selectedStatus}
-							>
-								<option value="">Todos os status</option>
-								{statusOptions.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
-							<select
-								className="h-12 rounded-xl border border-border bg-card px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-								onChange={(event) => {
-									setSelectedStoreId(event.target.value);
+							/>
+							<AppTableFilterDropdown
+								defaultValue=""
+								label="Loja"
+								onValueChange={(value) => {
+									setSelectedStoreId(value);
 									setPage(1);
 								}}
+								options={[
+									{ value: '', label: 'Todas as lojas' },
+									...stores.map((store) => ({
+										value: store.id,
+										label: store.name,
+									})),
+								]}
 								value={selectedStoreId}
-							>
-								<option value="">Todas as lojas</option>
-								{stores.map((store) => (
-									<option key={store.id} value={store.id}>
-										{store.name}
-									</option>
-								))}
-							</select>
-							<div className="flex items-center gap-3">
-								<span className="text-sm whitespace-nowrap text-muted-foreground">
-									Ordenar por
-								</span>
-								<select
-									className="h-12 rounded-xl border border-border bg-card px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-									onChange={(event) => {
-										setSort(event.target.value as CustomerCatalogSort);
-										setPage(1);
-									}}
-									value={sort}
-								>
-									{sortOptions.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
-							</div>
+							/>
+							<AppTableFilterDropdown
+								defaultValue="recent"
+								kind="sort"
+								label="Ordem"
+								onValueChange={(value) => {
+									setSort(value as CustomerCatalogSort);
+									setPage(1);
+								}}
+								options={sortOptions}
+								value={sort}
+							/>
 						</div>
 					</div>
 
@@ -318,7 +316,9 @@ function CustomersManagementScreen() {
 								itemLabel="clientes"
 								onPageChange={setPage}
 								onPageSizeChange={(value) => {
-									setPageSize(value as (typeof pageSizeOptions)[number]);
+									setPageSize(
+										value as (typeof pageSizeOptions)[number],
+									);
 									setPage(1);
 								}}
 								page={catalog?.page ?? page}

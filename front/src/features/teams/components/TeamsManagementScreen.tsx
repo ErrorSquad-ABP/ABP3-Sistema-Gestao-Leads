@@ -6,7 +6,6 @@ import {
 	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
-	Filter,
 	Plus,
 	Search,
 	Target,
@@ -15,9 +14,16 @@ import {
 } from 'lucide-react';
 import { useMemo, useState, useSyncExternalStore } from 'react';
 
+import { AppTableFilterDropdown } from '@/components/data/AppTableFilterDropdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+	AppPageHeader,
+	appPageActionClass,
+	appPageSearchClass,
+} from '@/components/layout/AppPageHeader';
+import { KpiCard, type KpiCardVariant } from '@/components/metrics/KpiCard';
 import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
 import { useLeadOwnersQuery } from '@/features/leads/hooks/leads.catalog.queries';
 import type {
@@ -139,7 +145,10 @@ async function fetchTeamMetrics(
 	signal: AbortSignal,
 ) {
 	const [catalog, negotiatingCatalog] = await Promise.all([
-		fetchLeadCatalog({ limit: 1, page: 1, sort: 'recent', storeId }, signal),
+		fetchLeadCatalog(
+			{ limit: 1, page: 1, sort: 'recent', storeId },
+			signal,
+		),
 		fetchLeadCatalog(
 			{
 				limit: 1,
@@ -164,16 +173,16 @@ async function fetchTeamMetrics(
 	};
 }
 
-function getMetricToneClass(tone: MetricTone) {
+function getMetricVariant(tone: MetricTone): KpiCardVariant {
 	switch (tone) {
 		case 'blue':
-			return 'bg-[#eff6ff] text-[#2563eb]';
+			return 'neutral';
 		case 'green':
-			return 'bg-[#ecfdf3] text-[#079455]';
+			return 'success';
 		case 'orange':
-			return 'bg-[#fff3ee] text-[#f4511e]';
+			return 'brand';
 		case 'purple':
-			return 'bg-[#f4edff] text-[#7f35e8]';
+			return 'neutral';
 	}
 }
 
@@ -191,22 +200,13 @@ function TeamMetricCard({
 	value: string;
 }) {
 	return (
-		<Card className="rounded-2xl border-[#dfe7f1] bg-white shadow-sm">
-			<CardContent className="flex min-h-28 items-center gap-4 p-5">
-				<div
-					className={`flex size-12 shrink-0 items-center justify-center rounded-full ${getMetricToneClass(tone)}`}
-				>
-					<Icon className="size-5" />
-				</div>
-				<div className="space-y-1">
-					<p className="text-xs font-medium text-[#667085]">{label}</p>
-					<p className="text-2xl font-bold tracking-tight text-[#101828]">
-						{value}
-					</p>
-					<p className="text-xs text-[#667085]">{helper}</p>
-				</div>
-			</CardContent>
-		</Card>
+		<KpiCard
+			description={helper}
+			icon={<Icon className="size-5" />}
+			title={label}
+			value={value}
+			variant={getMetricVariant(tone)}
+		/>
 	);
 }
 
@@ -260,7 +260,9 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 						<h2 className="text-base font-bold text-[#101828]">
 							Distribuição por loja
 						</h2>
-						<p className="text-xs text-[#667085]">Top 5 por membros ativos</p>
+						<p className="text-xs text-[#667085]">
+							Top 5 por membros ativos
+						</p>
 					</div>
 					<div className="text-right">
 						<p className="text-lg font-bold text-[#101828]">
@@ -287,8 +289,11 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 											{row.storeName}
 										</p>
 										<p className="text-xs text-[#667085]">
-											{formatCount(row.memberCount)} membros · {row.teamCount}{' '}
-											{row.teamCount === 1 ? 'equipe' : 'equipes'}
+											{formatCount(row.memberCount)}{' '}
+											membros · {row.teamCount}{' '}
+											{row.teamCount === 1
+												? 'equipe'
+												: 'equipes'}
 										</p>
 									</div>
 									<p className="text-sm font-bold text-[#101828]">
@@ -300,7 +305,10 @@ function TeamsDistributionCard({ rows }: { rows: TeamTableRow[] }) {
 										className="h-full rounded-full"
 										style={{
 											backgroundColor:
-												DISTRIBUTION_COLORS[index % DISTRIBUTION_COLORS.length],
+												DISTRIBUTION_COLORS[
+													index %
+														DISTRIBUTION_COLORS.length
+												],
 											width: `${width}%`,
 										}}
 									/>
@@ -332,7 +340,9 @@ function LeadershipHighlightsCard({ rows }: { rows: TeamTableRow[] }) {
 					<h2 className="text-base font-bold text-[#101828]">
 						Lideranças em destaque
 					</h2>
-					<p className="text-xs text-[#667085]">Ranking por performance</p>
+					<p className="text-xs text-[#667085]">
+						Ranking por performance
+					</p>
 				</div>
 				<div className="flex flex-1 flex-col justify-between gap-4">
 					{rankedRows.map((row, index) => (
@@ -453,10 +463,14 @@ function TeamsManagementScreen() {
 	const rows = useMemo<TeamTableRow[]>(
 		() =>
 			teams.map((team) => {
-				const manager = team.managerId ? ownerById.get(team.managerId) : null;
+				const manager = team.managerId
+					? ownerById.get(team.managerId)
+					: null;
 				const store = storeById.get(team.storeId);
 				const metrics = metricsByTeamId.get(team.id);
-				const teamIndex = teams.findIndex((item) => item.id === team.id);
+				const teamIndex = teams.findIndex(
+					(item) => item.id === team.id,
+				);
 				return {
 					colorClass: TEAM_COLORS[teamIndex % TEAM_COLORS.length],
 					conversionRate: metrics?.conversionRate ?? 0,
@@ -498,7 +512,10 @@ function TeamsManagementScreen() {
 		(safePage - 1) * TEAMS_PAGE_SIZE,
 		safePage * TEAMS_PAGE_SIZE,
 	);
-	const totalMembers = rows.reduce((total, row) => total + row.memberCount, 0);
+	const totalMembers = rows.reduce(
+		(total, row) => total + row.memberCount,
+		0,
+	);
 	const totalAssignedLeads = rows.reduce(
 		(total, row) => total + (row.leadCount ?? 0),
 		0,
@@ -590,7 +607,9 @@ function TeamsManagementScreen() {
 					},
 				});
 				const nextManagerId = payload.managerId;
-				if (nextManagerId !== (teamDialogState.team.managerId ?? null)) {
+				if (
+					nextManagerId !== (teamDialogState.team.managerId ?? null)
+				) {
 					await assignTeamManagerMutation.mutateAsync({
 						id: teamDialogState.team.id,
 						managerId: nextManagerId,
@@ -649,7 +668,9 @@ function TeamsManagementScreen() {
 				current
 					? {
 							...current,
-							memberUserIds: [...new Set([...current.memberUserIds, userId])],
+							memberUserIds: [
+								...new Set([...current.memberUserIds, userId]),
+							],
 						}
 					: current,
 			);
@@ -686,57 +707,52 @@ function TeamsManagementScreen() {
 
 	return (
 		<div className="space-y-5">
-			<header className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
-				<div className="space-y-2">
-					<h1 className="text-3xl font-bold tracking-tight text-[#101828]">
-						Equipes
-					</h1>
-					<p className="max-w-4xl text-sm text-[#667085]">
-						Organize as equipes por loja, gerencie líderes e acompanhe a
-						operação comercial do time.
-					</p>
-				</div>
-				<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-					<div className="relative">
-						<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
-						<Input
-							className="h-11 rounded-xl border-[#d8e0ea] bg-white pr-4 pl-10 text-xs shadow-none lg:w-[340px]"
-							onChange={(event) => {
-								setSearch(event.target.value);
-								setPage(1);
-							}}
-							placeholder="Buscar por equipe, loja ou gerente..."
-							value={search}
-						/>
-					</div>
-					<div className="relative">
-						<Filter className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#1f2a44]" />
-						<select
-							className="h-11 appearance-none rounded-xl border border-[#d8e0ea] bg-white pr-8 pl-10 text-xs font-semibold text-[#1f2a44] outline-none"
-							onChange={(event) => {
-								setStoreFilter(event.target.value);
-								setPage(1);
-							}}
-							value={storeFilter}
-						>
-							<option value="ALL">Filtros</option>
-							{stores.map((store) => (
-								<option key={store.id} value={store.id}>
-									{store.name}
-								</option>
-							))}
-						</select>
-					</div>
+			<AppPageHeader
+				action={
 					<Button
-						className="h-11 rounded-xl bg-[#f4511e] px-5 text-sm text-white shadow-sm hover:bg-[#dc3f13]"
+						className={appPageActionClass}
 						disabled={!isHydrated || stores.length === 0}
 						onClick={openCreateTeamDialog}
 					>
 						<Plus className="size-4" />
 						Nova equipe
 					</Button>
-				</div>
-			</header>
+				}
+				controls={
+					<>
+						<div className="relative w-full sm:w-[360px]">
+							<Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#667085]" />
+							<Input
+								className={appPageSearchClass}
+								onChange={(event) => {
+									setSearch(event.target.value);
+									setPage(1);
+								}}
+								placeholder="Buscar por equipe, loja ou gerente..."
+								value={search}
+							/>
+						</div>
+						<AppTableFilterDropdown
+							defaultValue="ALL"
+							label="Loja"
+							onValueChange={(value) => {
+								setStoreFilter(value);
+								setPage(1);
+							}}
+							options={[
+								{ value: 'ALL', label: 'Todas as lojas' },
+								...stores.map((store) => ({
+									value: store.id,
+									label: store.name,
+								})),
+							]}
+							value={storeFilter}
+						/>
+					</>
+				}
+				description="Organize as equipes por loja, gerencie líderes e acompanhe a operação comercial do time."
+				title="Equipes"
+			/>
 
 			<div className="grid gap-4 xl:grid-cols-5">
 				<TeamMetricCard
@@ -805,14 +821,22 @@ function TeamsManagementScreen() {
 								{paginatedRows.length === 0
 									? 0
 									: (safePage - 1) * TEAMS_PAGE_SIZE + 1}{' '}
-								a {Math.min(safePage * TEAMS_PAGE_SIZE, filteredRows.length)} de{' '}
-								{filteredRows.length} equipes
+								a{' '}
+								{Math.min(
+									safePage * TEAMS_PAGE_SIZE,
+									filteredRows.length,
+								)}{' '}
+								de {filteredRows.length} equipes
 							</span>
 							<div className="flex items-center justify-center gap-2">
 								<Button
 									className="size-8 rounded-xl border-[#d8e0ea]"
 									disabled={!isHydrated || safePage <= 1}
-									onClick={() => setPage((current) => Math.max(1, current - 1))}
+									onClick={() =>
+										setPage((current) =>
+											Math.max(1, current - 1),
+										)
+									}
 									size="icon"
 									variant="outline"
 								>
@@ -836,7 +860,11 @@ function TeamsManagementScreen() {
 											key={item}
 											onClick={() => setPage(item)}
 											size="icon"
-											variant={item === safePage ? 'outline' : 'ghost'}
+											variant={
+												item === safePage
+													? 'outline'
+													: 'ghost'
+											}
 										>
 											{item}
 										</Button>
@@ -844,9 +872,13 @@ function TeamsManagementScreen() {
 								)}
 								<Button
 									className="size-8 rounded-xl border-[#d8e0ea]"
-									disabled={!isHydrated || safePage >= totalPages}
+									disabled={
+										!isHydrated || safePage >= totalPages
+									}
 									onClick={() =>
-										setPage((current) => Math.min(totalPages, current + 1))
+										setPage((current) =>
+											Math.min(totalPages, current + 1),
+										)
 									}
 									size="icon"
 									variant="outline"
@@ -897,12 +929,15 @@ function TeamsManagementScreen() {
 				error={
 					membersDialogError ??
 					(dialogMemberCandidatesQuery.isError
-						? humanizePageApiError(dialogMemberCandidatesQuery.error)
+						? humanizePageApiError(
+								dialogMemberCandidatesQuery.error,
+							)
 						: null)
 				}
 				isLoading={dialogMemberCandidatesQuery.isLoading}
 				isPending={
-					addTeamMemberMutation.isPending || removeTeamMemberMutation.isPending
+					addTeamMemberMutation.isPending ||
+					removeTeamMemberMutation.isPending
 				}
 				onAdd={(userId) => {
 					void handleMembersAdd(userId);

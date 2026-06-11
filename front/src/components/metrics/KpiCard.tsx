@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 type KpiCardVariant =
@@ -35,6 +41,27 @@ const deltaClassNames: Record<KpiCardDelta['tone'], string> = {
 	positive: 'text-[color:var(--text-positive)]',
 };
 
+function KpiTextTooltip({
+	children,
+	className,
+	content,
+}: {
+	children: ReactNode;
+	className: string;
+	content: string;
+}) {
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<p className={className}>{children}</p>
+				</TooltipTrigger>
+				<TooltipContent sideOffset={6}>{content}</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
+	);
+}
+
 function variantClassName(variant: KpiCardVariant): string {
 	switch (variant) {
 		case 'danger-soft':
@@ -65,47 +92,73 @@ function KpiCard({
 	return (
 		<Card
 			className={cn(
-				'overflow-hidden border-border/90 bg-card shadow-sm',
+				'h-28 min-h-28 overflow-hidden border-border/90 bg-card shadow-sm',
 				className,
 			)}
 		>
-			<CardContent className="grid min-h-28 grid-cols-[1fr_auto] items-center gap-4 p-5">
-				<div className="min-w-0">
+			<CardContent className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 overflow-hidden p-4">
+				<div className="min-w-0 overflow-hidden">
 					<div className="flex min-w-0 items-start gap-3">
 						{icon ? (
 							<span
 								aria-hidden="true"
 								className={cn(
-									'flex size-11 shrink-0 items-center justify-center rounded-2xl ring-1',
+									'flex size-10 shrink-0 items-center justify-center rounded-xl ring-1',
 									variantClassName(variant),
 								)}
 							>
 								{icon}
 							</span>
 						) : null}
-						<div className="min-w-0">
-							<p className="text-xs font-medium text-muted-foreground">
+						<div className="min-w-0 flex-1 overflow-hidden">
+							<KpiTextTooltip
+								className="truncate text-xs font-medium text-muted-foreground"
+								content={title}
+							>
 								{title}
-							</p>
-							<p className="mt-1 truncate text-2xl leading-none font-semibold tracking-tight text-foreground">
+							</KpiTextTooltip>
+							<KpiTextTooltip
+								className="mt-1 truncate text-xl leading-none font-semibold tracking-tight text-foreground"
+								content={value}
+							>
 								{value}
-							</p>
+							</KpiTextTooltip>
 							{description ? (
-								<p className="mt-1 text-xs leading-5 text-muted-foreground">
+								<KpiTextTooltip
+									className="mt-1 truncate text-xs leading-4 text-muted-foreground"
+									content={description}
+								>
 									{description}
-								</p>
+								</KpiTextTooltip>
 							) : null}
 						</div>
 					</div>
 					{delta ? (
-						<p className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-							<span
-								className={cn('font-semibold', deltaClassNames[delta.tone])}
-							>
-								{delta.value}
-							</span>
-							{delta.label ? <span>{delta.label}</span> : null}
-						</p>
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<div className="mt-2 flex min-w-0 items-center gap-1.5 overflow-hidden text-xs text-muted-foreground">
+										<span
+											className={cn(
+												'min-w-0 max-w-[45%] truncate font-semibold',
+												deltaClassNames[delta.tone],
+											)}
+										>
+											{delta.value}
+										</span>
+										{delta.label ? (
+											<span className="min-w-0 flex-1 truncate">
+												{delta.label}
+											</span>
+										) : null}
+									</div>
+								</TooltipTrigger>
+								<TooltipContent sideOffset={6}>
+									{delta.value}
+									{delta.label ? ` ${delta.label}` : ''}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
 					) : null}
 				</div>
 				{sparkline || action ? (
