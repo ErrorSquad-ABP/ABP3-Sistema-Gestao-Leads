@@ -606,7 +606,7 @@ function AuditLogsPageContent() {
 						</CardHeader>
 
 						<CardContent className="contents">
-							<div className="min-h-[30rem]">
+							<div className="mt-5 min-h-[30rem]">
 								{query.isLoading ? <AuditLogSkeletonList /> : null}
 
 								{query.isError ? (
@@ -634,14 +634,14 @@ function AuditLogsPageContent() {
 								) : null}
 
 								{query.isSuccess && logs.length > 0 ? (
-									<div className="space-y-2">
+									<div className="space-y-3">
 										{logs.map((log) => (
 											<article
-												className="rounded-xl border border-[#e1e8f0] bg-white px-5 py-3.5 transition-colors hover:border-[color:var(--brand-accent)]/35 hover:bg-[#fffdfc]"
+												className="rounded-xl border border-[#e1e8f0] bg-white px-5 py-4 transition-colors hover:border-[color:var(--brand-accent)]/35 hover:bg-[#fffdfc]"
 												key={log.id}
 											>
 												<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-													<div className="min-w-0 space-y-2">
+													<div className="min-w-0 space-y-3">
 														<div className="flex flex-wrap items-center gap-2">
 															<Badge
 																className={cn(
@@ -678,13 +678,13 @@ function AuditLogsPageContent() {
 													</div>
 
 													<Button
-														className="h-9 shrink-0 rounded-lg border-[#d8e1ec] px-4 shadow-none"
+														aria-label="Inspecionar log"
+														className="shrink-0 rounded-lg border-[#d8e1ec] shadow-none"
 														onClick={() => setSelectedLog(log)}
-														size="sm"
+														size="icon-sm"
 														variant="outline"
 													>
 														<Eye className="size-4" />
-														Inspecionar
 													</Button>
 												</div>
 											</article>

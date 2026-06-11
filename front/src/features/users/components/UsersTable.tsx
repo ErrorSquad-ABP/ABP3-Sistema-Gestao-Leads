@@ -283,7 +283,7 @@ function UsersListSection({
 									</TableHead>
 								</TableRow>
 							</TableHeader>
-							<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
+							<TableBody className="table-zebra-body">
 								{isLoading ? (
 									<TableRow className="border-[#e7edf5]">
 										<TableCell

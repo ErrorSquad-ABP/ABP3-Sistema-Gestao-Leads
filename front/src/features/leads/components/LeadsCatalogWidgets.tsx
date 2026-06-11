@@ -200,7 +200,7 @@ function LeadsListCard({
 								<TableHead className="text-right">Ações</TableHead>
 							</TableRow>
 						</TableHeader>
-						<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
+						<TableBody className="table-zebra-body">
 							{items.map((item) => (
 								<TableRow
 									className="border-border hover:bg-[color:var(--table-row-hover)]"
