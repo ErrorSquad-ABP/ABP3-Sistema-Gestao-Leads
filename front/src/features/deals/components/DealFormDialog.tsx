@@ -27,8 +27,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ZodError } from 'zod';
-
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -39,11 +37,11 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { useLeadDetailQuery } from '@/features/leads/hooks/leads.queries';
 import { useVehiclesListQuery } from '@/features/vehicles/hooks/vehicles.queries';
 import { formatVehicleDealSelectLabel } from '@/features/vehicles/lib/vehicle-formatters';
-import { isApiError } from '@/lib/http/api-error';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import {
 	dealImportanceOptions,
 	dealLossReasonOptions,
@@ -57,7 +55,9 @@ import {
 	formatCentsDigitsToBrlDisplay,
 	sanitizeMoneyDigitsInput,
 } from '../lib/deal-money-input';
-import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from '../lib/deal-invalid-stage-transition-user-message';
+import { getDealsErrorMessage } from '../lib/deal-api-errors';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
@@ -95,15 +95,6 @@ const dropdownPanelClass =
 
 const dropdownItemClass =
 	'w-full rounded-lg px-3 py-1.5 text-left text-[13px] text-[#1b2430] hover:bg-[color:var(--brand-accent-soft)]/35';
-
-const DEAL_INVALID_STAGE_TRANSITION_CODE = 'deal.invalid_stage_transition';
-
-function getFriendlyMessageForInvalidStageTransition(apiMessage: string) {
-	if (/negociac[aã]o nova|nova deve iniciar/i.test(apiMessage)) {
-		return 'Negociações novas começam na primeira etapa do funil. Ajuste a etapa e tente de novo.';
-	}
-	return DEAL_INVALID_STAGE_SKIP_USER_MESSAGE;
-}
 
 function normalizeSearch(value: string) {
 	return value.trim().toLowerCase();
@@ -226,39 +217,6 @@ function getOptionLabel<T extends string>(
 	value: T | undefined,
 ) {
 	return options.find((option) => option.value === value)?.label ?? 'Selecione';
-}
-
-function getDealsErrorMessage(error: unknown) {
-	if (error instanceof ZodError) {
-		return error.issues[0]?.message ?? 'Dados inválidos. Revise o formulário.';
-	}
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
-	}
-	if (error.code === DEAL_INVALID_STAGE_TRANSITION_CODE) {
-		return getFriendlyMessageForInvalidStageTransition(error.message);
-	}
-	if (
-		error.status === 400 &&
-		error.errors.some((e) => e.code === DEAL_INVALID_STAGE_TRANSITION_CODE)
-	) {
-		const raw =
-			error.errors.find((e) => e.code === DEAL_INVALID_STAGE_TRANSITION_CODE)
-				?.message ?? error.message;
-		return getFriendlyMessageForInvalidStageTransition(raw);
-	}
-	if (error.status === 400) {
-		return error.message || 'Os dados não passaram na validação da API.';
-	}
-	if (error.status === 403) {
-		return (
-			error.message || 'O seu perfil não tem permissão para esta operação.'
-		);
-	}
-	if (error.status === 404) {
-		return error.message || 'A negociação selecionada não foi encontrada.';
-	}
-	return error.message;
 }
 
 function DealFormDialog({
@@ -439,9 +397,7 @@ function DealFormDialog({
 				value: valueAsApi,
 			} satisfies DealUpdateFormInput);
 			await onSubmit(parsed as DealUpdateInput);
-			toast.success('Negociação alterada com sucesso.', {
-				...dealDarkSidebarToast,
-			});
+			showCrudSuccessToast('deal', 'updated');
 			onClose();
 		} catch (error) {
 			const message = getDealsErrorMessage(error);
@@ -491,11 +447,7 @@ function DealFormDialog({
 								para consulta.
 							</div>
 						) : null}
-						{submitError ? (
-							<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-								{submitError}
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={submitError} />
 
 						<div className="flex items-center justify-between gap-4 rounded-xl border border-[#edf1f6] bg-[#f8fafc] px-4 py-3 text-[#667085]">
 							<div className="flex min-w-0 items-center gap-3">
@@ -545,6 +497,7 @@ function DealFormDialog({
 											})
 										}
 										value={titleValue ?? ''}
+										{...requiredFieldProps()}
 									/>
 								</div>
 								<p className="text-[11.5px] leading-4 text-[#7a8494]">
@@ -1021,4 +974,4 @@ function DealFormDialog({
 	);
 }
 
-export { DealFormDialog, getDealsErrorMessage };
+export { DealFormDialog };

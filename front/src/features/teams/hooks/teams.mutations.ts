@@ -3,9 +3,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/constants/query-keys';
 
 import {
+	addTeamMember,
 	assignTeamManager,
 	createTeam,
 	deleteTeam,
+	removeTeamMember,
 	updateTeam,
 } from '../api/teams.service';
 import type { TeamMutationInput, TeamUpdateInput } from '../model/teams.model';
@@ -64,9 +66,39 @@ function useAssignTeamManagerMutation() {
 	});
 }
 
+function invalidateTeams(queryClient: ReturnType<typeof useQueryClient>) {
+	void queryClient.invalidateQueries({ queryKey: queryKeys.leads.teams });
+	void queryClient.invalidateQueries({
+		queryKey: queryKeys.leads.listRoot,
+	});
+	void queryClient.invalidateQueries({
+		queryKey: ['teams', 'member-candidates'],
+	});
+}
+
+function useAddTeamMemberMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (params: { id: string; userId: string }) =>
+			addTeamMember(params.id, params.userId),
+		onSuccess: () => invalidateTeams(queryClient),
+	});
+}
+
+function useRemoveTeamMemberMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (params: { id: string; userId: string }) =>
+			removeTeamMember(params.id, params.userId),
+		onSuccess: () => invalidateTeams(queryClient),
+	});
+}
+
 export {
+	useAddTeamMemberMutation,
 	useAssignTeamManagerMutation,
 	useCreateTeamMutation,
 	useDeleteTeamMutation,
+	useRemoveTeamMemberMutation,
 	useUpdateTeamMutation,
 };

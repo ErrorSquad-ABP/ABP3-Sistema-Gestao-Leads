@@ -18,10 +18,9 @@ type SeedAccessGroup = Pick<
 
 type SeedStore = Pick<Store, 'id' | 'name'>;
 
-type SeedUser = Pick<
-	User,
-	'id' | 'name' | 'email' | 'password' | 'role' | 'accessGroupId'
->;
+type SeedUser = Pick<User, 'id' | 'name' | 'email' | 'password' | 'role'> & {
+	accessGroupIds: string[];
+};
 
 type SeedTeam = Pick<Team, 'id' | 'name' | 'storeId' | 'managerId'> & {
 	memberIds: string[];

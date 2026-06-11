@@ -14,11 +14,13 @@ import {
 	useStoresQuery,
 } from '@/features/stores/hooks/stores.queries';
 import type { StoreRecord } from '@/features/stores/model/stores.model';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 
 import {
 	getPersonInitials,
 	getStoreInitials,
 	getStoresErrorMessage,
+	getStoresPageErrorMessage,
 	normalizeSearch,
 	resolveStoreProfile,
 	stateLabels,
@@ -210,8 +212,10 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 					id: storeDialogState.store.id,
 					body: payload,
 				});
+				showCrudSuccessToast('store', 'updated');
 			} else {
 				await createStoreMutation.mutateAsync(payload);
+				showCrudSuccessToast('store', 'created');
 			}
 
 			setStoreDialogState(null);
@@ -229,6 +233,7 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 		setDeleteError(null);
 		try {
 			await deleteStoreMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('store', 'deleted');
 			setDeleteTarget(null);
 		} catch (error) {
 			setDeleteError(getStoresErrorMessage(error));
@@ -256,7 +261,9 @@ function StoresManagementScreen({ user }: StoresManagementScreenProps) {
 			<StoresCatalogCard
 				canManageStores={canManageStores}
 				errorMessage={
-					storesQuery.isError ? getStoresErrorMessage(storesQuery.error) : null
+					storesQuery.isError
+						? getStoresPageErrorMessage(storesQuery.error)
+						: null
 				}
 				filteredCount={filteredRows.length}
 				isError={storesQuery.isError}

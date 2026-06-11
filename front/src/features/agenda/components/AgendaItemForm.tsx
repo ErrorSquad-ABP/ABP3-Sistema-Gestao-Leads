@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { fetchLeadCatalog } from '@/features/leads/api/leads.service';
 import type { LeadCatalogItem } from '@/features/leads/model/leads.model';
@@ -241,6 +241,7 @@ function AgendaItemForm({
 							patchState({ type: event.target.value as AgendaItemType })
 						}
 						value={state.type}
+						{...requiredFieldProps()}
 					>
 						<option value="TASK">Tarefa</option>
 						<option value="EVENT">Compromisso</option>
@@ -298,6 +299,7 @@ function AgendaItemForm({
 					onChange={(event) => patchState({ title: event.target.value })}
 					required
 					value={state.title}
+					{...requiredFieldProps()}
 				/>
 			</div>
 
@@ -393,6 +395,7 @@ function AgendaItemForm({
 								required
 								type="datetime-local"
 								value={state.startsAt}
+								{...requiredFieldProps()}
 							/>
 						</div>
 						<div className="space-y-2">

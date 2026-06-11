@@ -24,36 +24,23 @@ function buildEmail(localPart: string) {
 
 function buildUser(overrides?: {
 	name?: string;
-	accessGroupId?: string | null;
+	accessGroupIds?: readonly string[];
 }): User {
 	const id = Uuid.parse('11111111-1111-4111-8111-111111111111');
 	const name = Name.create(overrides?.name ?? 'Maria Silva');
 	const email = Email.create(buildEmail('maria'));
 	const hash = PasswordHash.create(buildSampleHash());
-	const accessGroupId =
-		overrides?.accessGroupId === undefined
-			? null
-			: overrides.accessGroupId === null
-				? null
-				: Uuid.parse(overrides.accessGroupId);
-	return new User(
-		id,
-		name,
-		email,
-		hash,
-		'ATTENDANT',
-		[],
-		[],
-		accessGroupId,
-		null,
+	const accessGroupIds = (overrides?.accessGroupIds ?? []).map((value) =>
+		Uuid.parse(value),
 	);
+	return new User(id, name, email, hash, 'ATTENDANT', [], [], accessGroupIds);
 }
 
 describe('UserFactory', () => {
-	it('create preenche estado inicial sem equipes', () => {
+	it('create preenche estado inicial sem equipes nem grupos', () => {
 		const factory = new UserFactory();
 		const created = factory.create({
-			accessGroupId: null,
+			accessGroupIds: [],
 			name: 'João',
 			email: buildEmail('joao'),
 			passwordHash: buildSampleHash(),
@@ -65,10 +52,28 @@ describe('UserFactory', () => {
 		assert.equal(created.role, 'ATTENDANT');
 		assert.equal(created.memberTeamIds.length, 0);
 		assert.equal(created.managedTeamIds.length, 0);
-		assert.equal(created.accessGroupId, null);
+		assert.equal(created.accessGroupIds.length, 0);
 	});
 
-	it('update preserva vínculos de equipe e altera accessGroupId quando informado', () => {
+	it('create descarta grupos duplicados informados na mesma requisição', () => {
+		const factory = new UserFactory();
+		const groupId = '44444444-4444-4444-8444-444444444444';
+
+		const created = factory.create({
+			accessGroupIds: [groupId, groupId],
+			name: 'João',
+			email: buildEmail('joao'),
+			passwordHash: buildSampleHash(),
+			role: 'ATTENDANT',
+		});
+
+		assert.deepEqual(
+			created.accessGroupIds.map((id) => id.value),
+			[groupId],
+		);
+	});
+
+	it('update preserva vínculos de equipe e substitui grupos quando informados', () => {
 		const factory = new UserFactory();
 		const existing = new User(
 			Uuid.parse('11111111-1111-4111-8111-111111111111'),
@@ -78,11 +83,10 @@ describe('UserFactory', () => {
 			'MANAGER',
 			[Uuid.parse('22222222-2222-4222-8222-222222222222')],
 			[Uuid.parse('33333333-3333-4333-8333-333333333333')],
-			null,
-			null,
+			[],
 		);
 		const next = factory.update(existing, {
-			accessGroupId: '44444444-4444-4444-8444-444444444444',
+			accessGroupIds: ['44444444-4444-4444-8444-444444444444'],
 			name: 'Novo Nome',
 		});
 
@@ -92,9 +96,9 @@ describe('UserFactory', () => {
 		assert.equal(next.role, existing.role);
 		assert.equal(next.memberTeamIds.length, 1);
 		assert.equal(next.managedTeamIds.length, 1);
-		assert.equal(
-			next.accessGroupId?.value,
-			'44444444-4444-4444-8444-444444444444',
+		assert.deepEqual(
+			next.accessGroupIds.map((id) => id.value),
+			['44444444-4444-4444-8444-444444444444'],
 		);
 		assert.ok(next.id.equals(existing.id));
 	});

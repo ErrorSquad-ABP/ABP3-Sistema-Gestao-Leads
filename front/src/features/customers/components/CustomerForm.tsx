@@ -19,6 +19,7 @@ import {
 	UsersRound,
 } from 'lucide-react';
 
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -29,7 +30,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 
 import type {
 	CustomerCatalogItem,
@@ -52,10 +53,15 @@ type CustomerFormState = {
 	cpf: string;
 };
 
+type CustomerFieldErrors = Partial<
+	Pick<CustomerFormState, 'name' | 'email' | 'phone' | 'cpf'>
+>;
+
 type CustomerFormDialogProps = {
 	createPending: boolean;
 	dialogError: string | null;
 	dialogState: CustomerDialogState | null;
+	fieldErrors?: CustomerFieldErrors;
 	formState: CustomerFormState;
 	onClose: () => void;
 	onSave: () => void;
@@ -302,6 +308,7 @@ function CustomerFormDialog({
 	createPending,
 	dialogError,
 	dialogState,
+	fieldErrors = {},
 	formState,
 	onClose,
 	onSave,
@@ -335,12 +342,7 @@ function CustomerFormDialog({
 					}}
 				>
 					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
-						{dialogError ? (
-							<div className="flex items-start gap-2 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-								<AlertCircle className="mt-0.5 size-4 shrink-0" />
-								<p>{dialogError}</p>
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={dialogError} />
 
 						<CustomerModalSection
 							description="Dados principais usados para identificar o cliente na operação."
@@ -362,6 +364,7 @@ function CustomerFormDialog({
 												}))
 											}
 											value={formState.name}
+											{...requiredFieldProps()}
 										/>
 									</CustomerFieldControl>
 								</div>
@@ -370,6 +373,7 @@ function CustomerFormDialog({
 									<Label htmlFor="customer-email">E-mail</Label>
 									<CustomerFieldControl icon={Mail}>
 										<Input
+											aria-invalid={fieldErrors.email ? true : undefined}
 											className={customerFormInputClass}
 											id="customer-email"
 											onChange={(event) =>
@@ -383,6 +387,11 @@ function CustomerFormDialog({
 											value={formState.email}
 										/>
 									</CustomerFieldControl>
+									{fieldErrors.email ? (
+										<p className="text-xs text-destructive">
+											{fieldErrors.email}
+										</p>
+									) : null}
 								</div>
 
 								<div className="space-y-2">
@@ -414,6 +423,7 @@ function CustomerFormDialog({
 									<Label htmlFor="customer-cpf">CPF</Label>
 									<CustomerFieldControl icon={IdCard}>
 										<Input
+											aria-invalid={fieldErrors.cpf ? true : undefined}
 											className={customerFormInputClass}
 											id="customer-cpf"
 											onChange={(event) =>
@@ -426,6 +436,11 @@ function CustomerFormDialog({
 											value={formState.cpf}
 										/>
 									</CustomerFieldControl>
+									{fieldErrors.cpf ? (
+										<p className="text-xs text-destructive">
+											{fieldErrors.cpf}
+										</p>
+									) : null}
 								</div>
 							</div>
 						</CustomerModalSection>
@@ -496,12 +511,7 @@ function CustomerDeleteDialog({
 							</p>
 						</div>
 					</CustomerModalSection>
-					{deleteError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4 shrink-0" />
-							<p>{deleteError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={deleteError} />
 				</div>
 				<DialogFooter className="border-t-0 px-7 pt-1 pb-6">
 					<Button

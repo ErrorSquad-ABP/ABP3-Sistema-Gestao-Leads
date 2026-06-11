@@ -24,8 +24,10 @@ import { useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { isApiError } from '@/lib/http/api-error';
+import { Label, requiredFieldProps } from '@/components/ui/label';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
 import {
 	apiDecimalStringToCentsDigits,
@@ -92,30 +94,6 @@ function VehicleFieldControl({
 			) : null}
 		</div>
 	);
-}
-
-function getVehiclesErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 400) {
-		return (
-			error.message || 'Os dados do veículo não passaram na validação da API.'
-		);
-	}
-
-	if (error.status === 403) {
-		return (
-			error.message || 'O seu perfil não tem permissão para esta operação.'
-		);
-	}
-
-	if (error.status === 404) {
-		return error.message || 'O veículo selecionado não foi encontrado.';
-	}
-
-	return error.message;
 }
 
 function VehicleFormDialog({
@@ -247,9 +225,10 @@ function VehicleFormDialog({
 		try {
 			const parsed = vehicleFormSchema.parse(values);
 			await onSubmit(parsed);
+			showCrudSuccessToast('vehicle', isEditMode ? 'updated' : 'created');
 			onClose();
 		} catch (error) {
-			setSubmitError(getVehiclesErrorMessage(error));
+			setSubmitError(applyFormSubmitErrors(form.setError, error));
 		}
 	}
 
@@ -280,11 +259,7 @@ function VehicleFormDialog({
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
 					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
-						{submitError ? (
-							<div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-								{submitError}
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={submitError} />
 
 						<VehicleModalSection
 							description={
@@ -324,6 +299,7 @@ function VehicleFormDialog({
 													})
 												}
 												value={selectedStoreId}
+												{...requiredFieldProps()}
 											>
 												<option value="" disabled>
 													Selecione uma loja
@@ -365,6 +341,7 @@ function VehicleFormDialog({
 												})
 											}
 											value={brandValue ?? ''}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.brand ? (
@@ -389,6 +366,7 @@ function VehicleFormDialog({
 												})
 											}
 											value={modelValue ?? ''}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.model ? (
@@ -469,6 +447,7 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(modelYearValue)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.modelYear ? (
@@ -548,6 +527,7 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(mileageValue)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.mileage ? (
@@ -577,6 +557,7 @@ function VehicleFormDialog({
 												)
 											}
 											value={fuelValue}
+											{...requiredFieldProps()}
 										>
 											{supportedFuelTypeOptions.map((fuel) => (
 												<option key={fuel.value} value={fuel.value}>
@@ -613,6 +594,7 @@ function VehicleFormDialog({
 											}}
 											placeholder="R$ 0,00"
 											value={formatCentsDigitsToBrlDisplay(priceCentsDigits)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.price ? (
@@ -641,6 +623,7 @@ function VehicleFormDialog({
 												)
 											}
 											value={statusValue}
+											{...requiredFieldProps()}
 										>
 											{vehicleStatusOptions.map((status) => (
 												<option key={status.value} value={status.value}>
@@ -759,4 +742,4 @@ function VehicleFormDialog({
 	);
 }
 
-export { VehicleFormDialog, getVehiclesErrorMessage };
+export { VehicleFormDialog };

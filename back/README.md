@@ -78,7 +78,7 @@ npm run prisma:migrate:deploy
 npm run prisma:seed
 ```
 
-Carga única de demonstração: 4 utilizadores, 5 equipas/lojas e 20 leads (variável `SEED_RECORD_COUNT`).
+Carga única de demonstração: 4 utilizadores, 5 equipas/lojas e 100 leads (variável `SEED_RECORD_COUNT`).
 
 ## Estado atual
 

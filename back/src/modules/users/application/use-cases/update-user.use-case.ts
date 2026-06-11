@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
@@ -8,6 +9,7 @@ import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
 import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest DI — metadata de parâmetro no runtime
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import { UserEmailAlreadyExistsError } from '../../domain/errors/user-email-already-exists.error.js';
@@ -18,7 +20,7 @@ import type { UpdateUserDto } from '../dto/update-user.dto.js';
 
 function hasUserUpdatePayload(dto: UpdateUserDto): boolean {
 	return (
-		dto.accessGroupId !== undefined ||
+		dto.accessGroupIds !== undefined ||
 		dto.name !== undefined ||
 		dto.email !== undefined ||
 		dto.password !== undefined ||
@@ -36,7 +38,7 @@ class UpdateUserUseCase {
 		private readonly passwordHasher: Argon2PasswordHasherService,
 	) {}
 
-	async execute(userId: string, dto: UpdateUserDto) {
+	async execute(actorUserId: string, userId: string, dto: UpdateUserDto) {
 		if (!hasUserUpdatePayload(dto)) {
 			throw new DomainValidationError(
 				'Informe ao menos um campo para atualizar o usuário.',
@@ -46,6 +48,7 @@ class UpdateUserUseCase {
 
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const users = this.userRepositoryFactory.create(transactionContext);
 
 			const idVo = Uuid.parse(userId);
@@ -64,12 +67,14 @@ class UpdateUserUseCase {
 				}
 			}
 
+			const changedFields: string[] = [];
 			let shouldPersist = false;
 
 			if (dto.name !== undefined) {
 				const next = Name.create(dto.name);
 				if (!next.equals(existing.name)) {
 					existing.changeName(next);
+					changedFields.push('name');
 					shouldPersist = true;
 				}
 			}
@@ -77,6 +82,7 @@ class UpdateUserUseCase {
 				const next = Email.create(dto.email);
 				if (!next.equals(existing.email)) {
 					existing.changeEmail(next);
+					changedFields.push('email');
 					shouldPersist = true;
 				}
 			}
@@ -85,6 +91,7 @@ class UpdateUserUseCase {
 				const next = PasswordHash.create(hashed);
 				if (!next.equals(existing.passwordHash)) {
 					existing.changePasswordHash(next);
+					changedFields.push('credentials');
 					shouldPersist = true;
 				}
 			}
@@ -92,25 +99,17 @@ class UpdateUserUseCase {
 				const next = parseUserRole(dto.role);
 				if (next !== existing.role) {
 					existing.changeRole(next);
+					changedFields.push('role');
 					shouldPersist = true;
 				}
 			}
-			if (dto.accessGroupId !== undefined) {
-				const nextAccessGroupId =
-					dto.accessGroupId === null ? null : Uuid.parse(dto.accessGroupId);
-				const sameAccessGroup =
-					existing.accessGroupId === null && nextAccessGroupId === null
-						? true
-						: existing.accessGroupId !== null &&
-							nextAccessGroupId !== null &&
-							existing.accessGroupId.equals(nextAccessGroupId);
-				if (!sameAccessGroup) {
-					const nextAccessGroup =
-						nextAccessGroupId !== null &&
-						(existing.accessGroup?.id.equals(nextAccessGroupId) ?? false)
-							? existing.accessGroup
-							: null;
-					existing.changeAccessGroup(nextAccessGroupId, nextAccessGroup);
+			if (dto.accessGroupIds !== undefined) {
+				const nextAccessGroupIds = [...new Set(dto.accessGroupIds)].map((id) =>
+					Uuid.parse(id),
+				);
+				if (!existing.hasSameAccessGroups(nextAccessGroupIds)) {
+					existing.changeAccessGroups(nextAccessGroupIds, []);
+					changedFields.push('accessGroupIds');
 					shouldPersist = true;
 				}
 			}
@@ -119,7 +118,18 @@ class UpdateUserUseCase {
 				return existing;
 			}
 
-			return users.update(existing);
+			const updated = await users.update(existing);
+			await createAuditLogEntry(tx, {
+				actorUserId,
+				action: 'UPDATE',
+				entityName: 'User',
+				entityId: updated.id.value,
+				metadata: {
+					changedFields,
+				},
+			});
+
+			return updated;
 		});
 	}
 }

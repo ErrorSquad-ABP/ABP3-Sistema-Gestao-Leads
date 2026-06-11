@@ -9,6 +9,7 @@ import {
 	ParseUUIDPipe,
 	Patch,
 	Post,
+	Query,
 	UseGuards,
 } from '@nestjs/common';
 import {
@@ -38,6 +39,7 @@ import {
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { TeamResponseDto } from '../../application/dto/team-response.dto.js';
+import { TeamMemberCandidateResponseDto } from '../../application/dto/team-member-candidate-response.dto.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { AddTeamMemberUseCase } from '../../application/use-cases/add-team-member.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
@@ -48,6 +50,8 @@ import { CreateTeamUseCase } from '../../application/use-cases/create-team.use-c
 import { DeleteTeamUseCase } from '../../application/use-cases/delete-team.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { FindTeamUseCase } from '../../application/use-cases/find-team.use-case.js';
+// biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
+import { ListTeamMemberCandidatesUseCase } from '../../application/use-cases/list-team-member-candidates.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
 import { ListTeamsUseCase } from '../../application/use-cases/list-teams.use-case.js';
 // biome-ignore lint/style/useImportType: Nest DI - tokens em runtime
@@ -61,6 +65,8 @@ import { AddTeamMemberValidator } from '../validators/add-team-member.validator.
 import { AssignTeamManagerValidator } from '../validators/assign-team-manager.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { CreateTeamValidator } from '../validators/create-team.validator.js';
+// biome-ignore lint/style/useImportType: presenter e validators usados em runtime
+import { ListTeamMemberCandidatesValidator } from '../validators/list-team-member-candidates.validator.js';
 // biome-ignore lint/style/useImportType: presenter e validators usados em runtime
 import { UpdateTeamValidator } from '../validators/update-team.validator.js';
 
@@ -103,6 +109,7 @@ class TeamController {
 		private readonly addTeamMemberUseCase: AddTeamMemberUseCase,
 		private readonly removeTeamMemberUseCase: RemoveTeamMemberUseCase,
 		private readonly findTeamUseCase: FindTeamUseCase,
+		private readonly listTeamMemberCandidatesUseCase: ListTeamMemberCandidatesUseCase,
 		private readonly listTeamsUseCase: ListTeamsUseCase,
 		private readonly deleteTeamUseCase: DeleteTeamUseCase,
 	) {}
@@ -148,6 +155,25 @@ class TeamController {
 		return this.listTeamsUseCase
 			.execute({ userId: user.sub, role: user.role })
 			.then((teams) => TeamPresenter.toResponseList(teams));
+	}
+
+	@Get('member-candidates')
+	@ApiOperation({
+		summary: 'Listar usuarios candidatos a membro de equipe',
+		description:
+			'Contrato minimo para selecao e exibicao de membros na tela de equipes. Retorna apenas id, nome e e-mail.',
+	})
+	@ApiOkResponseEnvelopeArray(TeamMemberCandidateResponseDto)
+	@ApiBadRequestResponse(BAD_REQUEST)
+	@ApiInternalServerErrorResponse(SERVER_ERROR)
+	listMemberCandidates(
+		@CurrentUser() user: JwtUser,
+		@Query() query: ListTeamMemberCandidatesValidator,
+	) {
+		return this.listTeamMemberCandidatesUseCase.execute(
+			{ userId: user.sub, role: user.role },
+			query.storeId,
+		);
 	}
 
 	@Patch(':id/manager')

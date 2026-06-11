@@ -37,7 +37,8 @@ import {
 	formatDealValueBRL,
 } from '@/features/deals/lib/deal-labels';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError, isApiError } from '@/lib/http/api-error';
+import { isApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 import {
 	useLeadCustomersQuery,
@@ -62,9 +63,10 @@ import type {
 	ReassignLeadInput,
 	UpdateLeadInput,
 } from '../model/leads.model';
+import { humanizeFormApiError } from '@/lib/http/humanize-api-error';
+
 import {
 	buildOwnerOptions,
-	getLeadsErrorMessage,
 	LeadConfirmDialog,
 	LeadFormDialog,
 	LeadReassignDialog,
@@ -443,30 +445,18 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 
 	async function handleEditSubmit(values: CreateLeadInput | UpdateLeadInput) {
 		if (!targetLead) return;
-		setDialogError(null);
-		try {
-			await updateLeadMutation.mutateAsync({
-				leadId: targetLead.id,
-				payload: values as UpdateLeadInput,
-			});
-			setEditOpen(false);
-		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
-		}
+		await updateLeadMutation.mutateAsync({
+			leadId: targetLead.id,
+			payload: values as UpdateLeadInput,
+		});
 	}
 
 	async function handleReassignSubmit(values: ReassignLeadInput) {
 		if (!targetLead) return;
-		setDialogError(null);
-		try {
-			await reassignLeadMutation.mutateAsync({
-				leadId: targetLead.id,
-				payload: values,
-			});
-			setReassignOpen(false);
-		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
-		}
+		await reassignLeadMutation.mutateAsync({
+			leadId: targetLead.id,
+			payload: values,
+		});
 	}
 
 	async function handleConvertConfirm() {
@@ -476,7 +466,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			await convertLeadMutation.mutateAsync(targetLead.id);
 			setConvertOpen(false);
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -506,11 +496,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 					role="alert"
 				>
-					<p>
-						{detailQuery.error instanceof ApiError
-							? detailQuery.error.message
-							: 'Não foi possível carregar as informações do lead.'}
-					</p>
+					<p>{humanizePageApiError(detailQuery.error)}</p>
 					<Button
 						className="mt-3 rounded-md shadow-none"
 						onClick={() => void detailQuery.refetch()}
@@ -610,7 +596,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					role="alert"
 				>
 					{isApiError(catalogError)
-						? catalogError.message
+						? humanizePageApiError(catalogError)
 						: 'Não foi possível carregar as opções para as ações deste lead.'}
 				</div>
 			) : null}

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { Card, CardContent } from '@/components/ui/card';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 
 import {
 	useDealsPipelineQuery,
@@ -17,6 +17,8 @@ import {
 } from '../hooks/deals.mutations';
 import { getDealFormEditBlockReason } from '../lib/deal-edit-guard';
 import { DEAL_INVALID_STAGE_SKIP_USER_MESSAGE } from '../lib/deal-invalid-stage-transition-user-message';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+
 import { dealDarkSidebarToast } from '../lib/deal-toast-style';
 import type {
 	Deal,
@@ -30,7 +32,8 @@ import type {
 import { DealConfirmDialog } from './DealConfirmDialog';
 import { DealCreateDialog } from './DealCreateDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
-import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
+import { getDealsErrorMessage } from '../lib/deal-api-errors';
+import { DealFormDialog } from './DealFormDialog';
 import { NegotiationsPageTop } from './NegotiationsPageTop';
 import { NegotiationsPipelineSection } from './pipeline/NegotiationsPipelineSection';
 
@@ -199,9 +202,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 				dealId: targetDeal.id,
 				leadId: targetDeal.leadId,
 			});
-			toast.success('Negociação excluída com sucesso.', {
-				...dealDarkSidebarToast,
-			});
+			showCrudSuccessToast('deal', 'deleted');
 			setDeleteOpen(false);
 			setTargetDeal(null);
 		} catch (error) {
@@ -226,9 +227,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 					role="alert"
 				>
-					{query.error instanceof ApiError
-						? query.error.message
-						: 'Não foi possível carregar as negociações.'}
+					{humanizePageApiError(query.error)}
 				</div>
 			) : null}
 

@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { Label } from './label';
+import { Label, requiredFieldProps } from './label';
 
 describe('Label', () => {
 	it('renders an accessible required field marker', () => {
@@ -22,5 +22,13 @@ describe('Label', () => {
 
 		assert.doesNotMatch(html, />\*<\/span>/);
 		assert.doesNotMatch(html, /obrigatório/);
+	});
+
+	it('requiredFieldProps exposes native and aria required flags', () => {
+		assert.deepEqual(requiredFieldProps(), {
+			'aria-required': true,
+			required: true,
+		});
+		assert.deepEqual(requiredFieldProps(false), {});
 	});
 });

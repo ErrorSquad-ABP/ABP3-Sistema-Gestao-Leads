@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { Uuid } from '../../../../shared/domain/types/identifiers.js';
 import { Name } from '../../../../shared/domain/value-objects/name.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 import type { StoreDetails } from '../../domain/entities/store.entity.js';
 import { StoreNotFoundError } from '../../domain/errors/store-not-found.error.js';
 // biome-ignore lint/style/useImportType: Nest needs class values for constructor injection metadata
@@ -22,6 +24,37 @@ function hasStoreUpdatePayload(dto: UpdateStoreDto): boolean {
 		dto.scope !== undefined ||
 		dto.state !== undefined
 	);
+}
+
+function collectStoreChangedFields(dto: UpdateStoreDto): string[] {
+	const changedFields: string[] = [];
+
+	if (dto.name !== undefined) {
+		changedFields.push('name');
+	}
+	if (dto.addressLine !== undefined) {
+		changedFields.push('addressLine');
+	}
+	if (dto.city !== undefined) {
+		changedFields.push('city');
+	}
+	if (dto.coverage !== undefined) {
+		changedFields.push('coverage');
+	}
+	if (dto.distributionRegion !== undefined) {
+		changedFields.push('distributionRegion');
+	}
+	if (dto.region !== undefined) {
+		changedFields.push('region');
+	}
+	if (dto.scope !== undefined) {
+		changedFields.push('scope');
+	}
+	if (dto.state !== undefined) {
+		changedFields.push('state');
+	}
+
+	return changedFields;
 }
 
 function buildStoreDetailUpdates(dto: UpdateStoreDto): Partial<StoreDetails> {
@@ -49,7 +82,7 @@ class UpdateStoreUseCase {
 		private readonly storeRepositoryFactory: StoreRepositoryFactory,
 	) {}
 
-	async execute(storeId: string, dto: UpdateStoreDto) {
+	async execute(actorUserId: string, storeId: string, dto: UpdateStoreDto) {
 		if (!hasStoreUpdatePayload(dto)) {
 			throw new DomainValidationError(
 				'Informe ao menos um campo para atualizar a loja.',
@@ -59,6 +92,7 @@ class UpdateStoreUseCase {
 
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const stores = this.storeRepositoryFactory.create(transactionContext);
 
 			const existing = await stores.findById(Uuid.parse(storeId));
@@ -75,7 +109,17 @@ class UpdateStoreUseCase {
 
 			existing.updateDetails(buildStoreDetailUpdates(dto));
 
-			return stores.update(existing);
+			const updated = await stores.update(existing);
+
+			await createAuditLogEntry(tx, {
+				actorUserId,
+				action: 'UPDATE',
+				entityName: 'Store',
+				entityId: updated.id.value,
+				metadata: { changedFields: collectStoreChangedFields(dto) },
+			});
+
+			return updated;
 		});
 	}
 }

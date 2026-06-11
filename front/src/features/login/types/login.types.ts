@@ -35,6 +35,12 @@ type AuthenticatedUser = {
 	teamId: string | null;
 	memberTeamIds: readonly string[];
 	managedTeamIds: readonly string[];
+	/** Grupos de acesso vinculados (ADR-001: multi-grupo sem herança). */
+	accessGroupIds: readonly string[];
+	accessGroups: readonly AccessGroupSummary[];
+	/** União deduplicada das features de todos os grupos vinculados. */
+	featureKeys: readonly AccessFeatureKey[];
+	/** Legado: primeiro grupo ordenado por nome; clientes novos devem usar accessGroups. */
 	accessGroupId: string | null;
 	accessGroup: AccessGroupSummary | null;
 };
