@@ -31,7 +31,8 @@ describe('AgendaEventCard', () => {
 
 		assert.match(html, /Reunião com cliente/);
 		assert.match(html, /Compromisso/);
-		assert.match(html, /Editar/);
+		assert.match(html, /aria-label="Editar atividade/);
+		assert.match(html, /aria-label="Concluir atividade/);
 		assert.match(html, /Loja Centro/);
 		assert.match(html, /Alinhar proposta/);
 		assert.doesNotMatch(html, /target="_blank"/);

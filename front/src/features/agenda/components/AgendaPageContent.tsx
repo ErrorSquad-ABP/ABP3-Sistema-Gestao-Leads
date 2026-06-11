@@ -350,8 +350,10 @@ function AgendaPageContent() {
 						onComplete={(id) => completeAgendaItem.mutate(id)}
 						onEdit={openEditDialog}
 						onMove={openMoveDialog}
+						remindersPanel={
+							<AgendaRemindersPanel items={visibleItems} />
+						}
 					/>
-					<AgendaRemindersPanel items={visibleItems} />
 					<div className="flex flex-wrap gap-2">
 						<button
 							className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"

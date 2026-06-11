@@ -4,7 +4,7 @@ import {
 	CheckSquare,
 	Clock3,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { KpiCard } from '@/components/metrics/KpiCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +24,7 @@ type Props = {
 	onComplete: (id: string) => void;
 	onEdit: (item: AgendaItem) => void;
 	onMove?: (item: AgendaItem) => void;
+	remindersPanel?: ReactNode;
 };
 
 const TODAY_LIST_LIMIT = 5;
@@ -71,6 +72,7 @@ function AgendaTodayPanel({
 	onComplete,
 	onEdit,
 	onMove,
+	remindersPanel,
 }: Props) {
 	const overview = useMemo(() => buildTodayOverview(items), [items]);
 	const displayItems = overview.displayItems;
@@ -116,33 +118,36 @@ function AgendaTodayPanel({
 				/>
 			</div>
 
-			<Card className="rounded-lg border-border bg-card shadow-none">
-				<CardHeader>
-					<CardTitle className="text-base" id="agenda-today-title">
-						Hoje
-					</CardTitle>
-					<p className="text-sm text-muted-foreground">
-						{overview.overdueItems.length > 0
-							? 'Atividades atrasadas aparecem primeiro.'
-							: 'Próximas atividades do dia.'}
-					</p>
-				</CardHeader>
-				<CardContent>
-					{displayItems.length > 0 ? (
-						<AgendaEventList
-							items={displayItems}
-							onCancel={onCancel}
-							onComplete={onComplete}
-							onEdit={onEdit}
-							onMove={onMove}
-						/>
-					) : (
-						<div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-							Nenhuma atividade pendente para hoje.
-						</div>
-					)}
-				</CardContent>
-			</Card>
+			<div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)]">
+				<Card className="min-w-0 rounded-lg border-border bg-card shadow-none">
+					<CardHeader>
+						<CardTitle className="text-base" id="agenda-today-title">
+							Hoje
+						</CardTitle>
+						<p className="text-sm text-muted-foreground">
+							{overview.overdueItems.length > 0
+								? 'Atividades atrasadas aparecem primeiro.'
+								: 'Próximas atividades do dia.'}
+						</p>
+					</CardHeader>
+					<CardContent>
+						{displayItems.length > 0 ? (
+							<AgendaEventList
+								items={displayItems}
+								onCancel={onCancel}
+								onComplete={onComplete}
+								onEdit={onEdit}
+								onMove={onMove}
+							/>
+						) : (
+							<div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+								Nenhuma atividade pendente para hoje.
+							</div>
+						)}
+					</CardContent>
+				</Card>
+				{remindersPanel}
+			</div>
 		</section>
 	);
 }

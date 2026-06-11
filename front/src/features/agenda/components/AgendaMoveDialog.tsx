@@ -1,13 +1,16 @@
 import { type FormEvent, useState } from 'react';
+import { CalendarClock, MoveRight } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+	AppModalBody,
+	AppModalCancelButton,
+	AppModalFooter,
+	AppModalHeader,
+	AppModalPrimaryButton,
+	AppModalSection,
+	appModalContentClass,
+} from '@/components/modals/AppModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 
@@ -54,40 +57,57 @@ function AgendaMoveDialog({
 			}}
 			open={open}
 		>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Mover atividade</DialogTitle>
-					<DialogDescription>
-						Escolha a nova data. Horário e duração serão preservados.
-					</DialogDescription>
-				</DialogHeader>
-				<form className="space-y-4 px-6 py-5" onSubmit={handleSubmit}>
-					<div className="space-y-2">
-						<Label htmlFor="agenda-move-date" required>
-							Nova data
-						</Label>
-						<Input
-							id="agenda-move-date"
-							onChange={(event) => setDate(event.target.value)}
-							required
-							type="date"
-							value={date}
-							{...requiredFieldProps()}
-						/>
-					</div>
-					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-						<Button
+			<DialogContent className={`${appModalContentClass} max-w-xl`}>
+				<AppModalHeader
+					category="Agenda"
+					description="Escolha a nova data. Horário e duração serão preservados."
+					icon={CalendarClock}
+					title="Mover atividade"
+					tone="info"
+				/>
+				<form
+					className="flex min-h-0 flex-1 flex-col"
+					onSubmit={handleSubmit}
+				>
+					<AppModalBody>
+						<AppModalSection
+							icon={MoveRight}
+							title="Nova data"
+							tone="info"
+						>
+							<div className="space-y-2">
+								<Label htmlFor="agenda-move-date" required>
+									Nova data
+								</Label>
+								<Input
+									id="agenda-move-date"
+									onChange={(event) =>
+										setDate(event.target.value)
+									}
+									required
+									type="date"
+									value={date}
+									{...requiredFieldProps()}
+								/>
+							</div>
+						</AppModalSection>
+					</AppModalBody>
+					<AppModalFooter>
+						<AppModalCancelButton
 							disabled={isSubmitting}
 							onClick={() => onOpenChange(false)}
 							type="button"
-							variant="outline"
 						>
 							Cancelar
-						</Button>
-						<Button disabled={isSubmitting || !item} type="submit">
+						</AppModalCancelButton>
+						<AppModalPrimaryButton
+							disabled={isSubmitting || !item}
+							type="submit"
+						>
+							<MoveRight className="size-4" />
 							Mover
-						</Button>
-					</div>
+						</AppModalPrimaryButton>
+					</AppModalFooter>
 				</form>
 			</DialogContent>
 		</Dialog>
