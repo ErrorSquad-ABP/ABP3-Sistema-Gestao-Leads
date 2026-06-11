@@ -1,24 +1,26 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import Image from 'next/image';
 import {
 	Activity,
 	Building2,
 	CalendarDays,
 	Car,
-	ClipboardList,
 	ChartColumn,
 	ChevronDown,
+	ClipboardList,
 	Handshake,
 	type LucideIcon,
-	Users,
+	ScrollText,
 	UserCog,
 	UserRound,
+	Users,
 } from 'lucide-react';
+import Image from 'next/image';
+import type { ReactNode } from 'react';
 import SimpleBar from 'simplebar-react';
-
-import type { AuthenticatedUser } from '@/features/login/types/login.types';
+import { NavMain } from '@/components/shadcn-space/blocks/dashboard-shell-01/nav-main';
+import UserDropdown from '@/components/shadcn-space/blocks/dashboard-shell-01/user-dropdown';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
 	Sidebar,
 	SidebarContent,
@@ -27,13 +29,11 @@ import {
 	SidebarProvider,
 	useSidebar,
 } from '@/components/ui/sidebar';
+import type { AuthenticatedUser } from '@/features/login/types/login.types';
 import {
 	type AppRouteAccessKey,
 	hasFeatureAccess,
 } from '@/lib/auth/permissions';
-import { NavMain } from '@/components/shadcn-space/blocks/dashboard-shell-01/nav-main';
-import UserDropdown from '@/components/shadcn-space/blocks/dashboard-shell-01/user-dropdown';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import 'simplebar-react/dist/simplebar.min.css';
 
 export type NavItem = {
@@ -119,6 +119,12 @@ const NAV_ADMIN: VisualNavItem[] = [
 		href: '/app/users',
 		icon: UserCog,
 		accessKey: 'users',
+	},
+	{
+		title: 'Auditoria',
+		href: '/app/audit-logs',
+		icon: ScrollText,
+		accessKey: 'auditLogs',
 	},
 ];
 

@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import type { User } from '../../../users/domain/entities/user.entity.js';
@@ -34,6 +36,7 @@ class UpdateOwnEmailUseCase {
 		const { user, refreshSessionsRevoked } = await this.unitOfWork.run(
 			async () => {
 				const transactionContext = this.unitOfWork.getTransactionContext();
+				const tx = transactionContext.client as Prisma.TransactionClient;
 				const users = this.userRepositoryFactory.create(transactionContext);
 				const existing = await loadUserAndVerifyCurrentPassword(
 					users,
@@ -58,6 +61,16 @@ class UpdateOwnEmailUseCase {
 					actorUserId,
 					transactionContext,
 				);
+				await createAuditLogEntry(tx, {
+					actorUserId,
+					action: 'UPDATE',
+					entityName: 'User',
+					entityId: saved.id.value,
+					metadata: {
+						changedFields: ['email'],
+						refreshSessionsRevoked: true,
+					},
+				});
 				return { user: saved, refreshSessionsRevoked: true };
 			},
 		);

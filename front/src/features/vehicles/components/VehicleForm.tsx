@@ -24,8 +24,10 @@ import { useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { isApiError } from '@/lib/http/api-error';
+import { Label, requiredFieldProps } from '@/components/ui/label';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
 import {
 	apiDecimalStringToCentsDigits,
@@ -92,30 +94,6 @@ function VehicleFieldControl({
 			) : null}
 		</div>
 	);
-}
-
-function getVehiclesErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 400) {
-		return (
-			error.message || 'Os dados do veículo não passaram na validação da API.'
-		);
-	}
-
-	if (error.status === 403) {
-		return (
-			error.message || 'O seu perfil não tem permissão para esta operação.'
-		);
-	}
-
-	if (error.status === 404) {
-		return error.message || 'O veículo selecionado não foi encontrado.';
-	}
-
-	return error.message;
 }
 
 function VehicleFormDialog({
@@ -247,9 +225,10 @@ function VehicleFormDialog({
 		try {
 			const parsed = vehicleFormSchema.parse(values);
 			await onSubmit(parsed);
+			showCrudSuccessToast('vehicle', isEditMode ? 'updated' : 'created');
 			onClose();
 		} catch (error) {
-			setSubmitError(getVehiclesErrorMessage(error));
+			setSubmitError(applyFormSubmitErrors(form.setError, error));
 		}
 	}
 
@@ -280,11 +259,7 @@ function VehicleFormDialog({
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
 					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
-						{submitError ? (
-							<div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-								{submitError}
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={submitError} />
 
 						<VehicleModalSection
 							description={
@@ -309,28 +284,34 @@ function VehicleFormDialog({
 										<LockKeyhole className="absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-[#6b7687]" />
 									</div>
 								) : (
-									<VehicleFieldControl icon={Store}>
-										<select
-											className={vehicleFormSelectClass}
-											id="vehicle-form-store"
-											onChange={(event) =>
-												form.setValue('storeId', event.target.value, {
-													shouldDirty: true,
-													shouldValidate: true,
-												})
-											}
-											value={selectedStoreId}
-										>
-											<option value="" disabled>
-												Selecione uma loja
-											</option>
-											{stores.map((store) => (
-												<option key={store.id} value={store.id}>
-													{store.name}
+									<>
+										<Label htmlFor="vehicle-form-store" required>
+											Loja do veículo
+										</Label>
+										<VehicleFieldControl icon={Store}>
+											<select
+												className={vehicleFormSelectClass}
+												id="vehicle-form-store"
+												onChange={(event) =>
+													form.setValue('storeId', event.target.value, {
+														shouldDirty: true,
+														shouldValidate: true,
+													})
+												}
+												value={selectedStoreId}
+												{...requiredFieldProps()}
+											>
+												<option value="" disabled>
+													Selecione uma loja
 												</option>
-											))}
-										</select>
-									</VehicleFieldControl>
+												{stores.map((store) => (
+													<option key={store.id} value={store.id}>
+														{store.name}
+													</option>
+												))}
+											</select>
+										</VehicleFieldControl>
+									</>
 								)}
 								{form.formState.errors.storeId ? (
 									<p className="text-xs text-destructive">
@@ -346,7 +327,9 @@ function VehicleFormDialog({
 						>
 							<div className="grid gap-5 md:grid-cols-2">
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-brand">Marca</Label>
+									<Label htmlFor="vehicle-form-brand" required>
+										Marca
+									</Label>
 									<VehicleFieldControl icon={Tag}>
 										<Input
 											className={vehicleFormInputClass}
@@ -358,6 +341,7 @@ function VehicleFormDialog({
 												})
 											}
 											value={brandValue ?? ''}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.brand ? (
@@ -368,7 +352,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-model">Modelo</Label>
+									<Label htmlFor="vehicle-form-model" required>
+										Modelo
+									</Label>
 									<VehicleFieldControl icon={CarFront}>
 										<Input
 											className={vehicleFormInputClass}
@@ -380,6 +366,7 @@ function VehicleFormDialog({
 												})
 											}
 											value={modelValue ?? ''}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.model ? (
@@ -436,7 +423,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-model-year">Ano do modelo</Label>
+									<Label htmlFor="vehicle-form-model-year" required>
+										Ano do modelo
+									</Label>
 									<VehicleFieldControl icon={CalendarDays}>
 										<Input
 											autoComplete="off"
@@ -458,6 +447,7 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(modelYearValue)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.modelYear ? (
@@ -509,7 +499,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-mileage">Quilometragem</Label>
+									<Label htmlFor="vehicle-form-mileage" required>
+										Quilometragem
+									</Label>
 									<VehicleFieldControl icon={Gauge}>
 										<Input
 											autoComplete="off"
@@ -535,6 +527,7 @@ function VehicleFormDialog({
 												});
 											}}
 											value={formatFiniteIntForInput(mileageValue)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.mileage ? (
@@ -545,7 +538,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-fuel">Combustível</Label>
+									<Label htmlFor="vehicle-form-fuel" required>
+										Combustível
+									</Label>
 									<VehicleFieldControl icon={Fuel}>
 										<select
 											className={vehicleFormSelectClass}
@@ -562,6 +557,7 @@ function VehicleFormDialog({
 												)
 											}
 											value={fuelValue}
+											{...requiredFieldProps()}
 										>
 											{supportedFuelTypeOptions.map((fuel) => (
 												<option key={fuel.value} value={fuel.value}>
@@ -578,7 +574,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-price">Preço</Label>
+									<Label htmlFor="vehicle-form-price" required>
+										Preço
+									</Label>
 									<VehicleFieldControl icon={BadgeDollarSign}>
 										<Input
 											autoComplete="off"
@@ -596,6 +594,7 @@ function VehicleFormDialog({
 											}}
 											placeholder="R$ 0,00"
 											value={formatCentsDigitsToBrlDisplay(priceCentsDigits)}
+											{...requiredFieldProps()}
 										/>
 									</VehicleFieldControl>
 									{form.formState.errors.price ? (
@@ -606,7 +605,9 @@ function VehicleFormDialog({
 								</div>
 
 								<div className="space-y-2">
-									<Label htmlFor="vehicle-form-status">Status</Label>
+									<Label htmlFor="vehicle-form-status" required>
+										Status
+									</Label>
 									<VehicleFieldControl icon={ShieldCheck}>
 										<select
 											className={vehicleFormSelectClass}
@@ -622,6 +623,7 @@ function VehicleFormDialog({
 												)
 											}
 											value={statusValue}
+											{...requiredFieldProps()}
 										>
 											{vehicleStatusOptions.map((status) => (
 												<option key={status.value} value={status.value}>
@@ -740,4 +742,4 @@ function VehicleFormDialog({
 	);
 }
 
-export { VehicleFormDialog, getVehiclesErrorMessage };
+export { VehicleFormDialog };

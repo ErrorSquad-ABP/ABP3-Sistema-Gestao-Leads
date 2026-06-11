@@ -33,7 +33,11 @@ import {
 } from '@/features/teams/hooks/teams.mutations';
 import { useTeamsQuery } from '@/features/teams/hooks/teams.queries';
 import type { TeamRecord } from '@/features/teams/model/teams.model';
-import { isApiError } from '@/lib/http/api-error';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 
 import {
 	emptyTeamForm,
@@ -64,13 +68,6 @@ const DISTRIBUTION_COLORS = [
 	'#5b8def',
 	'#f7b731',
 ] as const;
-
-function getTeamsErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora.';
-	}
-	return error.message;
-}
 
 function normalizeSearch(value: string) {
 	return value
@@ -508,11 +505,11 @@ function TeamsManagementScreen() {
 	const isLoading =
 		teamsQuery.isLoading || ownersQuery.isLoading || storesQuery.isLoading;
 	const errorMessage = teamsQuery.isError
-		? getTeamsErrorMessage(teamsQuery.error)
+		? humanizePageApiError(teamsQuery.error)
 		: ownersQuery.isError
-			? getTeamsErrorMessage(ownersQuery.error)
+			? humanizePageApiError(ownersQuery.error)
 			: storesQuery.isError
-				? getTeamsErrorMessage(storesQuery.error)
+				? humanizePageApiError(storesQuery.error)
 				: null;
 
 	function openCreateTeamDialog() {
@@ -558,18 +555,20 @@ function TeamsManagementScreen() {
 						managerId: nextManagerId,
 					});
 				}
+				showCrudSuccessToast('team', 'updated');
 			} else {
 				await createTeamMutation.mutateAsync({
 					name: payload.name,
 					storeId: payload.storeId,
 					managerId: payload.managerId,
 				});
+				showCrudSuccessToast('team', 'created');
 			}
 
 			setTeamDialogState(null);
 			setTeamFormState(emptyTeamForm);
 		} catch (error) {
-			setDialogError(getTeamsErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -581,9 +580,10 @@ function TeamsManagementScreen() {
 		setDeleteError(null);
 		try {
 			await deleteTeamMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('team', 'deleted');
 			setDeleteTarget(null);
 		} catch (error) {
-			setDeleteError(getTeamsErrorMessage(error));
+			setDeleteError(humanizeFormApiError(error));
 		}
 	}
 

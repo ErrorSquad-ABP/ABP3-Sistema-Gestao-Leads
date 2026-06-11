@@ -1,7 +1,6 @@
 'use client';
 
-import { AlertCircle } from 'lucide-react';
-
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -12,7 +11,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 
 import type {
 	StoreDialogMode,
@@ -25,14 +24,25 @@ type StoreDialogState = {
 	store: StoreRecord | null;
 };
 
+type StoreFormValues = {
+	addressLine: string;
+	city: string;
+	coverage: string;
+	distributionRegion: string;
+	name: string;
+	region: string;
+	scope: string;
+	state: string;
+};
+
 type StoreFormDialogProps = {
 	dialogError: string | null;
 	dialogState: StoreDialogState | null;
 	isPending: boolean;
 	onClose: () => void;
 	onSave: () => void;
-	onValueChange: (value: string) => void;
-	value: string;
+	onValueChange: (field: keyof StoreFormValues, value: string) => void;
+	values: StoreFormValues;
 };
 
 type StoreDeleteDialogProps = {
@@ -43,15 +53,43 @@ type StoreDeleteDialogProps = {
 	target: StoreRecord | null;
 };
 
-const emptyStoreName = '';
+const emptyStoreFormValues: StoreFormValues = {
+	addressLine: '',
+	city: '',
+	coverage: '',
+	distributionRegion: '',
+	name: '',
+	region: '',
+	scope: '',
+	state: '',
+};
 
-function toStorePayload(name: string): StoreMutationInput | null {
-	const nextName = name.trim();
+function optionalText(value: string): string | null {
+	const trimmed = value.trim();
+	return trimmed ? trimmed : null;
+}
+
+function toStorePayload(values: StoreFormValues): StoreMutationInput | null {
+	const nextName = values.name.trim();
 	if (!nextName) {
 		return null;
 	}
 
-	return { name: nextName };
+	const state = optionalText(values.state)?.toUpperCase() ?? null;
+	if (state !== null && !/^[A-Z]{2}$/.test(state)) {
+		return null;
+	}
+
+	return {
+		addressLine: optionalText(values.addressLine),
+		city: optionalText(values.city),
+		coverage: optionalText(values.coverage),
+		distributionRegion: optionalText(values.distributionRegion),
+		name: nextName,
+		region: optionalText(values.region),
+		scope: optionalText(values.scope),
+		state,
+	};
 }
 
 function StoreFormDialog({
@@ -61,7 +99,7 @@ function StoreFormDialog({
 	onClose,
 	onSave,
 	onValueChange,
-	value,
+	values,
 }: StoreFormDialogProps) {
 	return (
 		<Dialog
@@ -79,19 +117,88 @@ function StoreFormDialog({
 				</DialogHeader>
 				<div className="grid gap-4 px-6 py-5">
 					<div className="grid gap-2">
-						<Label htmlFor="store-name">Nome da loja</Label>
+						<Label htmlFor="store-name" required>
+							Nome da loja
+						</Label>
 						<Input
 							id="store-name"
-							onChange={(event) => onValueChange(event.target.value)}
-							value={value}
+							onChange={(event) => onValueChange('name', event.target.value)}
+							value={values.name}
+							{...requiredFieldProps()}
 						/>
 					</div>
-					{dialogError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{dialogError}</p>
+					<div className="grid gap-4 md:grid-cols-2">
+						<div className="grid gap-2">
+							<Label htmlFor="store-address">Endereço</Label>
+							<Input
+								id="store-address"
+								onChange={(event) =>
+									onValueChange('addressLine', event.target.value)
+								}
+								value={values.addressLine}
+							/>
 						</div>
-					) : null}
+						<div className="grid gap-2">
+							<Label htmlFor="store-city">Cidade</Label>
+							<Input
+								id="store-city"
+								onChange={(event) => onValueChange('city', event.target.value)}
+								value={values.city}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="store-state">UF</Label>
+							<Input
+								id="store-state"
+								maxLength={2}
+								onChange={(event) =>
+									onValueChange('state', event.target.value.toUpperCase())
+								}
+								value={values.state}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="store-coverage">Cobertura</Label>
+							<Input
+								id="store-coverage"
+								onChange={(event) =>
+									onValueChange('coverage', event.target.value)
+								}
+								value={values.coverage}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="store-region">Região</Label>
+							<Input
+								id="store-region"
+								onChange={(event) =>
+									onValueChange('region', event.target.value)
+								}
+								value={values.region}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="store-distribution-region">
+								Região de distribuição
+							</Label>
+							<Input
+								id="store-distribution-region"
+								onChange={(event) =>
+									onValueChange('distributionRegion', event.target.value)
+								}
+								value={values.distributionRegion}
+							/>
+						</div>
+					</div>
+					<div className="grid gap-2">
+						<Label htmlFor="store-scope">Abrangência</Label>
+						<Input
+							id="store-scope"
+							onChange={(event) => onValueChange('scope', event.target.value)}
+							value={values.scope}
+						/>
+					</div>
+					<ModalFormErrorBanner message={dialogError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">
@@ -130,12 +237,7 @@ function StoreDeleteDialog({
 					<p className="text-sm text-[#1b2430]">
 						Loja: <span className="font-medium">{target?.name}</span>
 					</p>
-					{deleteError ? (
-						<div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							<AlertCircle className="mt-0.5 size-4" />
-							<p>{deleteError}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={deleteError} />
 				</div>
 				<DialogFooter>
 					<Button className="rounded-md" onClick={onClose} variant="outline">
@@ -156,9 +258,10 @@ function StoreDeleteDialog({
 }
 
 export {
-	emptyStoreName,
+	emptyStoreFormValues,
 	StoreDeleteDialog,
 	StoreFormDialog,
 	toStorePayload,
 	type StoreDialogState,
+	type StoreFormValues,
 };

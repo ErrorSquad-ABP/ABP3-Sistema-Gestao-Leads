@@ -14,11 +14,14 @@
 
 ## Filtro temporal
 
-- Parâmetros opcionais: `startDate` e `endDate` (ISO-8601).
+- Parâmetros opcionais de API: `startDate` e `endDate` (ISO-8601).
+- A UI operacional usa seletor de mês no formato `YYYY-MM` e envia o mês convertido para:
+- `startDate`: primeiro dia do mês às `00:00:00.000Z` (inclusivo).
+- `endDate`: primeiro dia do mês seguinte às `00:00:00.000Z` (exclusivo).
 - Regra:
 - ambos devem ser enviados juntos; caso contrário, `400`.
 - `startDate < endDate`; caso contrário, `400`.
-- padrão quando omitidos: últimos `30` dias.
+- quando omitidos, o backend mantém compatibilidade com janela móvel de `30` dias; a UI operacional não usa esse padrão.
 - Semântica:
 - `startDate` inclusivo.
 - `endDate` exclusivo.
@@ -31,8 +34,8 @@
   "message": null,
   "data": {
     "period": {
-      "startDate": "2026-03-29T00:00:00.000Z",
-      "endDate": "2026-04-28T00:00:00.000Z",
+      "startDate": "2026-04-01T00:00:00.000Z",
+      "endDate": "2026-05-01T00:00:00.000Z",
       "days": 30
     },
     "scope": {

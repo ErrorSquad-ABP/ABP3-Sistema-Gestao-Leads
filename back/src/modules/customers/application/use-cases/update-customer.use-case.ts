@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
@@ -9,6 +10,7 @@ import { CustomerNotFoundError } from '../../domain/errors/customer-not-found.er
 import { CustomerEmailAlreadyExistsError } from '../../domain/errors/customer-email-already-exists.error.js';
 import { CustomerCpfAlreadyExistsError } from '../../domain/errors/customer-cpf-already-exists.error.js';
 import { Customer } from '../../domain/entities/customer.entity.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { CustomerRepositoryFactory } from '../../infrastructure/persistence/factories/customer-repository.factory.js';
 import type { UpdateCustomerDto } from '../dto/update-customer.dto.js';
@@ -31,7 +33,11 @@ class UpdateCustomerUseCase {
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 	) {}
 
-	async execute(customerId: string, dto: UpdateCustomerDto) {
+	async execute(
+		actorUserId: string,
+		customerId: string,
+		dto: UpdateCustomerDto,
+	) {
 		if (!hasCustomerUpdatePayload(dto)) {
 			throw new DomainValidationError(
 				'Informe ao menos um campo para atualizar o cliente.',
@@ -41,6 +47,7 @@ class UpdateCustomerUseCase {
 
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const customers =
 				this.customerRepositoryFactory.create(transactionContext);
 
@@ -77,8 +84,43 @@ class UpdateCustomerUseCase {
 			if (Customer.sameState(existing, updated)) {
 				return existing;
 			}
+			const changedFields = [
+				!existing.name.equals(updated.name) ? 'name' : null,
+				existing.email === null && updated.email === null
+					? null
+					: existing.email === null ||
+							updated.email === null ||
+							!existing.email.equals(updated.email)
+						? 'email'
+						: null,
+				existing.phone === null && updated.phone === null
+					? null
+					: existing.phone === null ||
+							updated.phone === null ||
+							!existing.phone.equals(updated.phone)
+						? 'phone'
+						: null,
+				existing.cpf === null && updated.cpf === null
+					? null
+					: existing.cpf === null ||
+							updated.cpf === null ||
+							!existing.cpf.equals(updated.cpf)
+						? 'cpf'
+						: null,
+			].filter((field): field is string => field !== null);
 
-			return customers.update(updated);
+			const saved = await customers.update(updated);
+			await createAuditLogEntry(tx, {
+				actorUserId,
+				action: 'UPDATE',
+				entityName: 'Customer',
+				entityId: saved.id.value,
+				metadata: {
+					changedFields,
+				},
+			});
+
+			return saved;
 		});
 	}
 }

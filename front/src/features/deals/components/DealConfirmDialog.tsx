@@ -2,6 +2,7 @@
 
 import { Trash2 } from 'lucide-react';
 
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -48,11 +49,7 @@ function DealConfirmDialog({
 						<Trash2 className="mt-0.5 size-4 text-destructive" />
 						<p>{description}</p>
 					</div>
-					{error ? (
-						<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							{error}
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={error} />
 				</div>
 				<DialogFooter>
 					<Button

@@ -24,7 +24,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLeadStoresQuery } from '@/features/leads/hooks/leads.catalog.queries';
-import { isApiError } from '@/lib/http/api-error';
+import {
+	mapApiFieldErrors,
+	resolveFormSubmitError,
+} from '@/lib/http/apply-api-form-errors';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 
 import {
@@ -70,18 +78,6 @@ const sortOptions: {
 	{ value: 'value_desc', label: 'Maior valor' },
 	{ value: 'name_asc', label: 'Nome A-Z' },
 ];
-
-function getCustomersErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora.';
-	}
-
-	if (error.status === 409) {
-		return 'Já existe um cliente com os dados informados.';
-	}
-
-	return error.message;
-}
 
 function formatCount(value: number) {
 	return value.toLocaleString('pt-BR');
@@ -170,6 +166,9 @@ function CustomersManagementScreen() {
 	const [formState, setFormState] =
 		useState<CustomerFormState>(emptyCustomerForm);
 	const [dialogError, setDialogError] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<
+		Partial<Pick<CustomerFormState, 'name' | 'email' | 'phone' | 'cpf'>>
+	>({});
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 
 	const catalogQuery = useCustomerCatalogQuery({
@@ -225,12 +224,14 @@ function CustomersManagementScreen() {
 
 	function openCreateDialog() {
 		setDialogError(null);
+		setFieldErrors({});
 		setFormState(emptyCustomerForm);
 		setDialogState({ mode: 'create', customer: null });
 	}
 
 	function openEditDialog(item: CustomerCatalogItem) {
 		setDialogError(null);
+		setFieldErrors({});
 		setFormState(toCustomerFormState(item.customer));
 		setDialogState({ mode: 'edit', customer: item.customer });
 	}
@@ -243,20 +244,24 @@ function CustomersManagementScreen() {
 		}
 
 		setDialogError(null);
+		setFieldErrors({});
 		try {
 			if (dialogState?.mode === 'edit' && dialogState.customer) {
 				await updateCustomerMutation.mutateAsync({
 					id: dialogState.customer.id,
 					body: payload,
 				});
+				showCrudSuccessToast('customer', 'updated');
 			} else {
 				await createCustomerMutation.mutateAsync(payload);
+				showCrudSuccessToast('customer', 'created');
 			}
 
 			setDialogState(null);
 			setFormState(emptyCustomerForm);
 		} catch (error) {
-			setDialogError(getCustomersErrorMessage(error));
+			setFieldErrors(mapApiFieldErrors(error));
+			setDialogError(resolveFormSubmitError(error));
 		}
 	}
 
@@ -268,9 +273,10 @@ function CustomersManagementScreen() {
 		setDeleteError(null);
 		try {
 			await deleteCustomerMutation.mutateAsync(deleteTarget.id);
+			showCrudSuccessToast('customer', 'deleted');
 			setDeleteTarget(null);
 		} catch (error) {
-			setDeleteError(getCustomersErrorMessage(error));
+			setDeleteError(humanizeFormApiError(error));
 		}
 	}
 
@@ -407,7 +413,7 @@ function CustomersManagementScreen() {
 						</div>
 					) : catalogQuery.isError ? (
 						<div className="border-t border-destructive/20 bg-destructive/5 px-7 py-4 text-sm text-destructive">
-							{getCustomersErrorMessage(catalogQuery.error)}
+							{humanizePageApiError(catalogQuery.error)}
 						</div>
 					) : (
 						<CustomersTable
@@ -508,15 +514,20 @@ function CustomersManagementScreen() {
 				createPending={createCustomerMutation.isPending}
 				dialogError={dialogError}
 				dialogState={dialogState}
+				fieldErrors={fieldErrors}
 				formState={formState}
 				onClose={() => {
 					setDialogState(null);
 					setDialogError(null);
+					setFieldErrors({});
 				}}
 				onSave={() => {
 					void handleCustomerSubmit();
 				}}
-				onStateChange={(updater) => setFormState(updater)}
+				onStateChange={(updater) => {
+					setFieldErrors({});
+					setFormState(updater);
+				}}
 				updatePending={updateCustomerMutation.isPending}
 			/>
 

@@ -36,8 +36,15 @@ class StorePrismaRepository implements IStoreRepository {
 		const record = StoreMapper.toRecord(store);
 		const created = await this.client.store.create({
 			data: {
+				addressLine: record.addressLine,
+				city: record.city,
+				coverage: record.coverage,
+				distributionRegion: record.distributionRegion,
 				id: record.id,
 				name: record.name,
+				region: record.region,
+				scope: record.scope,
+				state: record.state,
 			},
 		});
 		return StoreMapper.toDomain(created);
@@ -46,7 +53,16 @@ class StorePrismaRepository implements IStoreRepository {
 	async update(store: Parameters<IStoreRepository['update']>[0]) {
 		const record = StoreMapper.toRecord(store);
 		const updated = await this.client.store.update({
-			data: { name: record.name },
+			data: {
+				addressLine: record.addressLine,
+				city: record.city,
+				coverage: record.coverage,
+				distributionRegion: record.distributionRegion,
+				name: record.name,
+				region: record.region,
+				scope: record.scope,
+				state: record.state,
+			},
 			where: { id: record.id },
 		});
 		return StoreMapper.toDomain(updated);
@@ -75,6 +91,92 @@ class StorePrismaRepository implements IStoreRepository {
 			orderBy: { createdAt: 'desc' },
 		});
 		return stores.map((store) => StoreMapper.toDomain(store));
+	}
+
+	async listMetrics() {
+		const [storeRows, leadGroups, openLeadGroups, wonDealRows] =
+			await Promise.all([
+				this.client.store.findMany({
+					orderBy: { createdAt: 'desc' },
+					select: { id: true },
+				}),
+				this.client.lead.groupBy({
+					by: ['storeId', 'status'],
+					_count: { _all: true },
+				}),
+				this.client.lead.groupBy({
+					by: ['storeId'],
+					where: { deals: { some: { status: 'OPEN' } } },
+					_count: { _all: true },
+				}),
+				this.client.deal.findMany({
+					where: { status: 'WON' },
+					select: {
+						value: true,
+						lead: { select: { storeId: true } },
+					},
+				}),
+			]);
+
+		const metrics = new Map<
+			string,
+			{
+				converted: number;
+				openDeals: number;
+				total: number;
+				wonValue: number;
+			}
+		>();
+
+		for (const store of storeRows) {
+			metrics.set(store.id, {
+				converted: 0,
+				openDeals: 0,
+				total: 0,
+				wonValue: 0,
+			});
+		}
+
+		function getMetric(storeId: string) {
+			const current = metrics.get(storeId) ?? {
+				converted: 0,
+				openDeals: 0,
+				total: 0,
+				wonValue: 0,
+			};
+			metrics.set(storeId, current);
+			return current;
+		}
+
+		for (const group of leadGroups) {
+			const current = getMetric(group.storeId);
+			current.total += group._count._all;
+			if (group.status === 'CONVERTED') {
+				current.converted += group._count._all;
+			}
+		}
+
+		for (const group of openLeadGroups) {
+			const current = getMetric(group.storeId);
+			current.openDeals = group._count._all;
+		}
+
+		for (const deal of wonDealRows) {
+			const current = getMetric(deal.lead.storeId);
+			if (deal.value !== null) {
+				current.wonValue += Number(deal.value.toString());
+			}
+		}
+
+		return Array.from(metrics, ([storeId, item]) => ({
+			storeId,
+			total: item.total,
+			converted: item.converted,
+			openDeals: item.openDeals,
+			conversionRate:
+				item.total > 0 ? Math.round((item.converted / item.total) * 100) : 0,
+			wonValue: item.wonValue,
+		}));
 	}
 
 	async countBlockingReferences(id: Parameters<IStoreRepository['delete']>[0]) {

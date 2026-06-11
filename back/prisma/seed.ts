@@ -17,7 +17,7 @@ const DEFAULT_SEED_PASSWORD_LABEL = ['admin', '123'].join('');
 
 export async function runSeed() {
 	console.log(
-		'Running demo seed (4 users, 5 teams, 20 operational records by default)...',
+		'Running demo seed (4 users, 5 teams, 100 operational records by default)...',
 	);
 	console.log(
 		`Login: admin@crm.com / geral@crm.com / gerente@crm.com / atendente@crm.com — password SEED_DEFAULT_PASSWORD or ${DEFAULT_SEED_PASSWORD_LABEL}`,

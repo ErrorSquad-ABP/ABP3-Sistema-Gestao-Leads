@@ -28,6 +28,10 @@ import {
 	ApiOkResponseEnvelopeArray,
 } from '../../../../shared/presentation/swagger/api-success-response.js';
 import { AccessGroupSummaryDto } from '../../application/dto/access-group-summary.dto.js';
+import {
+	CurrentUser,
+	type JwtUser,
+} from '../../../auth/presentation/decorators/current-user.decorator.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { AccessGroupsService } from '../../application/services/access-groups.service.js';
 // biome-ignore lint/style/useImportType: validators em runtime
@@ -69,8 +73,11 @@ class AccessGroupController {
 		description: 'Já existe um grupo com este nome.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async create(@Body() body: CreateAccessGroupValidator) {
-		return this.accessGroupsService.create({
+	async create(
+		@CurrentUser() actor: JwtUser,
+		@Body() body: CreateAccessGroupValidator,
+	) {
+		return this.accessGroupsService.create(actor.userId, {
 			name: body.name,
 			description: body.description,
 			baseRole: (body.baseRole ?? null) as
@@ -95,10 +102,11 @@ class AccessGroupController {
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
 	async update(
+		@CurrentUser() actor: JwtUser,
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() body: UpdateAccessGroupValidator,
 	) {
-		return this.accessGroupsService.update(id, {
+		return this.accessGroupsService.update(actor.userId, id, {
 			name: body.name,
 			description: body.description,
 			baseRole: body.baseRole as
@@ -121,8 +129,11 @@ class AccessGroupController {
 		description: 'UUID inválido ou tentativa de remover grupo canônico.',
 	})
 	@ApiInternalServerErrorResponse(SERVER_ERROR)
-	async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-		await this.accessGroupsService.delete(id);
+	async delete(
+		@CurrentUser() actor: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.accessGroupsService.delete(actor.userId, id);
 	}
 }
 

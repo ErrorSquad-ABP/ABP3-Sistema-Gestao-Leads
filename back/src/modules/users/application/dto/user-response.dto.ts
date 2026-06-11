@@ -43,19 +43,41 @@ class UserResponseDto {
 	})
 	managedTeamIds!: string[];
 
+	@ApiProperty({
+		type: [String],
+		format: 'uuid',
+		description: 'Grupos de acesso vinculados ao usuário (ADR-001).',
+	})
+	accessGroupIds!: string[];
+
+	@ApiProperty({
+		type: [AccessGroupSummaryDto],
+		description: 'Resumo de cada grupo vinculado, ordenado por nome.',
+	})
+	accessGroups!: AccessGroupSummaryDto[];
+
+	@ApiProperty({
+		type: [String],
+		description:
+			'União deduplicada das features de todos os grupos vinculados — sem herança entre grupos.',
+	})
+	featureKeys!: string[];
+
 	@ApiPropertyOptional({
 		format: 'uuid',
 		nullable: true,
+		deprecated: true,
 		description:
-			'Grupo de acesso vinculado ao utilizador; null se não houver grupo associado.',
+			'Legado (compatibilidade): primeiro grupo vinculado ordenado por nome; null sem grupos. Clientes novos devem usar accessGroupIds.',
 	})
 	accessGroupId!: string | null;
 
 	@ApiPropertyOptional({
 		type: AccessGroupSummaryDto,
 		nullable: true,
+		deprecated: true,
 		description:
-			'Regras de acesso e feature toggles vinculados ao utilizador nesta etapa do produto.',
+			'Legado (compatibilidade): resumo do primeiro grupo ordenado por nome. Clientes novos devem usar accessGroups e featureKeys.',
 	})
 	accessGroup!: AccessGroupSummaryDto | null;
 }

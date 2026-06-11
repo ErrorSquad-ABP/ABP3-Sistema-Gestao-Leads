@@ -1,33 +1,24 @@
 'use client';
 
-import {
-	CalendarDays,
-	Download,
-	Filter,
-	Plus,
-	Search,
-	Target,
-	Trophy,
-	UsersRound,
-	Zap,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { CalendarDays, Plus, Search, Target, Trophy, Zap } from 'lucide-react';
 import { useMemo, useState } from 'react';
-
+import { KpiCard } from '@/components/metrics/KpiCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { LeadDealsDialog } from '@/features/deals/components/LeadDealsDialog';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError, isApiError } from '@/lib/http/api-error';
-import { appRoutes } from '@/lib/routes/app-routes';
-
+import { isApiError } from '@/lib/http/api-error';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
 import {
 	useLeadCustomersQuery,
 	useLeadOwnersQuery,
 	useLeadStoresQuery,
 } from '../hooks/leads.catalog.queries';
-import { useLeadCatalogQuery } from '../hooks/leads.queries';
 import {
 	useConvertLeadMutation,
 	useCreateLeadMutation,
@@ -35,30 +26,31 @@ import {
 	useReassignLeadMutation,
 	useUpdateLeadMutation,
 } from '../hooks/leads.mutations';
+import { useLeadCatalogQuery } from '../hooks/leads.queries';
 import { leadSourceOptions, leadStatusOptions } from '../lib/lead-list-labels';
 import type {
 	CreateLeadInput,
+	LeadCatalogItem,
 	LeadListItem,
 	ReassignLeadInput,
 	UpdateLeadInput,
 } from '../model/leads.model';
+import { LeadDetailSummaryDialog } from './LeadDetailSummaryDialog';
 import {
 	CustomerManagerDialog,
 	LeadsTableSkeleton,
 	StoreManagerDialog,
 } from './LeadDetails';
+
 import {
 	buildOwnerOptions,
-	getLeadsErrorMessage,
 	LeadConfirmDialog,
 	LeadFormDialog,
 	LeadReassignDialog,
 } from './LeadForm';
 import {
-	FunnelCard,
 	formatCount,
 	LeadsListCard,
-	OriginsCard,
 	type pageSizeOptions,
 } from './LeadsCatalogWidgets';
 
@@ -74,12 +66,11 @@ const sortOptions = [
 ] as const;
 
 function LeadsPageContent({ user }: LeadsPageContentProps) {
-	const router = useRouter();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] =
 		useState<(typeof pageSizeOptions)[number]>(10);
 	const [search, setSearch] = useState('');
-	const [statusFilter, setStatusFilter] = useState('');
+	const [statusFilter, setStatusFilter] = useState('WORKABLE');
 	const [sourceFilter, setSourceFilter] = useState('');
 	const [storeFilter, setStoreFilter] = useState('');
 	const [ownerFilter, setOwnerFilter] = useState('');
@@ -95,6 +86,10 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 	const [dealsOpen, setDealsOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [targetLead, setTargetLead] = useState<LeadListItem | null>(null);
+	const [detailLeadItem, setDetailLeadItem] = useState<LeadCatalogItem | null>(
+		null,
+	);
+	const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
 	const catalogQuery = useLeadCatalogQuery(user, {
 		search,
@@ -132,45 +127,38 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 
 	const metricCards = [
 		{
-			label: 'Total de leads',
-			value: formatCount(catalog?.summary.total ?? 0),
-			helper: 'Em todos os canais',
-			icon: UsersRound,
-			tone: 'blue',
-		},
-		{
-			label: 'Leads com interação',
+			title: 'Leads com interação',
 			value: formatCount(catalog?.summary.withInteraction ?? 0),
-			helper: 'Com atividade registrada',
-			icon: Zap,
-			tone: 'orange',
+			description: 'Com atividade registrada',
+			icon: <Zap className="size-5" />,
+			variant: 'brand' as const,
 		},
 		{
-			label: 'Leads convertidos',
+			title: 'Leads convertidos',
 			value: formatCount(catalog?.summary.converted ?? 0),
-			helper: 'Com conversão no CRM',
-			icon: Target,
-			tone: 'green',
+			description: 'Com conversão no CRM',
+			icon: <Target className="size-5" />,
+			variant: 'success' as const,
 		},
 		{
-			label: 'Leads em atenção',
+			title: 'Leads em atenção',
 			value: formatCount(catalog?.summary.staleNoContact ?? 0),
-			helper: 'Aguardando evolução',
-			icon: CalendarDays,
-			tone: 'purple',
+			description: 'Aguardando evolução',
+			icon: <CalendarDays className="size-5" />,
+			variant: 'danger-soft' as const,
 		},
 		{
-			label: 'Taxa de conversão',
+			title: 'Taxa de conversão',
 			value: `${catalog?.summary.conversionRate ?? 0}%`,
-			helper: 'Leads convertidos',
-			icon: Trophy,
-			tone: 'amber',
+			description: 'Leads convertidos',
+			icon: <Trophy className="size-5" />,
+			variant: 'warning' as const,
 		},
 	] as const;
 
 	function resetFilters() {
 		setSearch('');
-		setStatusFilter('');
+		setStatusFilter('WORKABLE');
 		setSourceFilter('');
 		setStoreFilter('');
 		setOwnerFilter('');
@@ -216,8 +204,9 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 		setDealsOpen(true);
 	}
 
-	function openLeadDetail(lead: LeadListItem) {
-		router.push(`${appRoutes.app.leads}/${lead.id}`);
+	function openLeadDetail(item: LeadCatalogItem) {
+		setDetailLeadItem(item);
+		setDetailDialogOpen(true);
 	}
 
 	async function handleLeadFormSubmit(
@@ -253,10 +242,11 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 		setDialogError(null);
 		try {
 			await deleteLeadMutation.mutateAsync(targetLead.id);
+			showCrudSuccessToast('lead', 'deleted');
 			setDeleteOpen(false);
 			setTargetLead(null);
 		} catch (nextError) {
-			setDialogError(getLeadsErrorMessage(nextError));
+			setDialogError(humanizeFormApiError(nextError));
 		}
 	}
 
@@ -270,7 +260,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 			setConvertOpen(false);
 			setTargetLead(null);
 		} catch (nextError) {
-			setDialogError(getLeadsErrorMessage(nextError));
+			setDialogError(humanizeFormApiError(nextError));
 		}
 	}
 
@@ -303,29 +293,6 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 						/>
 					</div>
 					<Button
-						className="h-12 rounded-xl border-[#d8e0ea] bg-white text-[#101828]"
-						onClick={() =>
-							document
-								.getElementById('lead-filters')
-								?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-						}
-						type="button"
-						variant="outline"
-					>
-						<Filter className="size-4" />
-						Filtros
-					</Button>
-					<Button
-						className="h-12 rounded-xl border-[#d8e0ea] bg-white text-[#101828]"
-						disabled
-						title="Importação de leads ainda não está disponível no CRM."
-						type="button"
-						variant="outline"
-					>
-						<Download className="size-4" />
-						Importar
-					</Button>
-					<Button
 						className="h-12 rounded-xl bg-[#f05a28] px-5 text-white shadow-none hover:bg-[#df4f1f]"
 						onClick={openCreateDialog}
 						type="button"
@@ -336,41 +303,17 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 				</div>
 			</div>
 
-			<div className="grid gap-4 xl:grid-cols-5">
+			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 				{metricCards.map((card) => {
-					const IconComponent = card.icon;
 					return (
-						<Card
-							className="h-full rounded-3xl border-[#dfe7f1] bg-white"
-							key={card.label}
-						>
-							<CardContent className="flex min-h-32 items-center gap-5 p-6">
-								<div
-									className={
-										card.tone === 'blue'
-											? 'flex size-14 items-center justify-center rounded-full bg-blue-50 text-blue-600'
-											: card.tone === 'orange'
-												? 'flex size-14 items-center justify-center rounded-full bg-orange-50 text-[#f05a28]'
-												: card.tone === 'green'
-													? 'flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600'
-													: card.tone === 'purple'
-														? 'flex size-14 items-center justify-center rounded-full bg-violet-50 text-violet-600'
-														: 'flex size-14 items-center justify-center rounded-full bg-amber-50 text-amber-600'
-									}
-								>
-									<IconComponent className="size-7" />
-								</div>
-								<div>
-									<p className="text-sm font-medium text-[#667085]">
-										{card.label}
-									</p>
-									<p className="mt-1 text-2xl font-bold text-[#101828]">
-										{card.value}
-									</p>
-									<p className="mt-1 text-xs text-[#667085]">{card.helper}</p>
-								</div>
-							</CardContent>
-						</Card>
+						<KpiCard
+							key={card.title}
+							title={card.title}
+							value={card.value}
+							description={card.description}
+							icon={card.icon}
+							variant={card.variant}
+						/>
 					);
 				})}
 			</div>
@@ -403,6 +346,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 								value={statusFilter}
 							>
 								<option value="">Todos os status</option>
+								<option value="WORKABLE">Trabalháveis</option>
 								{leadStatusOptions.map((status) => (
 									<option key={status.value} value={status.value}>
 										{status.label}
@@ -490,7 +434,7 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 							role="alert"
 						>
 							{isApiError(catalogError)
-								? catalogError.message
+								? humanizePageApiError(catalogError)
 								: 'Não foi possível carregar os catálogos necessários para a tela de leads.'}
 						</div>
 					) : null}
@@ -500,53 +444,37 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 							className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 							role="alert"
 						>
-							{catalogQuery.error instanceof ApiError
-								? catalogQuery.error.message
-								: 'Não foi possível carregar os leads.'}
+							{humanizePageApiError(catalogQuery.error)}
 						</div>
 					) : null}
 
 					{catalogQuery.isPending ? <LeadsTableSkeleton /> : null}
 
 					{catalog ? (
-						<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-							<LeadsListCard
-								currentPage={catalog.page}
-								items={catalog.items}
-								onConvert={openConvertDialog}
-								onDeals={openDealsDialog}
-								onDelete={
-									user.role === 'ADMINISTRATOR' ? openDeleteDialog : undefined
-								}
-								onDetail={openLeadDetail}
-								onEdit={openEditDialog}
-								onNextPage={() => setPage((value) => value + 1)}
-								onPageChange={setPage}
-								onPageSizeChange={(value) => {
-									setPageSize(value);
-									setPage(1);
-								}}
-								onPreviousPage={() => setPage((value) => value - 1)}
-								onReassign={
-									user.role === 'ATTENDANT' ? undefined : openReassignDialog
-								}
-								pageSize={pageSize}
-								totalItems={catalog.total}
-								totalPages={catalog.totalPages}
-							/>
-							<div className="space-y-4">
-								<FunnelCard
-									converted={catalog.funnel.converted}
-									openDeals={catalog.funnel.openDeals}
-									totalLeads={catalog.funnel.totalLeads}
-									withInteraction={catalog.funnel.withInteraction}
-								/>
-								<OriginsCard
-									origins={catalog.origins}
-									total={catalog.summary.total}
-								/>
-							</div>
-						</div>
+						<LeadsListCard
+							currentPage={catalog.page}
+							items={catalog.items}
+							onConvert={openConvertDialog}
+							onDeals={openDealsDialog}
+							onDelete={
+								user.role === 'ADMINISTRATOR' ? openDeleteDialog : undefined
+							}
+							onDetail={openLeadDetail}
+							onEdit={openEditDialog}
+							onNextPage={() => setPage((value) => value + 1)}
+							onPageChange={setPage}
+							onPageSizeChange={(value) => {
+								setPageSize(value);
+								setPage(1);
+							}}
+							onPreviousPage={() => setPage((value) => value - 1)}
+							onReassign={
+								user.role === 'ATTENDANT' ? undefined : openReassignDialog
+							}
+							pageSize={pageSize}
+							totalItems={catalog.total}
+							totalPages={catalog.totalPages}
+						/>
 					) : null}
 				</>
 			) : null}
@@ -656,6 +584,15 @@ function LeadsPageContent({ user }: LeadsPageContentProps) {
 					setDialogError(null);
 				}}
 				open={dealsOpen}
+			/>
+
+			<LeadDetailSummaryDialog
+				leadItem={detailLeadItem}
+				onClose={() => {
+					setDetailDialogOpen(false);
+					setDetailLeadItem(null);
+				}}
+				open={detailDialogOpen}
 			/>
 		</div>
 	);

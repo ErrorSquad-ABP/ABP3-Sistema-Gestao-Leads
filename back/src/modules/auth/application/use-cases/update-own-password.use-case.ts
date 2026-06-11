@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { DomainValidationError } from '../../../../shared/domain/errors/domain-validation.error.js';
 import { PasswordHash } from '../../../../shared/domain/value-objects/password-hash.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { Argon2PasswordHasherService } from '../../../../shared/infrastructure/security/argon2-password-hasher.service.js';
 import type { User } from '../../../users/domain/entities/user.entity.js';
@@ -37,6 +39,7 @@ class UpdateOwnPasswordUseCase {
 
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const users = this.userRepositoryFactory.create(transactionContext);
 			const existing = await loadUserAndVerifyCurrentPassword(
 				users,
@@ -53,6 +56,16 @@ class UpdateOwnPasswordUseCase {
 				actorUserId,
 				transactionContext,
 			);
+			await createAuditLogEntry(tx, {
+				actorUserId,
+				action: 'UPDATE',
+				entityName: 'User',
+				entityId: saved.id.value,
+				metadata: {
+					changedFields: ['password'],
+					refreshSessionsRevoked: true,
+				},
+			});
 			return saved;
 		});
 	}

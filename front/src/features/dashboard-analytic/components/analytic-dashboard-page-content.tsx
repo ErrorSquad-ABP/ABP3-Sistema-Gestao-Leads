@@ -29,8 +29,7 @@ import { Input } from '@/components/ui/input';
 import { KpiCard } from '@/components/metrics/KpiCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { CHART_COLORS, chartSeriesColor } from '@/lib/charts/chart-colors';
-import { ApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 import { cn } from '@/lib/utils';
 
 import { useAnalyticDashboardQuery } from '../hooks/analytic-dashboard.queries';
@@ -130,11 +129,7 @@ function formatDateShort(value: string) {
 }
 
 function getErrorMessage(error: unknown) {
-	if (error instanceof ApiError) {
-		return error.message;
-	}
-
-	return 'Não foi possível carregar o dashboard analítico.';
+	return humanizePageApiError(error);
 }
 
 function getPeriodLabel(dashboard: AnalyticDashboard | undefined) {

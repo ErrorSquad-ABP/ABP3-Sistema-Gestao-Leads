@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { Prisma } from '../../../../generated/prisma/client.js';
 import type { IUnitOfWork } from '../../../../shared/application/contracts/unit-of-work.js';
 import { UNIT_OF_WORK } from '../../../../shared/application/contracts/unit-of-work.js';
 import { Email } from '../../../../shared/domain/value-objects/email.value-object.js';
+import { createAuditLogEntry } from '../../../../shared/infrastructure/database/audit/create-audit-log.js';
 // biome-ignore lint/style/useImportType: Nest DI
 import { CustomerFactory } from '../../domain/factories/customer.factory.js';
 import { CustomerEmailAlreadyExistsError } from '../../domain/errors/customer-email-already-exists.error.js';
@@ -21,9 +23,10 @@ class CreateCustomerUseCase {
 		private readonly customerRepositoryFactory: CustomerRepositoryFactory,
 	) {}
 
-	async execute(dto: CreateCustomerDto) {
+	async execute(actorUserId: string, dto: CreateCustomerDto) {
 		return this.unitOfWork.run(async () => {
 			const transactionContext = this.unitOfWork.getTransactionContext();
+			const tx = transactionContext.client as Prisma.TransactionClient;
 			const customers =
 				this.customerRepositoryFactory.create(transactionContext);
 
@@ -49,7 +52,21 @@ class CreateCustomerUseCase {
 				cpf: dto.cpf ?? null,
 			});
 
-			return customers.create(customer);
+			const created = await customers.create(customer);
+			await createAuditLogEntry(tx, {
+				actorUserId,
+				action: 'CREATE',
+				entityName: 'Customer',
+				entityId: created.id.value,
+				metadata: {
+					name: created.name.value,
+					email: created.email?.value ?? null,
+					phone: created.phone?.value ?? null,
+					hasCpf: created.cpf !== null,
+				},
+			});
+
+			return created;
 		});
 	}
 }

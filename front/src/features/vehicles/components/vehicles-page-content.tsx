@@ -20,6 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useStoresQuery } from '@/features/stores/hooks/stores.queries';
 import { ApiError } from '@/lib/http/api-error';
+import { showCrudSuccessToast } from '@/lib/feedback/crud-success-toast';
 
 import { useVehicleCatalogQuery } from '../hooks/vehicles.queries';
 import {
@@ -40,7 +41,12 @@ import { VehicleCatalogCards } from './VehicleCatalogCards';
 import { VehicleCatalogTable } from './VehicleCatalogTable';
 import { VehicleConfirmDialog } from './VehicleConfirmDialog';
 import { VehicleDetailsDialog } from './VehicleDetailsDialog';
-import { VehicleFormDialog, getVehiclesErrorMessage } from './VehicleForm';
+import {
+	humanizeFormApiError,
+	humanizePageApiError,
+} from '@/lib/http/humanize-api-error';
+
+import { VehicleFormDialog } from './VehicleForm';
 
 const pageSizeOptions = [6, 12, 18, 24, 48] as const;
 
@@ -266,10 +272,13 @@ function VehiclesPageContent() {
 		setDialogError(null);
 		try {
 			await deactivateVehicleMutation.mutateAsync(targetVehicle.id);
+			showCrudSuccessToast('vehicle', 'updated', {
+				message: 'Veículo desativado com sucesso.',
+			});
 			setDeleteOpen(false);
 			setTargetVehicle(null);
 		} catch (error) {
-			setDialogError(getVehiclesErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -281,10 +290,11 @@ function VehiclesPageContent() {
 		setDialogError(null);
 		try {
 			await deleteVehicleMutation.mutateAsync(targetVehicle.id);
+			showCrudSuccessToast('vehicle', 'deleted');
 			setHardDeleteOpen(false);
 			setTargetVehicle(null);
 		} catch (error) {
-			setDialogError(getVehiclesErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -366,7 +376,7 @@ function VehiclesPageContent() {
 					role="alert"
 				>
 					{storesQuery.error instanceof ApiError
-						? storesQuery.error.message
+						? humanizePageApiError(storesQuery.error)
 						: 'Não foi possível carregar as lojas.'}
 				</div>
 			) : null}
@@ -377,7 +387,7 @@ function VehiclesPageContent() {
 					role="alert"
 				>
 					{catalogQuery.error instanceof ApiError
-						? catalogQuery.error.message
+						? humanizePageApiError(catalogQuery.error)
 						: 'Não foi possível carregar os veículos.'}
 				</div>
 			) : null}

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import {
 	ArrowLeft,
 	Building2,
@@ -13,6 +12,7 @@ import {
 	Phone,
 	Shuffle,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -37,19 +37,20 @@ import {
 	formatDealValueBRL,
 } from '@/features/deals/lib/deal-labels';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError, isApiError } from '@/lib/http/api-error';
+import { isApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 import {
 	useLeadCustomersQuery,
 	useLeadOwnersQuery,
 	useLeadStoresQuery,
 } from '../hooks/leads.catalog.queries';
-import { useLeadDetailHubQuery } from '../hooks/leads.queries';
 import {
 	useConvertLeadMutation,
 	useReassignLeadMutation,
 	useUpdateLeadMutation,
 } from '../hooks/leads.mutations';
+import { useLeadDetailHubQuery } from '../hooks/leads.queries';
 import {
 	formatLeadSourceLabel,
 	formatLeadStatusLabel,
@@ -62,9 +63,10 @@ import type {
 	ReassignLeadInput,
 	UpdateLeadInput,
 } from '../model/leads.model';
+import { humanizeFormApiError } from '@/lib/http/humanize-api-error';
+
 import {
 	buildOwnerOptions,
-	getLeadsErrorMessage,
 	LeadConfirmDialog,
 	LeadFormDialog,
 	LeadReassignDialog,
@@ -89,7 +91,7 @@ const timelineFieldOptions = [
 	{ value: 'VALUE', label: 'Valor' },
 	{ value: 'RESPONSIBLE', label: 'Responsável' },
 	{ value: 'SOURCE', label: 'Origem' },
-	{ value: 'INTEREST', label: 'Interesse' },
+	{ value: 'INTEREST', label: 'Produto de interesse' },
 	{ value: 'CREATED', label: 'Criação' },
 	{ value: 'CONVERTED', label: 'Conversão' },
 ];
@@ -125,6 +127,7 @@ function buildLeadListTarget(data: LeadDetailHub): LeadListItem {
 		ownerUserId: data.owner?.id ?? null,
 		source: data.lead.source,
 		status: data.lead.status,
+		vehicleInterestText: data.lead.vehicleInterestText,
 	};
 }
 
@@ -154,7 +157,7 @@ function formatLeadChangeFieldName(field: string) {
 	if (field === 'ownerUserId') return 'Responsável';
 	if (field === 'source') return 'Origem';
 	if (field === 'status') return 'Estado';
-	if (field === 'vehicleInterestText') return 'Interesse';
+	if (field === 'vehicleInterestText') return 'Produto de interesse';
 	return field;
 }
 
@@ -442,30 +445,18 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 
 	async function handleEditSubmit(values: CreateLeadInput | UpdateLeadInput) {
 		if (!targetLead) return;
-		setDialogError(null);
-		try {
-			await updateLeadMutation.mutateAsync({
-				leadId: targetLead.id,
-				payload: values as UpdateLeadInput,
-			});
-			setEditOpen(false);
-		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
-		}
+		await updateLeadMutation.mutateAsync({
+			leadId: targetLead.id,
+			payload: values as UpdateLeadInput,
+		});
 	}
 
 	async function handleReassignSubmit(values: ReassignLeadInput) {
 		if (!targetLead) return;
-		setDialogError(null);
-		try {
-			await reassignLeadMutation.mutateAsync({
-				leadId: targetLead.id,
-				payload: values,
-			});
-			setReassignOpen(false);
-		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
-		}
+		await reassignLeadMutation.mutateAsync({
+			leadId: targetLead.id,
+			payload: values,
+		});
 	}
 
 	async function handleConvertConfirm() {
@@ -475,7 +466,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			await convertLeadMutation.mutateAsync(targetLead.id);
 			setConvertOpen(false);
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -505,11 +496,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 					role="alert"
 				>
-					<p>
-						{detailQuery.error instanceof ApiError
-							? detailQuery.error.message
-							: 'Não foi possível carregar as informações do lead.'}
-					</p>
+					<p>{humanizePageApiError(detailQuery.error)}</p>
 					<Button
 						className="mt-3 rounded-md shadow-none"
 						onClick={() => void detailQuery.refetch()}
@@ -609,7 +596,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					role="alert"
 				>
 					{isApiError(catalogError)
-						? catalogError.message
+						? humanizePageApiError(catalogError)
 						: 'Não foi possível carregar as opções para as ações deste lead.'}
 				</div>
 			) : null}
@@ -645,11 +632,11 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 						</div>
 						<div className="rounded-2xl border border-border/80 px-4 py-4">
 							<p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[#6b7687] uppercase">
-								Interesse
+								Produto de interesse
 							</p>
 							<p className="mt-2 text-sm text-[#1b2430]">
 								{detail.lead.vehicleInterestText ??
-									'Nenhum interesse em veículo foi informado.'}
+									'Nenhum produto de interesse informado.'}
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-2">

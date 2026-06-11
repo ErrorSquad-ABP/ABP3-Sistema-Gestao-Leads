@@ -9,7 +9,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, requiredFieldProps } from '@/components/ui/label';
 
 import type { AgendaItem } from '../model/agenda.model';
 import { agendaDateKey, moveAgendaItemToDate } from '../lib/agenda-formatters';
@@ -63,13 +63,16 @@ function AgendaMoveDialog({
 				</DialogHeader>
 				<form className="space-y-4 px-6 py-5" onSubmit={handleSubmit}>
 					<div className="space-y-2">
-						<Label htmlFor="agenda-move-date">Nova data</Label>
+						<Label htmlFor="agenda-move-date" required>
+							Nova data
+						</Label>
 						<Input
 							id="agenda-move-date"
 							onChange={(event) => setDate(event.target.value)}
 							required
 							type="date"
 							value={date}
+							{...requiredFieldProps()}
 						/>
 					</div>
 					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
