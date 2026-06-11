@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 
 type ModalTone = 'brand' | 'danger' | 'info' | 'success' | 'violet' | 'warning';
 
-const toneClasses: Record<ModalTone, string> = {
+const toneClasses = {
 	brand:
 		'border-[color:var(--brand-accent)]/10 bg-[color:var(--brand-accent-soft)]/55 text-[color:var(--brand-accent)]',
 	danger: 'border-red-100 bg-red-50 text-red-600',
@@ -22,7 +22,50 @@ const toneClasses: Record<ModalTone, string> = {
 	success: 'border-emerald-100 bg-emerald-50 text-emerald-600',
 	violet: 'border-violet-100 bg-violet-50 text-violet-600',
 	warning: 'border-amber-100 bg-amber-50 text-amber-600',
-};
+} as const satisfies Record<ModalTone, string>;
+
+const toneTextClasses = {
+	brand: 'text-[color:var(--brand-accent)]',
+	danger: 'text-red-600',
+	info: 'text-blue-600',
+	success: 'text-emerald-600',
+	violet: 'text-violet-600',
+	warning: 'text-amber-600',
+} as const satisfies Record<ModalTone, string>;
+
+function getToneClasses(tone: ModalTone): string {
+	switch (tone) {
+		case 'brand':
+			return toneClasses.brand;
+		case 'danger':
+			return toneClasses.danger;
+		case 'info':
+			return toneClasses.info;
+		case 'success':
+			return toneClasses.success;
+		case 'violet':
+			return toneClasses.violet;
+		case 'warning':
+			return toneClasses.warning;
+	}
+}
+
+function getToneTextClass(tone: ModalTone): string {
+	switch (tone) {
+		case 'brand':
+			return toneTextClasses.brand;
+		case 'danger':
+			return toneTextClasses.danger;
+		case 'info':
+			return toneTextClasses.info;
+		case 'success':
+			return toneTextClasses.success;
+		case 'violet':
+			return toneTextClasses.violet;
+		case 'warning':
+			return toneTextClasses.warning;
+	}
+}
 
 const appModalContentClass =
 	'flex max-h-[92vh] flex-col overflow-hidden rounded-[1.35rem] border border-[#d8e0ea] bg-white p-0 shadow-[0_20px_70px_rgba(15,23,42,0.18)]';
@@ -54,7 +97,7 @@ function AppModalHeader({
 				<div
 					className={cn(
 						'flex size-12 shrink-0 items-center justify-center rounded-2xl border',
-						toneClasses[tone],
+						getToneClasses(tone),
 					)}
 				>
 					<Icon className="size-6" />
@@ -63,7 +106,7 @@ function AppModalHeader({
 					<p
 						className={cn(
 							'text-[0.68rem] font-bold tracking-[0.3em] uppercase',
-							toneClasses[tone].split(' ').at(-1),
+							getToneTextClass(tone),
 						)}
 					>
 						{category}
@@ -134,7 +177,7 @@ function AppModalSection({
 						<span
 							className={cn(
 								'flex size-9 shrink-0 items-center justify-center rounded-xl border',
-								toneClasses[tone],
+								getToneClasses(tone),
 							)}
 						>
 							<Icon className="size-4" />
@@ -169,7 +212,7 @@ function AppModalInfoBanner({
 		<div
 			className={cn(
 				'flex items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-6',
-				toneClasses[tone],
+				getToneClasses(tone),
 				className,
 			)}
 			{...props}
@@ -196,7 +239,7 @@ function AppModalConfirmPanel({
 		<div
 			className={cn(
 				'flex items-start gap-3 rounded-2xl border px-4 py-4 text-sm',
-				toneClasses[tone],
+				getToneClasses(tone),
 				className,
 			)}
 			{...props}
