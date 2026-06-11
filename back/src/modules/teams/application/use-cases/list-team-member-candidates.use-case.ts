@@ -31,9 +31,9 @@ class ListTeamMemberCandidatesUseCase {
 			Uuid.parse(storeId),
 		);
 		return candidates.map((user) => ({
-				id: user.id.value,
-				name: user.name.value,
-				email: user.email.value,
+			id: user.id.value,
+			name: user.name.value,
+			email: user.email.value,
 		}));
 	}
 }
