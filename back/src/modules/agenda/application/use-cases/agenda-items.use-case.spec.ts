@@ -4,6 +4,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { CompleteAgendaItemUseCase } from './complete-agenda-item.use-case.js';
 import { CancelAgendaItemUseCase } from './cancel-agenda-item.use-case.js';
+import { DeleteAgendaItemUseCase } from './delete-agenda-item.use-case.js';
 import { CreateAgendaItemUseCase } from './create-agenda-item.use-case.js';
 import { GetAgendaMetricsUseCase } from './get-agenda-metrics.use-case.js';
 import { isAgendaItemOverdue } from './agenda-item-validation.js';
@@ -41,6 +42,7 @@ function repository(overrides: Partial<AgendaItemRepository> = {}) {
 			...BASE_ITEM,
 			status: 'CANCELLED',
 		})),
+		deleteForUser: mock.fn(async () => true),
 		completeTaskForUser: mock.fn(async () => ({
 			...BASE_ITEM,
 			status: 'DONE',
@@ -453,5 +455,33 @@ describe('agenda item use cases', () => {
 
 		assert.equal(result.status, 'CANCELLED');
 		assert.deepEqual(calls[0], ['item-1', 'user-1']);
+	});
+
+	it('deletes only items owned by the current user', async () => {
+		const calls: [string, string][] = [];
+		const repo = repository({
+			deleteForUser: mock.fn(async (id, userId) => {
+				calls.push([id, userId]);
+				return true;
+			}),
+		});
+		const useCase = new DeleteAgendaItemUseCase(repo);
+
+		await useCase.execute('item-1', 'user-1');
+
+		assert.deepEqual(calls[0], ['item-1', 'user-1']);
+	});
+
+	it('throws when deleting an item outside the current user scope', async () => {
+		const useCase = new DeleteAgendaItemUseCase(
+			repository({
+				deleteForUser: mock.fn(async () => false),
+			}),
+		);
+
+		await assert.rejects(
+			() => useCase.execute('item-1', 'other-user'),
+			NotFoundException,
+		);
 	});
 });

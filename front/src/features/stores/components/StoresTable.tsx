@@ -79,7 +79,7 @@ function StoresTable({
 						</TableHead>
 					</TableRow>
 				</TableHeader>
-				<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
+				<TableBody className="table-zebra-body">
 					{rows.map((row) => (
 						<TableRow
 							className="border-border hover:bg-[color:var(--table-row-hover)]"

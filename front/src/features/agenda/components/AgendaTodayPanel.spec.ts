@@ -53,6 +53,7 @@ describe('AgendaTodayPanel', () => {
 				items: [TODAY_ITEM],
 				onCancel: noop,
 				onComplete: noop,
+				onDelete: noop,
 				onEdit: noop,
 			}),
 		);

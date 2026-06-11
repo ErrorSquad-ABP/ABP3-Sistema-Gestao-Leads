@@ -25,6 +25,7 @@ describe('AgendaEventCard', () => {
 				},
 				onCancel: noop,
 				onComplete: noop,
+				onDelete: noop,
 				onEdit: noop,
 			}),
 		);
@@ -58,6 +59,7 @@ describe('AgendaEventCard', () => {
 				},
 				onCancel: noop,
 				onComplete: noop,
+				onDelete: noop,
 				onEdit: noop,
 			}),
 		);

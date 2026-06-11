@@ -1,6 +1,7 @@
 import {
 	Body,
 	Controller,
+	Delete,
 	Get,
 	Inject,
 	Param,
@@ -30,6 +31,7 @@ import {
 import { CancelAgendaItemUseCase } from '../../application/use-cases/cancel-agenda-item.use-case.js';
 import { CompleteAgendaItemUseCase } from '../../application/use-cases/complete-agenda-item.use-case.js';
 import { CreateAgendaItemUseCase } from '../../application/use-cases/create-agenda-item.use-case.js';
+import { DeleteAgendaItemUseCase } from '../../application/use-cases/delete-agenda-item.use-case.js';
 import { GetAgendaMetricsUseCase } from '../../application/use-cases/get-agenda-metrics.use-case.js';
 import { ListAgendaItemsUseCase } from '../../application/use-cases/list-agenda-items.use-case.js';
 import { UpdateAgendaItemUseCase } from '../../application/use-cases/update-agenda-item.use-case.js';
@@ -60,6 +62,8 @@ class AgendaController {
 		private readonly completeAgendaItem: CompleteAgendaItemUseCase,
 		@Inject(CancelAgendaItemUseCase)
 		private readonly cancelAgendaItem: CancelAgendaItemUseCase,
+		@Inject(DeleteAgendaItemUseCase)
+		private readonly deleteAgendaItem: DeleteAgendaItemUseCase,
 		@Inject(GetAgendaMetricsUseCase)
 		private readonly getAgendaMetrics: GetAgendaMetricsUseCase,
 	) {}
@@ -154,6 +158,15 @@ class AgendaController {
 		@Param('id', ParseUUIDPipe) id: string,
 	): Promise<AgendaItemDto> {
 		return this.cancelAgendaItem.execute(id, user.userId);
+	}
+
+	@Delete('items/:id')
+	@ApiOperation({ summary: 'Excluir item da agenda' })
+	async remove(
+		@CurrentUser() user: JwtUser,
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<void> {
+		await this.deleteAgendaItem.execute(id, user.userId);
 	}
 }
 

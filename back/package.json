@@ -11,6 +11,7 @@
 		"prisma:migrate:dev": "prisma migrate dev --config prisma.config.ts",
 		"prisma:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
 		"prisma:seed": "prisma db seed --config prisma.config.ts",
+		"prisma:seed:agenda": "tsx prisma/seeds/run-agenda-seed.ts",
 		"start": "nest start",
 		"start:dev": "npm run prisma:generate && nest start --watch",
 		"start:debug": "nest start --debug --watch",

@@ -12,6 +12,10 @@ import {
 	VehicleStatus,
 } from '../../src/generated/prisma/client.js';
 import { buildDemoOrg } from './demo-org.seed.js';
+import {
+	buildDemoAgendaItems,
+	replaceAgendaItems,
+} from './agenda-demo.seed.js';
 import { deterministicUuid } from './seed-utils.js';
 
 /** Dataset demo: 100 clientes/leads/veículos/negociações para KPIs e dashboards. */
@@ -564,6 +568,7 @@ export async function runDemoSeed(
 	const inventoryVehicles = buildInventoryVehicles(stores, count);
 	const vehicles = [...dealVehicles, ...inventoryVehicles];
 	const leadEvents = buildLeadEvents(leads, dealPlans);
+	const agendaItems = buildDemoAgendaItems(demoOrg, leads);
 
 	await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 		await tx.$executeRawUnsafe(`
@@ -615,6 +620,7 @@ export async function runDemoSeed(
 		await tx.vehicle.createMany({ data: vehicles });
 		await tx.deal.createMany({ data: deals });
 		await tx.leadEvent.createMany({ data: leadEvents });
+		await replaceAgendaItems(tx, agendaItems);
 	}, SEED_TRANSACTION_OPTIONS);
 
 	if (!logSummary) {
@@ -629,6 +635,7 @@ export async function runDemoSeed(
 			inventoryVehicles: inventoryVehicles.length,
 			deals: deals.length,
 			leadEvents: leadEvents.length,
+			agendaItems: agendaItems.length,
 		};
 	}
 
@@ -668,6 +675,7 @@ export async function runDemoSeed(
 			inventoryVehicles: inventoryVehicles.length,
 			deals: deals.length,
 			leadEvents: leadEvents.length,
+			agendaItems: agendaItems.length,
 		},
 		accounts,
 		teams: teams.map((team) => ({

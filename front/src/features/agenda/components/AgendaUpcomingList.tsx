@@ -13,6 +13,7 @@ type Props = {
 	items: readonly AgendaItem[];
 	onCancel: (id: string) => void;
 	onComplete: (id: string) => void;
+	onDelete: (item: AgendaItem) => void;
 	onEdit: (item: AgendaItem) => void;
 	onMove: (item: AgendaItem) => void;
 };
@@ -61,6 +62,7 @@ function AgendaUpcomingList({
 	items,
 	onCancel,
 	onComplete,
+	onDelete,
 	onEdit,
 	onMove,
 }: Props) {
@@ -80,6 +82,7 @@ function AgendaUpcomingList({
 								items={group.items}
 								onCancel={onCancel}
 								onComplete={onComplete}
+								onDelete={onDelete}
 								onEdit={onEdit}
 								onMove={onMove}
 							/>
