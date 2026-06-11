@@ -14,7 +14,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { type LucideIcon, LogOut, Mail, ShieldCheck } from 'lucide-react';
+import { type LucideIcon, LogOut, UserCog } from 'lucide-react';
 import { queryKeys } from '@/lib/constants/query-keys';
 import { clearAccessToken } from '@/lib/auth/access-token';
 import { appRoutes } from '@/lib/routes/app-routes';
@@ -34,11 +34,10 @@ type MenuItem = {
 };
 
 const MANAGE_ACCOUNT_ITEMS: MenuItem[] = [
-	{ label: 'Perfil', icon: ShieldCheck, href: appRoutes.app.profile },
 	{
-		label: 'Credenciais',
-		icon: Mail,
-		href: `${appRoutes.app.profile}#credentials`,
+		label: 'Minha conta',
+		icon: UserCog,
+		href: appRoutes.app.profile,
 	},
 ];
 
