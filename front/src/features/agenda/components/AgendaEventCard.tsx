@@ -5,6 +5,7 @@ import {
 	MapPin,
 	Pencil,
 	MoveRight,
+	Trash2,
 	XCircle,
 } from 'lucide-react';
 
@@ -31,6 +32,7 @@ type Props = {
 	item: AgendaItem;
 	onCancel: (id: string) => void;
 	onComplete: (id: string) => void;
+	onDelete: (item: AgendaItem) => void;
 	onEdit: (item: AgendaItem) => void;
 	onMove?: (item: AgendaItem) => void;
 };
@@ -39,6 +41,7 @@ function AgendaEventCard({
 	item,
 	onCancel,
 	onComplete,
+	onDelete,
 	onEdit,
 	onMove,
 }: Props) {
@@ -136,6 +139,15 @@ function AgendaEventCard({
 									<XCircle className="size-4" />
 								</Button>
 							) : null}
+							<Button
+								aria-label={`Excluir agendamento ${item.title}`}
+								className="text-destructive hover:text-destructive"
+								onClick={() => onDelete(item)}
+								size="icon-sm"
+								variant="outline"
+							>
+								<Trash2 className="size-4" />
+							</Button>
 						</div>
 					</div>
 					{item.location ? (

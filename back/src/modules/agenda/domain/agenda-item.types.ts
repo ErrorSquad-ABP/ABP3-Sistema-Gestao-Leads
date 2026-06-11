@@ -79,6 +79,7 @@ type UpdateAgendaItemInput = {
 
 interface AgendaItemRepository {
 	cancelForUser(id: string, userId: string): Promise<AgendaItem | null>;
+	deleteForUser(id: string, userId: string): Promise<boolean>;
 	completeTaskForUser(id: string, userId: string): Promise<AgendaItem | null>;
 	create(input: CreateAgendaItemInput): Promise<AgendaItem>;
 	findByIdForUser(id: string, userId: string): Promise<AgendaItem | null>;

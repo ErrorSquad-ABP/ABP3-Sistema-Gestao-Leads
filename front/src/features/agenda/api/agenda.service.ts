@@ -88,10 +88,17 @@ async function cancelAgendaItem(id: string) {
 	return parseAgendaItemResponse(response);
 }
 
+async function deleteAgendaItem(id: string) {
+	await apiFetch<unknown>(`/api/agenda/items/${id}`, {
+		method: 'DELETE',
+	});
+}
+
 export {
 	cancelAgendaItem,
 	completeAgendaItem,
 	createAgendaItem,
+	deleteAgendaItem,
 	getAgendaMetrics,
 	getAgendaItems,
 	getLeadAgendaItems,

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { AgendaConfirmDeleteDialog } from './AgendaConfirmDeleteDialog';
 import { AgendaCalendarMonth, type CalendarDay } from './AgendaCalendarMonth';
 import { AgendaDayView } from './AgendaDayView';
 import { AgendaErrorState } from './AgendaErrorState';
@@ -36,6 +37,7 @@ import {
 	useCancelAgendaItemMutation,
 	useCompleteAgendaItemMutation,
 	useCreateAgendaItemMutation,
+	useDeleteAgendaItemMutation,
 	useUpdateAgendaItemMutation,
 } from '../hooks/agenda.queries';
 import type {
@@ -80,6 +82,7 @@ function AgendaPageContent() {
 		mode: 'closed',
 	});
 	const [moveDialogItem, setMoveDialogItem] = useState<AgendaItem | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<AgendaItem | null>(null);
 	const [searchInput, setSearchInput] = useState('');
 	const [submittedSearch, setSubmittedSearch] = useState('');
 	const [viewMode, setViewMode] = useState<AgendaViewMode>('month');
@@ -100,6 +103,7 @@ function AgendaPageContent() {
 	const updateAgendaItem = useUpdateAgendaItemMutation();
 	const completeAgendaItem = useCompleteAgendaItemMutation();
 	const cancelAgendaItem = useCancelAgendaItemMutation();
+	const deleteAgendaItem = useDeleteAgendaItemMutation();
 	const items = agendaQuery.data?.items ?? EMPTY_AGENDA_ITEMS;
 	const visibleItems = useMemo(() => {
 		if (submittedSearch.trim()) {
@@ -245,6 +249,29 @@ function AgendaPageContent() {
 		setSubmittedSearch(searchInput.trim());
 	}
 
+	function openDeleteDialog(item: AgendaItem) {
+		setDeleteTarget(item);
+	}
+
+	function closeDeleteDialog() {
+		deleteAgendaItem.reset();
+		setDeleteTarget(null);
+	}
+
+	async function handleDeleteConfirm() {
+		if (!deleteTarget) {
+			return;
+		}
+		await deleteAgendaItem.mutateAsync(deleteTarget.id);
+		if (
+			dialogState.mode === 'edit' &&
+			dialogState.item.id === deleteTarget.id
+		) {
+			closeDialog();
+		}
+		closeDeleteDialog();
+	}
+
 	function clearSearch() {
 		setSearchInput('');
 		setSubmittedSearch('');
@@ -318,6 +345,18 @@ function AgendaPageContent() {
 				}}
 				open={dialogState.mode !== 'closed'}
 			/>
+			<AgendaConfirmDeleteDialog
+				error={
+					deleteAgendaItem.isError
+						? 'Não foi possível excluir o agendamento.'
+						: null
+				}
+				isPending={deleteAgendaItem.isPending}
+				itemTitle={deleteTarget?.title ?? 'agendamento'}
+				onClose={closeDeleteDialog}
+				onConfirm={handleDeleteConfirm}
+				open={deleteTarget !== null}
+			/>
 			<AgendaMoveDialog
 				isSubmitting={updateAgendaItem.isPending}
 				item={moveDialogItem}
@@ -353,6 +392,7 @@ function AgendaPageContent() {
 						metrics={metricsQuery.data ?? null}
 						onCancel={(id) => cancelAgendaItem.mutate(id)}
 						onComplete={(id) => completeAgendaItem.mutate(id)}
+						onDelete={openDeleteDialog}
 						onEdit={openEditDialog}
 						onMove={openMoveDialog}
 						remindersPanel={<AgendaRemindersPanel items={visibleItems} />}
@@ -403,6 +443,7 @@ function AgendaPageContent() {
 								items={selectedDayItems}
 								onCancel={(id) => cancelAgendaItem.mutate(id)}
 								onComplete={(id) => completeAgendaItem.mutate(id)}
+								onDelete={openDeleteDialog}
 								onCreateClick={() => openCreateDialog(selectedDate)}
 								onEdit={openEditDialog}
 								onMove={openMoveDialog}
@@ -426,6 +467,7 @@ function AgendaPageContent() {
 							items={selectedDayItems}
 							onCancel={(id) => cancelAgendaItem.mutate(id)}
 							onComplete={(id) => completeAgendaItem.mutate(id)}
+							onDelete={openDeleteDialog}
 							onCreateClick={() => openCreateDialog(selectedDate)}
 							onEdit={openEditDialog}
 							onMove={openMoveDialog}
@@ -436,6 +478,7 @@ function AgendaPageContent() {
 							items={visibleItems}
 							onCancel={(id) => cancelAgendaItem.mutate(id)}
 							onComplete={(id) => completeAgendaItem.mutate(id)}
+							onDelete={openDeleteDialog}
 							onEdit={openEditDialog}
 							onMove={openMoveDialog}
 						/>

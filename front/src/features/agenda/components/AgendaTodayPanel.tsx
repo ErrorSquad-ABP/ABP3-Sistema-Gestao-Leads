@@ -22,6 +22,7 @@ type Props = {
 	metrics?: AgendaMetrics | null;
 	onCancel: (id: string) => void;
 	onComplete: (id: string) => void;
+	onDelete: (item: AgendaItem) => void;
 	onEdit: (item: AgendaItem) => void;
 	onMove?: (item: AgendaItem) => void;
 	remindersPanel?: ReactNode;
@@ -70,6 +71,7 @@ function AgendaTodayPanel({
 	metrics = null,
 	onCancel,
 	onComplete,
+	onDelete,
 	onEdit,
 	onMove,
 	remindersPanel,
@@ -136,6 +138,7 @@ function AgendaTodayPanel({
 								items={displayItems}
 								onCancel={onCancel}
 								onComplete={onComplete}
+								onDelete={onDelete}
 								onEdit={onEdit}
 								onMove={onMove}
 							/>

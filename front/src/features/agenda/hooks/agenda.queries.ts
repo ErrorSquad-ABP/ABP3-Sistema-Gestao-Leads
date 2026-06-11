@@ -6,6 +6,7 @@ import {
 	cancelAgendaItem,
 	completeAgendaItem,
 	createAgendaItem,
+	deleteAgendaItem,
 	getAgendaMetrics,
 	getAgendaItems,
 	getLeadAgendaItems,
@@ -110,12 +111,27 @@ function useCancelAgendaItemMutation() {
 	});
 }
 
+function useDeleteAgendaItemMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (id: string) => deleteAgendaItem(id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: queryKeys.agenda.itemsRoot });
+			queryClient.invalidateQueries({ queryKey: queryKeys.agenda.metrics });
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.agenda.leadItemsRoot,
+			});
+		},
+	});
+}
+
 export {
 	useAgendaItemsQuery,
 	useAgendaMetricsQuery,
 	useCancelAgendaItemMutation,
 	useCompleteAgendaItemMutation,
 	useCreateAgendaItemMutation,
+	useDeleteAgendaItemMutation,
 	useLeadAgendaItemsQuery,
 	useUpdateAgendaItemMutation,
 };

@@ -109,7 +109,7 @@ function CustomersTable({
 						</TableHead>
 					</TableRow>
 				</TableHeader>
-				<TableBody className="[&_tr:nth-child(even)]:bg-[color:var(--table-row-alt)]">
+				<TableBody className="table-zebra-body">
 					{items.length === 0 ? (
 						<TableRow className="border-border">
 							<TableCell

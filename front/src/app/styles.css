@@ -61,8 +61,8 @@
 	--chart-source-indication: #7cad98;
 	--chart-source-website: #7a9fd4;
 	/* Table tokens are opt-in to preserve incremental migration. */
-	--table-row-alt: #fbfdff;
-	--table-row-hover: #eef2f5;
+	--table-row-alt: #e9eef3;
+	--table-row-hover: #dde4ec;
 	--table-header-bg: #f8fafc;
 	--table-border: #e3e9f2;
 	/* Sidebar is a fixed palette (no dark/light mode yet). */
@@ -174,6 +174,15 @@ body {
 a {
 	color: inherit;
 	text-decoration: none;
+}
+
+.table-zebra-body tr:nth-child(even) {
+	background-color: var(--table-row-alt);
+}
+
+.table-zebra-body tr:hover,
+.table-zebra-body tr:nth-child(even):hover {
+	background-color: var(--table-row-hover);
 }
 
 @keyframes negotiations-right-in {

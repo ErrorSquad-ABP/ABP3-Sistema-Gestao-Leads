@@ -29,6 +29,7 @@
 		"db:migrate:local": "DATABASE_URL=postgresql://abp:abp@127.0.0.1:5433/lead_management npm run prisma:migrate:deploy -w back",
 		"db:migrate:dev": "npm run prisma:migrate:dev -w back",
 		"db:seed": "npm run prisma:seed -w back",
+		"db:seed:agenda": "npm run prisma:seed:agenda -w back",
 		"db:seed:local": "DATABASE_URL=postgresql://abp:abp@127.0.0.1:5433/lead_management npm run prisma:seed -w back",
 		"guard:root-package": "node scripts/check-root-package.mjs",
 		"test": "npm test --workspaces --if-present",

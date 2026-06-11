@@ -35,7 +35,7 @@ function hasParseUuidPipe(
 
 describe('agenda route params', () => {
 	it('validates agenda item id params with ParseUUIDPipe', () => {
-		for (const methodName of ['update', 'done', 'cancel']) {
+		for (const methodName of ['update', 'done', 'cancel', 'remove']) {
 			assert.equal(hasParseUuidPipe(AgendaController, methodName, 'id'), true);
 		}
 	});
