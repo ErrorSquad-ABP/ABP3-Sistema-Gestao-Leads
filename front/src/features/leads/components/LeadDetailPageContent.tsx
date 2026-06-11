@@ -37,7 +37,8 @@ import {
 	formatDealValueBRL,
 } from '@/features/deals/lib/deal-labels';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError, isApiError } from '@/lib/http/api-error';
+import { isApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 import {
 	useLeadCustomersQuery,
@@ -62,9 +63,10 @@ import type {
 	ReassignLeadInput,
 	UpdateLeadInput,
 } from '../model/leads.model';
+import { humanizeFormApiError } from '@/lib/http/humanize-api-error';
+
 import {
 	buildOwnerOptions,
-	getLeadsErrorMessage,
 	LeadConfirmDialog,
 	LeadFormDialog,
 	LeadReassignDialog,
@@ -451,7 +453,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			});
 			setEditOpen(false);
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -465,7 +467,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			});
 			setReassignOpen(false);
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -476,7 +478,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 			await convertLeadMutation.mutateAsync(targetLead.id);
 			setConvertOpen(false);
 		} catch (error) {
-			setDialogError(getLeadsErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -507,9 +509,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					role="alert"
 				>
 					<p>
-						{detailQuery.error instanceof ApiError
-							? detailQuery.error.message
-							: 'Não foi possível carregar as informações do lead.'}
+						{humanizePageApiError(detailQuery.error)}
 					</p>
 					<Button
 						className="mt-3 rounded-md shadow-none"
@@ -610,7 +610,7 @@ function LeadDetailPageContent({ leadId, user }: LeadDetailPageContentProps) {
 					role="alert"
 				>
 					{isApiError(catalogError)
-						? catalogError.message
+						? humanizePageApiError(catalogError)
 						: 'Não foi possível carregar as opções para as ações deste lead.'}
 				</div>
 			) : null}

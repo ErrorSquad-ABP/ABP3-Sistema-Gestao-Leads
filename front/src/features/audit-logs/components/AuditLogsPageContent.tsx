@@ -33,7 +33,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { ApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 import { cn } from '@/lib/utils';
 
 import { useAuditLogsQuery } from '../hooks/audit-logs.queries';
@@ -122,11 +122,7 @@ function actionBadgeClass(action: AuditLogAction) {
 }
 
 function getErrorMessage(error: unknown) {
-	if (error instanceof ApiError) {
-		return error.message;
-	}
-
-	return 'Não foi possível carregar os logs de auditoria.';
+	return humanizePageApiError(error);
 }
 
 const entityActionTextByEntity = new Map<

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
@@ -17,7 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
-import { isApiError } from '@/lib/http/api-error';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 import { cn } from '@/lib/utils';
 
 import {
@@ -54,24 +55,6 @@ type DeleteDialogProps = {
 	onConfirm: () => Promise<void>;
 	open: boolean;
 };
-
-function getUsersErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 409) {
-		return 'Já existe um registro com os dados informados.';
-	}
-
-	if (error.status === 400) {
-		return (
-			error.message || 'Os dados informados não passaram na validação da API.'
-		);
-	}
-
-	return error.message;
-}
 
 function getRoleBadgeClassName(role: UserRecord['role']) {
 	switch (role) {
@@ -233,7 +216,7 @@ function UsersFormDialog({
 			await onSubmit(values);
 			onClose();
 		} catch (error) {
-			setSubmitError(getUsersErrorMessage(error));
+			setSubmitError(applyFormSubmitErrors(form.setError, error));
 		}
 	});
 
@@ -257,12 +240,7 @@ function UsersFormDialog({
 					onSubmit={handleSubmit}
 				>
 					<div className="space-y-5 overflow-y-auto px-6 py-6">
-						{submitError ? (
-							<div className="flex items-start gap-2.5 rounded-md border border-[#f1c7c4] bg-[#fff7f7] px-3 py-2.5 text-[0.82rem] text-[#7a2f2a]">
-								<AlertCircle className="mt-0.5 size-4 shrink-0 text-[#c65a52]" />
-								<p className="leading-5">{submitError}</p>
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={submitError} />
 
 						<div className="grid gap-5 md:grid-cols-2">
 							<div className="space-y-1.5 md:col-span-2">
@@ -478,12 +456,7 @@ function ConfirmDialog({
 						interface.
 					</div>
 
-					{error ? (
-						<div className="flex items-start gap-2.5 rounded-md border border-[#f1c7c4] bg-[#fff7f7] px-3 py-2.5 text-[0.82rem] text-[#7a2f2a]">
-							<AlertCircle className="mt-0.5 size-4 shrink-0 text-[#c65a52]" />
-							<p className="leading-5">{error}</p>
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={error} />
 				</div>
 
 				<DialogFooter>
@@ -512,6 +485,5 @@ export {
 	getRoleBadgeClassName,
 	getRoleCardCopy,
 	getRoleLabel,
-	getUsersErrorMessage,
 	UsersFormDialog,
 };

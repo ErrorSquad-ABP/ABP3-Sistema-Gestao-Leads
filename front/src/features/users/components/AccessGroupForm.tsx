@@ -30,7 +30,8 @@ import {
 	type AccessGroup,
 	type UserRecord,
 } from '../model/users.model';
-import { getUsersErrorMessage } from './UserForm';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
 type AccessGroupDialogProps = {
 	group: AccessGroup | null;
@@ -214,18 +215,13 @@ function AccessGroupDialog({
 							await onSubmit(values);
 							onClose();
 						} catch (error) {
-							setSubmitError(getUsersErrorMessage(error));
+							setSubmitError(applyFormSubmitErrors(form.setError, error));
 						}
 					})}
 				>
 					<div className="grid gap-6 overflow-y-auto px-6 py-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
 						<div className="space-y-5">
-							{submitError ? (
-								<div className="flex items-start gap-2.5 rounded-md border border-[#f1c7c4] bg-[#fff7f7] px-3 py-2.5 text-[0.82rem] text-[#7a2f2a]">
-									<AlertCircle className="mt-0.5 size-4 shrink-0 text-[#c65a52]" />
-									<p className="leading-5">{submitError}</p>
-								</div>
-							) : null}
+							<ModalFormErrorBanner message={submitError} />
 
 							<div className="space-y-1.5">
 								<Label htmlFor="access-group-name" required>

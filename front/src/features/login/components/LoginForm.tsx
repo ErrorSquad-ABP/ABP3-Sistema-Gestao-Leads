@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
 import { queryKeys } from '@/lib/constants/query-keys';
 import { setAccessToken } from '@/lib/auth/access-token';
-import { isApiError } from '@/lib/http/api-error';
+import { humanizeApiError } from '@/lib/http/humanize-api-error';
 import { appRoutes } from '@/lib/routes/app-routes';
 import { cn } from '@/lib/utils';
 
@@ -43,19 +43,7 @@ import { AuthAccentLink } from './AuthAccentLink';
 import { LoginScreenLayout } from './LoginScreenLayout';
 
 function getLoginErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir o login agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 401) {
-		return 'Credenciais inválidas. Verifique o e-mail e a senha informados.';
-	}
-
-	if (error.status === 429) {
-		return 'Muitas tentativas de acesso em sequência. Aguarde um momento antes de tentar novamente.';
-	}
-
-	return error.message;
+	return humanizeApiError(error, { context: 'login' });
 }
 
 function LoginForm() {

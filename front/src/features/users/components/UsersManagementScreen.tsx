@@ -22,11 +22,9 @@ import type {
 	UsersSummary,
 } from '../model/users.model';
 import { AccessGroupDialog } from './AccessGroupForm';
-import {
-	ConfirmDialog,
-	getUsersErrorMessage,
-	UsersFormDialog,
-} from './UserForm';
+import { humanizeFormApiError, humanizePageApiError } from '@/lib/http/humanize-api-error';
+
+import { ConfirmDialog, UsersFormDialog } from './UserForm';
 import { UsersTabs } from './UsersTable';
 
 const emptySummary: UsersSummary = {
@@ -83,10 +81,10 @@ function UsersManagementScreen() {
 	const totalPages = usersPage?.totalPages ?? 0;
 	const summary = usersPage?.summary ?? emptySummary;
 	const usersError = usersQuery.isError
-		? getUsersErrorMessage(usersQuery.error)
+		? humanizePageApiError(usersQuery.error)
 		: null;
 	const accessGroupsError = accessGroupsQuery.isError
-		? getUsersErrorMessage(accessGroupsQuery.error)
+		? humanizePageApiError(accessGroupsQuery.error)
 		: null;
 
 	function openCreateDialog() {
@@ -172,7 +170,7 @@ function UsersManagementScreen() {
 			setIsDeleteDialogOpen(false);
 			setSelectedUser(null);
 		} catch (error) {
-			setDeleteError(getUsersErrorMessage(error));
+			setDeleteError(humanizeFormApiError(error));
 		}
 	}
 
@@ -204,7 +202,7 @@ function UsersManagementScreen() {
 			setIsDeleteAccessGroupDialogOpen(false);
 			setSelectedAccessGroup(null);
 		} catch (error) {
-			setDeleteAccessGroupError(getUsersErrorMessage(error));
+			setDeleteAccessGroupError(humanizeFormApiError(error));
 		}
 	}
 

@@ -40,7 +40,9 @@ import { VehicleCatalogCards } from './VehicleCatalogCards';
 import { VehicleCatalogTable } from './VehicleCatalogTable';
 import { VehicleConfirmDialog } from './VehicleConfirmDialog';
 import { VehicleDetailsDialog } from './VehicleDetailsDialog';
-import { VehicleFormDialog, getVehiclesErrorMessage } from './VehicleForm';
+import { humanizeFormApiError, humanizePageApiError } from '@/lib/http/humanize-api-error';
+
+import { VehicleFormDialog } from './VehicleForm';
 
 const pageSizeOptions = [6, 12, 18, 24, 48] as const;
 
@@ -269,7 +271,7 @@ function VehiclesPageContent() {
 			setDeleteOpen(false);
 			setTargetVehicle(null);
 		} catch (error) {
-			setDialogError(getVehiclesErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -284,7 +286,7 @@ function VehiclesPageContent() {
 			setHardDeleteOpen(false);
 			setTargetVehicle(null);
 		} catch (error) {
-			setDialogError(getVehiclesErrorMessage(error));
+			setDialogError(humanizeFormApiError(error));
 		}
 	}
 
@@ -366,7 +368,7 @@ function VehiclesPageContent() {
 					role="alert"
 				>
 					{storesQuery.error instanceof ApiError
-						? storesQuery.error.message
+						? humanizePageApiError(storesQuery.error)
 						: 'Não foi possível carregar as lojas.'}
 				</div>
 			) : null}
@@ -377,7 +379,7 @@ function VehiclesPageContent() {
 					role="alert"
 				>
 					{catalogQuery.error instanceof ApiError
-						? catalogQuery.error.message
+						? humanizePageApiError(catalogQuery.error)
 						: 'Não foi possível carregar os veículos.'}
 				</div>
 			) : null}

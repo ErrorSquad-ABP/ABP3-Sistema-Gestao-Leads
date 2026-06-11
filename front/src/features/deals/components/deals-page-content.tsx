@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { Card, CardContent } from '@/components/ui/card';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { ApiError } from '@/lib/http/api-error';
+import { humanizePageApiError } from '@/lib/http/humanize-api-error';
 
 import {
 	useDealsPipelineQuery,
@@ -30,7 +30,8 @@ import type {
 import { DealConfirmDialog } from './DealConfirmDialog';
 import { DealCreateDialog } from './DealCreateDialog';
 import { DealDetailsDialog } from './DealDetailsDialog';
-import { DealFormDialog, getDealsErrorMessage } from './DealFormDialog';
+import { getDealsErrorMessage } from '../lib/deal-api-errors';
+import { DealFormDialog } from './DealFormDialog';
 import { NegotiationsPageTop } from './NegotiationsPageTop';
 import { NegotiationsPipelineSection } from './pipeline/NegotiationsPipelineSection';
 
@@ -226,9 +227,7 @@ function DealsPageContent({ user }: DealsPageContentProps) {
 					className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 					role="alert"
 				>
-					{query.error instanceof ApiError
-						? query.error.message
-						: 'Não foi possível carregar as negociações.'}
+					{humanizePageApiError(query.error)}
 				</div>
 			) : null}
 

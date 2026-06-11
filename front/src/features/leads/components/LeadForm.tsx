@@ -4,8 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCheck, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { ZodError } from 'zod';
-
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -16,8 +14,9 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { Label, requiredFieldProps } from '@/components/ui/label';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
 import type { AuthenticatedUser } from '@/features/login/types/login.types';
-import { isApiError } from '@/lib/http/api-error';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
 import { leadSourceOptions, leadStatusOptions } from '../lib/lead-list-labels';
 import {
@@ -76,32 +75,11 @@ type LeadConfirmDialogProps = {
 const leadFormSelectClass =
 	'flex h-11 w-full rounded-xl border border-[#d6dce5] bg-white px-3 text-sm text-[#1b2430] shadow-none outline-none transition-colors focus:border-[#2d3648]/45';
 
-function getLeadsErrorMessage(error: unknown) {
-	if (error instanceof ZodError) {
-		return error.issues[0]?.message ?? 'Dados inválidos. Revise o formulário.';
-	}
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 400) {
-		return (
-			error.message || 'Os dados do lead não passaram na validação da API.'
-		);
-	}
-
-	if (error.status === 403) {
-		return (
-			error.message || 'O seu perfil não tem permissão para esta operação.'
-		);
-	}
-
-	if (error.status === 404) {
-		return error.message || 'O lead selecionado não foi encontrado.';
-	}
-
-	return error.message;
-}
+const LEAD_FORM_FIELD_MAP = {
+	'lead.invalid_customer': 'customerId',
+	'lead.invalid_owner': 'ownerUserId',
+	'lead.invalid_store': 'storeId',
+} as const;
 
 function buildOwnerOptions(params: {
 	leadOwners: LeadOwnerRecord[];
@@ -262,7 +240,9 @@ function LeadFormDialog({
 
 			onClose();
 		} catch (error) {
-			setSubmitError(getLeadsErrorMessage(error));
+			setSubmitError(
+				applyFormSubmitErrors(form.setError, error, LEAD_FORM_FIELD_MAP),
+			);
 		}
 	}
 
@@ -304,11 +284,10 @@ function LeadFormDialog({
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
 					<div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-8 pt-7 pb-8">
-						{submitError ? (
-							<div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-								{submitError}
-							</div>
-						) : null}
+						<ModalFormErrorBanner
+							className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+							message={submitError}
+						/>
 
 						<div className="rounded-3xl border border-[#e5ebf3] bg-[#f9fbfd] p-5">
 							<div className="space-y-1">
@@ -583,7 +562,9 @@ function LeadReassignDialog({
 			await onSubmit({ ownerUserId: values.ownerUserId || null });
 			onClose();
 		} catch (error) {
-			setSubmitError(getLeadsErrorMessage(error));
+			setSubmitError(
+				applyFormSubmitErrors(form.setError, error, LEAD_FORM_FIELD_MAP),
+			);
 		}
 	}
 
@@ -619,11 +600,7 @@ function LeadReassignDialog({
 						</span>
 					</div>
 
-					{submitError ? (
-						<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							{submitError}
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={submitError} />
 
 					<div className="space-y-1.5">
 						<Label htmlFor="lead-reassign-owner">Novo responsável</Label>
@@ -719,11 +696,7 @@ function LeadConfirmDialog({
 						)}
 						<p>{description}</p>
 					</div>
-					{error ? (
-						<div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-							{error}
-						</div>
-					) : null}
+					<ModalFormErrorBanner message={error} />
 				</div>
 				<DialogFooter>
 					<Button
@@ -750,10 +723,4 @@ function LeadConfirmDialog({
 	);
 }
 
-export {
-	buildOwnerOptions,
-	getLeadsErrorMessage,
-	LeadConfirmDialog,
-	LeadFormDialog,
-	LeadReassignDialog,
-};
+export { buildOwnerOptions, LeadConfirmDialog, LeadFormDialog, LeadReassignDialog };

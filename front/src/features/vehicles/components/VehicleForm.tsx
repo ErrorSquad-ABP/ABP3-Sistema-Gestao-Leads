@@ -25,7 +25,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label, requiredFieldProps } from '@/components/ui/label';
-import { isApiError } from '@/lib/http/api-error';
+import { ModalFormErrorBanner } from '@/components/feedback/ModalFormErrorBanner';
+import { applyFormSubmitErrors } from '@/lib/http/apply-api-form-errors';
 
 import {
 	apiDecimalStringToCentsDigits,
@@ -92,30 +93,6 @@ function VehicleFieldControl({
 			) : null}
 		</div>
 	);
-}
-
-function getVehiclesErrorMessage(error: unknown) {
-	if (!isApiError(error)) {
-		return 'Não foi possível concluir a operação agora. Tente novamente em instantes.';
-	}
-
-	if (error.status === 400) {
-		return (
-			error.message || 'Os dados do veículo não passaram na validação da API.'
-		);
-	}
-
-	if (error.status === 403) {
-		return (
-			error.message || 'O seu perfil não tem permissão para esta operação.'
-		);
-	}
-
-	if (error.status === 404) {
-		return error.message || 'O veículo selecionado não foi encontrado.';
-	}
-
-	return error.message;
 }
 
 function VehicleFormDialog({
@@ -249,7 +226,7 @@ function VehicleFormDialog({
 			await onSubmit(parsed);
 			onClose();
 		} catch (error) {
-			setSubmitError(getVehiclesErrorMessage(error));
+			setSubmitError(applyFormSubmitErrors(form.setError, error));
 		}
 	}
 
@@ -280,11 +257,7 @@ function VehicleFormDialog({
 					onSubmit={form.handleSubmit((values) => handleSubmit(values))}
 				>
 					<div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-7 pt-3 pb-6 md:px-8">
-						{submitError ? (
-							<div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-								{submitError}
-							</div>
-						) : null}
+						<ModalFormErrorBanner message={submitError} />
 
 						<VehicleModalSection
 							description={
@@ -767,4 +740,4 @@ function VehicleFormDialog({
 	);
 }
 
-export { VehicleFormDialog, getVehiclesErrorMessage };
+export { VehicleFormDialog };
