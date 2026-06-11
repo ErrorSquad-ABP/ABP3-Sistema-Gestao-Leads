@@ -568,7 +568,7 @@ export async function runDemoSeed(
 	const inventoryVehicles = buildInventoryVehicles(stores, count);
 	const vehicles = [...dealVehicles, ...inventoryVehicles];
 	const leadEvents = buildLeadEvents(leads, dealPlans);
-	const agendaItems = buildDemoAgendaItems(demoOrg, leads);
+	const agendaItems = buildDemoAgendaItems(demoOrg.users, leads);
 
 	await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 		await tx.$executeRawUnsafe(`
